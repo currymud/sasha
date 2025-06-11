@@ -1,0 +1,21 @@
+Block lifted by opening multiple gates in arbitrary order
+objective - player must press the right three of five displayed buttons in arbitrary order
+for the secret door to open.
+
+Buttons - ROYGBIV
+Objective Fulfillment Buttons - RYB
+example sentence
+press the red button
+assuming the press action for the red button is found ...
+do action means making a continuation that adds a value from a sum type to a
+Set and adding that continuation to the existing one in the "Go North" action field
+replacing the "you can't go north" message in the current "Go North" 
+In our case, the door is opened with the buttons. So that continuation is run
+at the top of the execution loop
+if the result of running the continuation is the fully populated set, the conditions for
+"going north" have been met.
+
+In the event the wrong button is pushed, the existing continuation for "go north" is replaced
+with "You can't go north", and the player has to start over. 
+
+

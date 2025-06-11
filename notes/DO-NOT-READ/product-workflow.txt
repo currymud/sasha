@@ -1,0 +1,65 @@
+If you are reading this, that's a git hygiene fail. It's not intended to be coherent to anyone but me.
+These experiments serve to implement the advice of Tim Cook (former VP of Engineering Target),
+when I was talking to him about the problem of making a text adventure engine. He tels me what I need
+to do: make several text adventures, and then I'll see the generalation. That's how I find the dsl.
+I already know that this dsl has types but one thing I want to discover here is all of them, as 
+now I only have some. Other discoveries? I'll let you know later.
+So to fulfill this in a timely manner, I will implement each kind of text
+adventure puzzle, as defined by (source), there about five.
+
+By implementing these five, I think that will be sufficient to discover the
+abstraction.
+
+Starting with: Operation Magnetic Scrolls
+
+In the 80's, before decent graphics could have the nessecary hardware support,
+there were the "parser wars" in the text adventure space. The top contenders
+for the crown? Infocom and Magnetic Scrolls. Magentic Scrolls won by leveraging the
+Earley Algorithm, to suceed in parsing "plant the pot plant in the plant pot with the trowel"
+And so we shall celebrate their righteous victory by using this challenge as number one.
+
+Number 2: Mission Code Name: Babel Fish
+I spent the summer of '85 trying to stick a babel fish in my ear.
+That's because I was enthralled by both infocom games in general, and Infocom's 
+then recent release of "Hitchhiker's Guide to the Galaxy".
+Because Douglass-Fucking-Adams. But also, Steve-Fucking-Meresky, the genius that
+gave us "Leather Goddesses of Phobos" and "Planetfall". I was desperate enough
+to offer a bounty to anyone who could help me solve it, but too cheap to
+buy the cheat sheet infocom sold for ten bucks. I finally figured it out,
+because I'm a smart boy. And I think I either discovered a mechanism or
+validated a mechanism to accommodate such a puzzle.
+
+Number Three: Fucking Andrew Plotikin, Motherfuckers
+So this guy is a luminary among Interactive Fiction nerds. Creator of 
+Spider and Fly and Haedan Lands, among many others. I'm not sure what,
+exactly, but there's something about Haedan Lands that I need to capture.
+
+Number Four: Fucking Andrew Plotikin, Motherfuckers: Part Two
+Also spider and fly, maybe specifically the use of a ticker,
+and how he implements a help system. Fucking genius, this guy.
+
+Number Five I need to research, but it's fucking cool.
+
+Operation Magnetic Scrolls
+player is prompted by opening text to look at the plant pot
+
+player types "look at pot" or "look at plot plant".
+game parses sentence and grabs "pot". in the location there is a map
+of objects in that location to actions. in "pot"'s map, we look up the
+action in the value. That action updates DisplayF with a description of the pot
+that also prompts reading the inscription.
+
+player types "read inscription", we do similar process , this time prompting the
+player to go get the soil in the cabinet under the shelf. That cabinet is locked.
+
+player types "open cabinet". when doing the search for the action, that would prompt an action
+to update DisplayF "the cabinet is locked".
+
+player eventually finds the key, and types "unlock cabinet with key"
+Game then find the action for cbinet's "unlock action. This acrion changes the 
+action for "open cabinet" to succeed. The open cabinet's action chnges the get 
+action for the bag of soil inside, and the look action for cabinet.
+
+the look ation for cabinet gives a "shallow look" into the cabinet. 
+the get action for bag puts the 
+for the cabinet.

@@ -1,0 +1,362 @@
+module Parser.SpeechParts.Composites.Nouns where
+
+import           Control.Applicative                      (Alternative ((<|>)))
+import           Data.Kind                                (Constraint, Type)
+import           Data.Text                                (Text)
+import           Lexer                                    (Lexeme (..))
+import           Parser.SpeechParts.Atomics.Adverbs       (ImplicitPath,
+                                                           ModToggleAdverb)
+import           Parser.SpeechParts.Atomics.Misc          (Determiner)
+import           Parser.SpeechParts.Atomics.Nouns         (Container,
+                                                           DirectionalStimulus,
+                                                           ModToggleNoun,
+                                                           ObjectPath,
+                                                           Objective,
+                                                           SimpleAccessNoun,
+                                                           Surface,
+                                                           TargetedStimulus,
+                                                           ToggleNoun (ToggleNoun))
+import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker,
+                                                           InstrumentalMarker,
+                                                           Path, SurfaceMarker,
+                                                           TargetedStimulusMarker)
+import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase)
+import           Text.Earley                              (Grammar)
+import           Text.Earley.Grammar                      (Prod, rule)
+
+-- (runStateT . runExceptT) (runReaderT start config) defaultGameState
+-- Plant the pot plant in the plant pot with the trowel
+-- unlock the cabinet below the shelf
+
+type ObjectPathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data ObjectPathPhraseRules r = ObjectPathPhraseRules
+  { _objectPathRule :: Prod r Text Lexeme ObjectPath
+  , _determinerRule :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  }
+
+type ObjectPathPhrase :: Type
+data ObjectPathPhrase
+  = SimpleObjectPathPhrase ObjectPath
+  | ObjectPathPhrase  Determiner ObjectPath
+  | ObjectPathPhraseAdj Determiner AdjPhrase ObjectPath
+  deriving stock (Show, Eq, Ord)
+
+objectPathPhraseRule :: ObjectPathPhraseRules r
+                          -> Grammar r (Prod r Text Lexeme ObjectPathPhrase)
+objectPathPhraseRule (ObjectPathPhraseRules {..}) =
+  rule $ SimpleObjectPathPhrase <$> _objectPathRule
+           <|> ObjectPathPhrase <$> _determinerRule <*> _objectPathRule
+           <|> ObjectPathPhraseAdj
+                 <$> _determinerRule
+                 <*> _adjPhraseRule
+                 <*> _objectPathRule
+
+type PathPhrase :: Type
+data PathPhrase
+  = SimplePath ImplicitPath
+  | PathPhrase Path Determiner ObjectPath
+  deriving stock (Show,Eq,Ord)
+
+type PathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data PathPhraseRules r = PathPhraseRules
+  { _pathRule         :: Prod r Text Lexeme Path
+  , _implicitPathRule :: Prod r Text Lexeme ImplicitPath
+  , _determinerRule   :: Prod r Text Lexeme Determiner
+  , _objectPathRule   :: Prod r Text Lexeme ObjectPath
+  }
+
+pathPhraseRule :: PathPhraseRules r
+                  -> Grammar r (Prod r Text Lexeme PathPhrase)
+pathPhraseRule (PathPhraseRules {..}) =
+  rule $ SimplePath <$> _implicitPathRule
+           <|> PathPhrase <$> _pathRule <*> _determinerRule <*> _objectPathRule
+
+type PrepObjectPhrase :: Type
+data PrepObjectPhrase
+  = Instrument InstrumentalMarker ObjectPathPhrase
+  deriving stock (Show, Eq, Ord)
+
+type PrepObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data PrepObjectPhraseRules r = PrepObjectPhraseRules
+  { _instrumentalMarkerRule :: Prod r Text Lexeme InstrumentalMarker
+  , _objectPathPhraseRule   :: Prod r Text Lexeme ObjectPathPhrase
+  }
+
+prepObjectPhraseRule :: PrepObjectPhraseRules r
+                        -> Grammar r (Prod r Text Lexeme PrepObjectPhrase)
+prepObjectPhraseRule (PrepObjectPhraseRules {..}) =
+  rule $ Instrument <$> _instrumentalMarkerRule <*> _objectPathPhraseRule
+
+type InstrumentMarkerPrepPhrase :: Type
+data InstrumentMarkerPrepPhrase
+  = InstrumentMarkerPrepPhrase InstrumentalMarker ObjectPathPhrase
+  deriving stock (Show, Eq, Ord)
+
+type InstrumentMarkerPrepPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data InstrumentMarkerPrepPhraseRules r = InstrumentMarkerPrepPhraseRules
+  { _instrumentalMarkerRule :: Prod r Text Lexeme InstrumentalMarker
+  , _objectPathPhraseRule   :: Prod r Text Lexeme ObjectPathPhrase
+  }
+
+type InstrumentMarkerPrepPhraseGrammar :: (Type -> Type -> Type -> Type) -> Type
+type InstrumentMarkerPrepPhraseGrammar r
+  = Grammar r (Prod r Text Lexeme InstrumentMarkerPrepPhrase)
+
+instrumentMarkerPrepPhraseRule :: InstrumentMarkerPrepPhraseRules r
+                               -> InstrumentMarkerPrepPhraseGrammar r
+instrumentMarkerPrepPhraseRule (InstrumentMarkerPrepPhraseRules {..}) =
+  rule $ InstrumentMarkerPrepPhrase
+           <$> _instrumentalMarkerRule
+           <*> _objectPathPhraseRule
+
+type NounPhrase :: Type -> Type
+data NounPhrase a
+  = SimpleNounPhrase a
+  | NounPhrase Determiner a
+  | DescriptiveNounPhrase AdjPhrase a
+  | DescriptiveNounPhraseDet Determiner AdjPhrase a
+  deriving stock (Show, Eq, Ord)
+
+type NounPhraseRules :: Type -> (Type -> Type -> Type -> Type) -> Type
+data NounPhraseRules a r = NounPhraseRules
+  { _determinerRule :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _nounRule       :: Prod r Text Lexeme a
+  }
+
+nounPhraseRule :: NounPhraseRules a r
+                    -> Grammar r (Prod r Text Lexeme (NounPhrase a))
+nounPhraseRule (NounPhraseRules{..}) =
+  rule $ SimpleNounPhrase <$> _nounRule
+           <|> NounPhrase <$> _determinerRule <*> _nounRule
+           <|> DescriptiveNounPhrase <$> _adjPhraseRule <*> _nounRule
+           <|> DescriptiveNounPhraseDet
+                 <$> _determinerRule
+                 <*> _adjPhraseRule
+                 <*> _nounRule
+
+type ObjectPhrase :: Type
+newtype ObjectPhrase = ObjectPhrase (NounPhrase Objective)
+  deriving stock (Show, Eq, Ord)
+
+type ObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data ObjectPhraseRules r = ObjectPhraseRules
+  { _determinerRule :: Prod r Text Lexeme Determiner
+  , _objectiveRule  :: Prod r Text Lexeme Objective
+  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  }
+
+objectPhraseRule :: ObjectPhraseRules r
+                      -> Grammar r (Prod r Text Lexeme ObjectPhrase)
+objectPhraseRule (ObjectPhraseRules {..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ ObjectPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _objectiveRule
+          }
+
+type SurfacePhrase :: Type
+data SurfacePhrase
+  = SimpleSurfacePhrase (NounPhrase Surface)
+  | SurfacePhrase SurfaceMarker (NounPhrase Surface)
+  deriving stock (Show, Eq, Ord)
+
+type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data SurfacePhraseRules r = SurfacePhraseRules
+  { _determinerRule    :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
+  , _surfaceRule       :: Prod r Text Lexeme Surface
+  , _surfaceMarkerRule :: Prod r Text Lexeme SurfaceMarker
+  }
+
+surfacePhraseRule :: SurfacePhraseRules r
+                      -> Grammar r (Prod r Text Lexeme SurfacePhrase)
+surfacePhraseRule (SurfacePhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ SimpleSurfacePhrase <$> nounPhrase
+             <|> SurfacePhrase <$> _surfaceMarkerRule <*> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _surfaceRule
+          }
+
+type ContainerPhrase :: Type
+data ContainerPhrase
+  = SimpleContainerPhrase (NounPhrase Container)
+  | ContainerPhrase ContainmentMarker (NounPhrase Container)
+  deriving stock (Show, Eq, Ord)
+
+type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data ContainerPhraseRules r = ContainerPhraseRules
+  { _determinerRule      :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule       :: Prod r Text Lexeme AdjPhrase
+  , _containerRule       :: Prod r Text Lexeme Container
+  , _containerMarkerRule :: Prod r Text Lexeme ContainmentMarker
+  }
+
+containerPhraseRule :: ContainerPhraseRules r
+                        -> Grammar r (Prod r Text Lexeme ContainerPhrase)
+containerPhraseRule (ContainerPhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ SimpleContainerPhrase <$> nounPhrase
+             <|> ContainerPhrase <$> _containerMarkerRule <*> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _containerRule
+          }
+
+type SupportPhrase :: Type
+data SupportPhrase
+  = SurfaceSupport SurfacePhrase
+  | ContainerSupport ContainerPhrase
+  deriving stock (Show, Eq, Ord)
+
+
+type SupportPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data SupportPhraseRules r = SupportPhraseRules
+  { _surfacePhraseRule   :: Prod r Text Lexeme SurfacePhrase
+  , _containerPhraseRule :: Prod r Text Lexeme ContainerPhrase
+  }
+
+supportPhraseRule :: SupportPhraseRules r
+                     -> Grammar r (Prod r Text Lexeme SupportPhrase)
+supportPhraseRule (SupportPhraseRules{..}) =
+  rule $ SurfaceSupport <$> _surfacePhraseRule
+           <|> ContainerSupport <$> _containerPhraseRule
+
+type DirectionalStimulusNoun :: Type
+newtype DirectionalStimulusNoun = DirectionalStimulusNoun (NounPhrase DirectionalStimulus)
+  deriving stock (Show, Eq, Ord)
+
+type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
+data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
+  { _determinerRule          :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule           :: Prod r Text Lexeme AdjPhrase
+  , _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus
+  }
+
+directionalStimulusNounRule :: DirectionalStimulusNounRules r
+                                -> Grammar r (Prod r Text Lexeme DirectionalStimulusNoun)
+directionalStimulusNounRule (DirectionalStimulusNounRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ DirectionalStimulusNoun <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _directionalStimulusRule
+          }
+
+type ToggleNounPhrase :: Type
+newtype ToggleNounPhrase = ToggleNounPhrase (NounPhrase ToggleNoun)
+  deriving stock (Show, Eq, Ord)
+
+type ToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data ToggleNounPhraseRules r = ToggleNounPhraseRules
+  { _determinerRule :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _toggleRule     :: Prod r Text Lexeme ToggleNoun
+  }
+
+toggleNounPhraseRule :: ToggleNounPhraseRules r
+                        -> Grammar r (Prod r Text Lexeme ToggleNounPhrase)
+toggleNounPhraseRule (ToggleNounPhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ ToggleNounPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _toggleRule
+          }
+
+type ModToggleNounPhrase :: Type
+data ModToggleNounPhrase = ModToggleNounPhrase (NounPhrase ModToggleNoun) ModToggleAdverb
+  deriving stock (Show, Eq, Ord)
+
+type ModToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data ModToggleNounPhraseRules r = ModToggleNounPhraseRules
+  { _determinerRule    :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
+  , _modToggleNounRule :: Prod r Text Lexeme ModToggleNoun
+  , _modToggleAdvRule  :: Prod r Text Lexeme ModToggleAdverb
+  }
+
+modToggleNounPhraseRule :: ModToggleNounPhraseRules r
+                        -> Grammar r (Prod r Text Lexeme ModToggleNounPhrase)
+modToggleNounPhraseRule (ModToggleNounPhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ ModToggleNounPhrase <$> nounPhrase <*> _modToggleAdvRule
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _modToggleNounRule
+          }
+
+type TargetedStimulusNounPhrase :: Type
+data TargetedStimulusNounPhrase
+  = SimpleAgentStimulus TargetedStimulus
+  | TargetedStimuliiNounPhrase TargetedStimulusMarker (NounPhrase TargetedStimulus)
+  deriving stock (Show, Eq, Ord)
+
+type TargetedStimulusNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data TargetedStimulusNounPhraseRules r = TargetedStimulusNounPhraseRules
+  { _targetedStimulusMarkerRule :: Prod r Text Lexeme TargetedStimulusMarker
+  , _targetedStimulusRule       :: Prod r Text Lexeme TargetedStimulus
+  , _determinerRule             :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule              :: Prod r Text Lexeme AdjPhrase
+  }
+
+targetedStimulusNounPhraseRule :: TargetedStimulusNounPhraseRules r
+                                  -> Grammar r (Prod r Text Lexeme TargetedStimulusNounPhrase)
+targetedStimulusNounPhraseRule (TargetedStimulusNounPhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ SimpleAgentStimulus <$> _targetedStimulusRule
+             <|> TargetedStimuliiNounPhrase <$> _targetedStimulusMarkerRule <*> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _targetedStimulusRule
+          }
+
+type SimpleAccessNounPhrase :: Type
+newtype SimpleAccessNounPhrase = SimpleAccessNounPhrase (NounPhrase SimpleAccessNoun)
+  deriving stock (Show, Eq, Ord)
+
+type SimpleAccessNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data SimpleAccessNounPhraseRules r = SimpleAccessNounPhraseRules
+  { _determinerRule       :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule        :: Prod r Text Lexeme AdjPhrase
+  , _simpleAccessNounRule :: Prod r Text Lexeme SimpleAccessNoun
+  }
+
+simpleAccessNounPhraseRule :: SimpleAccessNounPhraseRules r
+                          -> Grammar r
+                               (Prod r Text Lexeme SimpleAccessNounPhrase)
+simpleAccessNounPhraseRule (SimpleAccessNounPhraseRules{..}) =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ SimpleAccessNounPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = _determinerRule
+          , _adjPhraseRule = _adjPhraseRule
+          , _nounRule = _simpleAccessNounRule
+          }

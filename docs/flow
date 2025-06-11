@@ -1,0 +1,33 @@
+"Put Key In Box"
+Parsed
+Action - Put
+Object of Action - Key
+Prepositional Phrase - "In Box"
+
+In Parallel evaluate the follow
+Is the Key available to be evaluated further?
+Yes - Calculate GCase for Key, given parsed sentence
+No - Handler for No case supplied by caller
+
+Is the Box available to be evaluated further?
+Yes - Calculate GCase for Box, as above
+No - Handler for No
+
+If any Nos apply appropriate supplied function
+
+If both Yes, continue
+In parallel, do the following for each Entity (Box and Key)
+
+  Find action associated with each entity's GCase
+
+  Evaluate the following 
+   Is it possible to fulfill the function of this Entity for this action
+   If so, return tagged function indicating success and how to change state expressing consequences of this success
+   If no, return tagged function indicating failure and how to change state expressing consequnces of this failure
+
+   In the case of both successes , put the success function of the Objective case Entity into the action execution field of GameState
+   In the case of Both failures, run function given, leave it up to consumer to determine how this is handled
+   In the case of a single failure, (the box is available to have things put in it, but there's no available key),
+   have the failure function be the function to put in the action execution field of GameState
+
+
