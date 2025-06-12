@@ -12,6 +12,9 @@ import           Relude.String.Conversion   (ToString (toString),
 import           Text.Megaparsec            (Parsec)
 import           Text.Megaparsec.Char       (spaceChar)
 import qualified Text.Megaparsec.Char.Lexer as L
+#ifdef TESTING
+import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum)
+#endif
 
 type Parser = Parsec Void String
 
@@ -208,6 +211,11 @@ data Lexeme
   | GUIDE
   | BALL
   deriving stock (Show, Bounded, Eq, Enum, Ord)
+
+#ifdef TESTING
+instance Arbitrary Lexeme where
+  arbitrary = arbitraryBoundedEnum
+#endif
 
 instance ToText Lexeme where
   toText :: Lexeme -> Text

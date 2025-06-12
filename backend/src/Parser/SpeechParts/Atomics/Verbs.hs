@@ -31,6 +31,7 @@ cardinalMovementVerbs :: HashSet CardinalMovementVerb
 cardinalMovementVerbs = fromList
   $ map CardinalMovementVerb [GO, SAIL, SNEAK,RUN , MARCH, FLOAT, FLEE, WALK]
 
+
 type SpaceTransitionalVerb :: Type
 newtype SpaceTransitionalVerb =
   SpaceTransitionalVerb { _fromSpaceTransitionalVerb :: Lexeme }
@@ -256,3 +257,31 @@ instance HasLexeme ResearchVerb where
 
 researchVerbs :: HashSet ResearchVerb
 researchVerbs = singleton $ ResearchVerb LOOK
+
+#ifdef TESTING
+deriving newtype instance Arbitrary Copula
+deriving newtype instance Arbitrary CardinalMovementVerb
+deriving newtype instance Arbitrary SpaceTransitionalVerb
+deriving newtype instance Arbitrary ImplicitBoundaryVerb
+deriving newtype instance Arbitrary ExplicitBoundaryVerb
+deriving newtype instance Arbitrary ImplicitRegionalStimulusVerb
+deriving newtype instance Arbitrary ImplicitStimulusVerb
+deriving newtype instance Arbitrary ExplicitStimulusVerb
+deriving newtype instance Arbitrary DirectionalStimulusVerb
+deriving newtype instance Arbitrary TargetedStimulusVerb
+deriving newtype instance Arbitrary TraversalVerb
+deriving newtype instance Arbitrary TraversalPathVerb
+deriving newtype instance Arbitrary ToggleVerb
+deriving newtype instance Arbitrary ModToggleVerb
+deriving newtype instance Arbitrary SimpleAccessVerb
+deriving newtype instance Arbitrary InstrumentalAccessVerb
+deriving newtype instance Arbitrary RotationalVerb
+deriving newtype instance Arbitrary DirectionalVerb
+deriving newtype instance Arbitrary InstrumentActionVerb
+deriving newtype instance Arbitrary InstrumentalPlacementVerb
+deriving newtype instance Arbitrary GeneralPlacementVerb
+deriving newtype instance Arbitrary AcquisitionVerb
+deriving newtype instance Arbitrary TransferVerb
+deriving newtype instance Arbitrary ResearchVerb
+#endif
+
