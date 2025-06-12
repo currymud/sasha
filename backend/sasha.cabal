@@ -1,4 +1,4 @@
-cabal-version: 2.4
+cabal-version: 3.0
 
 name:           sasha
 version:        0.1.0.0
@@ -36,6 +36,14 @@ common shared
     QuantifiedConstraints
     RecordWildCards
     RoleAnnotations
+
+common tests
+  cpp-options: -DTESTING
+  ghc-options:
+    -Wall -Wcompat -fwarn-redundant-constraints
+    -fwarn-incomplete-uni-patterns -fwarn-tabs
+    -fwarn-incomplete-record-updates -fwarn-identities -threaded
+    -fno-warn-missing-home-modules -rtsopts -freduction-depth=1000
 
 library
   import: shared
@@ -76,7 +84,10 @@ library
    , unordered-containers
   default-language: GHC2021
 
-common test-deps
+executable sasha-tests
+  import:         shared, tests
+  main-is:        UnitMain.hs
+  hs-source-dirs: test src
   build-depends:
     , aeson
     , aeson-pretty
@@ -90,14 +101,4 @@ common test-deps
     , quickcheck-instances
     , safe
     , text
-
-common tests
-  cpp-options: -DTESTING
-  ghc-options:
-    -Wall -Wcompat -fwarn-redundant-constraints
-    -fwarn-incomplete-uni-patterns -fwarn-tabs
-    -fwarn-incomplete-record-updates -fwarn-identities
-    -fno-warn-missing-home-modules -rtsopts -freduction-depth=1000
-    -threaded -rtsopts "-with-rtsopts=-N -H2G -T -A32M"
-
 

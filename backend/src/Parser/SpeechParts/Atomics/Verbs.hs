@@ -1,9 +1,13 @@
 module Parser.SpeechParts.Atomics.Verbs where
 
-import           Data.Hashable (Hashable)
-import           Data.HashSet  (HashSet, fromList, singleton)
-import           Data.Kind     (Type)
+import           Data.Hashable   (Hashable)
+import           Data.HashSet    (HashSet, fromList, singleton)
+import           Data.Kind       (Type)
 import           Lexer
+
+#ifdef TESTING
+import           Test.QuickCheck (Arbitrary)
+#endif
 
 type Copula :: Type
 newtype Copula = Copula { _fromCopula :: Lexeme }
