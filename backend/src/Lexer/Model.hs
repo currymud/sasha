@@ -207,7 +207,7 @@ data Lexeme
   | ENCYCLOPEDIA
   | GUIDE
   | BALL
-  deriving stock (Show, Bounded,Eq, Enum, Ord)
+  deriving stock (Show, Bounded, Eq, Enum, Ord)
 
 instance ToText Lexeme where
   toText :: Lexeme -> Text

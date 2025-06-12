@@ -1,5 +1,5 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "lib:experiments"
+      component: "lib:sasha"
 

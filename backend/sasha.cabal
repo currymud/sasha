@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version: 2.4
 
 name:           sasha
 version:        0.1.0.0
@@ -8,7 +8,7 @@ category:       Web
 author:         Michael Litchard
 maintainer:     <email here>
 copyright:      Michael Litchard
-license:        BSD3
+license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
@@ -19,7 +19,27 @@ source-repository head
   type: git
   location: https://gitlab.horizon-haskell.net/haskell/template
 
+common shared
+  default-language:   GHC2021
+  default-extensions:
+    ApplicativeDo
+    BlockArguments
+    CPP
+    DeriveAnyClass
+    DerivingStrategies
+    DuplicateRecordFields
+    LambdaCase
+    MultiWayIf
+    OverloadedRecordDot
+    OverloadedStrings
+    PatternSynonyms
+    QuantifiedConstraints
+    RecordWildCards
+    RoleAnnotations
+
 library
+  import: shared
+  default-extensions: RecursiveDo
   exposed-modules:
       Lexer
       Lexer.Model
@@ -44,67 +64,40 @@ library
 
   hs-source-dirs:
       src
-  default-extensions:
-      NoStarIsType
-      BangPatterns
-      ConstraintKinds
-      DataKinds
-      DeriveAnyClass
-      DeriveDataTypeable
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveLift
-      DeriveTraversable
-      DerivingStrategies
-      DerivingVia
-      DuplicateRecordFields
-      EmptyCase
-      EmptyDataDecls
-      EmptyDataDeriving
-      ExistentialQuantification
-      ExplicitForAll
-      FlexibleContexts
-      FlexibleInstances
-      FunctionalDependencies
-      GADTSyntax
-      GeneralisedNewtypeDeriving
-      ImportQualifiedPost
-      InstanceSigs
-      KindSignatures
-      LambdaCase
-      MultiParamTypeClasses
-      RecordWildCards
-      MultiWayIf
-      NumericUnderscores
-      OverloadedRecordDot
-      OverloadedStrings
-      PolyKinds
-      PostfixOperators
-      RankNTypes
-      RoleAnnotations
-      RecursiveDo
-      ScopedTypeVariables
-      StandaloneDeriving
-      StandaloneKindSignatures
-      TemplateHaskell
-      TupleSections
-      TypeApplications
-      TypeFamilies
-      TypeOperators
-      ViewPatterns
 
   ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-implicit-prelude -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe
   build-depends:
      base >=4.7 && <5
    , Earley
    , hashable
-   , haskeline
    , megaparsec
    , mtl
    , relude
-   , template-haskell
    , unordered-containers
-   , with-utf8
   default-language: GHC2021
+
+common test-deps
+  build-depends:
+    , aeson
+    , aeson-pretty
+    , base
+    , generic-arbitrary
+    , hspec
+    , hspec-core
+    , hspec-discover
+    , mtl
+    , QuickCheck
+    , quickcheck-instances
+    , safe
+    , text
+
+common tests
+  cpp-options: -DTESTING
+  ghc-options:
+    -Wall -Wcompat -fwarn-redundant-constraints
+    -fwarn-incomplete-uni-patterns -fwarn-tabs
+    -fwarn-incomplete-record-updates -fwarn-identities
+    -fno-warn-missing-home-modules -rtsopts -freduction-depth=1000
+    -threaded -rtsopts "-with-rtsopts=-N -H2G -T -A32M"
+
 
