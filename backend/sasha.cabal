@@ -102,7 +102,9 @@ library sasha-testing
     , text
     , sasha
  exposed-modules:
+      Test.Parser.SpeechParts.Atomics.Utils
       Test.Parser.SpeechParts.Atomics.Verbs
+      Test.Parser.SpeechParts.Atomics.Nouns
  other-modules:
       Lexer
       Lexer.Model
@@ -170,4 +172,5 @@ executable sasha-tests
       Parser.SpeechParts.Composites.Verbs
       Parser.VerbParsers
       Test.Parser.SpeechParts.Atomics.Verbs
-
+      Test.Parser.SpeechParts.Atomics.Utils
+      Test.Parser.SpeechParts.Atomics.Nouns

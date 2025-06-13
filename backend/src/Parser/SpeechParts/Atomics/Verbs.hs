@@ -13,7 +13,8 @@ import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
 
 type Copula :: Type
 newtype Copula = Copula { _fromCopula :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show, Eq, Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Copula where
   toLexeme = _fromCopula
@@ -24,7 +25,8 @@ copula = singleton $ Copula IS
 type CardinalMovementVerb :: Type
 newtype CardinalMovementVerb =
   CardinalMovementVerb { _fromCardinalMovementVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme CardinalMovementVerb where
   toLexeme = _fromCardinalMovementVerb
@@ -37,7 +39,8 @@ cardinalMovementVerbs = fromList
 type SpaceTransitionalVerb :: Type
 newtype SpaceTransitionalVerb =
   SpaceTransitionalVerb { _fromSpaceTransitionalVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme SpaceTransitionalVerb where
   toLexeme = _fromSpaceTransitionalVerb
@@ -49,7 +52,8 @@ spaceTransitionalVerbs =
 type ImplicitBoundaryVerb :: Type
 newtype ImplicitBoundaryVerb =
   ImplicitBoundaryVerb { _fromImplicitBoundaryVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 implicitBoundaryVerbs :: HashSet ImplicitBoundaryVerb
 implicitBoundaryVerbs = singleton $ ImplicitBoundaryVerb EXIT
@@ -57,7 +61,8 @@ implicitBoundaryVerbs = singleton $ ImplicitBoundaryVerb EXIT
 type ExplicitBoundaryVerb :: Type
 newtype ExplicitBoundaryVerb =
   ExplicitBoundaryVerb { _fromExplicitBoundaryVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 explicitBoundaryVerbs :: HashSet ExplicitBoundaryVerb
 explicitBoundaryVerbs = singleton $ ExplicitBoundaryVerb ENTER
@@ -65,7 +70,8 @@ explicitBoundaryVerbs = singleton $ ExplicitBoundaryVerb ENTER
 type ImplicitRegionalStimulusVerb :: Type
 newtype ImplicitRegionalStimulusVerb =
   ImplicitRegionalStimulusVerb { _fromImplicitRegionalStimulusVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ImplicitRegionalStimulusVerb where
   toLexeme = _fromImplicitRegionalStimulusVerb
@@ -76,7 +82,8 @@ implicitRegionalStimulusVerbs = fromList $ map ImplicitRegionalStimulusVerb [WAI
 type ImplicitStimulusVerb :: Type
 newtype ImplicitStimulusVerb =
   ImplicitStimulusVerb { _fromImplicitStimulusVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ImplicitStimulusVerb where
   toLexeme = _fromImplicitStimulusVerb
@@ -88,7 +95,8 @@ implicitStimulusVerbs =
 type ExplicitStimulusVerb :: Type
 newtype ExplicitStimulusVerb =
   ExplicitStimulusVerb { _fromExplicitStimulusVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ExplicitStimulusVerb where
   toLexeme = _fromExplicitStimulusVerb
@@ -98,7 +106,8 @@ explicitStimulusVerbs = fromList $ map ExplicitStimulusVerb [SMELL,TASTE,TOUCH]
 
 type DirectionalStimulusVerb :: Type
 newtype DirectionalStimulusVerb = DirectionalStimulusVerb { _fromDirectionalStimulusVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme DirectionalStimulusVerb where
   toLexeme = _fromDirectionalStimulusVerb
@@ -109,7 +118,8 @@ directionalStimulusVerbs = singleton $ DirectionalStimulusVerb LOOK
 
 type TargetedStimulusVerb :: Type
 newtype TargetedStimulusVerb = TargetedStimulusVerb { _fromTargetedStimulusVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme TargetedStimulusVerb where
   toLexeme = _fromTargetedStimulusVerb
@@ -117,9 +127,11 @@ instance HasLexeme TargetedStimulusVerb where
 -- Verbs that can take targeted prepositions like "to"
 targetedStimulusVerbs :: HashSet TargetedStimulusVerb
 targetedStimulusVerbs = singleton $ TargetedStimulusVerb LISTEN
+
 type TraversalVerb :: Type
 newtype TraversalVerb = TraversalVerb { _fromTraversalVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme TraversalVerb where
   toLexeme = _fromTraversalVerb
@@ -130,7 +142,8 @@ traversalVerbs = fromList
 
 type TraversalPathVerb :: Type
 newtype TraversalPathVerb = TraversalPathVerb { _fromTraversalPathVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme TraversalPathVerb where
   toLexeme = _fromTraversalPathVerb
@@ -140,7 +153,8 @@ traversalPathVerbs = singleton $ TraversalPathVerb SLIDE
 
 type ToggleVerb :: Type
 newtype ToggleVerb = ToggleVerb { _fromToggleVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ToggleVerb where
   toLexeme = _fromToggleVerb
@@ -150,7 +164,8 @@ toggleVerbs = fromList $ map ToggleVerb [FLIP, PUSH]
 
 type ModToggleVerb :: Type
 newtype ModToggleVerb = ModToggleVerb { _fromModToggleVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ModToggleVerb where
   toLexeme = _fromModToggleVerb
@@ -160,7 +175,8 @@ modToggleVerbs = singleton $ ModToggleVerb TURN
 
 type SimpleAccessVerb :: Type
 newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme SimpleAccessVerb where
   toLexeme = _fromSimpleAccessVerb
@@ -172,7 +188,8 @@ simpleAccessVerbs = fromList $ map SimpleAccessVerb [OPEN, CLOSE]
 type InstrumentalAccessVerb :: Type
 newtype InstrumentalAccessVerb
   = InstrumentalAccessVerb { _fromInstrumentalAccessVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme InstrumentalAccessVerb where
   toLexeme = _fromInstrumentalAccessVerb
@@ -183,7 +200,9 @@ instrumentalAccessVerbs = fromList $ map InstrumentalAccessVerb [LOCK, UNLOCK]
 
 type RotationalVerb :: Type
 newtype RotationalVerb = RotationalVerb { _fromRotationalVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
+
 instance HasLexeme RotationalVerb where
   toLexeme = _fromRotationalVerb
 
@@ -192,7 +211,8 @@ rotationalVerbs = fromList $ map RotationalVerb [TURN, TWIST, ROTATE]
 
 type DirectionalVerb :: Type
 newtype DirectionalVerb = DirectionalVerb { _fromDirectionalVerb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme DirectionalVerb where
   toLexeme = _fromDirectionalVerb
@@ -202,7 +222,8 @@ directionalVerbs = fromList $ map DirectionalVerb [PUSH, PULL]
 
 type InstrumentActionVerb :: Type
 newtype InstrumentActionVerb = InstrumentActionVerb { _fromInstrumentActionVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme InstrumentActionVerb where
   toLexeme = _fromInstrumentActionVerb
@@ -212,7 +233,8 @@ instrumentActionVerbs = fromList $ map InstrumentActionVerb [PLAY, RING, SHOOT]
 
 type InstrumentalPlacementVerb :: Type
 newtype InstrumentalPlacementVerb = InstrumentalPlacementVerb { _fromInstrumentalPlacementVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instrumentalPlacementVerbs :: HashSet InstrumentalPlacementVerb
 instrumentalPlacementVerbs = fromList $ map InstrumentalPlacementVerb [PLANT,PUT,INSERT] -- Verbs that require/allow tools
@@ -222,7 +244,8 @@ instance HasLexeme InstrumentalPlacementVerb where
 
 type GeneralPlacementVerb :: Type
 newtype GeneralPlacementVerb = GeneralPlacementVerb { _fromGeneralPlacementVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme GeneralPlacementVerb where
   toLexeme = _fromGeneralPlacementVerb
@@ -232,7 +255,8 @@ generalPlacementVerbs = fromList $ map GeneralPlacementVerb [DROP, PUT] -- Verbs
 
 type AcquisitionVerb :: Type
 newtype AcquisitionVerb = AcquisitionVerb { _fromAcquisitionVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme AcquisitionVerb where
   toLexeme = _fromAcquisitionVerb
@@ -242,7 +266,8 @@ acquisitionVerbs = fromList $ map AcquisitionVerb [GET,TAKE,REMOVE]
 
 type TransferVerb :: Type
 newtype TransferVerb = TransferVerb { _fromTransferVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme TransferVerb where
   toLexeme = _fromTransferVerb
@@ -252,7 +277,8 @@ transferVerbs = singleton $ TransferVerb GIVE
 
 type ResearchVerb :: Type
 newtype ResearchVerb = ResearchVerb { _fromResearchVerb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ResearchVerb where
   toLexeme = _fromResearchVerb

@@ -8,7 +8,8 @@ import           Lexer
 type RotationalDirection :: Type
 newtype RotationalDirection =
   RotationalDirection { _fromRotationalDirection :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme RotationalDirection where
   toLexeme = _fromRotationalDirection
@@ -19,7 +20,8 @@ rotationalDirections =
 
 type ImplicitPath :: Type
 newtype ImplicitPath = ImplicitPath { _fromImplicitPath :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ImplicitPath where
   toLexeme = _fromImplicitPath
@@ -29,7 +31,8 @@ implicitPaths = fromList $ map ImplicitPath [NORTH, EAST, SOUTH, WEST, UP, DOWN,
 
 type ModToggleAdverb :: Type
 newtype ModToggleAdverb = ModToggleAdverb { _fromModToggleAdverb :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ModToggleAdverb where
   toLexeme = _fromModToggleAdverb
@@ -39,7 +42,8 @@ modToggleAdverbs = fromList $ map ModToggleAdverb [ON, OFF]
 
 type ResearchAdverb :: Type
 newtype ResearchAdverb = ResearchAdverb { _fromResearchAdverb :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ResearchAdverb where
   toLexeme = _fromResearchAdverb

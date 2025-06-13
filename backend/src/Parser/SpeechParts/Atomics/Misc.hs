@@ -20,7 +20,9 @@ partitions = singleton $ Partition SEPERATOR
 
 type Determiner :: Type
 newtype Determiner =
-  Determiner { _fromDeterminer :: Lexeme } deriving newtype (Show,Eq,Hashable,Ord)
+  Determiner { _fromDeterminer :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Determiner where
   toLexeme = _fromDeterminer

@@ -1,42 +1,31 @@
 module Test.Parser.SpeechParts.Atomics.Verbs where
-import           Data.HashSet                     (HashSet, toList)
-import           Data.Kind                        (Type)
-import           Parser.SpeechParts.Atomics.Verbs (acquisitionVerbs,
-                                                   cardinalMovementVerbs,
-                                                   copula,
-                                                   directionalStimulusVerbs,
-                                                   directionalVerbs,
-                                                   explicitBoundaryVerbs,
-                                                   explicitStimulusVerbs,
-                                                   generalPlacementVerbs,
-                                                   implicitBoundaryVerbs,
-                                                   implicitRegionalStimulusVerbs,
-                                                   implicitStimulusVerbs,
-                                                   instrumentActionVerbs,
-                                                   instrumentalAccessVerbs,
-                                                   instrumentalPlacementVerbs,
-                                                   modToggleVerbs,
-                                                   researchVerbs,
-                                                   rotationalVerbs,
-                                                   simpleAccessVerbs,
-                                                   spaceTransitionalVerbs,
-                                                   targetedStimulusVerbs,
-                                                   toggleVerbs, transferVerbs,
-                                                   traversalPathVerbs,
-                                                   traversalVerbs)
-import           Test.Hspec                       (Spec, describe, hspec)
-import           Test.Hspec.QuickCheck            (prop)
-import           Test.QuickCheck                  (Testable (property))
-import           Test.QuickCheck.Arbitrary        (Arbitrary)
-import           Test.QuickCheck.Property         (Property)
-
-checkLexeme :: forall (a :: Type).
-  ( Arbitrary a, Show a, Eq a) => HashSet a -> Property
-checkLexeme lexemes = property checkLexeme'
-  where
-    xs = toList lexemes
-    checkLexeme' ::  a -> Bool
-    checkLexeme' lexeme = lexeme `elem` xs
+import           Parser.SpeechParts.Atomics.Verbs      (acquisitionVerbs,
+                                                        cardinalMovementVerbs,
+                                                        copula,
+                                                        directionalStimulusVerbs,
+                                                        directionalVerbs,
+                                                        explicitBoundaryVerbs,
+                                                        explicitStimulusVerbs,
+                                                        generalPlacementVerbs,
+                                                        implicitBoundaryVerbs,
+                                                        implicitRegionalStimulusVerbs,
+                                                        implicitStimulusVerbs,
+                                                        instrumentActionVerbs,
+                                                        instrumentalAccessVerbs,
+                                                        instrumentalPlacementVerbs,
+                                                        modToggleVerbs,
+                                                        researchVerbs,
+                                                        rotationalVerbs,
+                                                        simpleAccessVerbs,
+                                                        spaceTransitionalVerbs,
+                                                        targetedStimulusVerbs,
+                                                        toggleVerbs,
+                                                        transferVerbs,
+                                                        traversalPathVerbs,
+                                                        traversalVerbs)
+import           Test.Hspec                            (Spec, describe, hspec)
+import           Test.Hspec.QuickCheck                 (prop)
+import           Test.Parser.SpeechParts.Atomics.Utils (checkLexeme)
 
 main :: IO ()
 main = hspec spec

@@ -7,7 +7,9 @@ import           Lexer
 
 type Adjective :: Type
 newtype Adjective =
-  Adjective { _fromAdjective :: Lexeme } deriving newtype (Show,Eq,Hashable,Ord)
+  Adjective { _fromAdjective :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Adjective where
   toLexeme = _fromAdjective

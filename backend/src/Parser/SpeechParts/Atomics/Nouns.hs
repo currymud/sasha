@@ -1,13 +1,21 @@
 module Parser.SpeechParts.Atomics.Nouns where
 
-import           Data.Hashable (Hashable)
-import           Data.HashSet  (HashSet, fromList, singleton, toList)
-import           Data.Kind     (Type)
+import           Data.Hashable             (Hashable)
+import           Data.HashSet              (HashSet, fromList, toList)
+import           Data.Kind                 (Type)
 import           Lexer
+
+#ifdef TESTING
+import qualified Data.HashSet              as HS
+import           Test.QuickCheck           (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
+#endif
 
 type Objective :: Type
 newtype Objective =
-  Objective { _fromObjective :: Lexeme } deriving newtype (Show,Eq,Hashable,Ord)
+  Objective { _fromObjective :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Objective where
   toLexeme = _fromObjective
@@ -20,7 +28,9 @@ objectives =
 
 type Supportive :: Type
 newtype Supportive =
-  Supportive { _fromSupportive :: Lexeme } deriving newtype (Show,Eq,Hashable,Ord)
+  Supportive { _fromSupportive :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Supportive where
   toLexeme = _fromSupportive
@@ -31,7 +41,9 @@ supportives = fromList $ map Supportive [SHELF, BOX, TABLE,SATCHEL]
 
 type Container :: Type
 newtype Container =
-  Container { _fromContainer :: Lexeme } deriving newtype (Show,Eq,Hashable,Ord)
+  Container { _fromContainer :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Container where
   toLexeme = _fromContainer
@@ -43,7 +55,8 @@ containers = fromList
 
 type Surface :: Type
 newtype Surface = Surface { _fromSurface :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme Surface where
   toLexeme = _fromSurface
@@ -54,7 +67,8 @@ surfaces = fromList $ map Surface [WALL, CEILING, DOOR,SHELF]
 
 type ToggleNoun :: Type
 newtype ToggleNoun = ToggleNoun { _fromToggleNoun :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ToggleNoun where
   toLexeme = _fromToggleNoun
@@ -64,7 +78,8 @@ toggleNouns = fromList $ map ToggleNoun [SWITCH, BUTTON]
 
 type ModToggleNoun :: Type
 newtype ModToggleNoun = ModToggleNoun { _fromModToggleNoun :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable)
 
 instance HasLexeme ModToggleNoun where
   toLexeme = _fromModToggleNoun
@@ -101,6 +116,7 @@ instance HasLexeme Switch where
 
 switches :: HashSet Switch
 switches = fromList $ map Switch [BUTTON,SWITCH]
+
 type Instrumental :: Type
 newtype Instrumental = Instrumental { _fromInstrumental :: Lexeme }
   deriving newtype (Show,Eq,Hashable,Ord)
@@ -163,7 +179,6 @@ directionalStimulii = fromList $ DirectionalStimulus <$>
   <> lexemes surfaces
   <> lexemes lreferentials
 
-
 -- nouns that need 'to' to be used with them with sensory verbs
 -- e.g. "listen to the music"
 type TargetedStimulus :: Type
@@ -210,7 +225,6 @@ treferentials = fromList $ TReferentials <$>
   <> lexemes instrumentals
   <> lexemes objectPaths
 
-
 -- Not sure what TSOURCE IS FOR
 type TSource :: Type
 newtype TSource = TSource { _fromTSource :: Lexeme }
@@ -248,3 +262,66 @@ instance HasLexeme ReferenceMaterial where
 
 referenceMaterials :: HashSet ReferenceMaterial
 referenceMaterials = fromList $ map ReferenceMaterial [BOOK, JOURNAL, RECORDS, ENCYCLOPEDIA, GUIDE]
+
+
+#ifdef TESTING
+instance Arbitrary Objective where
+  arbitrary = elements $ HS.toList objectives
+
+instance Arbitrary Supportive where
+  arbitrary = elements $ HS.toList supportives
+
+instance Arbitrary Container where
+  arbitrary = elements $ HS.toList containers
+
+instance Arbitrary Surface where
+  arbitrary = elements $ HS.toList surfaces
+
+instance Arbitrary ToggleNoun where
+  arbitrary = elements $ HS.toList toggleNouns
+
+instance Arbitrary ModToggleNoun where
+  arbitrary = elements $ HS.toList modToggleNouns
+
+instance Arbitrary SimpleAccessNoun where
+  arbitrary = elements $ HS.toList simpleAccessNouns
+
+instance Arbitrary InstrumentalAccessNoun where
+  arbitrary = elements $ HS.toList instrumentalAccessNouns
+
+instance Arbitrary Switch where
+  arbitrary = elements $ HS.toList switches
+
+instance Arbitrary Instrumental where
+  arbitrary = elements $ HS.toList instrumentals
+
+instance Arbitrary ProcessableDevice where
+  arbitrary = elements $ HS.toList processableDevices
+
+instance Arbitrary ObjectPath where
+  arbitrary = elements $ HS.toList objectPaths
+
+instance Arbitrary LReferentials where
+  arbitrary = elements $ HS.toList lreferentials
+
+instance Arbitrary TargetedStimulus where
+  arbitrary = elements $ HS.toList targetedStimulii
+
+instance Arbitrary DirectionalStimulus where
+  arbitrary = elements $ HS.toList directionalStimulii
+
+instance Arbitrary Region where
+  arbitrary = elements $ HS.toList regions
+
+instance Arbitrary TReferentials where
+  arbitrary = elements $ HS.toList treferentials
+
+instance Arbitrary Agent where
+  arbitrary = elements $ HS.toList agents
+
+instance Arbitrary NamedAgent where
+  arbitrary = elements $ HS.toList namedAgents
+
+instance Arbitrary ReferenceMaterial where
+  arbitrary = elements $ HS.toList referenceMaterials
+#endif
