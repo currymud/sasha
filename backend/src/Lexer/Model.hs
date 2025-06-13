@@ -13,7 +13,8 @@ import           Text.Megaparsec            (Parsec)
 import           Text.Megaparsec.Char       (spaceChar)
 import qualified Text.Megaparsec.Char.Lexer as L
 #ifdef TESTING
-import           Test.QuickCheck (Arbitrary (..), arbitraryBoundedEnum)
+import           Test.QuickCheck            (Arbitrary (..),
+                                             arbitraryBoundedEnum)
 #endif
 
 type Parser = Parsec Void String
@@ -31,6 +32,7 @@ sc = L.space (void spaceChar) lineCmnt blockCmnt
 type Lexeme :: Type
 data Lexeme
   = FROM
+  | SEPERATOR
   | CARD
   | READER
   | SCANNER
@@ -45,7 +47,6 @@ data Lexeme
   | OFF
   | OPEN
   | CLOSE
-  | SHUT
   | KITCHEN
   | CABINET
   | DOOR
@@ -126,7 +127,6 @@ data Lexeme
   | BEHIND
   | BACK
   | PORTAL
-  | SEPERATOR
   | TROWEL
   | BUTTON
   | BOX
@@ -180,7 +180,6 @@ data Lexeme
   | GIVE
   | TAKE
   | SHOW
-  | COMMA
   | OPENQUOTE
   | CLOSEQUOTE
   | WHAT
@@ -219,7 +218,10 @@ instance Arbitrary Lexeme where
 
 instance ToText Lexeme where
   toText :: Lexeme -> Text
-  toText txt = toText (show txt :: String)
+  toText SEPERATOR  = ","
+  toText OPENQUOTE  = "\""
+  toText CLOSEQUOTE = "\""
+  toText txt        = toText (show txt :: String)
 
 instance ToString Lexeme where
   toString :: Lexeme -> String
@@ -231,8 +233,12 @@ instance Hashable Lexeme where
 
 term :: Parser Lexeme
 term =
-  PALACE <$ symbol "PALACE"
+  PORTAL <$ symbol "PORTAL"
+    <|> SEPERATOR <$ symbol ","
+    <|> PALACE <$ symbol "PALACE"
+    <|> ACROSS <$ symbol "ACROSS"
     <|> ABOUT <$ symbol "ABOUT"
+    <|> AROUND <$ symbol "AROUND"
     <|> FROM <$ symbol "FROM"
     <|> floor'
     <|> small
@@ -255,16 +261,20 @@ term =
     <|> THIS <$ symbol "THIS"
     <|> THE <$ symbol "THE"
     <|> AT <$ symbol "AT"
+    <|> MOVE <$ symbol "MOVE"
     <|> MY <$ symbol "MY"
     <|> ME <$ symbol "ME"
     <|> TOUCH <$ symbol "TOUCH"
+    <|> TOSS <$ symbol "TOSS"
     <|> TO <$ symbol "TO"
     <|> WITH <$ symbol "WITH"
     <|> INTO <$ symbol "INTO"
+    <|> INSERT <$ symbol "INSERT"
     <|> IN <$ symbol "IN"
     <|> WHEN <$ symbol "WHEN"
     <|> under
     <|> OVER <$ symbol "OVER"
+    <|> ONE <$ symbol "ONE"
     <|> ON <$ symbol "ON"
     <|> MIND <$ symbol "MIND"
     <|> BLUE <$ symbol "BLUE"
@@ -275,7 +285,6 @@ term =
     <|> DRUNK <$ symbol "DRUNK"
     <|> FORD <$ symbol "FORD"
     <|> WILLIAM <$ symbol "WILLIAM"
-    <|> ONE <$ symbol "ONE"
     <|> TWO <$ symbol "TWO"
     <|> THREE <$ symbol "THREE"
     <|> ALL <$ symbol "ALL"
@@ -294,6 +303,7 @@ term =
     <|> KITCHEN <$ symbol "KITCHEN"
     <|> THROUGH <$ symbol "THROUGH"
     <|> SOIL <$ symbol "SOIL"
+    <|> RING <$ symbol "RING"
     <|> WATERING <$ symbol "WATERING"
     <|> CAN <$ symbol "CAN"
     <|> BAG <$ symbol "BAG"
@@ -314,9 +324,9 @@ term =
     <|> SINK <$ symbol "SINK"
     <|> BACK <$ symbol "BACK"
     <|> ABOVE <$ symbol "ABOVE"
+    <|> ASK <$ symbol "ASK"
     <|> A <$ symbol "A"
     <|> LAMP <$ symbol "LAMP"
-    <|> SEPERATOR <$ symbol ","
     <|> TROWEL <$ symbol "TROWEL"
     <|> BUTTON <$ symbol "BUTTON"
     <|> BOX <$ symbol "BOX"
@@ -332,8 +342,6 @@ term =
     <|> CEILING <$ symbol "CEILING"
     <|> SLEEP <$ symbol "SLEEP"
     <|> WAIT <$ symbol "WAIT"
-    <|> ACROSS <$ symbol "ACROSS"
-    <|> AROUND <$ symbol "AROUND"
     <|> ONTO <$ symbol "ONTO"
     <|> BETWEEN <$ symbol "BETWEEN"
     <|> OFF <$ symbol "OFF"
@@ -350,14 +358,12 @@ term =
     <|> EXIT <$ symbol "EXIT"
     <|> THROW <$ symbol "THROW"
     <|> SHOOT <$ symbol "SHOOT"
-    <|> TOSS <$ symbol "TOSS"
     <|> push
     <|> PULL <$ symbol "PULL"
     <|> TURN <$ symbol "TURN"
     <|> TWIST <$ symbol "TWIST"
     <|> ROTATE <$ symbol "ROTATE"
     <|> SLIDE <$ symbol "SLIDE"
-    <|> INSERT <$ symbol "INSERT"
     <|> REMOVE <$ symbol "REMOVE"
     <|> DROP <$ symbol "DROP"
     <|> SMELL <$ symbol "SMELL"
@@ -368,13 +374,11 @@ term =
     <|> UNLOCK <$ symbol "UNLOCK"
     <|> CLOCKWISE <$ symbol "CLOCKWISE"
     <|> COUNTERCLOCKWISE <$ symbol "COUNTERCLOCKWISE"
-    <|> ASK <$ symbol "ASK"
     <|> TELL <$ symbol "TELL"
     <|> SAY <$ symbol "SAY"
     <|> GIVE <$ symbol "GIVE"
     <|> TAKE <$ symbol "TAKE"
     <|> SHOW <$ symbol "SHOW"
-    <|> COMMA <$ symbol ","
     <|> OPENQUOTE <$ symbol "\""
     <|> CLOSEQUOTE <$ symbol "\""
     <|> WHAT <$ symbol "WHAT"

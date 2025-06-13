@@ -328,6 +328,19 @@ instance Arbitrary CardinalMovementVerb where
 instance ToText CardinalMovementVerb where
   toText = toText . _fromCardinalMovementVerb
 
+newtype TestSpaceTransitionalVerb = TestSpaceTransitionalVerb {_fromTestSpaceTransitionalVerb :: Text}
+  deriving stock (Show, Eq, Ord)
+  deriving newtype (Hashable)
+
+toTestSpaceTransitionalVerb :: SpaceTransitionalVerb -> TestSpaceTransitionalVerb
+toTestSpaceTransitionalVerb = TestSpaceTransitionalVerb . toText
+
+testSpaceTransitionalVerbs :: HashSet TestSpaceTransitionalVerb
+testSpaceTransitionalVerbs = fromList $ map toTestSpaceTransitionalVerb $ HS.toList spaceTransitionalVerbs
+
+instance Arbitrary TestSpaceTransitionalVerb where
+  arbitrary = elements $ HS.toList testSpaceTransitionalVerbs
+
 instance Arbitrary SpaceTransitionalVerb where
   arbitrary = elements $ HS.toList spaceTransitionalVerbs
 
