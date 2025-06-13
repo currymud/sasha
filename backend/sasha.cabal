@@ -102,7 +102,7 @@ library sasha-testing
     , text
     , sasha
  exposed-modules:
-      Parser.SpeechParts.Atomics.Verbs
+      Test.Parser.SpeechParts.Atomics.Verbs
  other-modules:
       Lexer
       Lexer.Model
@@ -136,11 +136,38 @@ executable sasha-tests
     , base
     , Earley
     , generic-arbitrary
+    , megaparsec
+    , hashable
     , hspec
     , hspec-core
     , hspec-discover
     , mtl
     , QuickCheck
     , quickcheck-instances
+    , relude
     , safe
     , text
+    , unordered-containers
+  other-modules:
+      Lexer
+      Lexer.Model
+      Parser
+      Parser.Model.Nouns
+      Parser.Model.Prepositions
+      Parser.NounParsers
+      Parser.PhraseParsers
+      Parser.PrepParser
+      Parser.SpeechParts
+      Parser.SpeechParts.Atomics.Adjectives
+      Parser.SpeechParts.Atomics.Adverbs
+      Parser.SpeechParts.Atomics.Misc
+      Parser.SpeechParts.Atomics.Nouns
+      Parser.SpeechParts.Atomics.Prepositions
+      Parser.SpeechParts.Atomics.Verbs
+      Parser.SpeechParts.Composites.Adjectives
+      Parser.SpeechParts.Composites.Nouns
+      Parser.SpeechParts.Composites.Prepositions
+      Parser.SpeechParts.Composites.Verbs
+      Parser.VerbParsers
+      Test.Parser.SpeechParts.Atomics.Verbs
+

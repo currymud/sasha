@@ -1,12 +1,14 @@
 module Parser.SpeechParts.Atomics.Verbs where
 
-import           Data.Hashable   (Hashable)
-import           Data.HashSet    (HashSet, fromList, singleton)
-import           Data.Kind       (Type)
+import           Data.Hashable             (Hashable)
+import           Data.HashSet              (HashSet, fromList, singleton)
+import           Data.Kind                 (Type)
 import           Lexer
 
 #ifdef TESTING
-import           Test.QuickCheck (Arbitrary)
+import qualified Data.HashSet              as HS
+import           Test.QuickCheck           (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
 #endif
 
 type Copula :: Type
@@ -259,29 +261,76 @@ researchVerbs :: HashSet ResearchVerb
 researchVerbs = singleton $ ResearchVerb LOOK
 
 #ifdef TESTING
-deriving newtype instance Arbitrary Copula
-deriving newtype instance Arbitrary CardinalMovementVerb
-deriving newtype instance Arbitrary SpaceTransitionalVerb
-deriving newtype instance Arbitrary ImplicitBoundaryVerb
-deriving newtype instance Arbitrary ExplicitBoundaryVerb
-deriving newtype instance Arbitrary ImplicitRegionalStimulusVerb
-deriving newtype instance Arbitrary ImplicitStimulusVerb
-deriving newtype instance Arbitrary ExplicitStimulusVerb
-deriving newtype instance Arbitrary DirectionalStimulusVerb
-deriving newtype instance Arbitrary TargetedStimulusVerb
-deriving newtype instance Arbitrary TraversalVerb
-deriving newtype instance Arbitrary TraversalPathVerb
-deriving newtype instance Arbitrary ToggleVerb
-deriving newtype instance Arbitrary ModToggleVerb
-deriving newtype instance Arbitrary SimpleAccessVerb
-deriving newtype instance Arbitrary InstrumentalAccessVerb
-deriving newtype instance Arbitrary RotationalVerb
-deriving newtype instance Arbitrary DirectionalVerb
-deriving newtype instance Arbitrary InstrumentActionVerb
-deriving newtype instance Arbitrary InstrumentalPlacementVerb
-deriving newtype instance Arbitrary GeneralPlacementVerb
-deriving newtype instance Arbitrary AcquisitionVerb
-deriving newtype instance Arbitrary TransferVerb
-deriving newtype instance Arbitrary ResearchVerb
+instance Arbitrary Copula where
+  arbitrary = elements $ HS.toList copula
+
+instance Arbitrary CardinalMovementVerb where
+  arbitrary = elements $ HS.toList cardinalMovementVerbs
+
+instance Arbitrary SpaceTransitionalVerb where
+  arbitrary = elements $ HS.toList spaceTransitionalVerbs
+
+instance Arbitrary ImplicitBoundaryVerb where
+  arbitrary = elements $ HS.toList implicitBoundaryVerbs
+
+instance Arbitrary ExplicitBoundaryVerb where
+  arbitrary = elements $ HS.toList explicitBoundaryVerbs
+
+instance Arbitrary ImplicitRegionalStimulusVerb where
+  arbitrary = elements $ HS.toList implicitRegionalStimulusVerbs
+
+instance Arbitrary ImplicitStimulusVerb where
+  arbitrary = elements $ HS.toList implicitStimulusVerbs
+
+instance Arbitrary ExplicitStimulusVerb where
+  arbitrary = elements $ HS.toList explicitStimulusVerbs
+
+instance Arbitrary DirectionalStimulusVerb where
+  arbitrary = elements $ HS.toList directionalStimulusVerbs
+
+instance Arbitrary TargetedStimulusVerb where
+  arbitrary = elements $ HS.toList targetedStimulusVerbs
+
+instance Arbitrary TraversalVerb where
+  arbitrary = elements $ HS.toList traversalVerbs
+
+instance Arbitrary TraversalPathVerb where
+  arbitrary = elements $ HS.toList traversalPathVerbs
+
+instance Arbitrary ToggleVerb where
+  arbitrary = elements $ HS.toList toggleVerbs
+
+instance Arbitrary ModToggleVerb where
+  arbitrary = elements $ HS.toList modToggleVerbs
+
+instance Arbitrary SimpleAccessVerb where
+  arbitrary = elements $ HS.toList simpleAccessVerbs
+
+instance Arbitrary InstrumentalAccessVerb where
+  arbitrary = elements $ HS.toList instrumentalAccessVerbs
+
+instance Arbitrary RotationalVerb where
+  arbitrary = elements $ HS.toList rotationalVerbs
+
+instance Arbitrary DirectionalVerb where
+  arbitrary = elements $ HS.toList directionalVerbs
+
+instance Arbitrary InstrumentActionVerb where
+  arbitrary = elements $ HS.toList instrumentActionVerbs
+
+instance Arbitrary InstrumentalPlacementVerb where
+  arbitrary = elements $ HS.toList instrumentalPlacementVerbs
+
+instance Arbitrary GeneralPlacementVerb where
+  arbitrary = elements $ HS.toList generalPlacementVerbs
+
+instance Arbitrary AcquisitionVerb where
+  arbitrary = elements $ HS.toList acquisitionVerbs
+
+instance Arbitrary TransferVerb where
+  arbitrary = elements $ HS.toList transferVerbs
+
+instance Arbitrary ResearchVerb where
+  arbitrary = elements $ HS.toList researchVerbs
 #endif
 
