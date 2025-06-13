@@ -4,9 +4,12 @@ import           Data.Hashable             (Hashable)
 import           Data.HashSet              (HashSet, fromList, singleton)
 import           Data.Kind                 (Type)
 import           Lexer
+import           Relude                    (ToText (toText))
 
 #ifdef TESTING
 import qualified Data.HashSet              as HS
+import           Data.Text                 (Text)
+import           Relude.String.Conversion  (ToText (toText))
 import           Test.QuickCheck           (Arbitrary, elements)
 import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
 #endif
@@ -34,7 +37,6 @@ instance HasLexeme CardinalMovementVerb where
 cardinalMovementVerbs :: HashSet CardinalMovementVerb
 cardinalMovementVerbs = fromList
   $ map CardinalMovementVerb [GO, SAIL, SNEAK,RUN , MARCH, FLOAT, FLEE, WALK]
-
 
 type SpaceTransitionalVerb :: Type
 newtype SpaceTransitionalVerb =
@@ -287,76 +289,175 @@ researchVerbs :: HashSet ResearchVerb
 researchVerbs = singleton $ ResearchVerb LOOK
 
 #ifdef TESTING
+
+newtype TestCopula = TestCopula {_fromTestCopula :: Text}
+  deriving stock (Show, Eq, Ord)
+  deriving newtype (Hashable)
+
+toTestCopula :: Copula -> TestCopula
+toTestCopula = TestCopula . toText
+
+testCopula :: HashSet TestCopula
+testCopula = fromList $ map toTestCopula $ HS.toList copula
+
+instance ToText Copula where
+  toText = toText . _fromCopula
+
+instance Arbitrary TestCopula where
+  arbitrary = elements $ HS.toList testCopula
+
 instance Arbitrary Copula where
   arbitrary = elements $ HS.toList copula
+
+newtype TestCardinalMovementVerb = TestCardinalMovementVerb {_fromTestCardinalMovementVerb :: Text}
+  deriving stock (Show, Eq, Ord)
+  deriving newtype (Hashable)
+
+toTestCardinalMovementVerb :: CardinalMovementVerb -> TestCardinalMovementVerb
+toTestCardinalMovementVerb = TestCardinalMovementVerb . toText
+
+testCardinalMovementVerbs :: HashSet TestCardinalMovementVerb
+testCardinalMovementVerbs = fromList $ map toTestCardinalMovementVerb $ HS.toList cardinalMovementVerbs
+
+instance Arbitrary TestCardinalMovementVerb where
+  arbitrary = elements $ HS.toList testCardinalMovementVerbs
 
 instance Arbitrary CardinalMovementVerb where
   arbitrary = elements $ HS.toList cardinalMovementVerbs
 
+instance ToText CardinalMovementVerb where
+  toText = toText . _fromCardinalMovementVerb
+
 instance Arbitrary SpaceTransitionalVerb where
   arbitrary = elements $ HS.toList spaceTransitionalVerbs
+
+instance ToText SpaceTransitionalVerb where
+  toText = toText . _fromSpaceTransitionalVerb
 
 instance Arbitrary ImplicitBoundaryVerb where
   arbitrary = elements $ HS.toList implicitBoundaryVerbs
 
+instance ToText ImplicitBoundaryVerb where
+  toText = toText . _fromImplicitBoundaryVerb
+
 instance Arbitrary ExplicitBoundaryVerb where
   arbitrary = elements $ HS.toList explicitBoundaryVerbs
+
+instance ToText ExplicitBoundaryVerb where
+  toText = toText . _fromExplicitBoundaryVerb
 
 instance Arbitrary ImplicitRegionalStimulusVerb where
   arbitrary = elements $ HS.toList implicitRegionalStimulusVerbs
 
+instance ToText ImplicitRegionalStimulusVerb where
+  toText = toText . _fromImplicitRegionalStimulusVerb
+
 instance Arbitrary ImplicitStimulusVerb where
   arbitrary = elements $ HS.toList implicitStimulusVerbs
+
+instance ToText ImplicitStimulusVerb where
+  toText = toText . _fromImplicitStimulusVerb
 
 instance Arbitrary ExplicitStimulusVerb where
   arbitrary = elements $ HS.toList explicitStimulusVerbs
 
+instance ToText ExplicitStimulusVerb where
+  toText = toText . _fromExplicitStimulusVerb
+
 instance Arbitrary DirectionalStimulusVerb where
   arbitrary = elements $ HS.toList directionalStimulusVerbs
+
+instance ToText DirectionalStimulusVerb where
+  toText = toText . _fromDirectionalStimulusVerb
 
 instance Arbitrary TargetedStimulusVerb where
   arbitrary = elements $ HS.toList targetedStimulusVerbs
 
+instance ToText TargetedStimulusVerb where
+  toText = toText . _fromTargetedStimulusVerb
+
 instance Arbitrary TraversalVerb where
   arbitrary = elements $ HS.toList traversalVerbs
+
+instance ToText TraversalVerb where
+  toText = toText . _fromTraversalVerb
 
 instance Arbitrary TraversalPathVerb where
   arbitrary = elements $ HS.toList traversalPathVerbs
 
+instance ToText TraversalPathVerb where
+  toText = toText . _fromTraversalPathVerb
+
 instance Arbitrary ToggleVerb where
   arbitrary = elements $ HS.toList toggleVerbs
+
+instance ToText ToggleVerb where
+  toText = toText . _fromToggleVerb
 
 instance Arbitrary ModToggleVerb where
   arbitrary = elements $ HS.toList modToggleVerbs
 
+instance ToText ModToggleVerb where
+  toText = toText . _fromModToggleVerb
+
 instance Arbitrary SimpleAccessVerb where
   arbitrary = elements $ HS.toList simpleAccessVerbs
+
+instance ToText SimpleAccessVerb where
+  toText = toText . _fromSimpleAccessVerb
 
 instance Arbitrary InstrumentalAccessVerb where
   arbitrary = elements $ HS.toList instrumentalAccessVerbs
 
+instance ToText InstrumentalAccessVerb where
+  toText = toText . _fromInstrumentalAccessVerb
+
 instance Arbitrary RotationalVerb where
   arbitrary = elements $ HS.toList rotationalVerbs
+
+instance ToText RotationalVerb where
+  toText = toText . _fromRotationalVerb
 
 instance Arbitrary DirectionalVerb where
   arbitrary = elements $ HS.toList directionalVerbs
 
+instance ToText DirectionalVerb where
+  toText = toText . _fromDirectionalVerb
+
 instance Arbitrary InstrumentActionVerb where
   arbitrary = elements $ HS.toList instrumentActionVerbs
+
+instance ToText InstrumentActionVerb where
+  toText = toText . _fromInstrumentActionVerb
 
 instance Arbitrary InstrumentalPlacementVerb where
   arbitrary = elements $ HS.toList instrumentalPlacementVerbs
 
+instance ToText InstrumentalPlacementVerb where
+  toText = toText . _fromInstrumentalPlacementVerb
+
 instance Arbitrary GeneralPlacementVerb where
   arbitrary = elements $ HS.toList generalPlacementVerbs
+
+instance ToText GeneralPlacementVerb where
+  toText = toText . _fromGeneralPlacementVerb
 
 instance Arbitrary AcquisitionVerb where
   arbitrary = elements $ HS.toList acquisitionVerbs
 
+instance ToText AcquisitionVerb where
+  toText = toText . _fromAcquisitionVerb
+
 instance Arbitrary TransferVerb where
   arbitrary = elements $ HS.toList transferVerbs
 
+instance ToText TransferVerb where
+  toText = toText . _fromTransferVerb
+
 instance Arbitrary ResearchVerb where
   arbitrary = elements $ HS.toList researchVerbs
+
+instance ToText ResearchVerb where
+  toText = toText . _fromResearchVerb
 #endif
 

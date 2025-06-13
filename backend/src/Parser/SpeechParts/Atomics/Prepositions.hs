@@ -1,9 +1,17 @@
 module Parser.SpeechParts.Atomics.Prepositions where
 
-import           Data.Hashable (Hashable)
-import           Data.HashSet  (HashSet, fromList, singleton, toList)
-import           Data.Kind     (Type)
+import           Data.Hashable             (Hashable)
+import           Data.HashSet              (HashSet, fromList, singleton,
+                                            toList)
+import           Data.Kind                 (Type)
 import           Lexer
+
+#ifdef TESTING
+import qualified Data.HashSet              as HS
+import           Relude.String.Conversion  (ToText (toText))
+import           Test.QuickCheck           (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
+#endif
 
 type LocationInterrogativeMarker :: Type
 newtype LocationInterrogativeMarker =
@@ -244,3 +252,73 @@ instance HasLexeme ReferenceSourceMarker where
 
 referenceSourceMarkers :: HashSet ReferenceSourceMarker
 referenceSourceMarkers = singleton $ ReferenceSourceMarker IN
+
+#ifdef TESTING
+
+instance Arbitrary LocationInterrogativeMarker where
+  arbitrary = elements $ HS.toList locationInterrogativeMarker
+
+instance Arbitrary ObjectInterrogativeMarker where
+  arbitrary = elements $ HS.toList objectInterrogativeMarker
+
+instance Arbitrary TraversalMarker where
+  arbitrary = elements $ HS.toList traversalMarkers
+
+instance Arbitrary ProcessingMethod where
+  arbitrary = elements $ HS.toList processingMethods
+
+instance Arbitrary ContainmentMarker where
+  arbitrary = elements $ HS.toList containmentMarkers
+
+instance Arbitrary SurfaceMarker where
+  arbitrary = elements $ HS.toList surfaceMarkers
+
+instance Arbitrary RecipientMarker where
+  arbitrary = elements $ HS.toList recipientMarker
+
+instance Arbitrary SourceMarker where
+  arbitrary = elements $ HS.toList sourceMarker
+
+instance Arbitrary InstrumentalMarker where
+  arbitrary = elements $ HS.toList instrumentalMarker
+
+instance Arbitrary Path where
+  arbitrary = elements $ HS.toList paths
+
+instance Arbitrary DirectionalStimulusMarker where
+  arbitrary = elements $ HS.toList directionalStimulusMarkers
+
+instance Arbitrary TargetedStimulusMarker where
+  arbitrary = elements $ HS.toList targetedStimulusMarker
+
+instance Arbitrary SurfaceStimulusMarker where
+  arbitrary = elements $ HS.toList surfaceStimulusMarker
+
+instance Arbitrary ContainerStimulusMarker where
+  arbitrary = elements $ HS.toList containerStimulusMarker
+
+instance Arbitrary RegionMarker where
+  arbitrary = elements $ HS.toList regionMarker
+
+instance Arbitrary TReferentialMarker where
+  arbitrary = elements $ HS.toList treferentialMarker
+
+instance Arbitrary TopicMarker where
+  arbitrary = elements $ HS.toList topicMarker
+
+instance Arbitrary AxialMarker where
+  arbitrary = elements $ HS.toList axialMarker
+
+instance Arbitrary VerticalAxis where
+  arbitrary = elements $ HS.toList verticalAxis
+
+instance Arbitrary FrontBackAxis where
+  arbitrary = elements $ HS.toList frontBackAxis
+
+instance Arbitrary LeftRightAxis where
+  arbitrary = elements $ HS.toList leftRightAxis
+
+instance Arbitrary ReferenceSourceMarker where
+  arbitrary = elements $ HS.toList referenceSourceMarkers
+
+#endif

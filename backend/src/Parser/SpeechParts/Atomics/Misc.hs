@@ -1,9 +1,17 @@
 module Parser.SpeechParts.Atomics.Misc where
 
-import           Data.Hashable (Hashable)
-import           Data.HashSet  (HashSet, fromList, singleton, toList)
-import           Data.Kind     (Type)
+import           Data.Hashable             (Hashable)
+import           Data.HashSet              (HashSet, fromList, singleton,
+                                            toList)
+import           Data.Kind                 (Type)
 import           Lexer
+
+#ifdef TESTING
+import qualified Data.HashSet              as HS
+import           Relude.String.Conversion  (ToText (toText))
+import           Test.QuickCheck           (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
+#endif
 
 lexemesHS :: HashSet Lexeme
 lexemesHS = fromList ([minBound .. maxBound] :: [Lexeme])
@@ -29,3 +37,10 @@ instance HasLexeme Determiner where
 
 determiners :: HashSet Determiner
 determiners = fromList $ map Determiner [THE, A, MY]
+
+#ifdef TESTING
+
+instance Arbitrary Determiner where
+  arbitrary = elements $ HS.toList determiners
+
+#endif

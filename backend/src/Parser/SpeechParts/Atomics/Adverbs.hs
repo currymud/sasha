@@ -1,9 +1,15 @@
 module Parser.SpeechParts.Atomics.Adverbs where
 
-import           Data.Hashable (Hashable)
-import           Data.HashSet  (HashSet, fromList, singleton)
-import           Data.Kind     (Type)
+import           Data.Hashable             (Hashable)
+import           Data.HashSet              (HashSet, fromList, singleton)
+import           Data.Kind                 (Type)
 import           Lexer
+#ifdef TESTING
+import qualified Data.HashSet              as HS
+import           Relude.String.Conversion  (ToText (toText))
+import           Test.QuickCheck           (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
+#endif
 
 type RotationalDirection :: Type
 newtype RotationalDirection =
@@ -50,3 +56,19 @@ instance HasLexeme ResearchAdverb where
 
 researchAdverbs :: HashSet ResearchAdverb
 researchAdverbs = singleton $ ResearchAdverb UP
+
+#ifdef TESTING
+
+instance Arbitrary RotationalDirection where
+ arbitrary = elements $ HS.toList rotationalDirections
+
+instance Arbitrary ImplicitPath where
+  arbitrary = elements $ HS.toList implicitPaths
+
+instance Arbitrary ModToggleAdverb where
+  arbitrary = elements $ HS.toList modToggleAdverbs
+
+instance Arbitrary ResearchAdverb where
+  arbitrary = elements $ HS.toList researchAdverbs
+
+#endif
