@@ -106,6 +106,7 @@ library sasha-testing
       Test.Parser.SpeechParts.Atomics.Utils
       Test.Parser.SpeechParts.Atomics.Verbs
       Test.Parser.SpeechParts.Atomics.Nouns
+      Test.Parser.SpeechParts.Atomics.Adjectives
  other-modules:
       Lexer
       Lexer.Model
@@ -151,6 +152,7 @@ executable sasha-tests
     , safe
     , text
     , unordered-containers
+
   other-modules:
       Lexer
       Lexer.Model
@@ -172,6 +174,3 @@ executable sasha-tests
       Parser.SpeechParts.Composites.Prepositions
       Parser.SpeechParts.Composites.Verbs
       Parser.VerbParsers
-      Test.Parser.SpeechParts.Atomics.Verbs
-      Test.Parser.SpeechParts.Atomics.Utils
-      Test.Parser.SpeechParts.Atomics.Nouns
