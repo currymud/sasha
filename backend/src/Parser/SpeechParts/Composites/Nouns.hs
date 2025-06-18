@@ -1,8 +1,9 @@
 module Parser.SpeechParts.Composites.Nouns where
 
 import           Control.Applicative                      (Alternative ((<|>)))
-import           Data.Kind                                (Constraint, Type)
+import           Data.Kind                                (Type)
 import           Data.Text                                (Text)
+import           GHC.Generics                             (Generic)
 import           Lexer                                    (Lexeme (..))
 import           Parser.SpeechParts.Atomics.Adverbs       (ImplicitPath,
                                                            ModToggleAdverb)
@@ -15,7 +16,7 @@ import           Parser.SpeechParts.Atomics.Nouns         (Container,
                                                            SimpleAccessNoun,
                                                            Surface,
                                                            TargetedStimulus,
-                                                           ToggleNoun (ToggleNoun))
+                                                           ToggleNoun)
 import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker,
                                                            InstrumentalMarker,
                                                            Path, SurfaceMarker,
@@ -25,8 +26,9 @@ import           Text.Earley                              (Grammar)
 import           Text.Earley.Grammar                      (Prod, rule)
 #ifdef TESTING
 import           GHC.Generics                             (Generic)
-import           Test.QuickCheck                          (Arbitrary (arbitrary),
-                                                           arbitraryBoundedEnum)
+import           Test.QuickCheck                          (Arbitrary (arbitrary, shrink),
+                                                           arbitraryBoundedEnum,
+                                                           oneof)
 import           Test.QuickCheck.Arbitrary.Generic        (GenericArbitrary (..))
 import           Test.QuickCheck.Instances.Text           ()
 #endif
@@ -370,4 +372,51 @@ simpleAccessNounPhraseRule (SimpleAccessNounPhraseRules{..}) =
 #ifdef TESTING
 deriving via GenericArbitrary ObjectPathPhrase
          instance Arbitrary ObjectPathPhrase
+deriving via GenericArbitrary PathPhrase
+          instance Arbitrary PathPhrase
+deriving via GenericArbitrary PrepObjectPhrase
+          instance Arbitrary PrepObjectPhrase
+deriving via GenericArbitrary InstrumentMarkerPrepPhrase
+          instance Arbitrary InstrumentMarkerPrepPhrase
+instance Arbitrary a => Arbitrary (NounPhrase a) where
+  arbitrary = oneof
+    [ SimpleNounPhrase <$> arbitrary
+    , NounPhrase <$> arbitrary <*> arbitrary
+    , DescriptiveNounPhrase <$> arbitrary <*> arbitrary
+    , DescriptiveNounPhraseDet <$> arbitrary <*> arbitrary <*> arbitrary
+    ]
+
+  shrink (SimpleNounPhrase a) =
+    SimpleNounPhrase <$> shrink a
+  shrink (NounPhrase det a) =
+    [SimpleNounPhrase a] ++
+    [NounPhrase det' a | det' <- shrink det] ++
+    [NounPhrase det a' | a' <- shrink a]
+  shrink (DescriptiveNounPhrase adj a) =
+    [SimpleNounPhrase a] ++
+    [DescriptiveNounPhrase adj' a | adj' <- shrink adj] ++
+    [DescriptiveNounPhrase adj a' | a' <- shrink a]
+  shrink (DescriptiveNounPhraseDet det adj a) =
+    [SimpleNounPhrase a, NounPhrase det a, DescriptiveNounPhrase adj a] ++
+    [DescriptiveNounPhraseDet det' adj a | det' <- shrink det] ++
+    [DescriptiveNounPhraseDet det adj' a | adj' <- shrink adj] ++
+    [DescriptiveNounPhraseDet det adj a' | a' <- shrink a]
+deriving via GenericArbitrary ObjectPhrase
+         instance Arbitrary ObjectPhrase
+deriving via GenericArbitrary SurfacePhrase
+         instance Arbitrary SurfacePhrase
+deriving via GenericArbitrary ContainerPhrase
+         instance Arbitrary ContainerPhrase
+deriving via GenericArbitrary SupportPhrase
+         instance Arbitrary SupportPhrase
+deriving via GenericArbitrary DirectionalStimulusNoun
+         instance Arbitrary DirectionalStimulusNoun
+deriving via GenericArbitrary ToggleNounPhrase
+         instance Arbitrary ToggleNounPhrase
+deriving via GenericArbitrary ModToggleNounPhrase
+         instance Arbitrary ModToggleNounPhrase
+deriving via GenericArbitrary TargetedStimulusNounPhrase
+         instance Arbitrary TargetedStimulusNounPhrase
+deriving via GenericArbitrary SimpleAccessNounPhrase
+         instance Arbitrary SimpleAccessNounPhrase
 #endif

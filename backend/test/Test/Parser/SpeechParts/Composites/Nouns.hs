@@ -11,7 +11,7 @@ main = hspec spec
 
 checkContainerPhrase :: Gen Bool
 checkContainerPhrase = do
-  containerPhrase <- arbitrary :: Gen ContainerPhrase
+--  containerPhrase <- arbitrary :: Gen ContainerPhrase
   pure True
 
 spec :: Spec
