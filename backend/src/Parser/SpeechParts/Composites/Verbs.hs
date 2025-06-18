@@ -1,9 +1,11 @@
+{-# OPTIONS_GHC -fconstraint-solver-iterations=10 #-}
 module Parser.SpeechParts.Composites.Verbs where
 
 import           Control.Applicative                        (Alternative ((<|>)))
 import           Data.Kind                                  (Type)
 import           Data.Text                                  (Text)
 import           Debug.Trace                                (trace)
+import           GHC.Generics                               (Generic)
 import           Lexer                                      (Lexeme (..))
 import           Parser.SpeechParts.Atomics.Adverbs         (ImplicitPath)
 import           Parser.SpeechParts.Atomics.Misc            (Partition)
@@ -37,6 +39,15 @@ import           Parser.SpeechParts.Composites.Nouns        (ContainerPhrase,
 import           Parser.SpeechParts.Composites.Prepositions (TraversalPathPhrase)
 import           Text.Earley                                (Grammar)
 import           Text.Earley.Grammar                        (Prod, rule)
+#ifdef TESTING
+import           GHC.Generics                               (Generic)
+import           Parser.SpeechParts.Atomics.Misc            (Partition (Partition))
+import           Test.QuickCheck                            (Arbitrary (arbitrary, shrink),
+                                                             arbitraryBoundedEnum,
+                                                             oneof)
+import           Test.QuickCheck.Arbitrary.Generic          (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text             ()
+#endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState
 -- Plant the pot plant in the plant pot with the trowel
@@ -46,7 +57,7 @@ type TraversalVerbPhrase :: Type
 data TraversalVerbPhrase
   = SimpleTraversalVerbPhrase TraversalVerb ObjectPhrase
   | TraversalVerbPathPhrase TraversalVerb ObjectPhrase TraversalPathPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type TraversalVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TraversalVerbPhraseRules r = TraversalVerbPhraseRules
@@ -71,7 +82,7 @@ data GeneralPlacementVerbPhrase
       GeneralPlacementVerb
       ObjectPhrase
       SupportPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type GeneralPlacementVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data GeneralPlacementVerbPhraseRules r = GeneralPlacementVerbPhraseRules
@@ -101,7 +112,7 @@ data AcquisitionVerbPhrase
       ObjectPhrase
       SourceMarker
       SupportPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type AcquisitionVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data AcquisitionVerbPhraseRules r = AcquisitionVerbPhraseRules
@@ -130,7 +141,7 @@ data AccessVerbPhrase
   = ToggleVerbPhrase ToggleVerb ToggleNounPhrase
   | ModToggleVerbPhrase ModToggleVerb ModToggleNounPhrase
   | SimpleAccessVerbPhrase SimpleAccessVerb SimpleAccessNounPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type AccessVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data AccessVerbPhraseRules r = AccessVerbPhraseRules
@@ -159,7 +170,7 @@ data StimulusVerbPhrase
   | DirectionalStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNoun
   | ContainerStimulusVerbPhrase DirectionalStimulusVerb ContainerPhrase
   | ImplicitRegionalStimulusVerbPhrase ImplicitRegionalStimulusVerb
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type StimulusVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data StimulusVerbPhraseRules r = StimulusVerbPhraseRules
@@ -198,7 +209,7 @@ data Imperative
   | StimulusVerbPhrase StimulusVerbPhrase -- "Look" "Listen" "Smell" "Taste" "Touch"
   | CardinalMovement CardinalMovementVerb ImplicitPath -- "Go North"
   | AccessVerbPhrase AccessVerbPhrase -- "flip" "push" "pull"
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type ImperativeRules :: (Type -> Type -> Type -> Type) -> Type
 data ImperativeRules r = ImperativeRules
@@ -223,7 +234,7 @@ type Interrogative :: Type
 data Interrogative
   = ObjectInterrogative ObjectInterrogativeMarker TopicMarker ObjectPhrase -- What about my home?
   | LocationInterrogative LocationInterrogativeMarker Copula ObjectPhrase -- Where is the key?
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type InterrogativeRules :: (Type -> Type -> Type -> Type) -> Type
 data InterrogativeRules r = InterrogativeRules
@@ -250,7 +261,7 @@ type Vocative :: Type
 data Vocative
   = VocativeImperative NamedAgent Partition Imperative
   | VocativeInterrogative NamedAgent Partition Interrogative
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type VocativeRules :: (Type -> Type -> Type -> Type) -> Type
 data VocativeRules r = VocativeRules
@@ -264,9 +275,46 @@ vocativeRule :: VocativeRules r
                 -> Grammar r (Prod r Text Lexeme Vocative)
 vocativeRule (VocativeRules {..}) =
   rule $ VocativeImperative <$> _agent <*> _partition <*> _imperative
-           <|> VocativeInterrogative <$> _agent <*> _partition <*> _interrogative
+           <|> VocativeInterrogative
+                 <$> _agent <*> _partition <*> _interrogative
 
 -- Ford, what about my home.
 -- Floyd, Go Up
 -- Floyd, get shiny board
+#ifdef TESTING
+deriving via GenericArbitrary TraversalVerbPhrase
+  instance Arbitrary TraversalVerbPhrase
+deriving via GenericArbitrary GeneralPlacementVerbPhrase
+  instance Arbitrary GeneralPlacementVerbPhrase
+deriving via GenericArbitrary AcquisitionVerbPhrase
+  instance Arbitrary AcquisitionVerbPhrase
+deriving via GenericArbitrary AccessVerbPhrase
+  instance Arbitrary AccessVerbPhrase
+deriving via GenericArbitrary StimulusVerbPhrase
+  instance Arbitrary StimulusVerbPhrase
+deriving via GenericArbitrary Imperative
+  instance Arbitrary Imperative
+deriving via GenericArbitrary Interrogative
+  instance Arbitrary Interrogative
+-- Manual Arbitrary instance for Vocative
+-- Replace the DerivingVia line with this if needed:
 
+-- Manual Arbitrary instance for Vocative
+-- Replace the DerivingVia line with this if needed:
+
+instance Arbitrary Vocative where
+  arbitrary = oneof
+    [ VocativeImperative <$> arbitrary <*> pure (Partition SEPERATOR) <*> arbitrary
+    , VocativeInterrogative <$> arbitrary <*> pure (Partition SEPERATOR) <*> arbitrary
+    ]
+
+  shrink (VocativeImperative agent partition imperative) =
+    -- No need to shrink partition since it's always the same value
+    [VocativeImperative agent' partition imperative | agent' <- shrink agent] ++
+    [VocativeImperative agent partition imperative' | imperative' <- shrink imperative]
+
+  shrink (VocativeInterrogative agent partition interrogative) =
+    -- No need to shrink partition since it's always the same value
+    [VocativeInterrogative agent' partition interrogative | agent' <- shrink agent] ++
+    [VocativeInterrogative agent partition interrogative' | interrogative' <- shrink interrogative]
+#endif

@@ -3,6 +3,7 @@ module Parser.SpeechParts.Composites.Prepositions where
 import           Control.Applicative                     (Alternative ((<|>)))
 import           Data.Kind                               (Type)
 import           Data.Text                               (Text)
+import           GHC.Generics                            (Generic)
 import           Lexer                                   (Lexeme (..))
 import           Parser.SpeechParts.Atomics.Nouns        (NamedAgent)
 import           Parser.SpeechParts.Atomics.Prepositions (ContainmentMarker,
@@ -16,6 +17,13 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase,
                                                           TargetedStimulusNounPhrase)
 import           Text.Earley                             (Grammar, rule)
 import           Text.Earley.Grammar                     (Prod)
+#ifdef TESTING
+import           GHC.Generics                            (Generic)
+import           Test.QuickCheck                         (Arbitrary (arbitrary),
+                                                          arbitraryBoundedEnum)
+import           Test.QuickCheck.Arbitrary.Generic       (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text          ()
+#endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState
 -- Plant the pot plant in the plant pot with the trowel
@@ -25,7 +33,7 @@ import           Text.Earley.Grammar                     (Prod)
 type InstrumentMarkerPhrase :: Type
 data InstrumentMarkerPhrase
   = Instrument InstrumentalMarker ObjectPathPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type InstrumentMarkerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data InstrumentMarkerPhraseRules r = InstrumentMarkerPhraseRules
@@ -44,7 +52,7 @@ type TargetedMarkerPhrase :: Type
 data TargetedMarkerPhrase
   = TargetedStimulusMarker TargetedStimulusMarker TargetedStimulusNounPhrase
   | RecipientMarker RecipientMarker NamedAgent
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type TargetedMarkerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TargetedMarkerPhraseRules r = TargetedMarkerPhraseRules
@@ -65,7 +73,7 @@ data TraversalPathPhrase
   = PathTraversal Path ObjectPhrase          -- for general paths like TO, INTO
   | DirectTraversal TraversalMarker ObjectPhrase  -- specifically for THROUGH
   | ContainmentTraversal ContainmentMarker ContainerPhrase  -- for IN, INTO as containers
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 type TraversalPathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TraversalPathPhraseRules r = TraversalPathPhraseRules
@@ -83,4 +91,11 @@ traversalPathPhraseRule (TraversalPathPhraseRules {..}) =
        <|> DirectTraversal <$> _traversalMarker <*> _objectPhrase
        <|> ContainmentTraversal <$> _containerMarker <*> _containerPhrase
 
-
+#ifdef TESTING
+deriving via GenericArbitrary InstrumentMarkerPhrase
+  instance Arbitrary InstrumentMarkerPhrase
+deriving via GenericArbitrary TargetedMarkerPhrase
+  instance Arbitrary TargetedMarkerPhrase
+deriving via GenericArbitrary TraversalPathPhrase
+  instance Arbitrary TraversalPathPhrase
+#endif
