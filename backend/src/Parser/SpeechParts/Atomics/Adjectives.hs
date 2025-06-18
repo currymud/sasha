@@ -4,6 +4,7 @@ import           Data.Hashable             (Hashable)
 import           Data.HashSet              (HashSet, fromList)
 import           Data.Kind                 (Type)
 import           Lexer
+import           Relude.String.Conversion  (ToText)
 
 #ifdef TESTING
 import qualified Data.HashSet              as HS
@@ -17,7 +18,7 @@ type Adjective :: Type
 newtype Adjective =
   Adjective { _fromAdjective :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme Adjective where
   toLexeme = _fromAdjective

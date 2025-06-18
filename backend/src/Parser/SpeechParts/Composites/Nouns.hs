@@ -23,6 +23,13 @@ import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker,
 import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase)
 import           Text.Earley                              (Grammar)
 import           Text.Earley.Grammar                      (Prod, rule)
+#ifdef TESTING
+import           GHC.Generics                             (Generic)
+import           Test.QuickCheck                          (Arbitrary (arbitrary),
+                                                           arbitraryBoundedEnum)
+import           Test.QuickCheck.Arbitrary.Generic        (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text           ()
+#endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState
 -- Plant the pot plant in the plant pot with the trowel
@@ -40,7 +47,7 @@ data ObjectPathPhrase
   = SimpleObjectPathPhrase ObjectPath
   | ObjectPathPhrase  Determiner ObjectPath
   | ObjectPathPhraseAdj Determiner AdjPhrase ObjectPath
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord, Generic)
 
 objectPathPhraseRule :: ObjectPathPhraseRules r
                           -> Grammar r (Prod r Text Lexeme ObjectPathPhrase)
@@ -56,7 +63,7 @@ type PathPhrase :: Type
 data PathPhrase
   = SimplePath ImplicitPath
   | PathPhrase Path Determiner ObjectPath
-  deriving stock (Show,Eq,Ord)
+  deriving stock (Show,Eq,Ord,Generic)
 
 type PathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data PathPhraseRules r = PathPhraseRules
@@ -75,7 +82,7 @@ pathPhraseRule (PathPhraseRules {..}) =
 type PrepObjectPhrase :: Type
 data PrepObjectPhrase
   = Instrument InstrumentalMarker ObjectPathPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type PrepObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data PrepObjectPhraseRules r = PrepObjectPhraseRules
@@ -91,7 +98,7 @@ prepObjectPhraseRule (PrepObjectPhraseRules {..}) =
 type InstrumentMarkerPrepPhrase :: Type
 data InstrumentMarkerPrepPhrase
   = InstrumentMarkerPrepPhrase InstrumentalMarker ObjectPathPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type InstrumentMarkerPrepPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data InstrumentMarkerPrepPhraseRules r = InstrumentMarkerPrepPhraseRules
@@ -116,7 +123,7 @@ data NounPhrase a
   | NounPhrase Determiner a
   | DescriptiveNounPhrase AdjPhrase a
   | DescriptiveNounPhraseDet Determiner AdjPhrase a
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type NounPhraseRules :: Type -> (Type -> Type -> Type -> Type) -> Type
 data NounPhraseRules a r = NounPhraseRules
@@ -138,7 +145,7 @@ nounPhraseRule (NounPhraseRules{..}) =
 
 type ObjectPhrase :: Type
 newtype ObjectPhrase = ObjectPhrase (NounPhrase Objective)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type ObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ObjectPhraseRules r = ObjectPhraseRules
@@ -164,7 +171,7 @@ type SurfacePhrase :: Type
 data SurfacePhrase
   = SimpleSurfacePhrase (NounPhrase Surface)
   | SurfacePhrase SurfaceMarker (NounPhrase Surface)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SurfacePhraseRules r = SurfacePhraseRules
@@ -192,7 +199,7 @@ type ContainerPhrase :: Type
 data ContainerPhrase
   = SimpleContainerPhrase (NounPhrase Container)
   | ContainerPhrase ContainmentMarker (NounPhrase Container)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ContainerPhraseRules r = ContainerPhraseRules
@@ -220,7 +227,7 @@ type SupportPhrase :: Type
 data SupportPhrase
   = SurfaceSupport SurfacePhrase
   | ContainerSupport ContainerPhrase
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 
 type SupportPhraseRules :: (Type -> Type -> Type -> Type) -> Type
@@ -237,7 +244,7 @@ supportPhraseRule (SupportPhraseRules{..}) =
 
 type DirectionalStimulusNoun :: Type
 newtype DirectionalStimulusNoun = DirectionalStimulusNoun (NounPhrase DirectionalStimulus)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
 data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
@@ -261,7 +268,7 @@ directionalStimulusNounRule (DirectionalStimulusNounRules{..}) =
 
 type ToggleNounPhrase :: Type
 newtype ToggleNounPhrase = ToggleNounPhrase (NounPhrase ToggleNoun)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type ToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ToggleNounPhraseRules r = ToggleNounPhraseRules
@@ -285,7 +292,7 @@ toggleNounPhraseRule (ToggleNounPhraseRules{..}) =
 
 type ModToggleNounPhrase :: Type
 data ModToggleNounPhrase = ModToggleNounPhrase (NounPhrase ModToggleNoun) ModToggleAdverb
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type ModToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ModToggleNounPhraseRules r = ModToggleNounPhraseRules
@@ -312,7 +319,7 @@ type TargetedStimulusNounPhrase :: Type
 data TargetedStimulusNounPhrase
   = SimpleAgentStimulus TargetedStimulus
   | TargetedStimuliiNounPhrase TargetedStimulusMarker (NounPhrase TargetedStimulus)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type TargetedStimulusNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TargetedStimulusNounPhraseRules r = TargetedStimulusNounPhraseRules
@@ -338,7 +345,7 @@ targetedStimulusNounPhraseRule (TargetedStimulusNounPhraseRules{..}) =
 
 type SimpleAccessNounPhrase :: Type
 newtype SimpleAccessNounPhrase = SimpleAccessNounPhrase (NounPhrase SimpleAccessNoun)
-  deriving stock (Show, Eq, Ord)
+  deriving stock (Show, Eq, Ord,Generic)
 
 type SimpleAccessNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SimpleAccessNounPhraseRules r = SimpleAccessNounPhraseRules
@@ -360,3 +367,7 @@ simpleAccessNounPhraseRule (SimpleAccessNounPhraseRules{..}) =
           , _adjPhraseRule = _adjPhraseRule
           , _nounRule = _simpleAccessNounRule
           }
+#ifdef TESTING
+deriving via GenericArbitrary ObjectPathPhrase
+         instance Arbitrary ObjectPathPhrase
+#endif

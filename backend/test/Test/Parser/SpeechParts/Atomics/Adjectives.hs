@@ -9,4 +9,4 @@ main = hspec spec
 
 spec :: Spec
 spec = describe "Adjectives Arbitrary" do
-  prop "Objective" $ checkLexeme adjectives
+  prop "Adjectives" $ checkLexeme adjectives

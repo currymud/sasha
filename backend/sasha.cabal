@@ -26,6 +26,7 @@ common shared
     RecursiveDo
     BlockArguments
     CPP
+    DerivingVia
     DeriveAnyClass
     DerivingStrategies
     DuplicateRecordFields
@@ -97,6 +98,7 @@ library sasha-testing
     , megaparsec
     , mtl
     , QuickCheck
+    , quickcheck-instances
     , relude
     , safe
     , text
@@ -107,6 +109,8 @@ library sasha-testing
       Test.Parser.SpeechParts.Atomics.Verbs
       Test.Parser.SpeechParts.Atomics.Nouns
       Test.Parser.SpeechParts.Atomics.Adjectives
+      Test.Parser.SpeechParts.Composites.Adjectives
+      Test.Parser.SpeechParts.Composites.Nouns
  other-modules:
       Lexer
       Lexer.Model
@@ -152,25 +156,4 @@ executable sasha-tests
     , safe
     , text
     , unordered-containers
-
-  other-modules:
-      Lexer
-      Lexer.Model
-      Parser
-      Parser.Model.Nouns
-      Parser.Model.Prepositions
-      Parser.NounParsers
-      Parser.PhraseParsers
-      Parser.PrepParser
-      Parser.SpeechParts
-      Parser.SpeechParts.Atomics.Adjectives
-      Parser.SpeechParts.Atomics.Adverbs
-      Parser.SpeechParts.Atomics.Misc
-      Parser.SpeechParts.Atomics.Nouns
-      Parser.SpeechParts.Atomics.Prepositions
-      Parser.SpeechParts.Atomics.Verbs
-      Parser.SpeechParts.Composites.Adjectives
-      Parser.SpeechParts.Composites.Nouns
-      Parser.SpeechParts.Composites.Prepositions
-      Parser.SpeechParts.Composites.Verbs
-      Parser.VerbParsers
+    , sasha-testing
