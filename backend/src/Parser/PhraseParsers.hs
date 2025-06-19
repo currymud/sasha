@@ -9,9 +9,9 @@ import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase,
                                                            adjPhraseRule)
 import           Text.Earley.Grammar                      (Grammar, Prod)
 
-adjectivePhraseParser :: Grammar r (Prod r Text Lexeme AdjPhrase)
-adjectivePhraseParser = mdo
+adjPhraseRule :: Grammar r (Prod r Text Lexeme AdjPhrase)
+adjPhraseRule = mdo
   adj <- parseRule adjectives Adjective
   adjSecondary <- parseRule adjectives Adjective
   let adjPhraseRules = AdjPhraseRules adj adjSecondary
-  adjPhraseRule adjPhraseRules
+  Parser.SpeechParts.Composites.Adjectives.adjPhraseRule adjPhraseRules

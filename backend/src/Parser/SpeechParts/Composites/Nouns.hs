@@ -370,8 +370,6 @@ simpleAccessNounPhraseRule (SimpleAccessNounPhraseRules{..}) =
           , _nounRule = _simpleAccessNounRule
           }
 #ifdef TESTING
-deriving via GenericArbitrary ObjectPathPhrase
-         instance Arbitrary ObjectPathPhrase
 deriving via GenericArbitrary PathPhrase
           instance Arbitrary PathPhrase
 deriving via GenericArbitrary PrepObjectPhrase
@@ -403,6 +401,8 @@ instance Arbitrary a => Arbitrary (NounPhrase a) where
     [DescriptiveNounPhraseDet det adj a' | a' <- shrink a]
 deriving via GenericArbitrary ObjectPhrase
          instance Arbitrary ObjectPhrase
+deriving via GenericArbitrary ObjectPathPhrase
+         instance Arbitrary ObjectPathPhrase
 deriving via GenericArbitrary SurfacePhrase
          instance Arbitrary SurfacePhrase
 deriving via GenericArbitrary ContainerPhrase

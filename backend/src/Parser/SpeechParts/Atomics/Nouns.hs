@@ -4,6 +4,7 @@ import           Data.Hashable             (Hashable)
 import           Data.HashSet              (HashSet, fromList, toList)
 import           Data.Kind                 (Type)
 import           Lexer
+import           Relude.String.Conversion  (ToText)
 
 #ifdef TESTING
 import qualified Data.HashSet              as HS
@@ -140,7 +141,7 @@ processableDevices = fromList $ map ProcessableDevice [READER, SCANNER, SLOT]
 
 type ObjectPath :: Type
 newtype ObjectPath = ObjectPath { _fromObjectPath :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving newtype (Show,Eq,Hashable,Ord, ToText)
 
 instance HasLexeme ObjectPath where
   toLexeme = _fromObjectPath

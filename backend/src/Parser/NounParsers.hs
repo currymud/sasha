@@ -12,7 +12,7 @@ import           Parser.SpeechParts.Atomics.Misc          (Determiner)
 import           Parser.SpeechParts.Atomics.Nouns         (Container (Container),
                                                            DirectionalStimulus (DirectionalStimulus),
                                                            ModToggleNoun (ModToggleNoun),
-                                                           NamedAgent (NamedAgent),
+                                                           ObjectPath (..),
                                                            Objective (Objective),
                                                            SimpleAccessNoun (SimpleAccessNoun),
                                                            Surface (Surface),
@@ -21,7 +21,7 @@ import           Parser.SpeechParts.Atomics.Nouns         (Container (Container)
                                                            containers,
                                                            directionalStimulii,
                                                            modToggleNouns,
-                                                           namedAgents,
+                                                           objectPaths,
                                                            objectives,
                                                            simpleAccessNouns,
                                                            surfaces,
@@ -39,6 +39,8 @@ import           Parser.SpeechParts.Composites.Nouns      (ContainerPhrase,
                                                            DirectionalStimulusNounRules (DirectionalStimulusNounRules),
                                                            ModToggleNounPhrase,
                                                            ModToggleNounPhraseRules (ModToggleNounPhraseRules),
+                                                           ObjectPathPhrase,
+                                                           ObjectPathPhraseRules (ObjectPathPhraseRules),
                                                            ObjectPhrase,
                                                            ObjectPhraseRules (ObjectPhraseRules),
                                                            SimpleAccessNounPhrase,
@@ -53,6 +55,7 @@ import           Parser.SpeechParts.Composites.Nouns      (ContainerPhrase,
                                                            containerPhraseRule,
                                                            directionalStimulusNounRule,
                                                            modToggleNounPhraseRule,
+                                                           objectPathPhraseRule,
                                                            objectPhraseRule,
                                                            simpleAccessNounPhraseRule,
                                                            supportPhraseRule,
@@ -144,6 +147,18 @@ modToggleNounPhraseParser determiner adjPhrase = do
                                   modToggleNoun
                                   modToggleAdverbs'
   modToggleNounPhraseRule modToggleNounPhraseRules
+
+objectPathParser :: Grammar r (Prod r Text Lexeme ObjectPath)
+objectPathParser = parseRule objectPaths ObjectPath
+
+objectPathPhraseParser :: Prod r Text Lexeme Determiner
+                           -> Prod r Text Lexeme ObjectPath
+                           -> Prod r Text Lexeme AdjPhrase
+                           -> Grammar r (Prod r Text Lexeme ObjectPathPhrase)
+objectPathPhraseParser determiner objectPath adjPhrase =
+  objectPathPhraseRule objectPathPhraseRules
+  where
+  objectPathPhraseRules = ObjectPathPhraseRules objectPath determiner adjPhrase
 
 simpleAccessNounPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase

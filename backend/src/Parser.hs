@@ -8,8 +8,9 @@ import           Data.Text                       (Text)
 import qualified Data.Text                       as Text
 import           Lexer
 import           Parser.NounParsers              (nounParsers)
-import           Parser.PhraseParsers            (adjectivePhraseParser)
-import           Parser.SpeechParts              (Sentence (..), parseRule)
+import           Parser.PhraseParsers            (adjPhraseRule)
+import           Parser.SpeechParts              (Sentence (..), determinerRule,
+                                                  parseRule)
 import           Parser.SpeechParts.Atomics.Misc (Determiner (..), determiners)
 import           Parser.VerbParsers              (imperativePhraseParser,
                                                   vocativeParser)
@@ -27,8 +28,8 @@ parseTokens toks =
 
 sentenceParser :: Grammar r (Prod r Text Lexeme Sentence)
 sentenceParser = mdo
-  determiner <- parseRule determiners Determiner
-  adjPhrase <- adjectivePhraseParser
+  determiner <- determinerRule
+  adjPhrase <- adjPhraseRule
   nounParsers' <- nounParsers determiner adjPhrase
   imperative <- imperativePhraseParser nounParsers' determiner adjPhrase
   vocative <- vocativeParser imperative nounParsers'

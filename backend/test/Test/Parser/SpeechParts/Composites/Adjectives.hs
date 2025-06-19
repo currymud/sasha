@@ -2,7 +2,7 @@ module      Test.Parser.SpeechParts.Composites.Adjectives where
 
 import           Data.Text                                (unwords)
 import           Lexer                                    (runParser, tokens)
-import           Parser.PhraseParsers                     (adjectivePhraseParser)
+import           Parser.PhraseParsers                     (adjPhraseRule)
 import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase (..))
 import           Prelude                                  hiding (unwords)
 import           Relude.String.Conversion                 (ToText (toText))
@@ -33,7 +33,7 @@ checkAdjPhrase = do
                               where
                                 textify = unwords [toText adj1,toText adj2]
   where
-    adjParser = parser adjectivePhraseParser
+    adjParser = parser adjPhraseRule
     parsed toks = fst (fullParses adjParser toks)
 spec :: Spec
 spec = describe "AdjPhrase Arbitrary" do

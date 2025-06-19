@@ -7,7 +7,6 @@ import           Parser.NounParsers                       (directionalStimulusNo
                                                            modToggleNounPhraseParser,
                                                            simpleAccessNounPhraseParser,
                                                            toggleNounPhraseParser)
-import           Parser.PhraseParsers                     (adjectivePhraseParser)
 import           Parser.PrepParser                        (prepParser)
 import           Parser.SpeechParts                       (parseRule)
 import           Parser.SpeechParts.Atomics.Adverbs       (ImplicitPath (ImplicitPath),
