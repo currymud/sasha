@@ -76,6 +76,7 @@ data Lexeme
   | ME
   | WITH
   | INTO
+  | ONTO
   | IN
   | TO
   | WHEN
@@ -84,7 +85,6 @@ data Lexeme
   | ABOVE
   | AT
   | ON
-  | ONTO
   | MIND
   | BLUE
   | RED
@@ -275,6 +275,7 @@ term =
     <|> under
     <|> OVER <$ symbol "OVER"
     <|> ONE <$ symbol "ONE"
+    <|> ONTO <$ symbol "ONTO"
     <|> ON <$ symbol "ON"
     <|> MIND <$ symbol "MIND"
     <|> BLUE <$ symbol "BLUE"
@@ -342,7 +343,6 @@ term =
     <|> CEILING <$ symbol "CEILING"
     <|> SLEEP <$ symbol "SLEEP"
     <|> WAIT <$ symbol "WAIT"
-    <|> ONTO <$ symbol "ONTO"
     <|> BETWEEN <$ symbol "BETWEEN"
     <|> OFF <$ symbol "OFF"
     <|> JUMP <$ symbol "JUMP"

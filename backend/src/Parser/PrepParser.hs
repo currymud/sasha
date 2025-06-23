@@ -3,9 +3,14 @@ import           Data.Text                               (Text)
 import           Lexer.Model                             (Lexeme)
 import           Parser.Model.Prepositions               (PrepParsers (..))
 import           Parser.SpeechParts                      (parseRule)
-import           Parser.SpeechParts.Atomics.Prepositions (LocationInterrogativeMarker (..),
+import           Parser.SpeechParts.Atomics.Prepositions (ContainmentMarker (..),
+                                                          LocationInterrogativeMarker (..),
+                                                          Path (Path),
+                                                          SurfaceMarker (..),
                                                           TargetedStimulusMarker (TargetedStimulusMarker),
+                                                          containmentMarkers,
                                                           locationInterrogativeMarker,
+                                                          paths, surfaceMarkers,
                                                           targetedStimulusMarker)
 import           Text.Earley                             (Grammar)
 import           Text.Earley.Grammar                     (Prod)
@@ -17,3 +22,12 @@ prepParser =
       _targetedStimulusMarker' :: Grammar r (Prod r Text Lexeme TargetedStimulusMarker)
       _targetedStimulusMarker' = parseRule targetedStimulusMarker TargetedStimulusMarker
   in PrepParsers {..}
+
+pathRule :: Grammar r (Prod r Text Lexeme Path)
+pathRule = parseRule paths Path
+
+surfaceMarkerRule :: Grammar r (Prod r Text Lexeme SurfaceMarker)
+surfaceMarkerRule = parseRule surfaceMarkers SurfaceMarker
+
+containmentMarkerRule :: Grammar r (Prod r Text Lexeme ContainmentMarker)
+containmentMarkerRule = parseRule containmentMarkers ContainmentMarker

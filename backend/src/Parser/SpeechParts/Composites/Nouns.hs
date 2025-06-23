@@ -2,7 +2,7 @@ module Parser.SpeechParts.Composites.Nouns where
 
 import           Control.Applicative                      (Alternative ((<|>)))
 import           Data.Kind                                (Type)
-import           Data.Text                                (Text)
+import           Data.Text                                (Text, unwords)
 import           GHC.Generics                             (Generic)
 import           Lexer                                    (Lexeme (..))
 import           Parser.SpeechParts.Atomics.Adverbs       (ImplicitPath,
@@ -22,6 +22,8 @@ import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker,
                                                            Path, SurfaceMarker,
                                                            TargetedStimulusMarker)
 import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase)
+import           Prelude                                  hiding (unwords)
+import           Relude.String.Conversion                 (ToText, toText)
 import           Text.Earley                              (Grammar)
 import           Text.Earley.Grammar                      (Prod, rule)
 #ifdef TESTING
@@ -50,6 +52,12 @@ data ObjectPathPhrase
   | ObjectPathPhrase  Determiner ObjectPath
   | ObjectPathPhraseAdj Determiner AdjPhrase ObjectPath
   deriving stock (Show, Eq, Ord, Generic)
+
+instance ToText ObjectPathPhrase where
+  toText (SimpleObjectPathPhrase path) = toText path
+  toText (ObjectPathPhrase det path) = unwords [toText det,toText path]
+  toText (ObjectPathPhraseAdj det adj path) =
+    unwords [toText det, toText adj, toText path]
 
 objectPathPhraseRule :: ObjectPathPhraseRules r
                           -> Grammar r (Prod r Text Lexeme ObjectPathPhrase)
@@ -97,28 +105,6 @@ prepObjectPhraseRule :: PrepObjectPhraseRules r
 prepObjectPhraseRule (PrepObjectPhraseRules {..}) =
   rule $ Instrument <$> _instrumentalMarkerRule <*> _objectPathPhraseRule
 
-type InstrumentMarkerPrepPhrase :: Type
-data InstrumentMarkerPrepPhrase
-  = InstrumentMarkerPrepPhrase InstrumentalMarker ObjectPathPhrase
-  deriving stock (Show, Eq, Ord,Generic)
-
-type InstrumentMarkerPrepPhraseRules :: (Type -> Type -> Type -> Type) -> Type
-data InstrumentMarkerPrepPhraseRules r = InstrumentMarkerPrepPhraseRules
-  { _instrumentalMarkerRule :: Prod r Text Lexeme InstrumentalMarker
-  , _objectPathPhraseRule   :: Prod r Text Lexeme ObjectPathPhrase
-  }
-
-type InstrumentMarkerPrepPhraseGrammar :: (Type -> Type -> Type -> Type) -> Type
-type InstrumentMarkerPrepPhraseGrammar r
-  = Grammar r (Prod r Text Lexeme InstrumentMarkerPrepPhrase)
-
-instrumentMarkerPrepPhraseRule :: InstrumentMarkerPrepPhraseRules r
-                               -> InstrumentMarkerPrepPhraseGrammar r
-instrumentMarkerPrepPhraseRule (InstrumentMarkerPrepPhraseRules {..}) =
-  rule $ InstrumentMarkerPrepPhrase
-           <$> _instrumentalMarkerRule
-           <*> _objectPathPhraseRule
-
 type NounPhrase :: Type -> Type
 data NounPhrase a
   = SimpleNounPhrase a
@@ -126,6 +112,14 @@ data NounPhrase a
   | DescriptiveNounPhrase AdjPhrase a
   | DescriptiveNounPhraseDet Determiner AdjPhrase a
   deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText a => ToText (NounPhrase a) where
+  toText (SimpleNounPhrase a) = toText a
+  toText (NounPhrase det a) = unwords [toText det, toText a]
+  toText (DescriptiveNounPhrase adj a) =
+    unwords [toText adj, toText a]
+  toText (DescriptiveNounPhraseDet det adj a) =
+    unwords [toText det, toText adj, toText a]
 
 type NounPhraseRules :: Type -> (Type -> Type -> Type -> Type) -> Type
 data NounPhraseRules a r = NounPhraseRules
@@ -148,6 +142,7 @@ nounPhraseRule (NounPhraseRules{..}) =
 type ObjectPhrase :: Type
 newtype ObjectPhrase = ObjectPhrase (NounPhrase Objective)
   deriving stock (Show, Eq, Ord,Generic)
+  deriving newtype (ToText)
 
 type ObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ObjectPhraseRules r = ObjectPhraseRules
@@ -174,6 +169,11 @@ data SurfacePhrase
   = SimpleSurfacePhrase (NounPhrase Surface)
   | SurfacePhrase SurfaceMarker (NounPhrase Surface)
   deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText SurfacePhrase where
+  toText (SimpleSurfacePhrase nounPhrase) = toText nounPhrase
+  toText (SurfacePhrase marker nounPhrase) =
+    unwords [toText marker, toText nounPhrase]
 
 type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SurfacePhraseRules r = SurfacePhraseRules
@@ -203,6 +203,11 @@ data ContainerPhrase
   | ContainerPhrase ContainmentMarker (NounPhrase Container)
   deriving stock (Show, Eq, Ord,Generic)
 
+instance ToText ContainerPhrase where
+  toText (SimpleContainerPhrase nounPhrase) = toText nounPhrase
+  toText (ContainerPhrase marker nounPhrase) =
+    unwords [toText marker, toText nounPhrase]
+
 type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ContainerPhraseRules r = ContainerPhraseRules
   { _determinerRule      :: Prod r Text Lexeme Determiner
@@ -230,7 +235,6 @@ data SupportPhrase
   = SurfaceSupport SurfacePhrase
   | ContainerSupport ContainerPhrase
   deriving stock (Show, Eq, Ord,Generic)
-
 
 type SupportPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SupportPhraseRules r = SupportPhraseRules
@@ -374,8 +378,6 @@ deriving via GenericArbitrary PathPhrase
           instance Arbitrary PathPhrase
 deriving via GenericArbitrary PrepObjectPhrase
           instance Arbitrary PrepObjectPhrase
-deriving via GenericArbitrary InstrumentMarkerPrepPhrase
-          instance Arbitrary InstrumentMarkerPrepPhrase
 instance Arbitrary a => Arbitrary (NounPhrase a) where
   arbitrary = oneof
     [ SimpleNounPhrase <$> arbitrary

@@ -4,7 +4,8 @@ import           Data.Text                                (Text)
 import           Lexer.Model                              (Lexeme)
 import           Parser.Model.Nouns                       (NounParsers (..))
 import           Parser.Model.Prepositions                (PrepParsers (..))
-import           Parser.PrepParser                        (prepParser)
+import           Parser.PrepParser                        (prepParser,
+                                                           surfaceMarkerRule)
 import           Parser.SpeechParts                       (parseRule)
 import           Parser.SpeechParts.Atomics.Adverbs       (ModToggleAdverb (ModToggleAdverb),
                                                            modToggleAdverbs)
@@ -47,6 +48,7 @@ import           Parser.SpeechParts.Composites.Nouns      (ContainerPhrase,
                                                            SimpleAccessNounPhraseRules (SimpleAccessNounPhraseRules),
                                                            SupportPhrase,
                                                            SupportPhraseRules (SupportPhraseRules),
+                                                           SurfacePhrase,
                                                            SurfacePhraseRules (SurfacePhraseRules),
                                                            TargetedStimulusNounPhrase,
                                                            TargetedStimulusNounPhraseRules (TargetedStimulusNounPhraseRules),
@@ -90,12 +92,15 @@ objectivePhraseParser determiner adjPhrase = do
   let objectPhraseRules = ObjectPhraseRules determiner object adjPhrase
   objectPhraseRule objectPhraseRules
 
+containerRule :: Grammar r (Prod r Text Lexeme Container)
+containerRule = parseRule containers Container
+
 containerPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Grammar r (Prod r Text Lexeme ContainerPhrase)
 containerPhraseParser determiner adjPhrase = do
   containmentMarker' <- parseRule containmentMarkers ContainmentMarker
-  container <- parseRule containers Container
+  container <- containerRule
   let containerPhraseRules = ContainerPhraseRules
                                determiner
                                adjPhrase
@@ -170,19 +175,41 @@ simpleAccessNounPhraseParser determiner adjPhrase  = do
                                   adjPhrase
                                   simpleAccessNoun
   simpleAccessNounPhraseRule simpleAccessNounPhraseRules
+    {-
+type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data SurfacePhraseRules r = SurfacePhraseRules
+  { _determinerRule    :: Prod r Text Lexeme Determiner
+  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
+  , _surfaceRule       :: Prod r Text Lexeme Surface
+  , _surfaceMarkerRule :: Prod r Text Lexeme SurfaceMarker
+  }
+
+       -}
+surfacePhraseParser :: Prod r Text Lexeme Determiner
+                           -> Prod r Text Lexeme AdjPhrase
+                           -> Prod r Text Lexeme Surface
+                           -> Prod r Text Lexeme SurfaceMarker
+                           -> Grammar r (Prod r Text Lexeme SurfacePhrase)
+surfacePhraseParser determiner adjPhrase surface surfaceMarker =
+  surfacePhraseRule surfacePhraseRules
+  where
+    surfacePhraseRules = SurfacePhraseRules determiner adjPhrase surface surfaceMarker
+
+surfaceRule :: Grammar r (Prod r Text Lexeme Surface)
+surfaceRule = parseRule surfaces Surface
 
 supportPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Prod r Text Lexeme ContainerPhrase
                            -> Grammar r (Prod r Text Lexeme SupportPhrase)
 supportPhraseParser determiner adjPhrase containerPhrase = do
-  surfaceRule <- parseRule surfaces Surface
-  surfaceMarkerRule <- parseRule surfaceMarkers SurfaceMarker
+  surfaceRule' <- surfaceRule
+  surfaceMarkerRule' <- surfaceMarkerRule
   let surfacePhraseRules = SurfacePhraseRules
                             determiner
                             adjPhrase
-                            surfaceRule
-                            surfaceMarkerRule
+                            surfaceRule'
+                            surfaceMarkerRule'
   surfacePhraseRule' <- surfacePhraseRule surfacePhraseRules
   let supportPhraseRules = SupportPhraseRules
                                surfacePhraseRule'

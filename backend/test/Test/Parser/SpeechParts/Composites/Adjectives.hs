@@ -35,6 +35,7 @@ checkAdjPhrase = do
   where
     adjParser = parser adjPhraseRule
     parsed toks = fst (fullParses adjParser toks)
+
 spec :: Spec
 spec = describe "AdjPhrase Arbitrary" do
   prop "Adj round tripping"  checkAdjPhrase

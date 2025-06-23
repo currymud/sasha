@@ -16,7 +16,7 @@ type Objective :: Type
 newtype Objective =
   Objective { _fromObjective :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme Objective where
   toLexeme = _fromObjective
@@ -44,7 +44,7 @@ type Container :: Type
 newtype Container =
   Container { _fromContainer :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme Container where
   toLexeme = _fromContainer
@@ -57,7 +57,7 @@ containers = fromList
 type Surface :: Type
 newtype Surface = Surface { _fromSurface :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme Surface where
   toLexeme = _fromSurface

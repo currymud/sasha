@@ -5,6 +5,7 @@ import           Data.HashSet              (HashSet, fromList, singleton,
                                             toList)
 import           Data.Kind                 (Type)
 import           Lexer
+import           Relude.String.Conversion  (ToText)
 
 #ifdef TESTING
 import qualified Data.HashSet              as HS
@@ -30,7 +31,7 @@ type Determiner :: Type
 newtype Determiner =
   Determiner { _fromDeterminer :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme Determiner where
   toLexeme = _fromDeterminer
