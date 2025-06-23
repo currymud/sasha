@@ -29,14 +29,13 @@ import           Parser.SpeechParts.Atomics.Nouns         (Container (Container)
                                                            targetedStimulii,
                                                            toggleNouns)
 import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker (ContainmentMarker),
-                                                           SurfaceMarker (SurfaceMarker),
+                                                           SurfaceMarker,
                                                            TargetedStimulusMarker (..),
-                                                           containmentMarkers,
-                                                           surfaceMarkers)
+                                                           containmentMarkers)
 import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase)
 import           Parser.SpeechParts.Composites.Nouns      (ContainerPhrase,
                                                            ContainerPhraseRules (ContainerPhraseRules),
-                                                           DirectionalStimulusNoun,
+                                                           DirectionalStimulusNounPhrase,
                                                            DirectionalStimulusNounRules (DirectionalStimulusNounRules),
                                                            ModToggleNounPhrase,
                                                            ModToggleNounPhraseRules (ModToggleNounPhraseRules),
@@ -55,7 +54,7 @@ import           Parser.SpeechParts.Composites.Nouns      (ContainerPhrase,
                                                            ToggleNounPhrase,
                                                            ToggleNounPhraseRules (ToggleNounPhraseRules),
                                                            containerPhraseRule,
-                                                           directionalStimulusNounRule,
+                                                           directionalStimulusNounPhraseRule,
                                                            modToggleNounPhraseRule,
                                                            objectPathPhraseRule,
                                                            objectPhraseRule,
@@ -121,13 +120,16 @@ targetedStimulusNounPhraseParser determiner adjPhrase targetedStimulusMarker' = 
                               adjPhrase
   targetedStimulusNounPhraseRule targetStimulusRules
 
+directionalStimulusNounRule :: Grammar r (Prod r Text Lexeme DirectionalStimulus)
+directionalStimulusNounRule = parseRule directionalStimulii DirectionalStimulus
+
 directionalStimulusNounParser :: Prod r Text Lexeme Determiner
                                    -> Prod r Text Lexeme AdjPhrase
-                                   -> Grammar r (Prod r Text Lexeme DirectionalStimulusNoun)
+                                   -> Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
 directionalStimulusNounParser determiner adjPhrase = do
   directionalStimulus <- parseRule directionalStimulii DirectionalStimulus
   let directionalStimulusNounRules = DirectionalStimulusNounRules determiner adjPhrase directionalStimulus
-  directionalStimulusNounRule directionalStimulusNounRules
+  directionalStimulusNounPhraseRule directionalStimulusNounRules
 
 toggleNounPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
@@ -175,16 +177,7 @@ simpleAccessNounPhraseParser determiner adjPhrase  = do
                                   adjPhrase
                                   simpleAccessNoun
   simpleAccessNounPhraseRule simpleAccessNounPhraseRules
-    {-
-type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
-data SurfacePhraseRules r = SurfacePhraseRules
-  { _determinerRule    :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
-  , _surfaceRule       :: Prod r Text Lexeme Surface
-  , _surfaceMarkerRule :: Prod r Text Lexeme SurfaceMarker
-  }
 
-       -}
 surfacePhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Prod r Text Lexeme Surface

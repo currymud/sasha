@@ -29,7 +29,7 @@ import           Parser.SpeechParts.Atomics.Verbs           (AcquisitionVerb,
                                                              ToggleVerb,
                                                              TraversalVerb)
 import           Parser.SpeechParts.Composites.Nouns        (ContainerPhrase,
-                                                             DirectionalStimulusNoun,
+                                                             DirectionalStimulusNounPhrase,
                                                              ModToggleNounPhrase,
                                                              ObjectPhrase,
                                                              SimpleAccessNounPhrase,
@@ -165,9 +165,9 @@ accessVerbPhraseRule (AccessVerbPhraseRules {..}) =
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = SimpleImplicitStimulusVerbPhrase ImplicitStimulusVerb
-  | ExplicitStimiulusVerbPhrase ExplicitStimulusVerb DirectionalStimulusNoun
+  | ExplicitStimiulusVerbPhrase ExplicitStimulusVerb DirectionalStimulusNounPhrase
   | TargetedStimulusVerbPhrase TargetedStimulusVerb TargetedStimulusNounPhrase
-  | DirectionalStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNoun
+  | DirectionalStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNounPhrase
   | ContainerStimulusVerbPhrase DirectionalStimulusVerb ContainerPhrase
   | ImplicitRegionalStimulusVerbPhrase ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
@@ -180,7 +180,7 @@ data StimulusVerbPhraseRules r = StimulusVerbPhraseRules
   , _targetedStimulusNounPhrase    :: Prod r Text Lexeme TargetedStimulusNounPhrase
   , _directionalStimulusVerb       :: Prod r Text Lexeme DirectionalStimulusVerb
   , _directionalStimulusMarker     :: Prod r Text Lexeme DirectionalStimulusMarker
-  , _directionalStimulusNoun       :: Prod r Text Lexeme DirectionalStimulusNoun
+  , _directionalStimulusNoun       :: Prod r Text Lexeme DirectionalStimulusNounPhrase
   , _containerPhrase               :: Prod r Text Lexeme ContainerPhrase
   , _implicitRegionalStimulusVerb  :: Prod r Text Lexeme ImplicitRegionalStimulusVerb
   }

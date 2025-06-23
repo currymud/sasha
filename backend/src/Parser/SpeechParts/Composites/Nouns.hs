@@ -252,9 +252,10 @@ supportPhraseRule (SupportPhraseRules{..}) =
   rule $ SurfaceSupport <$> _surfacePhraseRule
            <|> ContainerSupport <$> _containerPhraseRule
 
-type DirectionalStimulusNoun :: Type
-newtype DirectionalStimulusNoun = DirectionalStimulusNoun (NounPhrase DirectionalStimulus)
+type DirectionalStimulusNounPhrase :: Type
+newtype DirectionalStimulusNounPhrase = DirectionalStimulusNounPhrase (NounPhrase DirectionalStimulus)
   deriving stock (Show, Eq, Ord,Generic)
+  deriving newtype (ToText)
 
 type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
 data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
@@ -263,11 +264,11 @@ data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
   , _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus
   }
 
-directionalStimulusNounRule :: DirectionalStimulusNounRules r
-                                -> Grammar r (Prod r Text Lexeme DirectionalStimulusNoun)
-directionalStimulusNounRule (DirectionalStimulusNounRules{..}) =
+directionalStimulusNounPhraseRule :: DirectionalStimulusNounRules r
+                                -> Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
+directionalStimulusNounPhraseRule (DirectionalStimulusNounRules{..}) =
   nounPhraseRule rules >>= \nounPhrase ->
-    rule $ DirectionalStimulusNoun <$> nounPhrase
+    rule $ DirectionalStimulusNounPhrase <$> nounPhrase
   where
    rules
       = NounPhraseRules
@@ -415,8 +416,8 @@ deriving via GenericArbitrary ContainerPhrase
          instance Arbitrary ContainerPhrase
 deriving via GenericArbitrary SupportPhrase
          instance Arbitrary SupportPhrase
-deriving via GenericArbitrary DirectionalStimulusNoun
-         instance Arbitrary DirectionalStimulusNoun
+deriving via GenericArbitrary DirectionalStimulusNounPhrase
+         instance Arbitrary DirectionalStimulusNounPhrase
 deriving via GenericArbitrary ToggleNounPhrase
          instance Arbitrary ToggleNounPhrase
 deriving via GenericArbitrary ModToggleNounPhrase

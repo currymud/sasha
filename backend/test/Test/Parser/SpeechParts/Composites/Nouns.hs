@@ -6,6 +6,7 @@ import           Lexer                                   (runParser, tokens)
 import           Lexer.Model                             (Lexeme)
 import           Parser                                  (Parser)
 import           Parser.NounParsers                      (containerRule,
+                                                          directionalStimulusNounRule,
                                                           objectPathPhraseParser,
                                                           objectivePhraseParser,
                                                           surfaceRule)
@@ -22,6 +23,8 @@ import           Parser.SpeechParts.Atomics.Prepositions (InstrumentalMarker (In
                                                           instrumentalMarker)
 import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           ContainerPhraseRules (..),
+                                                          DirectionalStimulusNounPhrase (..),
+                                                          DirectionalStimulusNounRules (..),
                                                           NounPhrase (..),
                                                           ObjectPathPhrase (..),
                                                           ObjectPhrase (..),
@@ -34,6 +37,7 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           SurfacePhrase (..),
                                                           SurfacePhraseRules (..),
                                                           containerPhraseRule,
+                                                          directionalStimulusNounPhraseRule,
                                                           pathPhraseRule,
                                                           prepObjectPhraseRule,
                                                           supportPhraseRule,
@@ -285,6 +289,32 @@ checkSupportPhrase = do
     supportPhraseParser' = parser supportPhraseRule'
     parsed toks =
       fst (fullParses supportPhraseParser' toks)
+
+checkDirectionalStimulusNounPhrase :: Gen Bool
+checkDirectionalStimulusNounPhrase = do
+  directionalStimulusNounPhrase <- arbitrary :: Gen DirectionalStimulusNounPhrase
+  case directionalStimulusNounPhrase of
+    directionalStimulusNounPhrase'@(DirectionalStimulusNounPhrase {}) -> case runLexer (toText directionalStimulusNounPhrase') of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        directionalStimulusNounPhrase `elem` parsed toks
+  where
+    directionalStimulusNounPhraseParser' = parser directionalStimulusNounPhraseRule'
+    parsed toks =
+      fst (fullParses directionalStimulusNounPhraseParser' toks)
+
+directionalStimulusNounPhraseRule' :: Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
+directionalStimulusNounPhraseRule' = do
+  determinerRule' <- determinerRule
+  adjPhraseRule' <- adjPhraseRule
+  directionalStimulusNounRule' <- directionalStimulusNounRule
+  directionalStimulusNounPhraseRule
+    $ DirectionalStimulusNounRules
+        determinerRule'
+        adjPhraseRule'
+        directionalStimulusNounRule'
 spec :: Spec
 spec = describe "NounPhrase Roundtrips" do
   prop "ObjPathPhrase round tripping" checkObjectPathPhrase
@@ -294,3 +324,4 @@ spec = describe "NounPhrase Roundtrips" do
   prop "SurfacePhrase round tripping" checkSurfacePhrase
   prop "ContainerPhrase round tripping" checkContainerPhrase
   prop "SupportPhrase round tripping" checkSupportPhrase
+  prop "DirectionalStimulusNounPhrase round tripping" checkDirectionalStimulusNounPhrase

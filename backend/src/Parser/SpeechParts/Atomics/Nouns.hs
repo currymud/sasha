@@ -164,7 +164,8 @@ lreferentials = fromList $ map LReferentials [SHELF,SINK,CABINET] -- under the s
 
 type DirectionalStimulus :: Type
 newtype DirectionalStimulus = DirectionalStimulus { _fromDirectionalStimulus :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving newtype (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme DirectionalStimulus where
   toLexeme = _fromDirectionalStimulus
