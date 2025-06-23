@@ -13,6 +13,8 @@ import           Test.QuickCheck           (Arbitrary, elements)
 import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
 #endif
 
+-- Need to distinguish between adjecti ves that can describe objects and those exclusively for people
+-- e.g. "drunk" can describe a person but not an object
 
 type Adjective :: Type
 newtype Adjective =
@@ -25,7 +27,7 @@ instance HasLexeme Adjective where
 
 adjectives :: HashSet Adjective
 adjectives = fromList $ map Adjective adjlex
-  where adjlex = [MIND, BLUE, RED, GREAT, LONG, OLD, DRUNK, PLANT, POT, TEA
+  where adjlex = [BLUE, RED, GREAT, LONG, OLD, DRUNK, PLANT, POT, TEA
                  , CABINET, LOCKED, UNLOCKED, KITCHEN, LEFT, RIGHT
                  , FRONT, BEHIND, SMALL, LARGE]
 #ifdef TESTING

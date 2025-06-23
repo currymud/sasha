@@ -29,11 +29,14 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           PathPhraseRules (..),
                                                           PrepObjectPhrase (Instrument),
                                                           PrepObjectPhraseRules (PrepObjectPhraseRules),
+                                                          SupportPhrase (..),
+                                                          SupportPhraseRules (..),
                                                           SurfacePhrase (..),
                                                           SurfacePhraseRules (..),
                                                           containerPhraseRule,
                                                           pathPhraseRule,
                                                           prepObjectPhraseRule,
+                                                          supportPhraseRule,
                                                           surfacePhraseRule)
 import           Prelude                                 hiding (unwords)
 import           Relude.String.Conversion                (ToText (toText))
@@ -224,7 +227,7 @@ surfacePhraseRule' = do
 checkContainerPhrase :: Gen Bool
 checkContainerPhrase = do
   containerPhrase <- arbitrary :: Gen ContainerPhrase
-  trace ("ContainerPhrase: " <> show containerPhrase) $ do
+  trace ("ContainerPhrase: " <> show (toText containerPhrase)) $ do
     case containerPhrase of
       cphrase@(SimpleContainerPhrase {}) -> case runLexer (toText cphrase) of
         Left _     -> pure False
@@ -255,6 +258,33 @@ containerPhraseRule' = do
       adjPhraseRule'
       containerRule'
       containmentMarkerRule'
+
+supportPhraseRule' :: Grammar r (Prod r Text Lexeme SupportPhrase)
+supportPhraseRule' = do
+  surfacePhraseRule'' <- surfacePhraseRule'
+  containerPhraseRule'' <- containerPhraseRule'
+  supportPhraseRule $ SupportPhraseRules surfacePhraseRule'' containerPhraseRule''
+
+checkSupportPhrase :: Gen Bool
+checkSupportPhrase = do
+  supportPhrase <- arbitrary :: Gen SupportPhrase
+  case supportPhrase of
+    surfacePhrase@(SurfaceSupport {}) -> case runLexer (toText surfacePhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        supportPhrase `elem` parsed toks
+    containerPhrase@(ContainerSupport {}) -> case runLexer (toText containerPhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        supportPhrase `elem` parsed toks
+  where
+    supportPhraseParser' = parser supportPhraseRule'
+    parsed toks =
+      fst (fullParses supportPhraseParser' toks)
 spec :: Spec
 spec = describe "NounPhrase Roundtrips" do
   prop "ObjPathPhrase round tripping" checkObjectPathPhrase
@@ -263,3 +293,4 @@ spec = describe "NounPhrase Roundtrips" do
   prop "ObjectPhrase round tripping" checkObjectPhrase
   prop "SurfacePhrase round tripping" checkSurfacePhrase
   prop "ContainerPhrase round tripping" checkContainerPhrase
+  prop "SupportPhrase round tripping" checkSupportPhrase

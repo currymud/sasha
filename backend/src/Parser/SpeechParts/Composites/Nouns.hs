@@ -236,6 +236,10 @@ data SupportPhrase
   | ContainerSupport ContainerPhrase
   deriving stock (Show, Eq, Ord,Generic)
 
+instance ToText SupportPhrase where
+  toText (SurfaceSupport surfacePhrase)     = toText surfacePhrase
+  toText (ContainerSupport containerPhrase) = toText containerPhrase
+
 type SupportPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SupportPhraseRules r = SupportPhraseRules
   { _surfacePhraseRule   :: Prod r Text Lexeme SurfacePhrase
