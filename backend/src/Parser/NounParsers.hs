@@ -130,7 +130,7 @@ directionalStimulusNounParser :: Prod r Text Lexeme Determiner
                                    -> Prod r Text Lexeme AdjPhrase
                                    -> Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
 directionalStimulusNounParser determiner adjPhrase = do
-  directionalStimulus <- parseRule directionalStimulii DirectionalStimulus
+  directionalStimulus <- directionalStimulusNounRule
   let directionalStimulusNounRules = DirectionalStimulusNounRules determiner adjPhrase directionalStimulus
   directionalStimulusNounPhraseRule directionalStimulusNounRules
 
@@ -177,11 +177,14 @@ objectPathPhraseParser determiner objectPath adjPhrase =
   where
   objectPathPhraseRules = ObjectPathPhraseRules objectPath determiner adjPhrase
 
+simpleAccessNounRule :: Grammar r (Prod r Text Lexeme SimpleAccessNoun)
+simpleAccessNounRule = parseRule simpleAccessNouns SimpleAccessNoun
+
 simpleAccessNounPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Grammar r (Prod r Text Lexeme SimpleAccessNounPhrase)
 simpleAccessNounPhraseParser determiner adjPhrase  = do
-  simpleAccessNoun <- parseRule simpleAccessNouns SimpleAccessNoun
+  simpleAccessNoun <- simpleAccessNounRule
   let simpleAccessNounPhraseRules = SimpleAccessNounPhraseRules
                                   determiner
                                   adjPhrase

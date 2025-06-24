@@ -11,6 +11,7 @@ import           Parser.NounParsers                      (containerRule,
                                                           modToggleNounRule,
                                                           objectPathPhraseParser,
                                                           objectivePhraseParser,
+                                                          simpleAccessNounRule,
                                                           surfaceRule,
                                                           targetedStimulusRule,
                                                           toggleNounRule)
@@ -40,6 +41,8 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           PathPhraseRules (..),
                                                           PrepObjectPhrase (Instrument),
                                                           PrepObjectPhraseRules (PrepObjectPhraseRules),
+                                                          SimpleAccessNounPhrase,
+                                                          SimpleAccessNounPhraseRules (SimpleAccessNounPhraseRules),
                                                           SupportPhrase (..),
                                                           SupportPhraseRules (..),
                                                           SurfacePhrase (..),
@@ -53,6 +56,7 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           modToggleNounPhraseRule,
                                                           pathPhraseRule,
                                                           prepObjectPhraseRule,
+                                                          simpleAccessNounPhraseRule,
                                                           supportPhraseRule,
                                                           surfacePhraseRule,
                                                           targetedStimulusNounPhraseRule,
@@ -410,6 +414,31 @@ checkTargetedStimulusNounPhrase = do
     parsed toks =
       fst (fullParses targetedStimulusNounPhraseParser' toks)
 
+simpleAccessNounPhraseRule' :: Grammar r (Prod r Text Lexeme SimpleAccessNounPhrase)
+simpleAccessNounPhraseRule' = do
+  determinerRule' <- determinerRule
+  adjPhraseRule' <- adjPhraseRule
+  simpleAccessNounRule' <- simpleAccessNounRule
+  simpleAccessNounPhraseRule $
+    SimpleAccessNounPhraseRules
+      determinerRule'
+      adjPhraseRule'
+      simpleAccessNounRule'
+
+checkSimpleAccessNounPhrase :: Gen Bool
+checkSimpleAccessNounPhrase = do
+  simpleAccessNounPhrase <- arbitrary :: Gen SimpleAccessNounPhrase
+  case runLexer (toText simpleAccessNounPhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        simpleAccessNounPhrase `elem` parsed toks
+  where
+    simpleAccessNounPhraseParser' = parser simpleAccessNounPhraseRule'
+    parsed toks =
+      fst (fullParses simpleAccessNounPhraseParser' toks)
+
 spec :: Spec
 spec = describe "NounPhrase Roundtrips" do
   prop "ObjPathPhrase round tripping" checkObjectPathPhrase
@@ -423,3 +452,4 @@ spec = describe "NounPhrase Roundtrips" do
   prop "ToggleNounPhrase round tripping" checkToggleNounPhrase
   prop "ModToggleNounPhrase round tripping" checkModToggleNounPhrase
   prop "TargetedStimulusNounPhrase round tripping" checkTargetedStimulusNounPhrase
+  prop "SimpleAccessNounPhrase round tripping" checkSimpleAccessNounPhrase

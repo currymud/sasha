@@ -90,7 +90,8 @@ modToggleNouns = fromList $ map ModToggleNoun [LIGHT,LAMP]
 
 type SimpleAccessNoun :: Type
 newtype SimpleAccessNoun = SimpleAccessNoun { _fromSimpleAccessNoun :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme SimpleAccessNoun where
   toLexeme = _fromSimpleAccessNoun

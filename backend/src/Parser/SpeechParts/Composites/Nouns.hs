@@ -367,6 +367,7 @@ targetedStimulusNounPhraseRule (TargetedStimulusNounPhraseRules{..}) =
 type SimpleAccessNounPhrase :: Type
 newtype SimpleAccessNounPhrase = SimpleAccessNounPhrase (NounPhrase SimpleAccessNoun)
   deriving stock (Show, Eq, Ord,Generic)
+  deriving newtype (ToText)
 
 type SimpleAccessNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SimpleAccessNounPhraseRules r = SimpleAccessNounPhraseRules
