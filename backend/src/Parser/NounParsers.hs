@@ -131,23 +131,30 @@ directionalStimulusNounParser determiner adjPhrase = do
   let directionalStimulusNounRules = DirectionalStimulusNounRules determiner adjPhrase directionalStimulus
   directionalStimulusNounPhraseRule directionalStimulusNounRules
 
+toggleNounRule :: Grammar r (Prod r Text Lexeme ToggleNoun)
+toggleNounRule = parseRule toggleNouns ToggleNoun
+
 toggleNounPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Grammar r (Prod r Text Lexeme ToggleNounPhrase)
 toggleNounPhraseParser determiner adjPhrase = do
-  toggleNoun <- parseRule toggleNouns ToggleNoun
+  toggleNoun <- toggleNounRule
   let toggleNounPhraseRules = ToggleNounPhraseRules
                               determiner
                               adjPhrase
                               toggleNoun
   toggleNounPhraseRule toggleNounPhraseRules
 
+
+modToggleNounRule :: Grammar r (Prod r Text Lexeme ModToggleNoun)
+modToggleNounRule = parseRule modToggleNouns ModToggleNoun
+
 modToggleNounPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme AdjPhrase
                            -> Grammar r (Prod r Text Lexeme ModToggleNounPhrase)
 modToggleNounPhraseParser determiner adjPhrase = do
   modToggleAdverbs' <- parseRule modToggleAdverbs ModToggleAdverb
-  modToggleNoun <- parseRule modToggleNouns ModToggleNoun
+  modToggleNoun <- modToggleNounRule
   let modToggleNounPhraseRules = ModToggleNounPhraseRules
                                   determiner
                                   adjPhrase

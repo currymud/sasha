@@ -1,5 +1,6 @@
 module      Test.Parser.SpeechParts.Composites.Nouns where
 
+import           Data.Aeson                              (Value (Bool))
 import           Data.Text                               (Text, unwords)
 import           Debug.Trace                             (trace)
 import           Lexer                                   (runParser, tokens)
@@ -7,15 +8,18 @@ import           Lexer.Model                             (Lexeme)
 import           Parser                                  (Parser)
 import           Parser.NounParsers                      (containerRule,
                                                           directionalStimulusNounRule,
+                                                          modToggleNounRule,
                                                           objectPathPhraseParser,
                                                           objectivePhraseParser,
-                                                          surfaceRule)
+                                                          surfaceRule,
+                                                          toggleNounRule)
 import           Parser.PhraseParsers                    (adjPhraseRule,
                                                           implicitPathRule)
 import           Parser.PrepParser                       (containmentMarkerRule,
                                                           pathRule,
                                                           surfaceMarkerRule)
 import           Parser.SpeechParts                      (determinerRule,
+                                                          modToggleAdverbRule,
                                                           parseRule)
 import           Parser.SpeechParts.Atomics.Nouns        (ObjectPath (ObjectPath),
                                                           objectPaths)
@@ -25,6 +29,8 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           ContainerPhraseRules (..),
                                                           DirectionalStimulusNounPhrase (..),
                                                           DirectionalStimulusNounRules (..),
+                                                          ModToggleNounPhrase,
+                                                          ModToggleNounPhraseRules (..),
                                                           NounPhrase (..),
                                                           ObjectPathPhrase (..),
                                                           ObjectPhrase (..),
@@ -36,12 +42,16 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           SupportPhraseRules (..),
                                                           SurfacePhrase (..),
                                                           SurfacePhraseRules (..),
+                                                          ToggleNounPhrase,
+                                                          ToggleNounPhraseRules (ToggleNounPhraseRules),
                                                           containerPhraseRule,
                                                           directionalStimulusNounPhraseRule,
+                                                          modToggleNounPhraseRule,
                                                           pathPhraseRule,
                                                           prepObjectPhraseRule,
                                                           supportPhraseRule,
-                                                          surfacePhraseRule)
+                                                          surfacePhraseRule,
+                                                          toggleNounPhraseRule)
 import           Prelude                                 hiding (unwords)
 import           Relude.String.Conversion                (ToText (toText))
 import           Test.Hspec                              (Spec, describe, hspec)
@@ -315,6 +325,59 @@ directionalStimulusNounPhraseRule' = do
         determinerRule'
         adjPhraseRule'
         directionalStimulusNounRule'
+
+toggleNounPhraseRule' :: Grammar r (Prod r Text Lexeme ToggleNounPhrase)
+toggleNounPhraseRule' = do
+  determinerRule' <- determinerRule
+  adjPhraseRule' <- adjPhraseRule
+  toggleNounRule' <- toggleNounRule
+  toggleNounPhraseRule
+    $ ToggleNounPhraseRules
+        determinerRule'
+        adjPhraseRule'
+        toggleNounRule'
+
+checkToggleNounPhrase :: Gen Bool
+checkToggleNounPhrase = do
+  toggleNounPhrase <- arbitrary :: Gen ToggleNounPhrase
+  case runLexer (toText toggleNounPhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        toggleNounPhrase `elem` parsed toks
+  where
+    toggleNounPhraseParser' = parser toggleNounPhraseRule'
+    parsed toks =
+      fst (fullParses toggleNounPhraseParser' toks)
+
+checkModToggleNounPhrase :: Gen Bool
+checkModToggleNounPhrase = do
+  modToggleNounPhrase <- arbitrary :: Gen ModToggleNounPhrase
+  case runLexer (toText modToggleNounPhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        modToggleNounPhrase `elem` parsed toks
+  where
+    modToggleNounPhraseParser' = parser modToggleNounPhraseRule'
+    parsed toks =
+      fst (fullParses modToggleNounPhraseParser' toks)
+
+modToggleNounPhraseRule' :: Grammar r (Prod r Text Lexeme ModToggleNounPhrase)
+modToggleNounPhraseRule' = do
+  determinerRule' <- determinerRule
+  adjPhraseRule' <- adjPhraseRule
+  modToggleNounRule' <- modToggleNounRule
+  modToggleAdverbRule' <- modToggleAdverbRule
+  modToggleNounPhraseRule
+    $ ModToggleNounPhraseRules
+        determinerRule'
+        adjPhraseRule'
+        modToggleNounRule'
+        modToggleAdverbRule'
+
 spec :: Spec
 spec = describe "NounPhrase Roundtrips" do
   prop "ObjPathPhrase round tripping" checkObjectPathPhrase
@@ -325,3 +388,5 @@ spec = describe "NounPhrase Roundtrips" do
   prop "ContainerPhrase round tripping" checkContainerPhrase
   prop "SupportPhrase round tripping" checkSupportPhrase
   prop "DirectionalStimulusNounPhrase round tripping" checkDirectionalStimulusNounPhrase
+  prop "ToggleNounPhrase round tripping" checkToggleNounPhrase
+  prop "ModToggleNounPhrase round tripping" checkModToggleNounPhrase

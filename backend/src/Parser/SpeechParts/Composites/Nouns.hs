@@ -280,6 +280,7 @@ directionalStimulusNounPhraseRule (DirectionalStimulusNounRules{..}) =
 type ToggleNounPhrase :: Type
 newtype ToggleNounPhrase = ToggleNounPhrase (NounPhrase ToggleNoun)
   deriving stock (Show, Eq, Ord,Generic)
+  deriving newtype (ToText)
 
 type ToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ToggleNounPhraseRules r = ToggleNounPhraseRules
@@ -304,6 +305,10 @@ toggleNounPhraseRule (ToggleNounPhraseRules{..}) =
 type ModToggleNounPhrase :: Type
 data ModToggleNounPhrase = ModToggleNounPhrase (NounPhrase ModToggleNoun) ModToggleAdverb
   deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText ModToggleNounPhrase where
+  toText (ModToggleNounPhrase nounPhrase modToggleAdv) =
+    unwords [toText nounPhrase, toText modToggleAdv]
 
 type ModToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ModToggleNounPhraseRules r = ModToggleNounPhraseRules

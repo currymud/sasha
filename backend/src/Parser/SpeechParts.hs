@@ -5,6 +5,8 @@ import           Data.List                           (find)
 import           Data.Text                           (Text)
 import           Lexer                               (HasLexeme, Lexeme,
                                                       toLexeme)
+import           Parser.SpeechParts.Atomics.Adverbs  (ModToggleAdverb (..),
+                                                      modToggleAdverbs)
 import           Parser.SpeechParts.Atomics.Misc     (Determiner (Determiner),
                                                       determiners)
 import           Parser.SpeechParts.Composites.Verbs (Imperative, Vocative)
@@ -13,6 +15,9 @@ import           Text.Earley.Grammar                 (Grammar, Prod, terminal)
 
 determinerRule :: Grammar r (Prod r Text Lexeme Determiner)
 determinerRule = parseRule determiners Determiner
+
+modToggleAdverbRule :: Grammar r (Prod r Text Lexeme ModToggleAdverb)
+modToggleAdverbRule = parseRule modToggleAdverbs ModToggleAdverb
 
 parseRule :: (HasLexeme a) => HashSet a
                                 -> (Lexeme -> a)

@@ -69,7 +69,7 @@ surfaces = fromList $ map Surface [WALL, CEILING, DOOR,SHELF]
 type ToggleNoun :: Type
 newtype ToggleNoun = ToggleNoun { _fromToggleNoun :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ToggleNoun where
   toLexeme = _fromToggleNoun
@@ -80,7 +80,7 @@ toggleNouns = fromList $ map ToggleNoun [SWITCH, BUTTON]
 type ModToggleNoun :: Type
 newtype ModToggleNoun = ModToggleNoun { _fromModToggleNoun :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ModToggleNoun where
   toLexeme = _fromModToggleNoun

@@ -39,7 +39,7 @@ implicitPaths = fromList $ map ImplicitPath [NORTH, EAST, SOUTH, WEST, UP, DOWN,
 type ModToggleAdverb :: Type
 newtype ModToggleAdverb = ModToggleAdverb { _fromModToggleAdverb :: Lexeme }
   deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ModToggleAdverb where
   toLexeme = _fromModToggleAdverb
