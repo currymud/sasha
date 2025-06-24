@@ -185,7 +185,8 @@ directionalStimulii = fromList $ DirectionalStimulus <$>
 -- e.g. "listen to the music"
 type TargetedStimulus :: Type
 newtype TargetedStimulus = TargetedStimulus { _fromTargetedStimulus :: Lexeme }
-  deriving newtype (Show,Eq,Hashable,Ord)
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (ToText,Hashable)
 
 instance HasLexeme TargetedStimulus where
   toLexeme = _fromTargetedStimulus

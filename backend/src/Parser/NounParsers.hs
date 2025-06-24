@@ -107,12 +107,15 @@ containerPhraseParser determiner adjPhrase = do
                                containmentMarker'
   containerPhraseRule containerPhraseRules
 
+targetedStimulusRule :: Grammar r (Prod r Text Lexeme TargetedStimulus)
+targetedStimulusRule = parseRule targetedStimulii TargetedStimulus
+
 targetedStimulusNounPhraseParser :: Prod r Text Lexeme Determiner
                       -> Prod r Text Lexeme AdjPhrase
                       -> Prod r Text Lexeme TargetedStimulusMarker
                       -> Grammar r (Prod r Text Lexeme TargetedStimulusNounPhrase)
 targetedStimulusNounPhraseParser determiner adjPhrase targetedStimulusMarker' = do
-  targetedStimulus <- parseRule targetedStimulii TargetedStimulus
+  targetedStimulus <- targetedStimulusRule
   let targetStimulusRules = TargetedStimulusNounPhraseRules
                               targetedStimulusMarker'
                               targetedStimulus

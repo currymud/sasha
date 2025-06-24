@@ -337,6 +337,11 @@ data TargetedStimulusNounPhrase
   | TargetedStimuliiNounPhrase TargetedStimulusMarker (NounPhrase TargetedStimulus)
   deriving stock (Show, Eq, Ord,Generic)
 
+instance ToText TargetedStimulusNounPhrase where
+  toText (SimpleAgentStimulus stimulus) = toText stimulus
+  toText (TargetedStimuliiNounPhrase marker nounPhrase) =
+    unwords [toText marker, toText nounPhrase]
+
 type TargetedStimulusNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TargetedStimulusNounPhraseRules r = TargetedStimulusNounPhraseRules
   { _targetedStimulusMarkerRule :: Prod r Text Lexeme TargetedStimulusMarker

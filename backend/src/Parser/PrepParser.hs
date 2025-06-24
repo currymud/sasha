@@ -31,3 +31,6 @@ surfaceMarkerRule = parseRule surfaceMarkers SurfaceMarker
 
 containmentMarkerRule :: Grammar r (Prod r Text Lexeme ContainmentMarker)
 containmentMarkerRule = parseRule containmentMarkers ContainmentMarker
+
+targetedStimulusMarkerRule :: Grammar r (Prod r Text Lexeme TargetedStimulusMarker)
+targetedStimulusMarkerRule = parseRule targetedStimulusMarker TargetedStimulusMarker

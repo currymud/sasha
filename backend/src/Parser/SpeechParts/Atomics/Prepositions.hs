@@ -148,7 +148,7 @@ directionalStimulusMarkers = singleton $ DirectionalStimulusMarker AT
 type TargetedStimulusMarker :: Type
 newtype TargetedStimulusMarker = TargetedStimulusMarker { _fromTargetedStimulusMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme TargetedStimulusMarker where
   toLexeme = _fromTargetedStimulusMarker

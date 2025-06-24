@@ -12,12 +12,14 @@ import           Parser.NounParsers                      (containerRule,
                                                           objectPathPhraseParser,
                                                           objectivePhraseParser,
                                                           surfaceRule,
+                                                          targetedStimulusRule,
                                                           toggleNounRule)
 import           Parser.PhraseParsers                    (adjPhraseRule,
                                                           implicitPathRule)
 import           Parser.PrepParser                       (containmentMarkerRule,
                                                           pathRule,
-                                                          surfaceMarkerRule)
+                                                          surfaceMarkerRule,
+                                                          targetedStimulusMarkerRule)
 import           Parser.SpeechParts                      (determinerRule,
                                                           modToggleAdverbRule,
                                                           parseRule)
@@ -42,6 +44,8 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           SupportPhraseRules (..),
                                                           SurfacePhrase (..),
                                                           SurfacePhraseRules (..),
+                                                          TargetedStimulusNounPhrase,
+                                                          TargetedStimulusNounPhraseRules (..),
                                                           ToggleNounPhrase,
                                                           ToggleNounPhraseRules (ToggleNounPhraseRules),
                                                           containerPhraseRule,
@@ -51,6 +55,7 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase (..),
                                                           prepObjectPhraseRule,
                                                           supportPhraseRule,
                                                           surfacePhraseRule,
+                                                          targetedStimulusNounPhraseRule,
                                                           toggleNounPhraseRule)
 import           Prelude                                 hiding (unwords)
 import           Relude.String.Conversion                (ToText (toText))
@@ -378,6 +383,33 @@ modToggleNounPhraseRule' = do
         modToggleNounRule'
         modToggleAdverbRule'
 
+targetedStimulusNounPhraseRule' :: Grammar r (Prod r Text Lexeme TargetedStimulusNounPhrase)
+targetedStimulusNounPhraseRule' = do
+  determinerRule' <- determinerRule
+  targetedStimulusRule' <- targetedStimulusRule
+  targetedStimulusMarkerRule' <- targetedStimulusMarkerRule
+  adjPhraseRule' <- adjPhraseRule
+  targetedStimulusNounPhraseRule
+    $ TargetedStimulusNounPhraseRules
+        targetedStimulusMarkerRule'
+        targetedStimulusRule'
+        determinerRule'
+        adjPhraseRule'
+
+checkTargetedStimulusNounPhrase :: Gen Bool
+checkTargetedStimulusNounPhrase = do
+  targetedStimulusNounPhrase <- arbitrary :: Gen TargetedStimulusNounPhrase
+  case runLexer (toText targetedStimulusNounPhrase) of
+      Left _     -> pure False
+      Right toks -> pure roundTrip
+                    where
+                      roundTrip =
+                        targetedStimulusNounPhrase `elem` parsed toks
+  where
+    targetedStimulusNounPhraseParser' = parser targetedStimulusNounPhraseRule'
+    parsed toks =
+      fst (fullParses targetedStimulusNounPhraseParser' toks)
+
 spec :: Spec
 spec = describe "NounPhrase Roundtrips" do
   prop "ObjPathPhrase round tripping" checkObjectPathPhrase
@@ -390,3 +422,4 @@ spec = describe "NounPhrase Roundtrips" do
   prop "DirectionalStimulusNounPhrase round tripping" checkDirectionalStimulusNounPhrase
   prop "ToggleNounPhrase round tripping" checkToggleNounPhrase
   prop "ModToggleNounPhrase round tripping" checkModToggleNounPhrase
+  prop "TargetedStimulusNounPhrase round tripping" checkTargetedStimulusNounPhrase
