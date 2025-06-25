@@ -19,7 +19,7 @@ type LocationInterrogativeMarker :: Type
 newtype LocationInterrogativeMarker =
   LocationInterrogativeMarker { _fromLocationInterrogativeMarker :: Lexeme }
   deriving stock (Show,Eq,Ord, Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme LocationInterrogativeMarker where
   toLexeme = _fromLocationInterrogativeMarker
@@ -32,7 +32,7 @@ type ObjectInterrogativeMarker :: Type
 newtype ObjectInterrogativeMarker =
   ObjectInterrogativeMarker { _fromObjectInterrogativeMarker :: Lexeme }
   deriving stock (Show,Eq,Ord, Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ObjectInterrogativeMarker where
   toLexeme = _fromObjectInterrogativeMarker
@@ -43,7 +43,7 @@ objectInterrogativeMarker = singleton $ ObjectInterrogativeMarker WHAT
 type TraversalMarker :: Type
 newtype TraversalMarker = TraversalMarker { _fromTraversalMarker :: Lexeme }
   deriving stock (Show,Eq,Ord, Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme TraversalMarker where
   toLexeme = _fromTraversalMarker
@@ -54,7 +54,7 @@ traversalMarkers = singleton $ TraversalMarker THROUGH
 type ProcessingMethod :: Type
 newtype ProcessingMethod = ProcessingMethod { _fromProcessingMethod :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ProcessingMethod where
   toLexeme = _fromProcessingMethod
@@ -87,7 +87,7 @@ surfaceMarkers = fromList $ map SurfaceMarker [ON, ONTO]
 type RecipientMarker :: Type
 newtype RecipientMarker = RecipientMarker { _fromRecipientMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme RecipientMarker where
   toLexeme = _fromRecipientMarker
@@ -98,7 +98,7 @@ recipientMarker = fromList $ RecipientMarker <$> [TO]
 type SourceMarker :: Type
 newtype SourceMarker = SourceMarker { _fromSourceMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme SourceMarker where
   toLexeme = _fromSourceMarker
@@ -136,7 +136,7 @@ type DirectionalStimulusMarker :: Type
 newtype DirectionalStimulusMarker
   = DirectionalStimulusMarker { _fromDirectionalStimulusMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme DirectionalStimulusMarker where
   toLexeme = _fromDirectionalStimulusMarker
@@ -159,7 +159,7 @@ targetedStimulusMarker = singleton $ TargetedStimulusMarker TO
 type SurfaceStimulusMarker :: Type
 newtype SurfaceStimulusMarker = SurfaceStimulusMarker { _fromSurfaceStimulusMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme SurfaceStimulusMarker where
   toLexeme = _fromSurfaceStimulusMarker
@@ -171,7 +171,7 @@ surfaceStimulusMarker = singleton $ SurfaceStimulusMarker ON
 type ContainerStimulusMarker :: Type
 newtype ContainerStimulusMarker = ContainerStimulusMarker { _fromContainerStimulusMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ContainerStimulusMarker where
   toLexeme = _fromContainerStimulusMarker
@@ -182,7 +182,7 @@ containerStimulusMarker = singleton $ ContainerStimulusMarker IN
 type RegionMarker :: Type
 newtype RegionMarker = RegionMarker { _fromRegionMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme RegionMarker where
   toLexeme = _fromRegionMarker
@@ -194,7 +194,7 @@ type TReferentialMarker :: Type
 newtype TReferentialMarker =
   TReferentialMarker { _fromTReferentialMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme TReferentialMarker where
   toLexeme = _fromTReferentialMarker
@@ -206,7 +206,7 @@ treferentialMarker = singleton $ TReferentialMarker UP
 type TopicMarker :: Type
 newtype TopicMarker = TopicMarker { _fromTopicMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme TopicMarker where
   toLexeme = _fromTopicMarker
@@ -217,7 +217,7 @@ topicMarker = singleton $ TopicMarker ABOUT
 type AxialMarker :: Type
 newtype AxialMarker = AxialMarker { _fromAxialMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme AxialMarker where
   toLexeme = _fromAxialMarker
@@ -229,7 +229,7 @@ axialMarker = fromList
 type VerticalAxis :: Type
 newtype VerticalAxis = VerticalAxis { _fromVerticalAxis :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 verticalAxis :: HashSet VerticalAxis
 verticalAxis = fromList $ map VerticalAxis [UNDER, ABOVE]
@@ -237,7 +237,7 @@ verticalAxis = fromList $ map VerticalAxis [UNDER, ABOVE]
 type FrontBackAxis :: Type
 newtype FrontBackAxis = FrontBackAxis { _fromFrontBackAxis :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 frontBackAxis :: HashSet FrontBackAxis
 frontBackAxis = fromList $ map FrontBackAxis [BEHIND, FRONT]
@@ -245,7 +245,7 @@ frontBackAxis = fromList $ map FrontBackAxis [BEHIND, FRONT]
 type LeftRightAxis :: Type
 newtype LeftRightAxis = LeftRightAxis { _fromLeftRightAxis :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 leftRightAxis :: HashSet LeftRightAxis
 leftRightAxis = fromList $ map LeftRightAxis [LEFT, RIGHT]
@@ -253,7 +253,7 @@ leftRightAxis = fromList $ map LeftRightAxis [LEFT, RIGHT]
 type ReferenceSourceMarker :: Type
 newtype ReferenceSourceMarker = ReferenceSourceMarker { _fromReferenceSourceMarker :: Lexeme }
   deriving stock (Show,Eq,Ord,Generic)
-  deriving newtype (Hashable)
+  deriving newtype (Hashable,ToText)
 
 instance HasLexeme ReferenceSourceMarker where
   toLexeme = _fromReferenceSourceMarker

@@ -2,7 +2,7 @@ module Parser.SpeechParts.Composites.Prepositions where
 
 import           Control.Applicative                     (Alternative ((<|>)))
 import           Data.Kind                               (Type)
-import           Data.Text                               (Text)
+import           Data.Text                               (Text, unwords)
 import           GHC.Generics                            (Generic)
 import           Lexer                                   (Lexeme (..))
 import           Parser.SpeechParts.Atomics.Nouns        (NamedAgent)
@@ -15,6 +15,9 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase,
                                                           ObjectPathPhrase,
                                                           ObjectPhrase,
                                                           TargetedStimulusNounPhrase)
+import           Prelude                                 hiding (Generic,
+                                                          unwords)
+import           Relude.String.Conversion                (ToText (toText))
 import           Text.Earley                             (Grammar, rule)
 import           Text.Earley.Grammar                     (Prod)
 #ifdef TESTING
@@ -35,6 +38,9 @@ data InstrumentMarkerPhrase
   = Instrument InstrumentalMarker ObjectPathPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
+instance ToText InstrumentMarkerPhrase where
+  toText (Instrument marker path) = unwords [toText marker, toText path]
+
 type InstrumentMarkerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data InstrumentMarkerPhraseRules r = InstrumentMarkerPhraseRules
   { _instrumentMarker :: Prod r Text Lexeme InstrumentalMarker
@@ -54,18 +60,24 @@ data TargetedMarkerPhrase
   | RecipientMarker RecipientMarker NamedAgent
   deriving stock (Show, Eq, Ord, Generic)
 
+instance ToText TargetedMarkerPhrase where
+  toText (TargetedStimulusMarker marker noun) =
+    unwords [toText marker, toText noun]
+  toText (RecipientMarker marker agent) =
+    unwords [toText marker, toText agent]
+
 type TargetedMarkerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TargetedMarkerPhraseRules r = TargetedMarkerPhraseRules
-  { _targetedStimulusMarker :: Prod r Text Lexeme TargetedStimulusMarker
-  , _recipientMarker        :: Prod r Text Lexeme RecipientMarker
-  , _targetedStimulusNoun   :: Prod r Text Lexeme TargetedStimulusNounPhrase
-  , _namedAgent             :: Prod r Text Lexeme NamedAgent
+  { _targetedStimulusMarker     :: Prod r Text Lexeme TargetedStimulusMarker
+  , _recipientMarker            :: Prod r Text Lexeme RecipientMarker
+  , _targetedStimulusNounPhrase :: Prod r Text Lexeme TargetedStimulusNounPhrase
+  , _namedAgent                 :: Prod r Text Lexeme NamedAgent
   }
 
 targetedMarkerPhraseRules :: TargetedMarkerPhraseRules r
                           -> Grammar r (Prod r Text Lexeme TargetedMarkerPhrase)
 targetedMarkerPhraseRules (TargetedMarkerPhraseRules {..}) =
-  rule $ TargetedStimulusMarker <$> _targetedStimulusMarker <*> _targetedStimulusNoun
+  rule $ TargetedStimulusMarker <$> _targetedStimulusMarker <*> _targetedStimulusNounPhrase
        <|> RecipientMarker <$> _recipientMarker <*> _namedAgent
 
 type TraversalPathPhrase :: Type
@@ -74,6 +86,14 @@ data TraversalPathPhrase
   | DirectTraversal TraversalMarker ObjectPhrase  -- specifically for THROUGH
   | ContainmentTraversal ContainmentMarker ContainerPhrase  -- for IN, INTO as containers
   deriving stock (Show, Eq, Ord, Generic)
+
+instance ToText TraversalPathPhrase where
+  toText (PathTraversal path obj) =
+    unwords [toText path, toText obj]
+  toText (DirectTraversal marker obj) =
+    unwords [toText marker, toText obj]
+  toText (ContainmentTraversal marker cont) =
+    unwords [toText marker, toText cont]
 
 type TraversalPathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TraversalPathPhraseRules r = TraversalPathPhraseRules

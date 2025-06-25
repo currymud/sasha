@@ -13,6 +13,7 @@ import           Parser.SpeechParts.Atomics.Misc          (Determiner)
 import           Parser.SpeechParts.Atomics.Nouns         (Container (Container),
                                                            DirectionalStimulus (DirectionalStimulus),
                                                            ModToggleNoun (ModToggleNoun),
+                                                           NamedAgent (..),
                                                            ObjectPath (..),
                                                            Objective (Objective),
                                                            SimpleAccessNoun (SimpleAccessNoun),
@@ -22,6 +23,7 @@ import           Parser.SpeechParts.Atomics.Nouns         (Container (Container)
                                                            containers,
                                                            directionalStimulii,
                                                            modToggleNouns,
+                                                           namedAgents,
                                                            objectPaths,
                                                            objectives,
                                                            simpleAccessNouns,
@@ -165,8 +167,11 @@ modToggleNounPhraseParser determiner adjPhrase = do
                                   modToggleAdverbs'
   modToggleNounPhraseRule modToggleNounPhraseRules
 
-objectPathParser :: Grammar r (Prod r Text Lexeme ObjectPath)
-objectPathParser = parseRule objectPaths ObjectPath
+namedAgentRule :: Grammar r (Prod r Text Lexeme NamedAgent)
+namedAgentRule = parseRule namedAgents NamedAgent
+
+objectPathRule :: Grammar r (Prod r Text Lexeme ObjectPath)
+objectPathRule = parseRule objectPaths ObjectPath
 
 objectPathPhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme ObjectPath

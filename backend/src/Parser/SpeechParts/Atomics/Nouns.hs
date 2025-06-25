@@ -249,7 +249,8 @@ agents = fromList $ map Agent [MAN,WOMAN,PERSON,GUARD]
 
 type NamedAgent :: Type
 newtype NamedAgent = NamedAgent { _fromNamedAgent :: Lexeme }
-  deriving newtype (Show, Eq, Hashable, Ord)
+  deriving stock (Show, Eq, Ord)
+  deriving newtype (Hashable, ToText)
 
 instance HasLexeme NamedAgent where
   toLexeme = _fromNamedAgent

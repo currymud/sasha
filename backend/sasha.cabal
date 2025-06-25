@@ -111,6 +111,7 @@ library sasha-testing
       Test.Parser.SpeechParts.Atomics.Adjectives
       Test.Parser.SpeechParts.Composites.Adjectives
       Test.Parser.SpeechParts.Composites.Nouns
+      Test.Parser.SpeechParts.Composites.Prepositions
  other-modules:
       Lexer
       Lexer.Model
