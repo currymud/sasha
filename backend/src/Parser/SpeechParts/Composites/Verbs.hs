@@ -3,7 +3,7 @@ module Parser.SpeechParts.Composites.Verbs where
 
 import           Control.Applicative                        (Alternative ((<|>)))
 import           Data.Kind                                  (Type)
-import           Data.Text                                  (Text)
+import           Data.Text                                  (Text, unwords)
 import           Debug.Trace                                (trace)
 import           GHC.Generics                               (Generic)
 import           Lexer                                      (Lexeme (..))
@@ -37,6 +37,9 @@ import           Parser.SpeechParts.Composites.Nouns        (ContainerPhrase,
                                                              TargetedStimulusNounPhrase,
                                                              ToggleNounPhrase)
 import           Parser.SpeechParts.Composites.Prepositions (TraversalPathPhrase)
+import           Prelude                                    hiding (unwords)
+import           Relude.String                              (ToText (toText))
+import           Relude.String.Conversion                   (ToText)
 import           Text.Earley                                (Grammar)
 import           Text.Earley.Grammar                        (Prod, rule)
 #ifdef TESTING
@@ -58,6 +61,12 @@ data TraversalVerbPhrase
   = SimpleTraversalVerbPhrase TraversalVerb ObjectPhrase
   | TraversalVerbPathPhrase TraversalVerb ObjectPhrase TraversalPathPhrase
   deriving stock (Show, Eq, Ord, Generic)
+
+instance ToText TraversalVerbPhrase where
+  toText (SimpleTraversalVerbPhrase verb obj) =
+    unwords [toText verb, toText obj]
+  toText (TraversalVerbPathPhrase verb obj path) =
+    unwords [toText verb, toText obj, toText path]
 
 type TraversalVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data TraversalVerbPhraseRules r = TraversalVerbPhraseRules
@@ -83,6 +92,12 @@ data GeneralPlacementVerbPhrase
       ObjectPhrase
       SupportPhrase
   deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText GeneralPlacementVerbPhrase where
+  toText (SimpleGeneralPlacementVerbPhrase verb obj) =
+    unwords [toText verb, toText obj]
+  toText (GeneralPlacementVerbPhrase verb obj support) =
+    unwords [toText verb, toText obj, toText support]
 
 type GeneralPlacementVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data GeneralPlacementVerbPhraseRules r = GeneralPlacementVerbPhraseRules
@@ -114,6 +129,11 @@ data AcquisitionVerbPhrase
       SupportPhrase
   deriving stock (Show, Eq, Ord,Generic)
 
+instance ToText AcquisitionVerbPhrase where
+  toText (SimpleAcquisitionVerbPhrase verb obj) =
+    unwords [toText verb, toText obj]
+  toText (AcquisitionVerbPhrase verb obj source support) =
+    unwords [toText verb, toText obj, toText source, toText support]
 type AcquisitionVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data AcquisitionVerbPhraseRules r = AcquisitionVerbPhraseRules
   { _acquisitionVerb :: Prod r Text Lexeme AcquisitionVerb

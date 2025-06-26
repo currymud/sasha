@@ -6,16 +6,20 @@ import           Parser.SpeechParts                      (parseRule)
 import           Parser.SpeechParts.Atomics.Prepositions (ContainmentMarker (..),
                                                           InstrumentalMarker (..),
                                                           LocationInterrogativeMarker (..),
+                                                          ObjectInterrogativeMarker (..),
                                                           Path (Path),
                                                           RecipientMarker (..),
+                                                          SourceMarker (SourceMarker),
                                                           SurfaceMarker (..),
                                                           TargetedStimulusMarker (TargetedStimulusMarker),
                                                           TraversalMarker (..),
                                                           containmentMarkers,
                                                           instrumentalMarker,
                                                           locationInterrogativeMarker,
+                                                          objectInterrogativeMarker,
                                                           paths,
                                                           recipientMarker,
+                                                          sourceMarker,
                                                           surfaceMarkers,
                                                           targetedStimulusMarker,
                                                           traversalMarkers)
@@ -36,6 +40,9 @@ pathRule = parseRule paths Path
 surfaceMarkerRule :: Grammar r (Prod r Text Lexeme SurfaceMarker)
 surfaceMarkerRule = parseRule surfaceMarkers SurfaceMarker
 
+sourceMarkerRule :: Grammar r (Prod r Text Lexeme SourceMarker)
+sourceMarkerRule = parseRule sourceMarker SourceMarker
+
 containmentMarkerRule :: Grammar r (Prod r Text Lexeme ContainmentMarker)
 containmentMarkerRule = parseRule containmentMarkers ContainmentMarker
 
@@ -47,6 +54,9 @@ instrumentalMarkerRule = parseRule instrumentalMarker InstrumentalMarker
 
 recipientMarkerRule :: Grammar r (Prod r Text Lexeme RecipientMarker)
 recipientMarkerRule = parseRule recipientMarker RecipientMarker
+
+objectInterrogativeMarkerRule :: Grammar r (Prod r Text Lexeme ObjectInterrogativeMarker)
+objectInterrogativeMarkerRule = parseRule objectInterrogativeMarker ObjectInterrogativeMarker
 
 traversalMarkerRule :: Grammar r (Prod r Text Lexeme TraversalMarker)
 traversalMarkerRule = parseRule traversalMarkers TraversalMarker

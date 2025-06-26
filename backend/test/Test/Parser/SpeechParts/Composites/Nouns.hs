@@ -15,13 +15,13 @@ import           Parser.NounParsers                      (containerRule,
                                                           surfaceRule,
                                                           targetedStimulusRule,
                                                           toggleNounRule)
-import           Parser.PhraseParsers                    (adjPhraseRule,
-                                                          implicitPathRule)
+import           Parser.PhraseParsers                    (implicitPathRule)
 import           Parser.PrepParser                       (containmentMarkerRule,
                                                           pathRule,
                                                           surfaceMarkerRule,
                                                           targetedStimulusMarkerRule)
-import           Parser.SpeechParts                      (determinerRule,
+import           Parser.SpeechParts                      (adjRule,
+                                                          determinerRule,
                                                           modToggleAdverbRule,
                                                           parseRule)
 import           Parser.SpeechParts.Atomics.Nouns        (ObjectPath (ObjectPath),
@@ -112,8 +112,8 @@ objectPathPhraseRule :: Grammar r (Prod r Text Lexeme ObjectPathPhrase)
 objectPathPhraseRule = do
   determinerRule' <- determinerRule
   objPathRule' <- parseRule objectPaths ObjectPath
-  adjPhraseRule' <- adjPhraseRule
-  objectPathPhraseParser determinerRule' objPathRule' adjPhraseRule'
+  adjRule' <- adjRule
+  objectPathPhraseParser determinerRule' objPathRule' adjRule'
 
 checkPathPhrase :: Gen Bool
 checkPathPhrase = do
@@ -211,7 +211,7 @@ checkObjectPhrase = do
 objectPhraseRule':: Grammar r (Prod r Text Lexeme ObjectPhrase)
 objectPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjPhraseRule' <- adjRule
   objectivePhraseParser determinerRule' adjPhraseRule'
 
 checkSurfacePhrase :: Gen Bool
@@ -237,13 +237,13 @@ checkSurfacePhrase = do
 surfacePhraseRule' :: Grammar r (Prod r Text Lexeme SurfacePhrase)
 surfacePhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   surfaceRule' <-  surfaceRule
   surfaceMarkerRule' <- surfaceMarkerRule
   surfacePhraseRule $
    SurfacePhraseRules
      determinerRule'
-     adjPhraseRule'
+     adjRule'
      surfaceRule'
      surfaceMarkerRule'
 
@@ -272,13 +272,13 @@ checkContainerPhrase = do
 containerPhraseRule' :: Grammar r (Prod r Text Lexeme ContainerPhrase)
 containerPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   containerRule' <- containerRule
   containmentMarkerRule' <- containmentMarkerRule
   containerPhraseRule $
     ContainerPhraseRules
       determinerRule'
-      adjPhraseRule'
+      adjRule'
       containerRule'
       containmentMarkerRule'
 
@@ -327,23 +327,23 @@ checkDirectionalStimulusNounPhrase = do
 directionalStimulusNounPhraseRule' :: Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
 directionalStimulusNounPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   directionalStimulusNounRule' <- directionalStimulusNounRule
   directionalStimulusNounPhraseRule
     $ DirectionalStimulusNounRules
         determinerRule'
-        adjPhraseRule'
+        adjRule'
         directionalStimulusNounRule'
 
 toggleNounPhraseRule' :: Grammar r (Prod r Text Lexeme ToggleNounPhrase)
 toggleNounPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   toggleNounRule' <- toggleNounRule
   toggleNounPhraseRule
     $ ToggleNounPhraseRules
         determinerRule'
-        adjPhraseRule'
+        adjRule'
         toggleNounRule'
 
 checkToggleNounPhrase :: Gen Bool
@@ -377,13 +377,13 @@ checkModToggleNounPhrase = do
 modToggleNounPhraseRule' :: Grammar r (Prod r Text Lexeme ModToggleNounPhrase)
 modToggleNounPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   modToggleNounRule' <- modToggleNounRule
   modToggleAdverbRule' <- modToggleAdverbRule
   modToggleNounPhraseRule
     $ ModToggleNounPhraseRules
         determinerRule'
-        adjPhraseRule'
+        adjRule'
         modToggleNounRule'
         modToggleAdverbRule'
 
@@ -392,13 +392,13 @@ targetedStimulusNounPhraseRule' = do
   determinerRule' <- determinerRule
   targetedStimulusRule' <- targetedStimulusRule
   targetedStimulusMarkerRule' <- targetedStimulusMarkerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   targetedStimulusNounPhraseRule
     $ TargetedStimulusNounPhraseRules
         targetedStimulusMarkerRule'
         targetedStimulusRule'
         determinerRule'
-        adjPhraseRule'
+        adjRule'
 
 checkTargetedStimulusNounPhrase :: Gen Bool
 checkTargetedStimulusNounPhrase = do
@@ -417,12 +417,12 @@ checkTargetedStimulusNounPhrase = do
 simpleAccessNounPhraseRule' :: Grammar r (Prod r Text Lexeme SimpleAccessNounPhrase)
 simpleAccessNounPhraseRule' = do
   determinerRule' <- determinerRule
-  adjPhraseRule' <- adjPhraseRule
+  adjRule' <- adjRule
   simpleAccessNounRule' <- simpleAccessNounRule
   simpleAccessNounPhraseRule $
     SimpleAccessNounPhraseRules
       determinerRule'
-      adjPhraseRule'
+      adjRule'
       simpleAccessNounRule'
 
 checkSimpleAccessNounPhrase :: Gen Bool

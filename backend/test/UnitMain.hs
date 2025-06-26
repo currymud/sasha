@@ -5,18 +5,18 @@ import qualified Test.Lexer
 import qualified Test.Parser.SpeechParts.Atomics.Adjectives
 import qualified Test.Parser.SpeechParts.Atomics.Nouns
 import qualified Test.Parser.SpeechParts.Atomics.Verbs
-import qualified Test.Parser.SpeechParts.Composites.Adjectives
 import qualified Test.Parser.SpeechParts.Composites.Nouns
 import qualified Test.Parser.SpeechParts.Composites.Prepositions
+import qualified Test.Parser.SpeechParts.Composites.Verbs
 main :: IO ()
 main = hspec $ do
   runIO $ putStrLn "Running property tests..."
   Test.Parser.SpeechParts.Atomics.Verbs.spec
   Test.Parser.SpeechParts.Atomics.Nouns.spec
   Test.Parser.SpeechParts.Atomics.Adjectives.spec
-  Test.Parser.SpeechParts.Composites.Adjectives.spec
   Test.Parser.SpeechParts.Composites.Nouns.spec
   Test.Parser.SpeechParts.Composites.Prepositions.spec
+  Test.Parser.SpeechParts.Composites.Verbs.spec
   runIO $ putStrLn "Running unit tests..."
   Test.Lexer.spec
 

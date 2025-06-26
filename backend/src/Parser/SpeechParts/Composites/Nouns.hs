@@ -1,38 +1,37 @@
 module Parser.SpeechParts.Composites.Nouns where
 
-import           Control.Applicative                      (Alternative ((<|>)))
-import           Data.Kind                                (Type)
-import           Data.Text                                (Text, unwords)
-import           GHC.Generics                             (Generic)
-import           Lexer                                    (Lexeme (..))
-import           Parser.SpeechParts.Atomics.Adverbs       (ImplicitPath,
-                                                           ModToggleAdverb)
-import           Parser.SpeechParts.Atomics.Misc          (Determiner)
-import           Parser.SpeechParts.Atomics.Nouns         (Container,
-                                                           DirectionalStimulus,
-                                                           ModToggleNoun,
-                                                           ObjectPath,
-                                                           Objective,
-                                                           SimpleAccessNoun,
-                                                           Surface,
-                                                           TargetedStimulus,
-                                                           ToggleNoun)
-import           Parser.SpeechParts.Atomics.Prepositions  (ContainmentMarker,
-                                                           InstrumentalMarker,
-                                                           Path, SurfaceMarker,
-                                                           TargetedStimulusMarker)
-import           Parser.SpeechParts.Composites.Adjectives (AdjPhrase)
-import           Prelude                                  hiding (unwords)
-import           Relude.String.Conversion                 (ToText, toText)
-import           Text.Earley                              (Grammar)
-import           Text.Earley.Grammar                      (Prod, rule)
+import           Control.Applicative                     (Alternative ((<|>)))
+import           Data.Kind                               (Type)
+import           Data.Text                               (Text, unwords)
+import           GHC.Generics                            (Generic)
+import           Lexer                                   (Lexeme (..))
+import           Parser.SpeechParts.Atomics.Adjectives   (Adjective)
+import           Parser.SpeechParts.Atomics.Adverbs      (ImplicitPath,
+                                                          ModToggleAdverb)
+import           Parser.SpeechParts.Atomics.Misc         (Determiner)
+import           Parser.SpeechParts.Atomics.Nouns        (Container,
+                                                          DirectionalStimulus,
+                                                          ModToggleNoun,
+                                                          ObjectPath, Objective,
+                                                          SimpleAccessNoun,
+                                                          Surface,
+                                                          TargetedStimulus,
+                                                          ToggleNoun)
+import           Parser.SpeechParts.Atomics.Prepositions (ContainmentMarker,
+                                                          InstrumentalMarker,
+                                                          Path, SurfaceMarker,
+                                                          TargetedStimulusMarker)
+import           Prelude                                 hiding (unwords)
+import           Relude.String.Conversion                (ToText, toText)
+import           Text.Earley                             (Grammar)
+import           Text.Earley.Grammar                     (Prod, rule)
 #ifdef TESTING
-import           GHC.Generics                             (Generic)
-import           Test.QuickCheck                          (Arbitrary (arbitrary, shrink),
-                                                           arbitraryBoundedEnum,
-                                                           oneof)
-import           Test.QuickCheck.Arbitrary.Generic        (GenericArbitrary (..))
-import           Test.QuickCheck.Instances.Text           ()
+import           GHC.Generics                            (Generic)
+import           Test.QuickCheck                         (Arbitrary (arbitrary, shrink),
+                                                          arbitraryBoundedEnum,
+                                                          oneof)
+import           Test.QuickCheck.Arbitrary.Generic       (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text          ()
 #endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState
@@ -43,14 +42,14 @@ type ObjectPathPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ObjectPathPhraseRules r = ObjectPathPhraseRules
   { _objectPathRule :: Prod r Text Lexeme ObjectPath
   , _determinerRule :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _adjRule        :: Prod r Text Lexeme Adjective
   }
 
 type ObjectPathPhrase :: Type
 data ObjectPathPhrase
   = SimpleObjectPathPhrase ObjectPath
   | ObjectPathPhrase  Determiner ObjectPath
-  | ObjectPathPhraseAdj Determiner AdjPhrase ObjectPath
+  | ObjectPathPhraseAdj Determiner Adjective ObjectPath
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText ObjectPathPhrase where
@@ -66,7 +65,7 @@ objectPathPhraseRule (ObjectPathPhraseRules {..}) =
            <|> ObjectPathPhrase <$> _determinerRule <*> _objectPathRule
            <|> ObjectPathPhraseAdj
                  <$> _determinerRule
-                 <*> _adjPhraseRule
+                 <*> _adjRule
                  <*> _objectPathRule
 
 type PathPhrase :: Type
@@ -109,8 +108,8 @@ type NounPhrase :: Type -> Type
 data NounPhrase a
   = SimpleNounPhrase a
   | NounPhrase Determiner a
-  | DescriptiveNounPhrase AdjPhrase a
-  | DescriptiveNounPhraseDet Determiner AdjPhrase a
+  | DescriptiveNounPhrase Adjective a
+  | DescriptiveNounPhraseDet Determiner Adjective a
   deriving stock (Show, Eq, Ord,Generic)
 
 instance ToText a => ToText (NounPhrase a) where
@@ -124,7 +123,7 @@ instance ToText a => ToText (NounPhrase a) where
 type NounPhraseRules :: Type -> (Type -> Type -> Type -> Type) -> Type
 data NounPhraseRules a r = NounPhraseRules
   { _determinerRule :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _adjRule        :: Prod r Text Lexeme Adjective
   , _nounRule       :: Prod r Text Lexeme a
   }
 
@@ -133,10 +132,10 @@ nounPhraseRule :: NounPhraseRules a r
 nounPhraseRule (NounPhraseRules{..}) =
   rule $ SimpleNounPhrase <$> _nounRule
            <|> NounPhrase <$> _determinerRule <*> _nounRule
-           <|> DescriptiveNounPhrase <$> _adjPhraseRule <*> _nounRule
+           <|> DescriptiveNounPhrase <$> _adjRule <*> _nounRule
            <|> DescriptiveNounPhraseDet
                  <$> _determinerRule
-                 <*> _adjPhraseRule
+                 <*> _adjRule
                  <*> _nounRule
 
 type ObjectPhrase :: Type
@@ -148,7 +147,7 @@ type ObjectPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ObjectPhraseRules r = ObjectPhraseRules
   { _determinerRule :: Prod r Text Lexeme Determiner
   , _objectiveRule  :: Prod r Text Lexeme Objective
-  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _adjRule        :: Prod r Text Lexeme Adjective
   }
 
 objectPhraseRule :: ObjectPhraseRules r
@@ -160,7 +159,7 @@ objectPhraseRule (ObjectPhraseRules {..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _objectiveRule
           }
 
@@ -178,7 +177,7 @@ instance ToText SurfacePhrase where
 type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SurfacePhraseRules r = SurfacePhraseRules
   { _determinerRule    :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
+  , _adjRule           :: Prod r Text Lexeme Adjective
   , _surfaceRule       :: Prod r Text Lexeme Surface
   , _surfaceMarkerRule :: Prod r Text Lexeme SurfaceMarker
   }
@@ -193,7 +192,7 @@ surfacePhraseRule (SurfacePhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _surfaceRule
           }
 
@@ -211,7 +210,7 @@ instance ToText ContainerPhrase where
 type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ContainerPhraseRules r = ContainerPhraseRules
   { _determinerRule      :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule       :: Prod r Text Lexeme AdjPhrase
+  , _adjRule             :: Prod r Text Lexeme Adjective
   , _containerRule       :: Prod r Text Lexeme Container
   , _containerMarkerRule :: Prod r Text Lexeme ContainmentMarker
   }
@@ -226,7 +225,7 @@ containerPhraseRule (ContainerPhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _containerRule
           }
 
@@ -260,7 +259,7 @@ newtype DirectionalStimulusNounPhrase = DirectionalStimulusNounPhrase (NounPhras
 type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
 data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
   { _determinerRule          :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule           :: Prod r Text Lexeme AdjPhrase
+  , _adjRule                 :: Prod r Text Lexeme Adjective
   , _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus
   }
 
@@ -273,7 +272,7 @@ directionalStimulusNounPhraseRule (DirectionalStimulusNounRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _directionalStimulusRule
           }
 
@@ -285,7 +284,7 @@ newtype ToggleNounPhrase = ToggleNounPhrase (NounPhrase ToggleNoun)
 type ToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ToggleNounPhraseRules r = ToggleNounPhraseRules
   { _determinerRule :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule  :: Prod r Text Lexeme AdjPhrase
+  , _adjRule        :: Prod r Text Lexeme Adjective
   , _toggleRule     :: Prod r Text Lexeme ToggleNoun
   }
 
@@ -298,7 +297,7 @@ toggleNounPhraseRule (ToggleNounPhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _toggleRule
           }
 
@@ -313,7 +312,7 @@ instance ToText ModToggleNounPhrase where
 type ModToggleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ModToggleNounPhraseRules r = ModToggleNounPhraseRules
   { _determinerRule    :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule     :: Prod r Text Lexeme AdjPhrase
+  , _adjRule           :: Prod r Text Lexeme Adjective
   , _modToggleNounRule :: Prod r Text Lexeme ModToggleNoun
   , _modToggleAdvRule  :: Prod r Text Lexeme ModToggleAdverb
   }
@@ -327,7 +326,7 @@ modToggleNounPhraseRule (ModToggleNounPhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _modToggleNounRule
           }
 
@@ -347,7 +346,7 @@ data TargetedStimulusNounPhraseRules r = TargetedStimulusNounPhraseRules
   { _targetedStimulusMarkerRule :: Prod r Text Lexeme TargetedStimulusMarker
   , _targetedStimulusRule       :: Prod r Text Lexeme TargetedStimulus
   , _determinerRule             :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule              :: Prod r Text Lexeme AdjPhrase
+  , _adjRule                    :: Prod r Text Lexeme Adjective
   }
 
 targetedStimulusNounPhraseRule :: TargetedStimulusNounPhraseRules r
@@ -360,7 +359,7 @@ targetedStimulusNounPhraseRule (TargetedStimulusNounPhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _targetedStimulusRule
           }
 
@@ -372,7 +371,7 @@ newtype SimpleAccessNounPhrase = SimpleAccessNounPhrase (NounPhrase SimpleAccess
 type SimpleAccessNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SimpleAccessNounPhraseRules r = SimpleAccessNounPhraseRules
   { _determinerRule       :: Prod r Text Lexeme Determiner
-  , _adjPhraseRule        :: Prod r Text Lexeme AdjPhrase
+  , _adjRule              :: Prod r Text Lexeme Adjective
   , _simpleAccessNounRule :: Prod r Text Lexeme SimpleAccessNoun
   }
 
@@ -386,7 +385,7 @@ simpleAccessNounPhraseRule (SimpleAccessNounPhraseRules{..}) =
    rules
       = NounPhraseRules
           { _determinerRule = _determinerRule
-          , _adjPhraseRule = _adjPhraseRule
+          , _adjRule = _adjRule
           , _nounRule = _simpleAccessNounRule
           }
 #ifdef TESTING
