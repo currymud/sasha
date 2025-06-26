@@ -270,7 +270,7 @@ instance HasLexeme AcquisitionVerb where
   toLexeme = _fromAcquisitionVerb
 
 acquisitionVerbs :: HashSet AcquisitionVerb
-acquisitionVerbs = fromList $ map AcquisitionVerb [GET,TAKE,REMOVE]
+acquisitionVerbs = fromList $ map AcquisitionVerb [GET,REMOVE]
 
 type TransferVerb :: Type
 newtype TransferVerb = TransferVerb { _fromTransferVerb :: Lexeme }

@@ -121,13 +121,13 @@ checkPathPhrase = do
   case pathPhrase of
     SimplePath implicitPath -> case runLexer (toText implicitPath) of
       Left _     -> trace "failed simplePath" pure False
-      Right toks -> trace ("simplePath result" <> show toks) $ pure roundTrip
+      Right toks -> pure roundTrip
                     where
                       roundTrip =
                         pathPhrase `elem` parsed toks
     PathPhrase path det objPath -> case runLexer textify of
       Left _     -> trace "failed pathPhras" $ pure False
-      Right toks -> trace ("pathPhrase result" <> show toks) $ pure roundTrip
+      Right toks -> pure roundTrip
                     where
                       roundTrip =
                         pathPhrase `elem` parsed toks
@@ -250,8 +250,7 @@ surfacePhraseRule' = do
 checkContainerPhrase :: Gen Bool
 checkContainerPhrase = do
   containerPhrase <- arbitrary :: Gen ContainerPhrase
-  trace ("ContainerPhrase: " <> show (toText containerPhrase)) $ do
-    case containerPhrase of
+  case containerPhrase of
       cphrase@(SimpleContainerPhrase {}) -> case runLexer (toText cphrase) of
         Left _     -> pure False
         Right toks -> pure roundTrip

@@ -3,6 +3,7 @@ module      Test.Parser.SpeechParts.Composites.Verbs where
 import           Data.Text                                       (Text)
 import           Debug.Trace                                     (trace)
 import           Lexer                                           (Lexeme)
+import           Parser.Model.Nouns                              (NounParsers (..))
 import           Parser.NounParsers                              (namedAgentRule)
 import           Parser.PrepParser                               (containmentMarkerRule,
                                                                   instrumentalMarkerRule,
@@ -11,6 +12,8 @@ import           Parser.PrepParser                               (containmentMar
                                                                   sourceMarkerRule,
                                                                   targetedStimulusMarkerRule,
                                                                   traversalMarkerRule)
+import           Parser.SpeechParts                              (adjRule,
+                                                                  determinerRule)
 import           Parser.SpeechParts.Atomics.Verbs                (GeneralPlacementVerb)
 import           Parser.SpeechParts.Composites.Nouns             (containerPhraseRule,
                                                                   objectPhraseRule,
@@ -24,17 +27,21 @@ import           Parser.SpeechParts.Composites.Prepositions      (InstrumentMark
                                                                   instrumentMarkerPhraseRules,
                                                                   targetedMarkerPhraseRules,
                                                                   traversalPathPhraseRule)
-import           Parser.SpeechParts.Composites.Verbs             (AcquisitionVerbPhrase,
+import           Parser.SpeechParts.Composites.Verbs             (AccessVerbPhrase,
+                                                                  AcquisitionVerbPhrase,
                                                                   AcquisitionVerbPhraseRules (AcquisitionVerbPhraseRules),
                                                                   GeneralPlacementVerbPhrase,
                                                                   GeneralPlacementVerbPhraseRules (GeneralPlacementVerbPhraseRules),
+                                                                  StimulusVerbPhrase,
                                                                   TraversalVerbPhrase,
                                                                   TraversalVerbPhraseRules (..),
                                                                   acquisitionVerbPhraseRule,
                                                                   generalPlacementVerbPhraseRule,
                                                                   traversalVerbPhraseRule)
-import           Parser.VerbParsers                              (acquisitionVerbRule,
+import           Parser.VerbParsers                              (accessVerbPhraseRules,
+                                                                  acquisitionVerbRule,
                                                                   generalPlacementVerbRule,
+                                                                  stimulusVerbPhraseRules,
                                                                   traversalVerbRule)
 import           Prelude                                         hiding
                                                                  (unwords)
@@ -120,17 +127,61 @@ acquisitionVerbPhraseRules' = do
 checkAcquisitionVerbPhrase :: Gen Bool
 checkAcquisitionVerbPhrase = do
   acquisitionVerbPhrase <- arbitrary :: Gen AcquisitionVerbPhrase
-  trace ("***PRIOR***" <> show acquisitionVerbPhrase) $ do
-    case runLexer (toText acquisitionVerbPhrase) of
-      Left _  -> trace "failed acquisitoion verb" $ pure False
-      Right toks -> trace ("parsed " <> show parsed <> " " <> "AVP " <> show parsed) $ pure roundTrip
-        where
-          roundTrip = acquisitionVerbPhrase `elem` parsed
-          acquisitionVerbPhraseParser' = parser acquisitionVerbPhraseRules'
-          parsed = fst (fullParses acquisitionVerbPhraseParser' toks)
+  case runLexer (toText acquisitionVerbPhrase) of
+    Left _  -> pure False
+    Right toks -> pure roundTrip
+      where
+        roundTrip = acquisitionVerbPhrase `elem` parsed
+        acquisitionVerbPhraseParser' = parser acquisitionVerbPhraseRules'
+        parsed = fst (fullParses acquisitionVerbPhraseParser' toks)
+
+accessVerbPhraseRules' :: Grammar r (Prod r Text Lexeme AccessVerbPhrase)
+accessVerbPhraseRules' = do
+  determinerRule' <- determinerRule
+  adjectiveRule' <- adjRule
+  accessVerbPhraseRules determinerRule' adjectiveRule'
+
+checkAccessVerbPhrase :: Gen Bool
+checkAccessVerbPhrase = do
+  accessVerbPhrase <- arbitrary :: Gen AccessVerbPhrase
+  case runLexer (toText accessVerbPhrase) of
+    Left _  -> pure False
+    Right toks -> pure roundTrip
+      where
+        roundTrip = accessVerbPhrase `elem` parsed
+        accessVerbPhraseParser' = parser accessVerbPhraseRules'
+        parsed = fst (fullParses accessVerbPhraseParser' toks)
+
+stimulusVerbPhraseRules' :: Grammar r (Prod r Text Lexeme StimulusVerbPhrase)
+stimulusVerbPhraseRules' = do
+  determinerRule' <- determinerRule
+  adjectiveRule' <- adjRule
+  targetedStimulusNounPhraseRule'' <- targetedStimulusNounPhraseRule'
+  containerPhraseRule'' <- containerPhraseRule'
+  supportPhraseRule'' <- supportPhraseRule'
+  objectPhraseRule'' <- objectPhraseRule'
+  let nounParserRules = NounParsers
+                           targetedStimulusNounPhraseRule''
+                           containerPhraseRule''
+                           supportPhraseRule''
+                           objectPhraseRule''
+  stimulusVerbPhraseRules nounParserRules determinerRule' adjectiveRule'
+
+checkStimulusVerbPhrase :: Gen Bool
+checkStimulusVerbPhrase = do
+  stimulusVerbPhrase <- arbitrary :: Gen StimulusVerbPhrase
+  case runLexer (toText stimulusVerbPhrase) of
+    Left _  -> pure False
+    Right toks -> pure roundTrip
+      where
+        roundTrip = stimulusVerbPhrase `elem` parsed
+        stimulusVerbPhraseParser' = parser stimulusVerbPhraseRules'
+        parsed = fst (fullParses stimulusVerbPhraseParser' toks)
 
 spec :: Spec
 spec = describe "Verb Phrases roundtrip" $ do
   prop "traversalVerbPhraseRule" checkTraversalVerbPhrase
   prop "generalPlacementVerbPhraseRule" checkGeneralPlacementVerbPhrase
   prop "acquisitionVerbPhraseRule" checkAcquisitionVerbPhrase
+  prop "accessVerbPhraseRule" checkAccessVerbPhrase
+  prop "stimulusVerbPhraseRule" checkStimulusVerbPhrase

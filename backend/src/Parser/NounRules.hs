@@ -1,8 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
-module Parser.NounParsers where
+module Parser.NounRules where
 import           Data.Text                               (Text)
 import           Lexer.Model                             (Lexeme)
-import           Parser.Model.Nouns                      (NounParsers (..))
+import           Parser.Model.Nouns                      (NounRules (..))
 import           Parser.Model.Prepositions               (PrepParsers (..))
 import           Parser.PrepParser                       (prepParser,
                                                           surfaceMarkerRule)
@@ -67,11 +67,11 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase,
                                                           toggleNounPhraseRule)
 import           Text.Earley.Grammar                     (Grammar, Prod)
 
-nounParsers :: Prod r Text Lexeme Determiner
+nounRules :: Prod r Text Lexeme Determiner
                  -> Prod r Text Lexeme Adjective
-                 -> Grammar r (NounParsers r)
-nounParsers determiner adj = do
-  targetedStimulusMarker' :: Prod r Text Lexeme TargetedStimulusMarker <- _targetedStimulusMarker' prepParser
+                 -> Grammar r (NounRules r)
+nounRules determiner adj = do
+  targetedStimulusMarker' <- _targetedStimulusMarker' prepParser
   _containerPhrase' <- containerPhraseParser determiner adj
   _objectPhrase' <- objectivePhraseParser determiner adj
   _targetedStimulusNounPhrase'
@@ -80,10 +80,10 @@ nounParsers determiner adj = do
         adj
         targetedStimulusMarker'
   _supportPhrase' <- supportPhraseParser determiner adj _containerPhrase'
-  pure $ NounParsers { .. }
+  pure $ NounRules { .. }
   where
     prepParsers = prepParser
-    nounParsers' = nounParsers
+--    nounParsers' = nounRules
 
 objectivePhraseParser :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective

@@ -134,6 +134,7 @@ instance ToText AcquisitionVerbPhrase where
     unwords [toText verb, toText obj]
   toText (AcquisitionVerbPhrase verb obj source support) =
     unwords [toText verb, toText obj, toText source, toText support]
+
 type AcquisitionVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data AcquisitionVerbPhraseRules r = AcquisitionVerbPhraseRules
   { _acquisitionVerb :: Prod r Text Lexeme AcquisitionVerb
@@ -163,6 +164,14 @@ data AccessVerbPhrase
   | SimpleAccessVerbPhrase SimpleAccessVerb SimpleAccessNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
+instance ToText AccessVerbPhrase where
+  toText (ToggleVerbPhrase verb noun) =
+    unwords [toText verb, toText noun]
+  toText (ModToggleVerbPhrase verb noun) =
+    unwords [toText verb, toText noun]
+  toText (SimpleAccessVerbPhrase verb noun) =
+    unwords [toText verb, toText noun]
+
 type AccessVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data AccessVerbPhraseRules r = AccessVerbPhraseRules
   { _toggleVerb             :: Prod r Text Lexeme ToggleVerb
@@ -173,9 +182,9 @@ data AccessVerbPhraseRules r = AccessVerbPhraseRules
   , _simpleAccessNounPhrase :: Prod r Text Lexeme SimpleAccessNounPhrase
   }
 
-accessVerbPhraseRule :: AccessVerbPhraseRules r
+accessVerbPhraseRules :: AccessVerbPhraseRules r
                         -> Grammar r (Prod r Text Lexeme AccessVerbPhrase)
-accessVerbPhraseRule (AccessVerbPhraseRules {..}) =
+accessVerbPhraseRules (AccessVerbPhraseRules {..}) =
   rule $ ToggleVerbPhrase <$> _toggleVerb <*> _toggleNounPhrase
            <|> ModToggleVerbPhrase <$> _modToggleVerb <*> _modToggleNounPhrase
            <|> SimpleAccessVerbPhrase
@@ -192,6 +201,20 @@ data StimulusVerbPhrase
   | ImplicitRegionalStimulusVerbPhrase ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
 
+instance ToText StimulusVerbPhrase where
+  toText (SimpleImplicitStimulusVerbPhrase verb) =
+    toText verb
+  toText (ExplicitStimiulusVerbPhrase verb noun) =
+    unwords [toText verb, toText noun]
+  toText (TargetedStimulusVerbPhrase verb noun) =
+    unwords [toText verb, toText noun]
+  toText (DirectionalStimulusVerbPhrase verb marker noun) =
+    unwords [toText verb, toText marker, toText noun]
+  toText (ContainerStimulusVerbPhrase verb container) =
+    unwords [toText verb, toText container]
+  toText (ImplicitRegionalStimulusVerbPhrase verb) =
+    toText verb
+
 type StimulusVerbPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data StimulusVerbPhraseRules r = StimulusVerbPhraseRules
   { _implicitStimulusVerb          :: Prod r Text Lexeme ImplicitStimulusVerb
@@ -205,9 +228,9 @@ data StimulusVerbPhraseRules r = StimulusVerbPhraseRules
   , _implicitRegionalStimulusVerb  :: Prod r Text Lexeme ImplicitRegionalStimulusVerb
   }
 
-stimulusVerbPhraseRule :: StimulusVerbPhraseRules r
+stimulusVerbPhraseRules :: StimulusVerbPhraseRules r
                            -> Grammar r (Prod r Text Lexeme StimulusVerbPhrase)
-stimulusVerbPhraseRule (StimulusVerbPhraseRules {..}) =
+stimulusVerbPhraseRules (StimulusVerbPhraseRules {..}) =
   rule $ SimpleImplicitStimulusVerbPhrase <$> _implicitStimulusVerb
            <|> ExplicitStimiulusVerbPhrase
                 <$> _explicitStimulusVerb
@@ -231,6 +254,18 @@ data Imperative
   | AccessVerbPhrase AccessVerbPhrase -- "flip" "push" "pull"
   deriving stock (Show, Eq, Ord, Generic)
 
+instance ToText Imperative where
+  toText (GeneralPlacement verbPhrase) =
+    toText verbPhrase
+  toText (AcquisitionalPlacement verbPhrase) =
+    toText verbPhrase
+  toText (StimulusVerbPhrase verbPhrase) =
+    toText verbPhrase
+  toText (CardinalMovement verb path) =
+    unwords [toText verb, toText path]
+  toText (AccessVerbPhrase verbPhrase) =
+    toText verbPhrase
+
 type ImperativeRules :: (Type -> Type -> Type -> Type) -> Type
 data ImperativeRules r = ImperativeRules
   { _generalPlacementVerbPhrase :: Prod r Text Lexeme GeneralPlacementVerbPhrase
@@ -241,9 +276,9 @@ data ImperativeRules r = ImperativeRules
   , _accessVerbPhrase           :: Prod r Text Lexeme AccessVerbPhrase
   }
 
-imperativeRule :: ImperativeRules r
+imperativeRules :: ImperativeRules r
                   -> Grammar r (Prod r Text Lexeme Imperative)
-imperativeRule (ImperativeRules {..}) =
+imperativeRules (ImperativeRules {..}) =
   trace "imperative rule " $ rule $ GeneralPlacement <$> _generalPlacementVerbPhrase
            <|> AcquisitionalPlacement <$> _acquisitionVerbPhrase
            <|> StimulusVerbPhrase <$> _stimulusVerbPhrase
@@ -265,9 +300,9 @@ data InterrogativeRules r = InterrogativeRules
   , _objectPhrase              :: Prod r Text Lexeme ObjectPhrase
   }
 
-interrogativeRule :: InterrogativeRules r
+interrogativeRules :: InterrogativeRules r
                        -> Grammar r (Prod r Text Lexeme Interrogative)
-interrogativeRule (InterrogativeRules {..}) =
+interrogativeRules (InterrogativeRules {..}) =
   rule $ ObjectInterrogative
              <$> _objectInterrogativeMarker
              <*> _topicMarker

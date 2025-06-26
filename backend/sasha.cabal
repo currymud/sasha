@@ -55,7 +55,7 @@ library
       Parser
       Parser.Model.Nouns
       Parser.Model.Prepositions
-      Parser.NounParsers
+      Parser.NounRules
       Parser.PhraseParsers
       Parser.PrepParser
       Parser.SpeechParts
@@ -116,7 +116,7 @@ library sasha-testing
       Parser
       Parser.Model.Nouns
       Parser.Model.Prepositions
-      Parser.NounParsers
+      Parser.NounRules
       Parser.PhraseParsers
       Parser.PrepParser
       Parser.SpeechParts

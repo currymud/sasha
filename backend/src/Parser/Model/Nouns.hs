@@ -10,8 +10,8 @@ import           Parser.SpeechParts.Composites.Nouns (ContainerPhrase,
 import           Text.Earley                         (Prod)
 import           Text.Earley.Grammar                 (Grammar)
 
-type NounParsers :: (Type -> Type -> Type -> Type) -> Type
-data NounParsers r = NounParsers
+type NounRules :: (Type -> Type -> Type -> Type) -> Type
+data NounRules r = NounRules
   { _targetedStimulusNounPhrase' :: Prod r Text Lexeme TargetedStimulusNounPhrase
   , _containerPhrase' :: Prod r Text Lexeme ContainerPhrase
   , _supportPhrase' :: Prod r Text Lexeme SupportPhrase

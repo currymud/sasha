@@ -11,7 +11,7 @@ import           Parser.NounParsers              (nounParsers)
 import           Parser.SpeechParts              (Sentence (..), adjRule,
                                                   determinerRule, parseRule)
 import           Parser.SpeechParts.Atomics.Misc (Determiner (..), determiners)
-import           Parser.VerbParsers              (imperativePhraseParser,
+import           Parser.VerbParsers              (imperativeRules,
                                                   vocativeParser)
 import           Relude.String.Conversion        (ToText (toText))
 import           Text.Earley
@@ -29,8 +29,8 @@ sentenceParser :: Grammar r (Prod r Text Lexeme Sentence)
 sentenceParser = mdo
   determiner <- determinerRule
   adj <- adjRule
-  nounParsers' <- nounParsers determiner adj
-  imperative <- imperativePhraseParser nounParsers' determiner adj
+  nounRules' <- nounRules determiner adj
+  imperative <- imperativeRules nounParsers' determiner adj
   vocative <- vocativeParser imperative nounParsers'
   pure $ Nominative <$> imperative
            <|> Vocative <$> vocative

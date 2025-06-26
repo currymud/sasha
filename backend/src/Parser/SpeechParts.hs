@@ -28,7 +28,13 @@ modToggleAdverbRule = parseRule modToggleAdverbs ModToggleAdverb
 
 implicitPathRule :: Grammar r (Prod r Text Lexeme ImplicitPath)
 implicitPathRule = parseRule implicitPaths ImplicitPath
-
+  {-
+parseRule :: (HasLexeme a) => HashSet a
+                                -> (Lexeme -> a)
+                                -> Grammar r (Prod r Text Lexeme a)
+parseRule morphemes _toMorpheme = rule $ terminal $ \lexeme ->
+     find (\m -> toLexeme m == lexeme) (toList morphemes)
+-}
 parseRule :: (HasLexeme a) => HashSet a
                                 -> (Lexeme -> a)
                                 -> Grammar r (Prod r Text Lexeme a)
@@ -36,7 +42,6 @@ parseRule morphemes toMorpheme = rule $ terminal $ \lexeme ->
      case find (\m -> toLexeme m == lexeme) (toList morphemes) of
        Just _  -> Just (toMorpheme lexeme)
        Nothing -> Nothing
-
 type Sentence :: Type
 data Sentence
   = Nominative Imperative

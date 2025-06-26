@@ -1,9 +1,9 @@
 module Parser.VerbParsers where
 import           Data.Text                               (Text)
 import           Lexer.Model                             (Lexeme)
-import           Parser.Model.Nouns                      (NounParsers (..))
+import           Parser.Model.Nouns                      (NounRules (..))
 import           Parser.Model.Prepositions               (PrepParsers (..))
-import           Parser.NounParsers                      (directionalStimulusNounParser,
+import           Parser.NounRules                        (directionalStimulusNounParser,
                                                           modToggleNounPhraseParser,
                                                           simpleAccessNounPhraseParser,
                                                           toggleNounPhraseParser)
@@ -88,13 +88,13 @@ import           Parser.SpeechParts.Composites.Verbs     (AccessVerbPhrase,
                                                           StimulusVerbPhraseRules (StimulusVerbPhraseRules),
                                                           Vocative,
                                                           VocativeRules (VocativeRules),
-                                                          accessVerbPhraseRule,
                                                           acquisitionVerbPhraseRule,
                                                           generalPlacementVerbPhraseRule,
-                                                          imperativeRule,
-                                                          interrogativeRule,
-                                                          stimulusVerbPhraseRule,
                                                           vocativeRule)
+import qualified Parser.SpeechParts.Composites.Verbs     (accessVerbPhraseRules,
+                                                          imperativeRules,
+                                                          interrogativeRules,
+                                                          stimulusVerbPhraseRules)
 import           Text.Earley.Grammar                     (Grammar, Prod)
 
 
@@ -171,30 +171,30 @@ researchVerbRule :: Grammar r (Prod r Text Lexeme ResearchAdverb)
 researchVerbRule = parseRule researchAdverbs ResearchAdverb
 
 
-imperativePhraseParser :: NounParsers r
+imperativeRules :: NounRules r
                             -> Prod r Text Lexeme Determiner
                             -> Prod r Text Lexeme Adjective
                             -> Grammar r (Prod r Text Lexeme Imperative)
-imperativePhraseParser nounParsers determiner adj = do
-  _accessVerbPhrase <- accessVerbPhraseParser determiner adj
+imperativeRules nounParsers determiner adj = do
+  _accessVerbPhrase <- accessVerbPhraseRules determiner adj
   _acquisitionVerbPhrase <- acquisitionVerbPhraseParser objectPhrase supportPhrase
   _generalPlacementVerbPhrase <- generalPlacementVerbPhraseParser objectPhrase supportPhrase
-  _stimulusVerbPhrase <- stimulusVerbPhraseParser nounParsers determiner adj
+  _stimulusVerbPhrase <- stimulusVerbPhraseRules nounParsers determiner adj
   _cardinalMovementVerb <- cardinalMovementRule
   _implicitPath <- implicitPathRule
-  imperativeRule $ ImperativeRules {..}
+  Parser.SpeechParts.Composites.Verbs.imperativeRules $ ImperativeRules {..}
   where
     objectPhrase = nounParsers._objectPhrase'
     supportPhrase = nounParsers._supportPhrase'
 
-interrogativePhraseParser :: NounParsers r
+interrogativeRules :: NounRules r
                             -> Grammar r (Prod r Text Lexeme Interrogative)
-interrogativePhraseParser nounParsers = do
+interrogativeRules nounParsers = do
   objectInterrogativeMarker' <- parseRule objectInterrogativeMarker ObjectInterrogativeMarker
   topicMarker' <- parseRule topicMarker TopicMarker
   locationInterrogativeMarker' <- _locationInterrogativeMarker' prepParsers
   copula' <- parseRule copula Copula
-  interrogativeRule $ InterrogativeRules
+  Parser.SpeechParts.Composites.Verbs.interrogativeRules $ InterrogativeRules
     objectInterrogativeMarker'
     topicMarker'
     locationInterrogativeMarker'
@@ -205,32 +205,32 @@ interrogativePhraseParser nounParsers = do
     prepParsers = prepParser
 
 vocativeParser :: Prod r Text Lexeme Imperative
-                    -> NounParsers r
+                    -> NounRules r
                     -> Grammar r (Prod r Text Lexeme Vocative)
 vocativeParser imperative nounParsers' = do
   namedAgent <- parseRule namedAgents NamedAgent -- does not belong in parser model
   partition <- parseRule partitions Partition
-  interrogative <- interrogativePhraseParser nounParsers'
+  interrogative <- interrogativeRules nounParsers'
   vocativeRule $ VocativeRules namedAgent partition imperative interrogative
 
-accessVerbPhraseParser :: Prod r Text Lexeme Determiner
+accessVerbPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme AccessVerbPhrase)
-accessVerbPhraseParser determiner adj = do
+accessVerbPhraseRules determiner adj = do
   toggleVerb <- parseRule toggleVerbs ToggleVerb
   toggleNounPhrase <- toggleNounPhraseParser determiner adj
   modToggleVerb' <- parseRule modToggleVerbs ModToggleVerb
   modToggleNounPhrase <- modToggleNounPhraseParser determiner adj
   simpleAccessVerb <- parseRule simpleAccessVerbs SimpleAccessVerb
   simpleAccessNounPhrase <- simpleAccessNounPhraseParser determiner adj
-  let accessVerbPhraseRules = AccessVerbPhraseRules
+  let accessVerbPhraseRules' = AccessVerbPhraseRules
                                toggleVerb
                                toggleNounPhrase
                                modToggleVerb'
                                modToggleNounPhrase
                                simpleAccessVerb
                                simpleAccessNounPhrase
-  accessVerbPhraseRule accessVerbPhraseRules
+  Parser.SpeechParts.Composites.Verbs.accessVerbPhraseRules accessVerbPhraseRules'
 
 acquisitionVerbPhraseParser :: Prod r Text Lexeme ObjectPhrase
                            -> Prod r Text Lexeme SupportPhrase
@@ -253,11 +253,11 @@ generalPlacementVerbPhraseParser objectPhrase supportPhrase = do
   generalPlacementVerbPhraseRule
     $ GeneralPlacementVerbPhraseRules generalPlacementVerb objectPhrase supportPhrase
 
-stimulusVerbPhraseParser :: NounParsers r
+stimulusVerbPhraseRules :: NounRules r
                            -> Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme StimulusVerbPhrase)
-stimulusVerbPhraseParser nounParsers determiner adj = do
+stimulusVerbPhraseRules nounParsers determiner adj = do
   directionalStimulusNoun <- directionalStimulusNounParser determiner adj
   implicitStimulusVerb <- parseRule implicitStimulusVerbs ImplicitStimulusVerb
   explicitStimulusVerb <- parseRule explicitStimulusVerbs ExplicitStimulusVerb
@@ -265,7 +265,7 @@ stimulusVerbPhraseParser nounParsers determiner adj = do
   directionalStimulusMarker <- parseRule directionalStimulusMarkers DirectionalStimulusMarker
   implicitRegionalStimulusVerb <- parseRule implicitRegionalStimulusVerbs ImplicitRegionalStimulusVerb
   targetedStimulusVerb <- parseRule targetedStimulusVerbs TargetedStimulusVerb
-  stimulusVerbPhraseRule
+  Parser.SpeechParts.Composites.Verbs.stimulusVerbPhraseRules
     $ StimulusVerbPhraseRules
         implicitStimulusVerb
         explicitStimulusVerb
@@ -279,6 +279,3 @@ stimulusVerbPhraseParser nounParsers determiner adj = do
   where
   targetedStimulusNounPhrase = _targetedStimulusNounPhrase' nounParsers
   containerPhrase = _containerPhrase' nounParsers
-
-
-

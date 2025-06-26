@@ -178,7 +178,6 @@ data Lexeme
   | TELL
   | SAY
   | GIVE
-  | TAKE
   | SHOW
   | OPENQUOTE
   | CLOSEQUOTE
@@ -377,7 +376,6 @@ term =
     <|> TELL <$ symbol "TELL"
     <|> SAY <$ symbol "SAY"
     <|> GIVE <$ symbol "GIVE"
-    <|> TAKE <$ symbol "TAKE"
     <|> SHOW <$ symbol "SHOW"
     <|> OPENQUOTE <$ symbol "\""
     <|> CLOSEQUOTE <$ symbol "\""
