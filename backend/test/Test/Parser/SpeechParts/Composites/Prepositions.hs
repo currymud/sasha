@@ -2,7 +2,7 @@ module      Test.Parser.SpeechParts.Composites.Prepositions where
 
 import           Data.Text                                  (Text)
 import           Lexer                                      (Lexeme)
-import           Parser.NounParsers                         (namedAgentRule)
+import           Parser.NounRules                           (namedAgentRule)
 import           Parser.PrepParser                          (containmentMarkerRule,
                                                              instrumentalMarkerRule,
                                                              pathRule,

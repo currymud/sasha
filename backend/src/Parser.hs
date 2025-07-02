@@ -7,7 +7,7 @@ import           Control.Applicative             ((<|>))
 import           Data.Text                       (Text)
 import qualified Data.Text                       as Text
 import           Lexer
-import           Parser.NounParsers              (nounParsers)
+import           Parser.NounRules                (nounRules)
 import           Parser.SpeechParts              (Sentence (..), adjRule,
                                                   determinerRule, parseRule)
 import           Parser.SpeechParts.Atomics.Misc (Determiner (..), determiners)
@@ -30,8 +30,7 @@ sentenceParser = mdo
   determiner <- determinerRule
   adj <- adjRule
   nounRules' <- nounRules determiner adj
-  imperative <- imperativeRules nounParsers' determiner adj
-  vocative <- vocativeParser imperative nounParsers'
+  imperative <- imperativeRules determiner adj nounRules'
+  vocative <- vocativeParser imperative nounRules'
   pure $ Nominative <$> imperative
            <|> Vocative <$> vocative
-

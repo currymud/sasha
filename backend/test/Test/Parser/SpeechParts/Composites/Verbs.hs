@@ -3,8 +3,8 @@ module      Test.Parser.SpeechParts.Composites.Verbs where
 import           Data.Text                                       (Text)
 import           Debug.Trace                                     (trace)
 import           Lexer                                           (Lexeme)
-import           Parser.Model.Nouns                              (NounParsers (..))
-import           Parser.NounParsers                              (namedAgentRule)
+import           Parser.Model.Nouns                              (NounRules (..))
+import           Parser.NounRules                                (namedAgentRule)
 import           Parser.PrepParser                               (containmentMarkerRule,
                                                                   instrumentalMarkerRule,
                                                                   pathRule,
@@ -32,6 +32,7 @@ import           Parser.SpeechParts.Composites.Verbs             (AccessVerbPhra
                                                                   AcquisitionVerbPhraseRules (AcquisitionVerbPhraseRules),
                                                                   GeneralPlacementVerbPhrase,
                                                                   GeneralPlacementVerbPhraseRules (GeneralPlacementVerbPhraseRules),
+                                                                  Imperative,
                                                                   StimulusVerbPhrase,
                                                                   TraversalVerbPhrase,
                                                                   TraversalVerbPhraseRules (..),
@@ -41,6 +42,7 @@ import           Parser.SpeechParts.Composites.Verbs             (AccessVerbPhra
 import           Parser.VerbParsers                              (accessVerbPhraseRules,
                                                                   acquisitionVerbRule,
                                                                   generalPlacementVerbRule,
+                                                                  imperativeRules,
                                                                   stimulusVerbPhraseRules,
                                                                   traversalVerbRule)
 import           Prelude                                         hiding
@@ -160,7 +162,7 @@ stimulusVerbPhraseRules' = do
   containerPhraseRule'' <- containerPhraseRule'
   supportPhraseRule'' <- supportPhraseRule'
   objectPhraseRule'' <- objectPhraseRule'
-  let nounParserRules = NounParsers
+  let nounParserRules = NounRules
                            targetedStimulusNounPhraseRule''
                            containerPhraseRule''
                            supportPhraseRule''
@@ -178,6 +180,20 @@ checkStimulusVerbPhrase = do
         stimulusVerbPhraseParser' = parser stimulusVerbPhraseRules'
         parsed = fst (fullParses stimulusVerbPhraseParser' toks)
 
+imperativeRules' :: Grammar r (Prod r Text Lexeme Imperative)
+imperativeRules' = do
+  determinerRule' <- determinerRule
+  adjectiveRule' <- adjRule
+  objectPhraseRule'' <- objectPhraseRule'
+  instrumentMarkerPhraseRules' <- instrumentMarkerPhraseRules
+  targetedMarkerPhraseRules' <- targetedMarkerPhraseRules
+  traversalPathPhraseRules' <- traversalPathPhraseRule
+  namedAgentRule' <- namedAgentRule
+  imperativeRules $ NounRules
+    objectPhraseRule''
+    instrumentMarkerPhraseRules'
+    targetedMarkerPhraseRules'
+    traversalPathPhraseRules'
 spec :: Spec
 spec = describe "Verb Phrases roundtrip" $ do
   prop "traversalVerbPhraseRule" checkTraversalVerbPhrase

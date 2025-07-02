@@ -1,4 +1,4 @@
-module Parser.SpeechParts.Atomics.Adjectives where
+module Model.Parser.Atomics.Adjectives where
 
 import           Data.Hashable             (Hashable)
 import           Data.HashSet              (HashSet, fromList)
@@ -25,11 +25,6 @@ newtype Adjective =
 instance HasLexeme Adjective where
   toLexeme = _fromAdjective
 
-adjectives :: HashSet Adjective
-adjectives = fromList $ map Adjective adjlex
-  where adjlex = [BLUE, RED, GREAT, LONG, OLD, DRUNK, PLANT, POT, TEA
-                 , CABINET, LOCKED, UNLOCKED, KITCHEN, LEFT, RIGHT
-                 , FRONT, BEHIND, SMALL, LARGE]
 #ifdef TESTING
 instance Arbitrary Adjective where
   arbitrary = elements $ HS.toList adjectives

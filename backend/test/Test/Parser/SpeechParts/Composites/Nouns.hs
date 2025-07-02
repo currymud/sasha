@@ -6,7 +6,7 @@ import           Debug.Trace                             (trace)
 import           Lexer                                   (runParser, tokens)
 import           Lexer.Model                             (Lexeme)
 import           Parser                                  (Parser)
-import           Parser.NounParsers                      (containerRule,
+import           Parser.NounRules                        (containerRule,
                                                           directionalStimulusNounRule,
                                                           modToggleNounRule,
                                                           objectPathPhraseParser,

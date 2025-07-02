@@ -1,4 +1,4 @@
-module Parser.VerbParsers where
+module Parser.VerbRules where
 import           Data.Text                               (Text)
 import           Lexer.Model                             (Lexeme)
 import           Parser.Model.Nouns                      (NounRules (..))
@@ -7,7 +7,7 @@ import           Parser.NounRules                        (directionalStimulusNou
                                                           modToggleNounPhraseParser,
                                                           simpleAccessNounPhraseParser,
                                                           toggleNounPhraseParser)
-import           Parser.PrepParser                       (prepParser)
+import           Parser.PrepRules                        (prepParser)
 import           Parser.SpeechParts                      (implicitPathRule,
                                                           parseRule)
 import           Parser.SpeechParts.Atomics.Adjectives   (Adjective)
@@ -171,21 +171,21 @@ researchVerbRule :: Grammar r (Prod r Text Lexeme ResearchAdverb)
 researchVerbRule = parseRule researchAdverbs ResearchAdverb
 
 
-imperativeRules :: NounRules r
-                            -> Prod r Text Lexeme Determiner
-                            -> Prod r Text Lexeme Adjective
-                            -> Grammar r (Prod r Text Lexeme Imperative)
-imperativeRules nounParsers determiner adj = do
+imperativeRules :: Prod r Text Lexeme Determiner
+                     -> Prod r Text Lexeme Adjective
+                     -> NounRules r
+                     -> Grammar r (Prod r Text Lexeme Imperative)
+imperativeRules determiner adj nounRules = do
   _accessVerbPhrase <- accessVerbPhraseRules determiner adj
   _acquisitionVerbPhrase <- acquisitionVerbPhraseParser objectPhrase supportPhrase
   _generalPlacementVerbPhrase <- generalPlacementVerbPhraseParser objectPhrase supportPhrase
-  _stimulusVerbPhrase <- stimulusVerbPhraseRules nounParsers determiner adj
+  _stimulusVerbPhrase <- stimulusVerbPhraseRules nounRules determiner adj
   _cardinalMovementVerb <- cardinalMovementRule
   _implicitPath <- implicitPathRule
   Parser.SpeechParts.Composites.Verbs.imperativeRules $ ImperativeRules {..}
   where
-    objectPhrase = nounParsers._objectPhrase'
-    supportPhrase = nounParsers._supportPhrase'
+    objectPhrase = nounRules._objectPhrase'
+    supportPhrase = nounRules._supportPhrase'
 
 interrogativeRules :: NounRules r
                             -> Grammar r (Prod r Text Lexeme Interrogative)

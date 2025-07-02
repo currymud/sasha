@@ -53,23 +53,26 @@ library
       Lexer
       Lexer.Model
       Parser
-      Parser.Model.Nouns
-      Parser.Model.Prepositions
+      Model.Parser.Atomics.Adjectives
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Atomics.Misc
+      Model.Parser.Atomics.Nouns
+      Model.Parser.Atomics.Prepositions
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Composites.Nouns
+      Model.Parser.Composites.Prepositions
+      Model.Parser.Composites.Verbs
+      Model.Parser.Nouns
+      Model.Parser.Prepositions
+      Model.Parser.SpeechParts
+      Parser.Partitions.Misc
+      Parser.Partitions.Adverbs
+      Parser.Partitions.Nouns
+      Parser.Partitions.Prepositions
+      Parser.Partitions.Verbs
       Parser.NounRules
-      Parser.PhraseParsers
-      Parser.PrepParser
-      Parser.SpeechParts
-      Parser.SpeechParts.Atomics.Adjectives
-      Parser.SpeechParts.Atomics.Adverbs
-      Parser.SpeechParts.Atomics.Misc
-      Parser.SpeechParts.Atomics.Nouns
-      Parser.SpeechParts.Atomics.Prepositions
-      Parser.SpeechParts.Atomics.Verbs
-      Parser.SpeechParts.Composites.Nouns
-      Parser.SpeechParts.Composites.Prepositions
-      Parser.SpeechParts.Composites.Verbs
-      Parser.VerbParsers
-
+      Parser.PrepRules
+      Parser.VerbRules
   hs-source-dirs:
       src
 
@@ -104,32 +107,29 @@ library sasha-testing
     , sasha
  exposed-modules:
       Test.Lexer
-      Test.Parser.SpeechParts.Atomics.Utils
-      Test.Parser.SpeechParts.Atomics.Verbs
-      Test.Parser.SpeechParts.Atomics.Nouns
-      Test.Parser.SpeechParts.Composites.Nouns
-      Test.Parser.SpeechParts.Composites.Prepositions
-      Test.Parser.SpeechParts.Composites.Verbs
+      Test.Parser.Internal.Rules.Atomics.Utils
+      Test.Parser.Internal.Rules.Atomics.Verbs
+      Test.Parser.Internal.Rules.Atomics.Nouns
+      Test.Parser.Internal.Rules.Composites.Nouns
+      Test.Parser.Internal.Rules.Composites.Prepositions
+      Test.Parser.Internal.Rules.Composites.Verbs
  other-modules:
       Lexer
       Lexer.Model
-      Parser
       Parser.Model.Nouns
       Parser.Model.Prepositions
       Parser.NounRules
-      Parser.PhraseParsers
-      Parser.PrepParser
-      Parser.SpeechParts
-      Parser.SpeechParts.Atomics.Adjectives
-      Parser.SpeechParts.Atomics.Adverbs
-      Parser.SpeechParts.Atomics.Misc
-      Parser.SpeechParts.Atomics.Nouns
-      Parser.SpeechParts.Atomics.Prepositions
-      Parser.SpeechParts.Atomics.Verbs
-      Parser.SpeechParts.Composites.Nouns
-      Parser.SpeechParts.Composites.Prepositions
-      Parser.SpeechParts.Composites.Verbs
-      Parser.VerbParsers
+      Parser.PrepRules
+      Parser.Model.Atomics.Adjectives
+      Parser.Model.Atomics.Adverbs
+      Parser.Model.Atomics.Misc
+      Parser.Model.Atomics.Nouns
+      Parser.Model.Atomics.Prepositions
+      Parser.Model.Atomics.Verbs
+      Parser.Model.Composites.Nouns
+      Parser.Model.Composites.Prepositions
+      Parser.Mdoel.Composites.Verbs
+      Parsers.VerbRules
 
  default-language: GHC2021 
 executable sasha-tests

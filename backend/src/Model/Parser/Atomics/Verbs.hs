@@ -1,4 +1,4 @@
-module Parser.SpeechParts.Atomics.Verbs where
+module Model.Parser.Atomics.Verbs where
 
 import           Data.Hashable             (Hashable)
 import           Data.HashSet              (HashSet, fromList, singleton)
@@ -22,9 +22,6 @@ newtype Copula = Copula { _fromCopula :: Lexeme }
 instance HasLexeme Copula where
   toLexeme = _fromCopula
 
-copula :: HashSet Copula
-copula = singleton $ Copula IS
-
 type CardinalMovementVerb :: Type
 newtype CardinalMovementVerb =
   CardinalMovementVerb { _fromCardinalMovementVerb :: Lexeme }
@@ -33,10 +30,6 @@ newtype CardinalMovementVerb =
 
 instance HasLexeme CardinalMovementVerb where
   toLexeme = _fromCardinalMovementVerb
-
-cardinalMovementVerbs :: HashSet CardinalMovementVerb
-cardinalMovementVerbs = fromList
-  $ map CardinalMovementVerb [GO, SAIL, SNEAK,RUN , MARCH, FLOAT, FLEE, WALK]
 
 type SpaceTransitionalVerb :: Type
 newtype SpaceTransitionalVerb =
@@ -47,10 +40,6 @@ newtype SpaceTransitionalVerb =
 instance HasLexeme SpaceTransitionalVerb where
   toLexeme = _fromSpaceTransitionalVerb
 
-spaceTransitionalVerbs :: HashSet SpaceTransitionalVerb
-spaceTransitionalVerbs =
-  fromList $ map SpaceTransitionalVerb [CLIMB,CRAWL,SWIM,JUMP]
-
 type ImplicitBoundaryVerb :: Type
 newtype ImplicitBoundaryVerb =
   ImplicitBoundaryVerb { _fromImplicitBoundaryVerb :: Lexeme }
@@ -59,9 +48,6 @@ newtype ImplicitBoundaryVerb =
 
 instance HasLexeme ImplicitBoundaryVerb where
   toLexeme = _fromImplicitBoundaryVerb
-
-implicitBoundaryVerbs :: HashSet ImplicitBoundaryVerb
-implicitBoundaryVerbs = singleton $ ImplicitBoundaryVerb EXIT
 
 type ExplicitBoundaryVerb :: Type
 newtype ExplicitBoundaryVerb =
@@ -72,9 +58,6 @@ newtype ExplicitBoundaryVerb =
 instance HasLexeme ExplicitBoundaryVerb where
   toLexeme = _fromExplicitBoundaryVerb
 
-explicitBoundaryVerbs :: HashSet ExplicitBoundaryVerb
-explicitBoundaryVerbs = singleton $ ExplicitBoundaryVerb ENTER
-
 type ImplicitRegionalStimulusVerb :: Type
 newtype ImplicitRegionalStimulusVerb =
   ImplicitRegionalStimulusVerb { _fromImplicitRegionalStimulusVerb :: Lexeme }
@@ -83,9 +66,6 @@ newtype ImplicitRegionalStimulusVerb =
 
 instance HasLexeme ImplicitRegionalStimulusVerb where
   toLexeme = _fromImplicitRegionalStimulusVerb
--- wait in line, sleep in bed
-implicitRegionalStimulusVerbs :: HashSet ImplicitRegionalStimulusVerb
-implicitRegionalStimulusVerbs = fromList $ map ImplicitRegionalStimulusVerb [WAIT, SLEEP]
 
 type ImplicitStimulusVerb :: Type
 newtype ImplicitStimulusVerb =
@@ -96,10 +76,6 @@ newtype ImplicitStimulusVerb =
 instance HasLexeme ImplicitStimulusVerb where
   toLexeme = _fromImplicitStimulusVerb
 
-implicitStimulusVerbs :: HashSet ImplicitStimulusVerb
-implicitStimulusVerbs =
-  fromList $ map ImplicitStimulusVerb [LOOK, SMELL, TASTE, LISTEN, TOUCH]
-
 type ExplicitStimulusVerb :: Type
 newtype ExplicitStimulusVerb =
   ExplicitStimulusVerb { _fromExplicitStimulusVerb :: Lexeme }
@@ -109,9 +85,6 @@ newtype ExplicitStimulusVerb =
 instance HasLexeme ExplicitStimulusVerb where
   toLexeme = _fromExplicitStimulusVerb
 
-explicitStimulusVerbs :: HashSet ExplicitStimulusVerb
-explicitStimulusVerbs = fromList $ map ExplicitStimulusVerb [SMELL,TASTE,TOUCH]
-
 type DirectionalStimulusVerb :: Type
 newtype DirectionalStimulusVerb = DirectionalStimulusVerb { _fromDirectionalStimulusVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -119,10 +92,6 @@ newtype DirectionalStimulusVerb = DirectionalStimulusVerb { _fromDirectionalStim
 
 instance HasLexeme DirectionalStimulusVerb where
   toLexeme = _fromDirectionalStimulusVerb
-
--- Verbs that can take directional prepositions like "at"
-directionalStimulusVerbs :: HashSet DirectionalStimulusVerb
-directionalStimulusVerbs = singleton $ DirectionalStimulusVerb LOOK
 
 type TargetedStimulusVerb :: Type
 newtype TargetedStimulusVerb = TargetedStimulusVerb { _fromTargetedStimulusVerb :: Lexeme }
@@ -132,10 +101,6 @@ newtype TargetedStimulusVerb = TargetedStimulusVerb { _fromTargetedStimulusVerb 
 instance HasLexeme TargetedStimulusVerb where
   toLexeme = _fromTargetedStimulusVerb
 
--- Verbs that can take targeted prepositions like "to"
-targetedStimulusVerbs :: HashSet TargetedStimulusVerb
-targetedStimulusVerbs = singleton $ TargetedStimulusVerb LISTEN
-
 type TraversalVerb :: Type
 newtype TraversalVerb = TraversalVerb { _fromTraversalVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -143,10 +108,6 @@ newtype TraversalVerb = TraversalVerb { _fromTraversalVerb :: Lexeme }
 
 instance HasLexeme TraversalVerb where
   toLexeme = _fromTraversalVerb
-
-traversalVerbs :: HashSet TraversalVerb
-traversalVerbs = fromList
-  $ map TraversalVerb [MOVE, THROW,TOSS, WALK, PUSH]
 
 type TraversalPathVerb :: Type
 newtype TraversalPathVerb = TraversalPathVerb { _fromTraversalPathVerb :: Lexeme }
@@ -156,9 +117,6 @@ newtype TraversalPathVerb = TraversalPathVerb { _fromTraversalPathVerb :: Lexeme
 instance HasLexeme TraversalPathVerb where
   toLexeme = _fromTraversalPathVerb
 
-traversalPathVerbs :: HashSet TraversalPathVerb
-traversalPathVerbs = singleton $ TraversalPathVerb SLIDE
-
 type ToggleVerb :: Type
 newtype ToggleVerb = ToggleVerb { _fromToggleVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -166,9 +124,6 @@ newtype ToggleVerb = ToggleVerb { _fromToggleVerb :: Lexeme }
 
 instance HasLexeme ToggleVerb where
   toLexeme = _fromToggleVerb
-
-toggleVerbs :: HashSet ToggleVerb
-toggleVerbs = fromList $ map ToggleVerb [FLIP, PUSH]
 
 type ModToggleVerb :: Type
 newtype ModToggleVerb = ModToggleVerb { _fromModToggleVerb :: Lexeme }
@@ -178,9 +133,6 @@ newtype ModToggleVerb = ModToggleVerb { _fromModToggleVerb :: Lexeme }
 instance HasLexeme ModToggleVerb where
   toLexeme = _fromModToggleVerb
 
-modToggleVerbs :: HashSet ModToggleVerb
-modToggleVerbs = singleton $ ModToggleVerb TURN
-
 type SimpleAccessVerb :: Type
 newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -188,10 +140,6 @@ newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }
 
 instance HasLexeme SimpleAccessVerb where
   toLexeme = _fromSimpleAccessVerb
-
--- These verbs don't take instruments
-simpleAccessVerbs :: HashSet SimpleAccessVerb
-simpleAccessVerbs = fromList $ map SimpleAccessVerb [OPEN, CLOSE]
 
 type InstrumentalAccessVerb :: Type
 newtype InstrumentalAccessVerb
@@ -202,10 +150,6 @@ newtype InstrumentalAccessVerb
 instance HasLexeme InstrumentalAccessVerb where
   toLexeme = _fromInstrumentalAccessVerb
 
--- These verbs can take instruments (with "with" phrase)
-instrumentalAccessVerbs :: HashSet InstrumentalAccessVerb
-instrumentalAccessVerbs = fromList $ map InstrumentalAccessVerb [LOCK, UNLOCK]
-
 type RotationalVerb :: Type
 newtype RotationalVerb = RotationalVerb { _fromRotationalVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -213,9 +157,6 @@ newtype RotationalVerb = RotationalVerb { _fromRotationalVerb :: Lexeme }
 
 instance HasLexeme RotationalVerb where
   toLexeme = _fromRotationalVerb
-
-rotationalVerbs :: HashSet RotationalVerb
-rotationalVerbs = fromList $ map RotationalVerb [TURN, TWIST, ROTATE]
 
 type DirectionalVerb :: Type
 newtype DirectionalVerb = DirectionalVerb { _fromDirectionalVerb :: Lexeme }
@@ -225,9 +166,6 @@ newtype DirectionalVerb = DirectionalVerb { _fromDirectionalVerb :: Lexeme }
 instance HasLexeme DirectionalVerb where
   toLexeme = _fromDirectionalVerb
 
-directionalVerbs :: HashSet DirectionalVerb
-directionalVerbs = fromList $ map DirectionalVerb [PUSH, PULL]
-
 type InstrumentActionVerb :: Type
 newtype InstrumentActionVerb = InstrumentActionVerb { _fromInstrumentActionVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -236,16 +174,10 @@ newtype InstrumentActionVerb = InstrumentActionVerb { _fromInstrumentActionVerb 
 instance HasLexeme InstrumentActionVerb where
   toLexeme = _fromInstrumentActionVerb
 
-instrumentActionVerbs :: HashSet InstrumentActionVerb
-instrumentActionVerbs = fromList $ map InstrumentActionVerb [PLAY, RING, SHOOT]
-
 type InstrumentalPlacementVerb :: Type
 newtype InstrumentalPlacementVerb = InstrumentalPlacementVerb { _fromInstrumentalPlacementVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
   deriving newtype (Hashable,ToText)
-
-instrumentalPlacementVerbs :: HashSet InstrumentalPlacementVerb
-instrumentalPlacementVerbs = fromList $ map InstrumentalPlacementVerb [PLANT,PUT,INSERT] -- Verbs that require/allow tools
 
 instance HasLexeme InstrumentalPlacementVerb where
   toLexeme = _fromInstrumentalPlacementVerb
@@ -258,9 +190,6 @@ newtype GeneralPlacementVerb = GeneralPlacementVerb { _fromGeneralPlacementVerb 
 instance HasLexeme GeneralPlacementVerb where
   toLexeme = _fromGeneralPlacementVerb
 
-generalPlacementVerbs :: HashSet GeneralPlacementVerb
-generalPlacementVerbs = fromList $ map GeneralPlacementVerb [DROP, PUT] -- Verbs with minimal restrictions
-
 type AcquisitionVerb :: Type
 newtype AcquisitionVerb = AcquisitionVerb { _fromAcquisitionVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -268,9 +197,6 @@ newtype AcquisitionVerb = AcquisitionVerb { _fromAcquisitionVerb :: Lexeme }
 
 instance HasLexeme AcquisitionVerb where
   toLexeme = _fromAcquisitionVerb
-
-acquisitionVerbs :: HashSet AcquisitionVerb
-acquisitionVerbs = fromList $ map AcquisitionVerb [GET,REMOVE]
 
 type TransferVerb :: Type
 newtype TransferVerb = TransferVerb { _fromTransferVerb :: Lexeme }
@@ -280,9 +206,6 @@ newtype TransferVerb = TransferVerb { _fromTransferVerb :: Lexeme }
 instance HasLexeme TransferVerb where
   toLexeme = _fromTransferVerb
 
-transferVerbs :: HashSet TransferVerb
-transferVerbs = singleton $ TransferVerb GIVE
-
 type ResearchVerb :: Type
 newtype ResearchVerb = ResearchVerb { _fromResearchVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
@@ -290,9 +213,6 @@ newtype ResearchVerb = ResearchVerb { _fromResearchVerb :: Lexeme }
 
 instance HasLexeme ResearchVerb where
   toLexeme = _fromResearchVerb
-
-researchVerbs :: HashSet ResearchVerb
-researchVerbs = singleton $ ResearchVerb LOOK
 
 #ifdef TESTING
 

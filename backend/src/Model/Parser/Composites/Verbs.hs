@@ -1,55 +1,55 @@
 {-# OPTIONS_GHC -fconstraint-solver-iterations=10 #-}
-module Parser.SpeechParts.Composites.Verbs where
+module Model.Parser.Composites.Verbs where
 
-import           Control.Applicative                        (Alternative ((<|>)))
-import           Data.Kind                                  (Type)
-import           Data.Text                                  (Text, unwords)
-import           Debug.Trace                                (trace)
-import           GHC.Generics                               (Generic)
-import           Lexer                                      (Lexeme (..))
-import           Parser.SpeechParts.Atomics.Adverbs         (ImplicitPath)
-import           Parser.SpeechParts.Atomics.Misc            (Partition)
-import           Parser.SpeechParts.Atomics.Nouns           (Agent, NamedAgent)
-import           Parser.SpeechParts.Atomics.Prepositions    (DirectionalStimulusMarker,
-                                                             LocationInterrogativeMarker,
-                                                             ObjectInterrogativeMarker,
-                                                             SourceMarker,
-                                                             TopicMarker)
-import           Parser.SpeechParts.Atomics.Verbs           (AcquisitionVerb,
-                                                             CardinalMovementVerb,
-                                                             Copula,
-                                                             DirectionalStimulusVerb,
-                                                             ExplicitStimulusVerb,
-                                                             GeneralPlacementVerb,
-                                                             ImplicitRegionalStimulusVerb,
-                                                             ImplicitStimulusVerb,
-                                                             ModToggleVerb,
-                                                             SimpleAccessVerb,
-                                                             TargetedStimulusVerb,
-                                                             ToggleVerb,
-                                                             TraversalVerb)
-import           Parser.SpeechParts.Composites.Nouns        (ContainerPhrase,
-                                                             DirectionalStimulusNounPhrase,
-                                                             ModToggleNounPhrase,
-                                                             ObjectPhrase,
-                                                             SimpleAccessNounPhrase,
-                                                             SupportPhrase,
-                                                             TargetedStimulusNounPhrase,
-                                                             ToggleNounPhrase)
-import           Parser.SpeechParts.Composites.Prepositions (TraversalPathPhrase)
-import           Prelude                                    hiding (unwords)
-import           Relude.String                              (ToText (toText))
-import           Relude.String.Conversion                   (ToText)
-import           Text.Earley                                (Grammar)
-import           Text.Earley.Grammar                        (Prod, rule)
+import           Control.Applicative                  (Alternative ((<|>)))
+import           Data.Kind                            (Type)
+import           Data.Text                            (Text, unwords)
+import           Debug.Trace                          (trace)
+import           GHC.Generics                         (Generic)
+import           Lexer                                (Lexeme (..))
+import           Model.Parser.Atomics.Adverbs         (ImplicitPath)
+import           Model.Parser.Atomics.Misc            (Partition)
+import           Model.Parser.Atomics.Nouns           (Agent, NamedAgent)
+import           Model.Parser.Atomics.Prepositions    (DirectionalStimulusMarker,
+                                                       LocationInterrogativeMarker,
+                                                       ObjectInterrogativeMarker,
+                                                       SourceMarker,
+                                                       TopicMarker)
+import           Model.Parser.Atomics.Verbs           (AcquisitionVerb,
+                                                       CardinalMovementVerb,
+                                                       Copula,
+                                                       DirectionalStimulusVerb,
+                                                       ExplicitStimulusVerb,
+                                                       GeneralPlacementVerb,
+                                                       ImplicitRegionalStimulusVerb,
+                                                       ImplicitStimulusVerb,
+                                                       ModToggleVerb,
+                                                       SimpleAccessVerb,
+                                                       TargetedStimulusVerb,
+                                                       ToggleVerb,
+                                                       TraversalVerb)
+import           Model.Parser.Composites.Nouns        (ContainerPhrase,
+                                                       DirectionalStimulusNounPhrase,
+                                                       ModToggleNounPhrase,
+                                                       ObjectPhrase,
+                                                       SimpleAccessNounPhrase,
+                                                       SupportPhrase,
+                                                       TargetedStimulusNounPhrase,
+                                                       ToggleNounPhrase)
+import           Model.Parser.Composites.Prepositions (TraversalPathPhrase)
+import           Prelude                              hiding (unwords)
+import           Relude.String                        (ToText (toText))
+import           Relude.String.Conversion             (ToText)
+import           Text.Earley                          (Grammar)
+import           Text.Earley.Grammar                  (Prod, rule)
 #ifdef TESTING
-import           GHC.Generics                               (Generic)
-import           Parser.SpeechParts.Atomics.Misc            (Partition (Partition))
-import           Test.QuickCheck                            (Arbitrary (arbitrary, shrink),
-                                                             arbitraryBoundedEnum,
-                                                             oneof)
-import           Test.QuickCheck.Arbitrary.Generic          (GenericArbitrary (..))
-import           Test.QuickCheck.Instances.Text             ()
+import           GHC.Generics                         (Generic)
+import           Parser.SpeechParts.Atomics.Misc      (Partition (Partition))
+import           Test.QuickCheck                      (Arbitrary (arbitrary, shrink),
+                                                       arbitraryBoundedEnum,
+                                                       oneof)
+import           Test.QuickCheck.Arbitrary.Generic    (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text       ()
 #endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState

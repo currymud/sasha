@@ -3,8 +3,8 @@ module Parser.NounRules where
 import           Data.Text                               (Text)
 import           Lexer.Model                             (Lexeme)
 import           Parser.Model.Nouns                      (NounRules (..))
-import           Parser.Model.Prepositions               (PrepParsers (..))
-import           Parser.PrepParser                       (prepParser,
+import           Parser.Model.Prepositions               (PrepRuless (..))
+import           Parser.PrepRules                        (prepRules,
                                                           surfaceMarkerRule)
 import           Parser.SpeechParts                      (parseRule)
 import           Parser.SpeechParts.Atomics.Adjectives   (Adjective)
@@ -54,8 +54,8 @@ import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase,
                                                           TargetedStimulusNounPhrase,
                                                           TargetedStimulusNounPhraseRules (TargetedStimulusNounPhraseRules),
                                                           ToggleNounPhrase,
-                                                          ToggleNounPhraseRules (ToggleNounPhraseRules),
-                                                          containerPhraseRule,
+                                                          ToggleNounPhraseRules (ToggleNounPhraseRules))
+import qualified Parser.SpeechParts.Composites.Nouns     (containerPhraseRule,
                                                           directionalStimulusNounPhraseRule,
                                                           modToggleNounPhraseRule,
                                                           objectPathPhraseRule,
@@ -71,35 +71,35 @@ nounRules :: Prod r Text Lexeme Determiner
                  -> Prod r Text Lexeme Adjective
                  -> Grammar r (NounRules r)
 nounRules determiner adj = do
-  targetedStimulusMarker' <- _targetedStimulusMarker' prepParser
-  _containerPhrase' <- containerPhraseParser determiner adj
-  _objectPhrase' <- objectivePhraseParser determiner adj
+  targetedStimulusMarker' <- _targetedStimulusMarker' prepRules
+  _containerPhrase' <- containerPhraseRules determiner adj
+  _objectPhrase' <- objectivePhraseRules determiner adj
   _targetedStimulusNounPhrase'
-    <- targetedStimulusNounPhraseParser
+    <- targetedStimulusNounPhraseRules
         determiner
         adj
         targetedStimulusMarker'
-  _supportPhrase' <- supportPhraseParser determiner adj _containerPhrase'
+  _supportPhrase' <- supportPhraseRules determiner adj _containerPhrase'
   pure $ NounRules { .. }
   where
-    prepParsers = prepParser
---    nounParsers' = nounRules
+    prepRuless = prepRules
+--    nounRuless' = nounRules
 
-objectivePhraseParser :: Prod r Text Lexeme Determiner
+objectivePhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme ObjectPhrase)
-objectivePhraseParser determiner adj = do
+objectivePhraseRules determiner adj = do
   object <- parseRule objectives Objective
   let objectPhraseRules = ObjectPhraseRules determiner object adj
-  objectPhraseRule objectPhraseRules
+  Rules.SpeechParts.Composites.Nouns.objectPhraseRule objectPhraseRules
 
 containerRule :: Grammar r (Prod r Text Lexeme Container)
 containerRule = parseRule containers Container
 
-containerPhraseParser :: Prod r Text Lexeme Determiner
+containerPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme ContainerPhrase)
-containerPhraseParser determiner adj = do
+containerPhraseRules determiner adj = do
   containmentMarker' <- parseRule containmentMarkers ContainmentMarker
   container <- containerRule
   let containerPhraseRules = ContainerPhraseRules
@@ -112,11 +112,11 @@ containerPhraseParser determiner adj = do
 targetedStimulusRule :: Grammar r (Prod r Text Lexeme TargetedStimulus)
 targetedStimulusRule = parseRule targetedStimulii TargetedStimulus
 
-targetedStimulusNounPhraseParser :: Prod r Text Lexeme Determiner
+targetedStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                       -> Prod r Text Lexeme Adjective
                       -> Prod r Text Lexeme TargetedStimulusMarker
                       -> Grammar r (Prod r Text Lexeme TargetedStimulusNounPhrase)
-targetedStimulusNounPhraseParser determiner adj targetedStimulusMarker' = do
+targetedStimulusNounPhraseRules determiner adj targetedStimulusMarker' = do
   targetedStimulus <- targetedStimulusRule
   let targetStimulusRules = TargetedStimulusNounPhraseRules
                               targetedStimulusMarker'
@@ -128,10 +128,10 @@ targetedStimulusNounPhraseParser determiner adj targetedStimulusMarker' = do
 directionalStimulusNounRule :: Grammar r (Prod r Text Lexeme DirectionalStimulus)
 directionalStimulusNounRule = parseRule directionalStimulii DirectionalStimulus
 
-directionalStimulusNounParser :: Prod r Text Lexeme Determiner
+directionalStimulusNounRules :: Prod r Text Lexeme Determiner
                                    -> Prod r Text Lexeme Adjective
                                    -> Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
-directionalStimulusNounParser determiner adj = do
+directionalStimulusNounRules determiner adj = do
   directionalStimulus <- directionalStimulusNounRule
   let directionalStimulusNounRules = DirectionalStimulusNounRules
                                        determiner
@@ -142,10 +142,10 @@ directionalStimulusNounParser determiner adj = do
 toggleNounRule :: Grammar r (Prod r Text Lexeme ToggleNoun)
 toggleNounRule = parseRule toggleNouns ToggleNoun
 
-toggleNounPhraseParser :: Prod r Text Lexeme Determiner
+toggleNounPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme ToggleNounPhrase)
-toggleNounPhraseParser determiner adj = do
+toggleNounPhraseRules determiner adj = do
   toggleNoun <- toggleNounRule
   let toggleNounPhraseRules = ToggleNounPhraseRules
                               determiner
@@ -156,10 +156,10 @@ toggleNounPhraseParser determiner adj = do
 modToggleNounRule :: Grammar r (Prod r Text Lexeme ModToggleNoun)
 modToggleNounRule = parseRule modToggleNouns ModToggleNoun
 
-modToggleNounPhraseParser :: Prod r Text Lexeme Determiner
+modToggleNounPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme ModToggleNounPhrase)
-modToggleNounPhraseParser determiner adj = do
+modToggleNounPhraseRules determiner adj = do
   modToggleAdverbs' <- parseRule modToggleAdverbs ModToggleAdverb
   modToggleNoun <- modToggleNounRule
   let modToggleNounPhraseRules = ModToggleNounPhraseRules
@@ -175,11 +175,11 @@ namedAgentRule = parseRule namedAgents NamedAgent
 objectPathRule :: Grammar r (Prod r Text Lexeme ObjectPath)
 objectPathRule = parseRule objectPaths ObjectPath
 
-objectPathPhraseParser :: Prod r Text Lexeme Determiner
+objectPathPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme ObjectPath
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme ObjectPathPhrase)
-objectPathPhraseParser determiner objectPath adj =
+objectPathPhraseRules determiner objectPath adj =
   objectPathPhraseRule objectPathPhraseRules
   where
   objectPathPhraseRules = ObjectPathPhraseRules objectPath determiner adj
@@ -187,10 +187,10 @@ objectPathPhraseParser determiner objectPath adj =
 simpleAccessNounRule :: Grammar r (Prod r Text Lexeme SimpleAccessNoun)
 simpleAccessNounRule = parseRule simpleAccessNouns SimpleAccessNoun
 
-simpleAccessNounPhraseParser :: Prod r Text Lexeme Determiner
+simpleAccessNounPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Grammar r (Prod r Text Lexeme SimpleAccessNounPhrase)
-simpleAccessNounPhraseParser determiner adj = do
+simpleAccessNounPhraseRules determiner adj = do
   simpleAccessNoun <- simpleAccessNounRule
   let simpleAccessNounPhraseRules = SimpleAccessNounPhraseRules
                                   determiner
@@ -198,12 +198,12 @@ simpleAccessNounPhraseParser determiner adj = do
                                   simpleAccessNoun
   simpleAccessNounPhraseRule simpleAccessNounPhraseRules
 
-surfacePhraseParser :: Prod r Text Lexeme Determiner
+surfacePhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Prod r Text Lexeme Surface
                            -> Prod r Text Lexeme SurfaceMarker
                            -> Grammar r (Prod r Text Lexeme SurfacePhrase)
-surfacePhraseParser determiner adj surface surfaceMarker =
+surfacePhraseRules determiner adj surface surfaceMarker =
   surfacePhraseRule surfacePhraseRules
   where
     surfacePhraseRules = SurfacePhraseRules determiner adj surface surfaceMarker
@@ -211,11 +211,11 @@ surfacePhraseParser determiner adj surface surfaceMarker =
 surfaceRule :: Grammar r (Prod r Text Lexeme Surface)
 surfaceRule = parseRule surfaces Surface
 
-supportPhraseParser :: Prod r Text Lexeme Determiner
+supportPhraseRules :: Prod r Text Lexeme Determiner
                            -> Prod r Text Lexeme Adjective
                            -> Prod r Text Lexeme ContainerPhrase
                            -> Grammar r (Prod r Text Lexeme SupportPhrase)
-supportPhraseParser determiner adj containerPhrase = do
+supportPhraseRules determiner adj containerPhrase = do
   surfaceRule' <- surfaceRule
   surfaceMarkerRule' <- surfaceMarkerRule
   let surfacePhraseRules = SurfacePhraseRules

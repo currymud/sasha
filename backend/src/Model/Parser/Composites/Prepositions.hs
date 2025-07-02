@@ -1,31 +1,30 @@
-module Parser.SpeechParts.Composites.Prepositions where
+module Model.Parser.Composites.Prepositions where
 
-import           Control.Applicative                     (Alternative ((<|>)))
-import           Data.Kind                               (Type)
-import           Data.Text                               (Text, unwords)
-import           GHC.Generics                            (Generic)
-import           Lexer                                   (Lexeme (..))
-import           Parser.SpeechParts.Atomics.Nouns        (NamedAgent)
-import           Parser.SpeechParts.Atomics.Prepositions (ContainmentMarker,
-                                                          InstrumentalMarker,
-                                                          Path, RecipientMarker,
-                                                          TargetedStimulusMarker,
-                                                          TraversalMarker)
-import           Parser.SpeechParts.Composites.Nouns     (ContainerPhrase,
-                                                          ObjectPathPhrase,
-                                                          ObjectPhrase,
-                                                          TargetedStimulusNounPhrase)
-import           Prelude                                 hiding (Generic,
-                                                          unwords)
-import           Relude.String.Conversion                (ToText (toText))
-import           Text.Earley                             (Grammar, rule)
-import           Text.Earley.Grammar                     (Prod)
+import           Control.Applicative               (Alternative ((<|>)))
+import           Data.Kind                         (Type)
+import           Data.Text                         (Text, unwords)
+import           GHC.Generics                      (Generic)
+import           Lexer                             (Lexeme (..))
+import           Parser.Rules.Atomics.Nouns        (NamedAgent)
+import           Parser.Rules.Atomics.Prepositions (ContainmentMarker,
+                                                    InstrumentalMarker, Path,
+                                                    RecipientMarker,
+                                                    TargetedStimulusMarker,
+                                                    TraversalMarker)
+import           Parser.Rules.Composites.Nouns     (ContainerPhrase,
+                                                    ObjectPathPhrase,
+                                                    ObjectPhrase,
+                                                    TargetedStimulusNounPhrase)
+import           Prelude                           hiding (Generic, unwords)
+import           Relude.String.Conversion          (ToText (toText))
+import           Text.Earley                       (Grammar, rule)
+import           Text.Earley.Grammar               (Prod)
 #ifdef TESTING
-import           GHC.Generics                            (Generic)
-import           Test.QuickCheck                         (Arbitrary (arbitrary),
-                                                          arbitraryBoundedEnum)
-import           Test.QuickCheck.Arbitrary.Generic       (GenericArbitrary (..))
-import           Test.QuickCheck.Instances.Text          ()
+import           GHC.Generics                      (Generic)
+import           Test.QuickCheck                   (Arbitrary (arbitrary),
+                                                    arbitraryBoundedEnum)
+import           Test.QuickCheck.Arbitrary.Generic (GenericArbitrary (..))
+import           Test.QuickCheck.Instances.Text    ()
 #endif
 
 -- (runStateT . runExceptT) (runReaderT start config) defaultGameState
