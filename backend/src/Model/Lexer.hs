@@ -1,9 +1,9 @@
-module Lexer.Model where
+{-# OPTIONS_GHC -Wno-missed-specialisations #-}
+module Model.Lexer where
 
-import           Control.Applicative        ((<|>))
+import           Control.Applicative        (Alternative, (<|>))
 import           Control.Monad              (void)
 import           Data.Hashable              (Hashable, hashUsing, hashWithSalt)
-import           Data.HashSet               as HS
 import           Data.Kind                  (Type)
 import           Data.Text                  (Text)
 import           Data.Void                  (Void)
@@ -17,16 +17,19 @@ import           Test.QuickCheck            (Arbitrary (..),
                                              arbitraryBoundedEnum)
 #endif
 
-type Parser = Parsec Void String
+type Lexer :: Type -> Type
+newtype Lexer a = Lexer {runLexer :: Parsec Void Text a}
+  deriving newtype (Functor, Applicative, Alternative,Monad, MonadFail)
 
+symbol :: Text -> Lexer Text
+symbol = Lexer . L.symbol (runLexer sc)
 
-symbol :: String -> Parser String
-symbol = L.symbol sc
-
-sc :: Parser ()
-sc = L.space (void spaceChar) lineCmnt blockCmnt
+sc ::Lexer ()
+sc = Lexer $ L.space (void spaceChar) lineCmnt blockCmnt
   where
+    lineCmnt :: Parsec Void Text ()
     lineCmnt = L.skipLineComment "//"
+    blockCmnt :: Parsec Void Text ()
     blockCmnt = L.skipBlockComment "/*" "*/"
 
 type Lexeme :: Type
@@ -230,7 +233,7 @@ instance Hashable Lexeme where
   hashWithSalt :: Int -> Lexeme -> Int
   hashWithSalt = hashUsing fromEnum
 
-term :: Parser Lexeme
+term :: Lexer Lexeme
 term =
   PORTAL <$ symbol "PORTAL"
     <|> SEPERATOR <$ symbol ","
@@ -410,32 +413,32 @@ term =
     <|> GUIDE <$ symbol "GUIDE"
     <|> BALL <$ symbol "BALL"
 
-push :: Parser Lexeme
+push :: Lexer Lexeme
 push = PUSH <$ symbol "PUSH" <|> PUSH <$ symbol "PRESS"
-put :: Parser Lexeme
+put :: Lexer Lexeme
 put = PUT <$ symbol "PUT" <|> PUT <$ symbol "PLACE"
 
-under :: Parser Lexeme
+under :: Lexer Lexeme
 under = UNDER <$ symbol "UNDER" <|> UNDER <$ symbol "BELOW"
 
-large :: Parser Lexeme
+large :: Lexer Lexeme
 large = LARGE <$ symbol "LARGE" <|> LARGE <$ symbol "BIG"
 
-small :: Parser Lexeme
+small :: Lexer Lexeme
 small =
   SMALL <$ symbol "SMALL"
     <|> SMALL <$ symbol "TINY"
     <|> SMALL <$ symbol "LITTLE"
 
-floor' :: Parser Lexeme
+floor' :: Lexer Lexeme
 floor' =
   FLOOR <$ symbol "FLOOR" <|> FLOOR <$ symbol "GROUND"
 
-get :: Parser Lexeme
+get :: Lexer Lexeme
 get = GET <$ symbol "GET" <|> GET <$ symbol "TAKE"
 
-close :: Parser Lexeme
+close :: Lexer Lexeme
 close = CLOSE <$ symbol "CLOSE" <|> CLOSE <$ symbol "SHUT"
 
-go :: Parser Lexeme
+go :: Lexer Lexeme
 go = GO <$ symbol "GO" <|>  GO <$ symbol "ENTER"

@@ -34,7 +34,6 @@ common shared
     MultiWayIf
     OverloadedRecordDot
     OverloadedStrings
-    PatternSynonyms
     QuantifiedConstraints
     RecordWildCards
     RoleAnnotations
@@ -50,29 +49,7 @@ common tests
 library
   import: shared
   exposed-modules:
-      Lexer
-      Lexer.Model
-      Parser
-      Model.Parser.Atomics.Adjectives
-      Model.Parser.Atomics.Adverbs
-      Model.Parser.Atomics.Misc
-      Model.Parser.Atomics.Nouns
-      Model.Parser.Atomics.Prepositions
-      Model.Parser.Atomics.Verbs
-      Model.Parser.Composites.Nouns
-      Model.Parser.Composites.Prepositions
-      Model.Parser.Composites.Verbs
-      Model.Parser.Nouns
-      Model.Parser.Prepositions
-      Model.Parser.SpeechParts
-      Parser.Partitions.Misc
-      Parser.Partitions.Adverbs
-      Parser.Partitions.Nouns
-      Parser.Partitions.Prepositions
-      Parser.Partitions.Verbs
-      Parser.NounRules
-      Parser.PrepRules
-      Parser.VerbRules
+      Model.Lexer
   hs-source-dirs:
       src
 
@@ -86,72 +63,3 @@ library
    , relude
    , unordered-containers
   default-language: GHC2021
-
-library sasha-testing
-  import:         shared, tests
-  hs-source-dirs: src test
-  build-depends:
-    , aeson
-    , base
-    , Earley
-    , generic-arbitrary
-    , hashable
-    , hspec
-    , megaparsec
-    , mtl
-    , QuickCheck
-    , quickcheck-instances
-    , relude
-    , safe
-    , text
-    , sasha
- exposed-modules:
-      Test.Lexer
-      Test.Parser.Internal.Rules.Atomics.Utils
-      Test.Parser.Internal.Rules.Atomics.Verbs
-      Test.Parser.Internal.Rules.Atomics.Nouns
-      Test.Parser.Internal.Rules.Composites.Nouns
-      Test.Parser.Internal.Rules.Composites.Prepositions
-      Test.Parser.Internal.Rules.Composites.Verbs
- other-modules:
-      Lexer
-      Lexer.Model
-      Parser.Model.Nouns
-      Parser.Model.Prepositions
-      Parser.NounRules
-      Parser.PrepRules
-      Parser.Model.Atomics.Adjectives
-      Parser.Model.Atomics.Adverbs
-      Parser.Model.Atomics.Misc
-      Parser.Model.Atomics.Nouns
-      Parser.Model.Atomics.Prepositions
-      Parser.Model.Atomics.Verbs
-      Parser.Model.Composites.Nouns
-      Parser.Model.Composites.Prepositions
-      Parser.Mdoel.Composites.Verbs
-      Parsers.VerbRules
-
- default-language: GHC2021 
-executable sasha-tests
-  import:         shared, tests
-  main-is:        UnitMain.hs
-  hs-source-dirs: test src
-  build-depends:
-    , aeson
-    , aeson-pretty
-    , base
-    , Earley
-    , generic-arbitrary
-    , megaparsec
-    , hashable
-    , hspec
-    , hspec-core
-    , hspec-discover
-    , mtl
-    , QuickCheck
-    , quickcheck-instances
-    , relude
-    , safe
-    , text
-    , unordered-containers
-    , sasha-testing
