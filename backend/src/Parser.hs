@@ -1,20 +1,17 @@
 module Parser (
-  module Text.Earley
-, module Parser
+  parseTokens
+ , sentenceRules
 ) where
 
-import           Control.Applicative             ((<|>))
-import           Data.Text                       (Text)
-import qualified Data.Text                       as Text
-import           Lexer
-import           Parser.NounRules                (nounRules)
-import           Parser.SpeechParts              (Sentence (..), adjRule,
-                                                  determinerRule, parseRule)
-import           Parser.SpeechParts.Atomics.Misc (Determiner (..), determiners)
-import           Parser.VerbParsers              (imperativeRules,
-                                                  vocativeParser)
-import           Relude.String.Conversion        (ToText (toText))
-import           Text.Earley
+import           Data.Text                     (Text)
+import qualified Data.Text                     as Text
+import           Lexer                         (Lexeme)
+import           Model.Parser                  (Sentence (Imperative))
+import           Parser.Rules.Composites.Verbs (imperativeRules)
+import           Relude.String.Conversion      (ToText (toText))
+import           Text.Earley.Grammar           (Grammar, Prod)
+import           Text.Earley.Parser            (fullParses, parser)
+
 
 parseTokens :: [Lexeme] -> Either Text Sentence
 parseTokens toks =
@@ -22,15 +19,10 @@ parseTokens toks =
     (parsed':_) -> Right parsed'
     []          -> Left ("Nonsense in parsed tokens " <> toks')
     where
-      sparsed = fst $ fullParses (parser sentenceParser) toks
+      sparsed = fst $ fullParses (parser sentenceRules) toks
       toks' = Text.intercalate " " $ toText <$> toks
 
-sentenceParser :: Grammar r (Prod r Text Lexeme Sentence)
-sentenceParser = mdo
-  determiner <- determinerRule
-  adj <- adjRule
-  nounRules' <- nounRules determiner adj
-  imperative <- imperativeRules determiner adj nounRules'
-  vocative <- vocativeParser imperative nounRules'
-  pure $ Nominative <$> imperative
-           <|> Vocative <$> vocative
+sentenceRules :: Grammar r (Prod r Text Lexeme Sentence)
+sentenceRules = mdo
+  imperative <- imperativeRules
+  pure $ Imperative <$> imperative

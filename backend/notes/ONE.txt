@@ -1,0 +1,31 @@
+
+first implemented puzzle
+
+You can't see a thing.
+look
+Your eyes are closed and you can't see a thing.
+go north
+you pick a direction you think might be north, fumble around until you trip on something, because you can't see a thing.
+open eyes
+You open your eyes to find you are in a shadowy room, with enough light to identify a door to the north.
+
+second implemented puzzle
+
+go north
+you could, if the door were open.
+open door
+The door opens as if in invitation.
+go north
+
+You step into the kitchen.
+look
+It's an unimplemented kitchen.
+
+data type sketechs 
+
+data Location = Location {
+    name :: String,
+    description :: String,
+    exits :: Map ImplicitPath GameState, -- GameState is type of function that responds to attempt to exit in that direction
+    objects :: 
+}

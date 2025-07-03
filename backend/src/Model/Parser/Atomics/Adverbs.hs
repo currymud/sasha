@@ -1,10 +1,10 @@
 module Model.Parser.Atomics.Adverbs where
 
 import           Data.Hashable             (Hashable)
-import           Data.HashSet              (HashSet, fromList, singleton)
 import           Data.Kind                 (Type)
-import           Lexer
+import           Model.Lexer               (Lexeme)
 import           Relude.String.Conversion  (ToText)
+
 #ifdef TESTING
 import qualified Data.HashSet              as HS
 import           Relude.String.Conversion  (ToText (toText))
@@ -12,51 +12,14 @@ import           Test.QuickCheck           (Arbitrary, elements)
 import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
 #endif
 
-type RotationalDirection :: Type
-newtype RotationalDirection =
-  RotationalDirection { _fromRotationalDirection :: Lexeme }
-  deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
-
-instance HasLexeme RotationalDirection where
-  toLexeme = _fromRotationalDirection
-
 type ImplicitPath :: Type
 newtype ImplicitPath = ImplicitPath { _fromImplicitPath :: Lexeme }
   deriving stock (Show,Eq,Ord)
   deriving newtype (Hashable,ToText)
 
-instance HasLexeme ImplicitPath where
-  toLexeme = _fromImplicitPath
-
-type ModToggleAdverb :: Type
-newtype ModToggleAdverb = ModToggleAdverb { _fromModToggleAdverb :: Lexeme }
-  deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable,ToText)
-
-instance HasLexeme ModToggleAdverb where
-  toLexeme = _fromModToggleAdverb
-
-type ResearchAdverb :: Type
-newtype ResearchAdverb = ResearchAdverb { _fromResearchAdverb :: Lexeme }
-  deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable)
-
-instance HasLexeme ResearchAdverb where
-  toLexeme = _fromResearchAdverb
-
 #ifdef TESTING
-
-instance Arbitrary RotationalDirection where
- arbitrary = elements $ HS.toList rotationalDirections
 
 instance Arbitrary ImplicitPath where
   arbitrary = elements $ HS.toList implicitPaths
-
-instance Arbitrary ModToggleAdverb where
-  arbitrary = elements $ HS.toList modToggleAdverbs
-
-instance Arbitrary ResearchAdverb where
-  arbitrary = elements $ HS.toList researchAdverbs
 
 #endif

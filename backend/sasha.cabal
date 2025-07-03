@@ -49,11 +49,24 @@ common tests
 library
   import: shared
   exposed-modules:
+      Lexer
       Model.Lexer
+      Model.Parser
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Composites.Verbs
+      Parser
+      Parser.Partitions.Verbs
+      Parser.Rules.Atomics.Verbs
+      Parser.Rules.Atomics.Utils
+      Parser.Rules.Composites.Verbs
   hs-source-dirs:
       src
 
-  ghc-options: -Weverything -Wno-all-missed-specialisations -Wno-implicit-prelude -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe
+  ghc-options: -Weverything -Wno-all-missed-specialisations
+               -Wno-implicit-prelude -Wno-missing-safe-haskell-mode
+               -Wno-prepositive-qualified-module -Wno-safe -Wno-unsafe
+               -Wno-missed-specialisations
   build-depends:
      base >=4.7 && <5
    , Earley
