@@ -58,6 +58,7 @@ library
       Parser
       Parser.Partitions.Adverbs
       Parser.Partitions.Verbs
+      Parser.Rules.Atomics.Adverbs
       Parser.Rules.Atomics.Verbs
       Parser.Rules.Atomics.Utils
       Parser.Rules.Composites.Verbs
@@ -98,6 +99,8 @@ library sasha-testing
     , sasha
  exposed-modules:
       Test.Lexer
+      Test.Parser.Atomics.Adverbs
+      Test.Parser.Atomics.Utils
  other-modules:
       Lexer
       Model.Lexer
@@ -107,6 +110,7 @@ library sasha-testing
       Model.Parser.Composites.Verbs
       Parser
       Parser.Partitions.Verbs
+      Parser.Rules.Atomics.Adverbs
       Parser.Rules.Atomics.Verbs
       Parser.Rules.Atomics.Utils
       Parser.Rules.Composites.Verbs
