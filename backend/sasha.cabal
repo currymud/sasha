@@ -56,6 +56,7 @@ library
       Model.Parser.Atomics.Adverbs
       Model.Parser.Composites.Verbs
       Parser
+      Parser.Partitions.Adverbs
       Parser.Partitions.Verbs
       Parser.Rules.Atomics.Verbs
       Parser.Rules.Atomics.Utils
@@ -76,3 +77,51 @@ library
    , relude
    , unordered-containers
   default-language: GHC2021
+
+library sasha-testing
+  import:         shared, tests
+  hs-source-dirs: src test
+  build-depends:
+    , aeson
+    , base
+    , Earley
+    , generic-arbitrary
+    , hashable
+    , hspec
+    , megaparsec
+    , mtl
+    , QuickCheck
+    , quickcheck-instances
+    , relude
+    , safe
+    , text
+    , sasha
+ exposed-modules:
+      Test.Lexer
+ other-modules:
+      Lexer
+      Model.Lexer
+      Model.Parser
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Composites.Verbs
+      Parser
+      Parser.Partitions.Verbs
+      Parser.Rules.Atomics.Verbs
+      Parser.Rules.Atomics.Utils
+      Parser.Rules.Composites.Verbs
+
+ default-language: GHC2021 
+executable sasha-tests
+  import:         shared, tests
+  main-is:        Main.hs
+  hs-source-dirs: test src
+  build-depends:
+     base
+     , hashable
+     , hspec
+     , megaparsec
+     , QuickCheck
+     , relude
+     , text
+     , sasha-testing

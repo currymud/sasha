@@ -1,19 +1,9 @@
 module Model.Parser.Atomics.Verbs where
 
-import           Data.Hashable             (Hashable)
-import           Data.HashSet              (HashSet, fromList, singleton)
-import           Data.Kind                 (Type)
-import           Lexer                     (HasLexeme (toLexeme))
-import           Model.Lexer
-import           Relude                    (ToText)
-
-#ifdef TESTING
-import qualified Data.HashSet              as HS
-import           Data.Text                 (Text)
-import           Relude.String.Conversion  (ToText (toText))
-import           Test.QuickCheck           (Arbitrary, elements)
-import           Test.QuickCheck.Arbitrary (Arbitrary (arbitrary))
-#endif
+import           Data.Hashable (Hashable)
+import           Data.Kind     (Type)
+import           Lexer         (HasLexeme (toLexeme), Lexeme)
+import           Relude        (ToText)
 
 type CardinalMovementVerb :: Type
 newtype CardinalMovementVerb =
@@ -66,23 +56,3 @@ newtype ImplicitRegionalStimulusVerb =
 
 instance HasLexeme ImplicitRegionalStimulusVerb where
   toLexeme = _fromImplicitRegionalStimulusVerb
-
-#ifdef TESTING
-
-instance Arbitrary CardinalMovementVerb where
-  arbitrary = elements $ HS.toList cardinalMovementVerbs
-
-instance Arbitrary ImplicitBoundaryVerb where
-  arbitrary = elements $ HS.toList implicitBoundaryVerbs
-
-instance Arbitrary ImplicitStimulusVerb where
-  arbitrary = elements $ HS.toList implicitStimulusVerbs
-
-instance Arbitrary DirectionalStimulusVerb where
-  arbitrary = elements $ HS.toList directionalStimulusVerbs
-
-instance Arbitrary SimpleAccessVerb where
-  arbitrary = elements $ HS.toList simpleAccessVerbs
-
-#endif
-

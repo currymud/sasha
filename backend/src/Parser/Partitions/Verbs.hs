@@ -9,6 +9,14 @@ import           Model.Parser.Atomics.Verbs (CardinalMovementVerb (CardinalMovem
                                              ImplicitStimulusVerb (ImplicitStimulusVerb),
                                              SimpleAccessVerb (SimpleAccessVerb))
 
+#ifdef TESTING
+import qualified Data.HashSet               as HS
+import           Data.Text                  (Text)
+import           Relude.String.Conversion   (ToText (toText))
+import           Test.QuickCheck            (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary  (Arbitrary (arbitrary))
+#endif
+
 cardinalMovementVerbs :: HashSet CardinalMovementVerb
 cardinalMovementVerbs = fromList
   $ map CardinalMovementVerb [GO, SAIL, SNEAK,RUN , MARCH, FLEE, WALK]
@@ -31,3 +39,23 @@ simpleAccessVerbs = fromList $ map SimpleAccessVerb [OPEN, CLOSE]
 implicitRegionalStimulusVerbs :: HashSet ImplicitRegionalStimulusVerb
 implicitRegionalStimulusVerbs =
   fromList $ map ImplicitRegionalStimulusVerb [WAIT, SLEEP]
+
+#ifdef TESTING
+
+instance Arbitrary CardinalMovementVerb where
+  arbitrary = elements $ HS.toList cardinalMovementVerbs
+
+instance Arbitrary ImplicitBoundaryVerb where
+  arbitrary = elements $ HS.toList implicitBoundaryVerbs
+
+instance Arbitrary ImplicitStimulusVerb where
+  arbitrary = elements $ HS.toList implicitStimulusVerbs
+
+instance Arbitrary DirectionalStimulusVerb where
+  arbitrary = elements $ HS.toList directionalStimulusVerbs
+
+instance Arbitrary SimpleAccessVerb where
+  arbitrary = elements $ HS.toList simpleAccessVerbs
+
+#endif
+

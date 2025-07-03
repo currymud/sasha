@@ -2,4 +2,8 @@ cradle:
   cabal:
     - path: "./src"
       component: "lib:sasha"
+    - path: "./test"
+      component: "lib:sasha-testing"
+    - path: "./test/UnitMain.hs"
+      component: "exe:sasha-tests"
 
