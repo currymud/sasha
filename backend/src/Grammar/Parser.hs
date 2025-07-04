@@ -5,9 +5,9 @@ module Grammar.Parser (
 
 import           Data.Text                             (Text)
 import qualified Data.Text                             as Text
-import           Grammar.Lexer                         (Lexeme)
-import           Grammar.Model.Parser                  (Sentence (Imperative))
+import           Grammar.Parser.Lexer                  (Lexeme)
 import           Grammar.Parser.Rules.Composites.Verbs (imperativeRules)
+import           Model.Parser                          (Sentence (Imperative))
 import           Relude.String.Conversion              (ToText (toText))
 import           Text.Earley.Grammar                   (Grammar, Prod)
 import           Text.Earley.Parser                    (fullParses, parser)

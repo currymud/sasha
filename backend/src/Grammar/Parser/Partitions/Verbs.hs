@@ -1,21 +1,20 @@
 module Grammar.Parser.Partitions.Verbs where
 
-import           Data.HashSet                       (HashSet, fromList,
-                                                     singleton)
-import           Grammar.Model.Lexer                (Lexeme (CLOSE, EXIT, FLEE, GO, LISTEN, LOOK, MARCH, OPEN, RUN, SAIL, SLEEP, SMELL, SNEAK, TASTE, TOUCH, WAIT, WALK))
-import           Grammar.Model.Parser.Atomics.Verbs (CardinalMovementVerb (CardinalMovementVerb),
-                                                     DirectionalStimulusVerb (DirectionalStimulusVerb),
-                                                     ImplicitBoundaryVerb (ImplicitBoundaryVerb),
-                                                     ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb),
-                                                     ImplicitStimulusVerb (ImplicitStimulusVerb),
-                                                     SimpleAccessVerb (SimpleAccessVerb))
+import           Data.HashSet               (HashSet, fromList, singleton)
+import           Model.Parser.Atomics.Verbs (CardinalMovementVerb (CardinalMovementVerb),
+                                             DirectionalStimulusVerb (DirectionalStimulusVerb),
+                                             ImplicitBoundaryVerb (ImplicitBoundaryVerb),
+                                             ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb),
+                                             ImplicitStimulusVerb (ImplicitStimulusVerb),
+                                             SimpleAccessVerb (SimpleAccessVerb))
+import           Model.Parser.Lexer         (Lexeme (CLOSE, EXIT, FLEE, GO, LISTEN, LOOK, MARCH, OPEN, RUN, SAIL, SLEEP, SMELL, SNEAK, TASTE, TOUCH, WAIT, WALK))
 
 #ifdef TESTING
-import qualified Data.HashSet                       as HS
-import           Data.Text                          (Text)
-import           Relude.String.Conversion           (ToText (toText))
-import           Test.QuickCheck                    (Arbitrary, elements)
-import           Test.QuickCheck.Arbitrary          (Arbitrary (arbitrary))
+import qualified Data.HashSet               as HS
+import           Data.Text                  (Text)
+import           Relude.String.Conversion   (ToText (toText))
+import           Test.QuickCheck            (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary  (Arbitrary (arbitrary))
 #endif
 
 cardinalMovementVerbs :: HashSet CardinalMovementVerb

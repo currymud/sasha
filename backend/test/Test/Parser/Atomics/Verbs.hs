@@ -1,10 +1,10 @@
 module Test.Parser.Atomics.Verbs where
 
 import           Data.Text                          (Text)
-import           Grammar.Lexer                      (Lexeme, lexify, tokens)
-import           Grammar.Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Grammar.Parser.Lexer               (Lexeme, lexify, tokens)
 import           Grammar.Parser.Partitions.Verbs    ()
 import           Grammar.Parser.Rules.Atomics.Verbs (implicitStimulusVerbRule)
+import           Model.Parser.Atomics.Verbs         (ImplicitStimulusVerb)
 import           Relude.String                      (ToText (toText))
 import           Test.Hspec                         (Spec, describe, hspec)
 import           Test.Hspec.QuickCheck              (prop)

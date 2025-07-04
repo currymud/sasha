@@ -1,10 +1,10 @@
 module Grammar.Parser.Rules.Atomics.Utils (parseRule) where
-import           Data.HashSet        (HashSet, toList)
-import           Data.List           (find)
-import           Data.Text           (Text)
-import           Grammar.Lexer       (HasLexeme (toLexeme), Lexeme)
-import           Text.Earley         (rule)
-import           Text.Earley.Grammar (Grammar, Prod, terminal)
+import           Data.HashSet         (HashSet, toList)
+import           Data.List            (find)
+import           Data.Text            (Text)
+import           Grammar.Parser.Lexer (HasLexeme (toLexeme), Lexeme)
+import           Text.Earley          (rule)
+import           Text.Earley.Grammar  (Grammar, Prod, terminal)
 
 parseRule :: (HasLexeme a) => HashSet a
                                 -> (Lexeme -> a)

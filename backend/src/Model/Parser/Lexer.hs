@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-missed-specialisations #-}
-module Grammar.Model.Lexer where
+module Model.Parser.Lexer where
 
 import           Control.Applicative        (Alternative, (<|>))
 import           Control.Monad              (MonadPlus, void)

@@ -1,9 +1,9 @@
-module Grammar.Model.Parser.Atomics.Adverbs where
+module Model.Parser.Atomics.Adverbs where
 
 import           Data.Hashable            (Hashable)
 import           Data.Kind                (Type)
-import           Grammar.Lexer            (HasLexeme (toLexeme))
-import           Grammar.Model.Lexer      (Lexeme)
+import           Grammar.Parser.Lexer     (HasLexeme (toLexeme))
+import           Model.Parser.Lexer       (Lexeme)
 import           Relude.String.Conversion (ToText)
 
 type ImplicitPath :: Type

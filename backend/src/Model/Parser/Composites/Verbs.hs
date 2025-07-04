@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
-module Grammar.Model.Parser.Composites.Verbs where
-import           Data.Kind                          (Type)
-import           GHC.Generics                       (Generic)
-import           Grammar.Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Relude.String.Conversion           (ToText (toText))
+module Model.Parser.Composites.Verbs where
+import           Data.Kind                  (Type)
+import           GHC.Generics               (Generic)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Relude.String.Conversion   (ToText (toText))
 
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase

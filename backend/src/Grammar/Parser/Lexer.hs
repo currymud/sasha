@@ -1,15 +1,16 @@
-module Grammar.Lexer (
-    Grammar.Model.Lexer.Lexeme (..)
-  , Grammar.Lexer.HasLexeme (..)
-  , Grammar.Lexer.lexify
-  , Grammar.Lexer.tokens
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
+module Grammar.Parser.Lexer (
+    Model.Parser.Lexer.Lexeme (..)
+  , Grammar.Parser.Lexer.HasLexeme (..)
+  , Grammar.Parser.Lexer.lexify
+  , Grammar.Parser.Lexer.tokens
   ) where
 import           Control.Applicative        (Alternative (many), (<|>))
 import           Control.Monad              (void)
 import           Data.Kind                  (Constraint, Type)
 import           Data.Text                  (Text, toUpper)
 import           Data.Void                  (Void)
-import           Grammar.Model.Lexer
+import           Model.Parser.Lexer
 import           Relude.String.Conversion   (ToText (toText))
 import           Text.Megaparsec            (Parsec, eof, errorBundlePretty,
                                              parse)

@@ -49,13 +49,13 @@ common tests
 library
   import: shared
   exposed-modules:
-      Grammar.Lexer
-      Grammar.Model.Lexer
-      Grammar.Model.Parser
-      Grammar.Model.Parser.Atomics.Verbs
-      Grammar.Model.Parser.Atomics.Adverbs
-      Grammar.Model.Parser.Composites.Verbs
+      Model.Parser
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Composites.Verbs
+      Model.Parser.Lexer
       Grammar.Parser
+      Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adverbs
       Grammar.Parser.Partitions.Verbs
       Grammar.Parser.Rules.Atomics.Adverbs
@@ -103,12 +103,12 @@ library sasha-testing
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
  other-modules:
-      Grammar.Lexer
-      Grammar.Model.Lexer
-      Grammar.Model.Parser
-      Grammar.Model.Parser.Atomics.Verbs
-      Grammar.Model.Parser.Atomics.Adverbs
-      Grammar.Model.Parser.Composites.Verbs
+      Grammar.Parser.Lexer
+      Model.Parser.Lexer
+      Model.Parser
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Composites.Verbs
       Grammar.Parser
       Grammar.Parser.Partitions.Adverbs
       Grammar.Parser.Partitions.Verbs
