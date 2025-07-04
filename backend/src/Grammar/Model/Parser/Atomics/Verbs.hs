@@ -1,8 +1,8 @@
-module Model.Parser.Atomics.Verbs where
+module Grammar.Model.Parser.Atomics.Verbs where
 
 import           Data.Hashable (Hashable)
 import           Data.Kind     (Type)
-import           Lexer         (HasLexeme (toLexeme), Lexeme)
+import           Grammar.Lexer (HasLexeme (toLexeme), Lexeme)
 import           Relude        (ToText)
 
 type CardinalMovementVerb :: Type

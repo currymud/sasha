@@ -1,10 +1,9 @@
-{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
-module Model.Parser where
+module Grammar.Model.Parser where
 
-import           Data.Kind                     (Type)
-import           Model.Parser.Composites.Verbs (Imperative)
+import           Data.Kind                             (Type)
+import           Grammar.Model.Parser.Composites.Verbs (Imperative)
 
 type Sentence :: Type
 data Sentence

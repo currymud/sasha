@@ -1,6 +1,6 @@
 module Test.Parser.Atomics.Utils where
 import           Data.Text           (Text)
-import           Lexer               (Lexeme)
+import           Grammar.Lexer       (Lexeme)
 import           Text.Earley.Grammar (Grammar, Prod)
 import           Text.Earley.Parser  (Parser, parser)
 

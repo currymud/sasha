@@ -1,16 +1,18 @@
-module Lexer (
-    Model.Lexer.Lexeme (..)
-  , Lexer.HasLexeme (..)
-  , Lexer.lexify
-  , Lexer.tokens
+module Grammar.Lexer (
+    Grammar.Model.Lexer.Lexeme (..)
+  , Grammar.Lexer.HasLexeme (..)
+  , Grammar.Lexer.lexify
+  , Grammar.Lexer.tokens
   ) where
+import           Control.Applicative        (Alternative (many), (<|>))
 import           Control.Monad              (void)
 import           Data.Kind                  (Constraint, Type)
 import           Data.Text                  (Text, toUpper)
 import           Data.Void                  (Void)
-import           Model.Lexer
+import           Grammar.Model.Lexer
 import           Relude.String.Conversion   (ToText (toText))
-import           Text.Megaparsec            hiding (runParser)
+import           Text.Megaparsec            (Parsec, eof, errorBundlePretty,
+                                             parse)
 import           Text.Megaparsec.Char       (spaceChar)
 import qualified Text.Megaparsec.Char.Lexer as L
 

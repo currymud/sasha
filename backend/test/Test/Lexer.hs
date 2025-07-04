@@ -1,7 +1,7 @@
 module Test.Lexer where
 import           Data.Either              (isRight)
 import qualified Data.Text
-import           Lexer                    (Lexeme, lexify, tokens)
+import           Grammar.Lexer            (Lexeme, lexify, tokens)
 import           Relude.String.Conversion (toText)
 import           Test.Hspec               (describe, hspec, it, shouldBe)
 import           Test.Hspec.Runner        (Spec)
