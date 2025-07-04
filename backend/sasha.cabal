@@ -101,6 +101,7 @@ library sasha-testing
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
+      Test.Parser.Atomics.Verbs
  other-modules:
       Lexer
       Model.Lexer
@@ -122,6 +123,7 @@ executable sasha-tests
   hs-source-dirs: test src
   build-depends:
      base
+     , Earley
      , hashable
      , hspec
      , megaparsec
@@ -129,3 +131,4 @@ executable sasha-tests
      , relude
      , text
      , sasha-testing
+
