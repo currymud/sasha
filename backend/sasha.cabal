@@ -49,6 +49,10 @@ common tests
 library
   import: shared
   exposed-modules:
+      Model.GameState
+      Model.GID
+      Model.Label
+      Model.Mappings
       Model.Parser
       Model.Parser.Atomics.Verbs
       Model.Parser.Atomics.Adverbs
