@@ -37,6 +37,7 @@ common shared
     QuantifiedConstraints
     RecordWildCards
     RoleAnnotations
+    TemplateHaskell
 
 common tests
   cpp-options: -DTESTING
@@ -50,9 +51,10 @@ library
   import: shared
   exposed-modules:
       Actions.Percieve.Look
+      Build.Identifiers
+      Build.Templates.Identification
       Error
       Location
-      Model.Action
       Model.GameState
       Model.GID
       Model.Label
@@ -84,6 +86,7 @@ library
    , megaparsec
    , mtl
    , relude
+   , template-haskell
    , unordered-containers
   default-language: GHC2021
 

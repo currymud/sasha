@@ -1,11 +1,14 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  Evaluator (Evaluator)
+  ActionF (ImplicitStimulusF)
+  , Evaluator (Evaluator)
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
   , GameState (..)
   , Location (Location, _title, _objectLabelMap)
   , Object ( Object, _shortName, _entityLabel, _description, _descriptives
-           , _actionManagement)
+           , _objectActionManagement)
   , Config
   , Player (Player, _location, _object)
   , ResolutionF (ResolutionF,runResolutionF)
@@ -16,13 +19,16 @@ import           Control.Monad.Identity (Identity)
 import           Control.Monad.Reader   (MonadReader, ReaderT)
 import           Control.Monad.State    (MonadIO, MonadState, StateT)
 import           Data.Kind              (Type)
+import           Data.Map.Strict        (Map)
 import           Data.Set               (Set)
 import           Data.Text              (Text)
-import           Model.Action           (ActionF)
 import           Model.GID              (GID)
 import           Model.Label            (Label)
 import           Model.Mappings         (GIDToDataMap, LabelToGIDListMapping)
 
+type ActionF :: Type -> Type
+data ActionF a
+  = ImplicitStimulusF (Either a (GID Location -> a))
   {-
 
 Evaluator should not return a GameStateExceptT(), but rather return a ResolutionT , which holds GameStateExceptT function)
@@ -65,8 +71,9 @@ data Config = Config
 
 type Location :: Type
 data Location = Location {
-    _title          :: Text
-  , _objectLabelMap :: LabelToGIDListMapping Object Object
+    _title                    :: Text
+  , _objectLabelMap           :: LabelToGIDListMapping Object Object
+  , _locationActionManagement :: Map (ActionF ResolutionF) (GID (ActionF ResolutionF))
 }
 
 type Player :: Type
@@ -77,11 +84,11 @@ data Player = Player
 
 type Object :: Type
 data Object = Object
- { _shortName        :: Text
- , _entityLabel      :: Label Object
- , _description      :: Text
- , _descriptives     :: Set (Label Text)
- , _actionManagement :: Identity () -- Placeholder for action management logic
+ { _shortName              :: Text
+ , _entityLabel            :: Label Object
+ , _description            :: Text
+ , _descriptives           :: Set (Label Text)
+ , _objectActionManagement :: Identity () -- Placeholder for action management logic
  }
 
 type ResolutionF :: Type
