@@ -6,7 +6,11 @@ module Model.GameState (
   , Location (Location, _title, _objectLabelMap)
   , Object ( Object, _shortName, _entityLabel, _description, _descriptives
            , _actionManagement)
-  , Config) where
+  , Config
+  , Player (Player, _location, _object)
+  , ResolutionF (ResolutionF,runResolutionF)
+  , World (World, _objectMap,_locationMap)) where
+
 import           Control.Monad.Except   (ExceptT, MonadError)
 import           Control.Monad.Identity (Identity)
 import           Control.Monad.Reader   (MonadReader, ReaderT)
@@ -14,6 +18,7 @@ import           Control.Monad.State    (MonadIO, MonadState, StateT)
 import           Data.Kind              (Type)
 import           Data.Set               (Set)
 import           Data.Text              (Text)
+import           Model.Action           (ActionF)
 import           Model.GID              (GID)
 import           Model.Label            (Label)
 import           Model.Mappings         (GIDToDataMap, LabelToGIDListMapping)
@@ -39,14 +44,21 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadState GameState
                    , MonadIO)
 
-
 type GameState :: Type
 data GameState = GameState
   { _world      :: World
-  , _player     :: GID Object
+  , _player     :: Player
+  , _narration  :: Narration
   , _evaluation :: Evaluator
+  , _actionMap  :: GIDToDataMap (ActionF ResolutionF) (ActionF ResolutionF)
   }
 
+type Narration :: Type
+data Narration = Narration
+  { _playerAction      :: [Text]
+  , _actionConsequence :: GID Text
+  }
+  deriving stock (Show)
 
 type Config :: Type
 data Config = Config
@@ -57,6 +69,12 @@ data Location = Location {
   , _objectLabelMap :: LabelToGIDListMapping Object Object
 }
 
+type Player :: Type
+data Player = Player
+  { _location :: GID Location
+  , _object   :: GID Object
+  }
+
 type Object :: Type
 data Object = Object
  { _shortName        :: Text
@@ -66,6 +84,9 @@ data Object = Object
  , _actionManagement :: Identity () -- Placeholder for action management logic
  }
 
+type ResolutionF :: Type
+newtype ResolutionF = ResolutionF
+  { runResolutionF :: GameStateExceptT () }
   {-
      I want the action management system to ultimately produce a ResolutionT, which will be a monad transformer that can be used to run the GameStateExceptT
 
@@ -83,4 +104,3 @@ data World = World
   { _objectMap   :: GIDToDataMap Object Object
   , _locationMap :: GIDToDataMap Location Location
   }
-

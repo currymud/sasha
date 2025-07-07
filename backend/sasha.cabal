@@ -49,6 +49,10 @@ common tests
 library
   import: shared
   exposed-modules:
+      Actions.Percieve.Look
+      Error
+      Location
+      Model.Action
       Model.GameState
       Model.GID
       Model.Label
