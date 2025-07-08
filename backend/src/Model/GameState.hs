@@ -6,7 +6,7 @@ module Model.GameState (
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
   , GameState (..)
-  , Location (Location, _title, _objectLabelMap)
+  , Location (Location, _title, _objectLabelMap, _locationActionManagement)
   , Object ( Object, _shortName, _entityLabel, _description, _descriptives
            , _objectActionManagement)
   , Config
