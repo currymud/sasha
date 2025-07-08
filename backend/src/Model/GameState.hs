@@ -25,6 +25,7 @@ import           Data.Text              (Text)
 import           Model.GID              (GID)
 import           Model.Label            (Label)
 import           Model.Mappings         (GIDToDataMap, LabelToGIDListMapping)
+import           Model.Parser.GCase     (VerbKeys)
 
 type ActionF :: Type -> Type
 data ActionF a
@@ -73,7 +74,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectLabelMap           :: LabelToGIDListMapping Object Object
-  , _locationActionManagement :: Map (ActionF ResolutionF) (GID (ActionF ResolutionF))
+  , _locationActionManagement :: [Map VerbKeys (GID (ActionF ResolutionF))]
 }
 
 type Player :: Type

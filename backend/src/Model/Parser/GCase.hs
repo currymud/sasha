@@ -1,18 +1,21 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.Parser.GCase where
-import           Control.Monad.Identity (Identity)
-import           Data.Kind              (Type)
-import           GHC.Generics           (Generic)
+import           Data.Kind                  (Type)
+import           GHC.Generics               (Generic)
+import           Model.Parser.Atomics.Verbs (CardinalMovementVerb,
+                                             DirectionalStimulusVerb,
+                                             ImplicitBoundaryVerb,
+                                             ImplicitRegionalStimulusVerb,
+                                             ImplicitStimulusVerb,
+                                             SimpleAccessVerb)
 
--- Informed by, but not an implementation of, Case Grammer
--- Used by Objects to determine what functions are required to
--- compute function returned to game loop.
-
-type GCase :: Type
-data GCase
-  = StimulusVerbPhrase StimulusVerbPhraseF
-
-type StimulusVerbPhraseF :: Type
-data StimulusVerbPhraseF
-  = ImplicitStimulusVerb (Identity ())
+type VerbKeys :: Type
+data VerbKeys
+  = CardinalMovementKey CardinalMovementVerb
+  | ImplicitBoundaryKey ImplicitBoundaryVerb
+  | ImplicitStimulusKey ImplicitStimulusVerb
+  | DirectionalStimulusKey DirectionalStimulusVerb
+  | SimpleAccessKey SimpleAccessVerb
+  | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
+  deriving stock (Show, Eq, Ord, Generic)

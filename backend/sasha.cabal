@@ -51,6 +51,7 @@ library
   import: shared
   exposed-modules:
       Actions.Percieve.Look
+      Build.BedPuzzle.Player
       Build.Identifiers
       Build.Templates.Identification
       Error
@@ -63,6 +64,7 @@ library
       Model.Parser.Atomics.Verbs
       Model.Parser.Atomics.Adverbs
       Model.Parser.Composites.Verbs
+      Model.Parser.GCase
       Model.Parser.Lexer
       Grammar.Parser
       Grammar.Parser.Lexer
