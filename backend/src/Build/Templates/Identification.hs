@@ -1,30 +1,33 @@
 module Build.Templates.Identification where
-import           Data.Char                  (toLower)
 import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
 import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Exp (AppE, ConE, LitE, UnboundVarE, VarE),
-                                             Lit (IntegerL), Pat (VarP), Q,
-                                             Type (AppT, ConT), mkName,
+                                             Lit (IntegerL), Name, Pat (VarP),
+                                             Q, Type (AppT, ConT), mkName,
                                              nameBase)
-import           Model.GameState            (ActionF, ResolutionF (ResolutionF))
+import           Model.GameState            (ActionF, ResolutionF)
 import           Model.GID                  (GID (GID))
 import           Model.Parser.Lexer         (Lexeme)
 import           Prelude                    hiding (exp)
 
-labelTemplate :: String -> String -> Lexeme -> DecsQ
-labelTemplate typeStr binding lexeme = pure desc
+labelTemplate :: Name -> String -> Lexeme -> DecsQ
+labelTemplate typeName binding lexeme = pure desc
   where
     desc        = [sigd,vald]
     sigd        = SigD decLabel appt
     appt        = AppT labelType' objectType'
     decLabel    = mkName (binding <> "Label")
     labelType'  = ConT labelName
-    objectType' = ConT (mkName typeStr)
+    objectType' = ConT typeName  -- Use the Name directly
     vald = ValD (VarP decLabel) eval' []
     eval' = NormalB (AppE (ConE labelName) uvar)
     uvar = UnboundVarE $ (mkName . show) lexeme
-    labelName = mkName "Game.Model.Label.Label"
+    labelName = mkName "Model.Label.Label"
 
+makeLabels :: Name -> [(String, Lexeme)] -> DecsQ
+makeLabels typeName bindingLexemePairs = do
+  declarations <- mapM (uncurry (labelTemplate typeName)) bindingLexemePairs
+  pure (concat declarations)
 gidDeclaration :: String -> String -> Integer -> DecsQ
 gidDeclaration tag' binding' literal = pure [sigd, value]
   where
