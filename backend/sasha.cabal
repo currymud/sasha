@@ -70,6 +70,12 @@ library
       Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adverbs
       Grammar.Parser.Partitions.Verbs
+      Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
+      Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
+      Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
+      Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
+      Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
+      Grammar.Parser.Partitions.Templates.Atomics
       Grammar.Parser.Rules.Atomics.Adverbs
       Grammar.Parser.Rules.Atomics.Verbs
       Grammar.Parser.Rules.Atomics.Utils
@@ -108,6 +114,7 @@ library sasha-testing
     , quickcheck-instances
     , relude
     , safe
+    , template-haskell
     , text
     , sasha
  exposed-modules:
@@ -143,6 +150,7 @@ executable sasha-tests
      , megaparsec
      , QuickCheck
      , relude
+     , template-haskell
      , text
      , sasha-testing
 

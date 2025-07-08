@@ -1,13 +1,8 @@
 module Build.Identifiers where
 import           Actions.Percieve.Look          (agentCanSee)
-import           Build.Templates.Identification (makeActionGIDsAuto,
-                                                 makeVerbValues)
-import           Language.Haskell.TH.Lib        (ExpQ)
-import           Language.Haskell.TH.Syntax     (Dec, Q)
-import           Model.Parser.Atomics.Verbs     (ImplicitStimulusVerb)
-import           Model.Parser.Lexer             (Lexeme (LOOK, SMELL, TASTE))
+import           Build.Templates.Identification (makeActionGIDsAuto)
 $(makeActionGIDsAuto
   [ [| agentCanSee |]
   ])
 
-makeVerbValues ''ImplicitStimulusVerb [LOOK, SMELL, TASTE]
+-- makeVerbValues [| ImplicitStimulusVerb |] [LOOK, SMELL, TASTE]

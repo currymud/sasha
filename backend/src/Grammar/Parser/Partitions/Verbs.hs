@@ -1,33 +1,42 @@
 module Grammar.Parser.Partitions.Verbs where
 
-import           Data.HashSet               (HashSet, fromList, singleton)
-import           Model.Parser.Atomics.Verbs (CardinalMovementVerb (CardinalMovementVerb),
-                                             DirectionalStimulusVerb (DirectionalStimulusVerb),
-                                             ImplicitBoundaryVerb (ImplicitBoundaryVerb),
-                                             ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb),
-                                             ImplicitStimulusVerb (ImplicitStimulusVerb),
-                                             SimpleAccessVerb (SimpleAccessVerb))
-import           Model.Parser.Lexer         (Lexeme (CLOSE, EXIT, FLEE, GO, LISTEN, LOOK, MARCH, OPEN, RUN, SAIL, SLEEP, SMELL, SNEAK, TASTE, TOUCH, WAIT, WALK))
+import           Data.HashSet                                (HashSet, fromList,
+                                                              singleton)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
+import           Model.Parser.Atomics.Verbs                  (CardinalMovementVerb (CardinalMovementVerb),
+                                                              DirectionalStimulusVerb (DirectionalStimulusVerb),
+                                                              ImplicitBoundaryVerb (ImplicitBoundaryVerb),
+                                                              ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb),
+                                                              ImplicitStimulusVerb (ImplicitStimulusVerb),
+                                                              SimpleAccessVerb (SimpleAccessVerb))
+import           Model.Parser.Lexer                          (Lexeme (CLOSE, EXIT, FLEE, GO, LISTEN, LOOK, MARCH, OPEN, RUN, SAIL, SLEEP, SMELL, SNEAK, TASTE, TOUCH, WAIT, WALK))
 
 #ifdef TESTING
-import qualified Data.HashSet               as HS
-import           Data.Text                  (Text)
-import           Relude.String.Conversion   (ToText (toText))
-import           Test.QuickCheck            (Arbitrary, elements)
-import           Test.QuickCheck.Arbitrary  (Arbitrary (arbitrary))
+import qualified Data.HashSet                                as HS
+import           Data.Text                                   (Text)
+import           Relude.String.Conversion                    (ToText (toText))
+import           Test.QuickCheck                             (Arbitrary,
+                                                              elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
+makeVerbValues
+  [| CardinalMovementVerb |]
+  [GO, SAIL, SNEAK, RUN, MARCH, FLEE, WALK]
+
 cardinalMovementVerbs :: HashSet CardinalMovementVerb
-cardinalMovementVerbs = fromList
-  $ map CardinalMovementVerb [GO, SAIL, SNEAK,RUN , MARCH, FLEE, WALK]
+cardinalMovementVerbs = fromList $ [go,sail,sneak,run,march,flee,walk]
 
+makeVerbValues [| ImplicitBoundaryVerb |] [EXIT]
 implicitBoundaryVerbs :: HashSet ImplicitBoundaryVerb
-implicitBoundaryVerbs = singleton $ ImplicitBoundaryVerb EXIT
+implicitBoundaryVerbs = singleton exit
 
+makeVerbValues [| ImplicitStimulusVerb |] [LOOK, SMELL, TASTE,LISTEN, TOUCH]
 implicitStimulusVerbs :: HashSet ImplicitStimulusVerb
 implicitStimulusVerbs =
-  fromList $ map ImplicitStimulusVerb [LOOK, SMELL, TASTE, LISTEN, TOUCH]
+  fromList $ [look,smell,taste,listen,touch]
 
+-- makeVerbValues [| DirectionalStimulusVerb |] [LOOK]
 -- Verbs that can take directional prepositions like "at"
 directionalStimulusVerbs :: HashSet DirectionalStimulusVerb
 directionalStimulusVerbs = singleton $ DirectionalStimulusVerb LOOK
