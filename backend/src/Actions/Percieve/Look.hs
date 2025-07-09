@@ -1,18 +1,18 @@
-module Actions.Percieve.Look where
+module Actions.Percieve.Look (agentCanSee,agentCannotSee) where
 import           Control.Monad.IO.Class (MonadIO (liftIO))
 import           Data.Text              (Text)
 import           Location               (getLocation)
-import           Model.GameState        (Location (_title),
+import           Model.GameState        (ActionF (ImplicitStimulusF),
+                                         Location (_title),
                                          ResolutionF (ResolutionF))
-import           Model.GID              (GID)
 
 
-agentCanSee :: Either ResolutionF (GID Location -> ResolutionF)
-agentCanSee = Right $ \locationGID ->
+agentCanSee :: ActionF ResolutionF
+agentCanSee = ImplicitStimulusF $ Right $ \locationGID ->
   ResolutionF $ do
     desc <- _title <$> getLocation locationGID
     liftIO $ print desc
 
-agentCannotSee :: Text -> Either ResolutionF (GID Location -> ResolutionF)
-agentCannotSee nosee = Left $ ResolutionF $
+agentCannotSee :: Text -> ActionF ResolutionF
+agentCannotSee nosee = ImplicitStimulusF $ Left $ ResolutionF $
   liftIO $ print nosee

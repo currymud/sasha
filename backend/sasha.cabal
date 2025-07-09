@@ -51,6 +51,7 @@ library
   import: shared
   exposed-modules:
       Actions.Percieve.Look
+      Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.BedRoom
       Build.BedPuzzle.Player
       Build.Identifiers

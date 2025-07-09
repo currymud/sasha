@@ -10,8 +10,8 @@ import           Model.Parser.Atomics.Verbs (CardinalMovementVerb,
                                              ImplicitStimulusVerb,
                                              SimpleAccessVerb)
 
-type VerbKeys :: Type
-data VerbKeys
+type VerbKey :: Type
+data VerbKey
   = CardinalMovementKey         CardinalMovementVerb
   | ImplicitBoundaryKey         ImplicitBoundaryVerb
   | ImplicitStimulusKey         ImplicitStimulusVerb
@@ -19,3 +19,4 @@ data VerbKeys
   | SimpleAccessKey             SimpleAccessVerb
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
+
