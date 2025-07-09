@@ -9,5 +9,9 @@ bedroomInBed :: Location
 bedroomInBed = Location
   { _title = "Bedroom in Bed"
   , _objectLabelMap = LabelToGIDListMapping Data.Map.Strict.empty
-  , _locationActionManagement = []
+  , _locationActionManagement = Data.Map.Strict.empty
   }
+    {-
+actionMap :: Map VerbKeys (GID (ActionF ResolutionF))
+actionMap = fromList $ [(look,
+-}

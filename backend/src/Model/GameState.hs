@@ -74,7 +74,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectLabelMap           :: LabelToGIDListMapping Object Object
-  , _locationActionManagement :: [Map VerbKeys (GID (ActionF ResolutionF))]
+  , _locationActionManagement :: Map VerbKeys (GID (ActionF ResolutionF))
 }
 
 type Player :: Type
