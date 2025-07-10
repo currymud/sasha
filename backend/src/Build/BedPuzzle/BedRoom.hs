@@ -1,15 +1,17 @@
 module Build.BedPuzzle.BedRoom where
-import           Build.Identifiers               (pitchBlackFGID)
-import           Data.Map.Strict                 (Map, fromList)
+import           Build.Identifiers                                    (pitchBlackFGID)
+import           Data.Map.Strict                                      (Map,
+                                                                       fromList)
 import qualified Data.Map.Strict
-import           Grammar.Parser.Partitions.Verbs (look)
-import           Model.GameState                 (ActionF,
-                                                  Location (Location, _locationActionManagement),
-                                                  ResolutionF, _objectLabelMap,
-                                                  _title)
-import           Model.GID                       (GID)
-import           Model.Mappings                  (LabelToGIDListMapping (LabelToGIDListMapping))
-import           Model.Parser.GCase              (VerbKey (ImplicitStimulusKey))
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
+import           Model.GameState                                      (ActionF,
+                                                                       Location (Location, _locationActionManagement),
+                                                                       ResolutionF,
+                                                                       _objectLabelMap,
+                                                                       _title)
+import           Model.GID                                            (GID)
+import           Model.Mappings                                       (LabelToGIDListMapping (LabelToGIDListMapping))
+import           Model.Parser.GCase                                   (VerbKey (ImplicitStimulusKey))
 
 
 bedroomInBed :: Location

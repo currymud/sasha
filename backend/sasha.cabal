@@ -71,7 +71,6 @@ library
       Grammar.Parser
       Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adverbs
-      Grammar.Parser.Partitions.Verbs
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
@@ -133,7 +132,6 @@ library sasha-testing
       Model.Parser.Composites.Verbs
       Grammar.Parser
       Grammar.Parser.Partitions.Adverbs
-      Grammar.Parser.Partitions.Verbs
       Grammar.Parser.Rules.Atomics.Adverbs
       Grammar.Parser.Rules.Atomics.Verbs
       Grammar.Parser.Rules.Atomics.Utils
