@@ -101,7 +101,7 @@ library
 
 library sasha-testing
   import:         shared, tests
-  hs-source-dirs: src test
+  hs-source-dirs: test
   build-depends:
     , aeson
     , base
@@ -124,19 +124,6 @@ library sasha-testing
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
- other-modules:
-      Grammar.Parser.Lexer
-      Model.Parser.Lexer
-      Model.Parser
-      Model.Parser.Atomics.Verbs
-      Model.Parser.Atomics.Adverbs
-      Model.Parser.Composites.Verbs
-      Grammar.Parser
-      Grammar.Parser.Partitions.Adverbs
-      Grammar.Parser.Rules.Atomics.Adverbs
-      Grammar.Parser.Rules.Atomics.Verbs
-      Grammar.Parser.Rules.Atomics.Utils
-      Grammar.Parser.Rules.Composites.Verbs
  default-language: GHC2021
 
 executable sasha-tests
