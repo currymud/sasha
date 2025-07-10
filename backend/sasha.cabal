@@ -54,8 +54,11 @@ library
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.BedRoom
       Build.BedPuzzle.Player
-      Build.Identifiers
+      Build.GameState
+      Build.Identifiers.Actions
+      Build.Identifiers.Locations
       Build.Templates.Identification
+      Build.World
       Error
       Location
       Model.GameState

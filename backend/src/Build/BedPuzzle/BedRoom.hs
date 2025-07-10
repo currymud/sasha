@@ -1,5 +1,6 @@
 module Build.BedPuzzle.BedRoom where
-import           Build.Identifiers                                    (pitchBlackFGID)
+import           Build.Identifiers.Actions                            (agentCanSeeGID,
+                                                                       pitchBlackFGID)
 import           Data.Map.Strict                                      (Map,
                                                                        fromList)
 import qualified Data.Map.Strict
@@ -22,5 +23,4 @@ bedroomInBed = Location
   }
 
 actionMap :: Map VerbKey (GID (ActionF ResolutionF))
-actionMap = fromList [(ImplicitStimulusKey look, pitchBlackFGID)]
-
+actionMap = fromList [(ImplicitStimulusKey look, agentCanSeeGID)]

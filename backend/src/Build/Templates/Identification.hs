@@ -27,7 +27,7 @@ gidDeclaration tag' binding' literal = pure [sigd, value]
                    (AppE
                      (ConE gid)
                      (LitE (IntegerL literal)))) []
-
+                       {-
 labelTemplate :: Name -> String -> Lexeme -> DecsQ
 labelTemplate typeName binding lexeme = pure desc
   where
@@ -41,12 +41,45 @@ labelTemplate typeName binding lexeme = pure desc
     eval' = NormalB (AppE (ConE labelName) uvar)
     uvar = UnboundVarE $ (mkName . show) lexeme
     labelName = mkName "Model.Label.Label"
+-}
+labelTemplate :: Exp -> Lexeme -> DecsQ
+labelTemplate exp lexeme = do
+  case exp of
+    VarE varName -> do
+      -- Reify to get type information
+      info <- reify varName
+      valueType <- case info of
+        VarI _ typ _ -> extractType typ
+        _            -> fail $ "Expected a variable, got: " ++ show info
 
+      let originalNameStr = nameBase varName
+          labelNameStr = originalNameStr ++ "'"
+          labelName = mkName labelNameStr
+          lexemeVar = UnboundVarE (mkName (show lexeme))
+          labelConstructor = ConE (mkName "Model.Label.Label")
+          labelExpr = AppE labelConstructor lexemeVar
+          labelTypeConstructor = ConT (mkName "Model.Label.Label")
+          labelType = AppT labelTypeConstructor valueType
+
+      pure [ SigD labelName labelType
+           , ValD (VarP labelName) (NormalB labelExpr) []
+           ]
+    _ -> fail "labelTemplate expects a simple variable name"
+
+makeLabels :: [(ExpQ, Lexeme)] -> DecsQ
+makeLabels expLexemePairs = do
+  exps <- mapM fst expLexemePairs
+  let lexemes = map snd expLexemePairs
+  let pairs = zip exps lexemes
+
+  declarations <- mapM (uncurry labelTemplate) pairs
+  pure (concat declarations)
+  {-
 makeLabels :: Name -> [(String, Lexeme)] -> DecsQ
 makeLabels typeName bindingLexemePairs = do
   declarations <- mapM (uncurry (labelTemplate typeName)) bindingLexemePairs
   pure (concat declarations)
-
+-}
 makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeActionGIDsAndMap expQs = do
   exps <- sequence expQs

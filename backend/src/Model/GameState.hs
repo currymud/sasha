@@ -25,6 +25,7 @@ import           Data.Text              (Text)
 import           Model.GID              (GID)
 import           Model.Label            (Label)
 import           Model.Mappings         (GIDToDataMap, LabelToGIDListMapping)
+import           Model.Parser           (Sentence)
 import           Model.Parser.GCase     (VerbKey)
 
 type ActionF :: Type -> Type
@@ -37,7 +38,7 @@ Evaluator should not return a GameStateExceptT(), but rather return a Resolution
 
       -}
 type Evaluator :: Type
-newtype Evaluator = Evaluator (Identity ())-- Evaluator { runEvaluator :: Imperative -> GameStateExceptT ()}
+newtype Evaluator = Evaluator (Sentence -> ResolutionF)
 
 type GameStateExceptT :: Type -> Type
 newtype GameStateExceptT a = GameStateExceptT
