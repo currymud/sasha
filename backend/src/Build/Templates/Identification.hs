@@ -1,11 +1,13 @@
 module Build.Templates.Identification where
 import qualified Data.Map.Strict
+import           Language.Haskell.TH        (reify)
 import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
 import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Exp (AppE, ConE, ListE, LitE, TupE, UnboundVarE, VarE),
-                                             Lit (IntegerL), Name, Pat (VarP),
-                                             Q, Type (AppT, ConT), mkName,
-                                             nameBase)
+                                             Info (VarI), Lit (IntegerL), Name,
+                                             Pat (VarP), Q,
+                                             Type (AppT, ArrowT, ConT, ForallT),
+                                             mkName, nameBase)
 import           Model.GameState            (ActionF, ResolutionF)
 import           Model.GID                  (GID (GID))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
@@ -102,3 +104,82 @@ makeTuple (exp, _gidValue) =
           gidName = mkName gidNameStr
       in TupE [Just (VarE gidName), Just (VarE functionName)]
     _ -> error "Expected VarE in makeTuple"
+
+makeGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeGIDsAndMap expQs = do
+  exps <- sequence expQs
+  let numberedPairs = zip exps [1..]
+
+  -- Generate GID declarations
+  gidDeclarations <- concat <$> mapM (uncurry makeGID) numberedPairs
+
+  -- Generate the map declaration
+  mapDeclaration <- makeMapDeclaration numberedPairs
+
+  pure (gidDeclarations ++ [mapDeclaration])
+
+makeGID :: Exp -> Int -> Q [Dec]
+makeGID exp gidValue = do
+  case exp of
+    VarE name -> do
+      -- Reify to get type information
+      info <- reify name
+      valueType <- case info of
+        VarI _ typ _ -> extractType typ
+        _            -> fail $ "Expected a variable, got: " ++ show info
+
+      let originalNameStr = nameBase name
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) valueType
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail "makeGID expects a simple variable name"
+
+makeGIDsAndMapWithName :: String -> [ExpQ] -> Q [Dec]
+makeGIDsAndMapWithName mapName expQs = do
+  exps <- sequence expQs
+  let numberedPairs = zip exps [1..]
+
+  -- Generate GID declarations
+  gidDeclarations <- concat <$> mapM (uncurry makeGID) numberedPairs
+
+  -- Generate the map declaration with custom name
+  mapDeclaration <- makeMapDeclarationWithName mapName numberedPairs
+
+  pure (gidDeclarations ++ [mapDeclaration])
+
+makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeLocationGIDsAndMap expQs = makeGIDsAndMapWithName "locationMap" expQs
+
+makeMapDeclarationWithName :: String -> [(Exp, Int)] -> Q Dec
+makeMapDeclarationWithName _ [] = fail "Cannot create map from empty list"
+makeMapDeclarationWithName mapNameStr numberedPairs@((firstExp, _):_) = do
+  -- Get the type from the first expression
+  valueType <- case firstExp of
+    VarE name -> do
+      info <- reify name
+      case info of
+        VarI _ typ _ -> extractType typ
+        _            -> fail "Expected a variable"
+    _ -> fail "Expected a variable expression"
+
+  let mapName = mkName mapNameStr
+      mapType = AppT (ConT ''GIDToDataMap)
+                     (AppT valueType valueType)
+
+      -- Create list of (GID, value) tuples
+      tupleExps = map makeTuple numberedPairs
+      listExp = ListE tupleExps
+
+      -- GIDToDataMap (Map.fromList [...])
+      mapFromListExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
+      gidToDataMapExp = AppE (ConE 'GIDToDataMap) mapFromListExp
+
+extractType :: Type -> Q Type
+extractType (ForallT _ _ t)               = extractType t
+extractType (AppT (AppT ArrowT _) result) = extractType result
+extractType t                             = pure t
