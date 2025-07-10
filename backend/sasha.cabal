@@ -119,6 +119,7 @@ library sasha-testing
     , text
     , sasha
  exposed-modules:
+      Test.Arbitrary.Verbs
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
