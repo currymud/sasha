@@ -14,6 +14,20 @@ import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Lexer         (Lexeme)
 import           Prelude                    hiding (exp)
 
+gidDeclaration :: String -> String -> Integer -> DecsQ
+gidDeclaration tag' binding' literal = pure [sigd, value]
+  where
+    sigd    = SigD binding type'
+    binding = mkName (binding' <> "GID")
+    type'   = AppT (ConT gid) (ConT tag)
+    gid     = mkName "GID"
+    tag     = mkName tag'
+    value = ValD (VarP binding)
+                 (NormalB
+                   (AppE
+                     (ConE gid)
+                     (LitE (IntegerL literal)))) []
+
 labelTemplate :: Name -> String -> Lexeme -> DecsQ
 labelTemplate typeName binding lexeme = pure desc
   where
@@ -33,30 +47,18 @@ makeLabels typeName bindingLexemePairs = do
   declarations <- mapM (uncurry (labelTemplate typeName)) bindingLexemePairs
   pure (concat declarations)
 
-gidDeclaration :: String -> String -> Integer -> DecsQ
-gidDeclaration tag' binding' literal = pure [sigd, value]
-  where
-    sigd    = SigD binding type'
-    binding = mkName (binding' <> "GID")
-    type'   = AppT (ConT gid) (ConT tag)
-    gid     = mkName "GID"
-    tag     = mkName tag'
-    value = ValD (VarP binding)
-                 (NormalB
-                   (AppE
-                     (ConE gid)
-                     (LitE (IntegerL literal)))) []
-
 makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeActionGIDsAndMap expQs = do
   exps <- sequence expQs
-  let numberedPairs = zip exps [1..]
 
-  -- Generate GID declarations (same as makeActionGIDsAuto)
+  let numberedPairs :: [(Exp, Int)]
+      numberedPairs = zip exps [1..]
+
+  -- Generate GID declarations
   gidDeclarations <- concat <$> mapM (uncurry makeActionGID) numberedPairs
 
-  -- Generate the map
-  mapDeclaration <- makeMapDeclaration numberedPairs
+  -- Generate the map using makeMapDeclarationWithName directly (most efficient)
+  mapDeclaration <- makeMapDeclarationWithName "actionMap" numberedPairs
 
   pure (gidDeclarations ++ [mapDeclaration])
 
@@ -75,7 +77,7 @@ makeActionGID exp gidValue = do
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeActionGID expects a simple variable name"
-
+      {-
 -- Helper function to create the map declaration
 makeMapDeclaration :: [(Exp, Int)] -> Q Dec
 makeMapDeclaration numberedPairs = do
@@ -93,7 +95,7 @@ makeMapDeclaration numberedPairs = do
       gidToDataMapExp = AppE (ConE 'GIDToDataMap) mapFromListExp
 
   pure $ ValD (VarP mapName) (NormalB gidToDataMapExp) []
-
+-}
 -- Helper to create (gid', action) tuple expressions
 makeTuple :: (Exp, Int) -> Exp
 makeTuple (exp, _gidValue) =
@@ -104,7 +106,7 @@ makeTuple (exp, _gidValue) =
           gidName = mkName gidNameStr
       in TupE [Just (VarE gidName), Just (VarE functionName)]
     _ -> error "Expected VarE in makeTuple"
-
+      {-
 makeGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeGIDsAndMap expQs = do
   exps <- sequence expQs
@@ -117,7 +119,7 @@ makeGIDsAndMap expQs = do
   mapDeclaration <- makeMapDeclaration numberedPairs
 
   pure (gidDeclarations ++ [mapDeclaration])
-
+-}
 makeGID :: Exp -> Int -> Q [Dec]
 makeGID exp gidValue = do
   case exp of
@@ -153,7 +155,7 @@ makeGIDsAndMapWithName mapName expQs = do
   pure (gidDeclarations ++ [mapDeclaration])
 
 makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeLocationGIDsAndMap expQs = makeGIDsAndMapWithName "locationMap" expQs
+makeLocationGIDsAndMap = makeGIDsAndMapWithName "locationMap"
 
 makeMapDeclarationWithName :: String -> [(Exp, Int)] -> Q Dec
 makeMapDeclarationWithName _ [] = fail "Cannot create map from empty list"
@@ -178,6 +180,7 @@ makeMapDeclarationWithName mapNameStr numberedPairs@((firstExp, _):_) = do
       -- GIDToDataMap (Map.fromList [...])
       mapFromListExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
       gidToDataMapExp = AppE (ConE 'GIDToDataMap) mapFromListExp
+  pure $ ValD (VarP mapName) (NormalB gidToDataMapExp) []
 
 extractType :: Type -> Q Type
 extractType (ForallT _ _ t)               = extractType t
