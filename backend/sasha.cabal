@@ -53,10 +53,12 @@ library
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.BedRoom
+      Build.BedPuzzle.Objects
       Build.BedPuzzle.Player
       Build.GameState
       Build.Identifiers.Actions
       Build.Identifiers.Locations
+      Build.Identifiers.Objects
       Build.Templates.Identification
       Build.World
       Error

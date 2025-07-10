@@ -7,26 +7,25 @@ module Model.GameState (
   , runGameStateExceptT
   , GameState (..)
   , Location (Location, _title, _objectLabelMap, _locationActionManagement)
-  , Object ( Object, _shortName, _entityLabel, _description, _descriptives
+  , Object ( Object, _shortName, _description, _descriptives
            , _objectActionManagement)
   , Config
   , Player (Player, _location, _object)
   , ResolutionF (ResolutionF,runResolutionF)
   , World (World, _objectMap,_locationMap)) where
 
-import           Control.Monad.Except   (ExceptT, MonadError)
-import           Control.Monad.Identity (Identity)
-import           Control.Monad.Reader   (MonadReader, ReaderT)
-import           Control.Monad.State    (MonadIO, MonadState, StateT)
-import           Data.Kind              (Type)
-import           Data.Map.Strict        (Map)
-import           Data.Set               (Set)
-import           Data.Text              (Text)
-import           Model.GID              (GID)
-import           Model.Label            (Label)
-import           Model.Mappings         (GIDToDataMap, LabelToGIDListMapping)
-import           Model.Parser           (Sentence)
-import           Model.Parser.GCase     (VerbKey)
+import           Control.Monad.Except (ExceptT, MonadError)
+import           Control.Monad.Reader (MonadReader, ReaderT)
+import           Control.Monad.State  (MonadIO, MonadState, StateT)
+import           Data.Kind            (Type)
+import           Data.Map.Strict      (Map)
+import           Data.Set             (Set)
+import           Data.Text            (Text)
+import           Model.GID            (GID)
+import           Model.Label          (Label)
+import           Model.Mappings       (GIDToDataMap, LabelToGIDListMapping)
+import           Model.Parser         (Sentence)
+import           Model.Parser.GCase   (VerbKey)
 
 type ActionF :: Type -> Type
 data ActionF a
@@ -87,26 +86,14 @@ data Player = Player
 type Object :: Type
 data Object = Object
  { _shortName              :: Text
- , _entityLabel            :: Label Object
  , _description            :: Text
  , _descriptives           :: Set (Label Text)
- , _objectActionManagement :: Identity () -- Placeholder for action management logic
+ , _objectActionManagement :: Map VerbKey (GID (ActionF ResolutionF))-- Placeholder for action management logic
  }
 
 type ResolutionF :: Type
 newtype ResolutionF = ResolutionF
   { runResolutionF :: GameStateExceptT () }
-  {-
-     I want the action management system to ultimately produce a ResolutionT, which will be a monad transformer that can be used to run the GameStateExceptT
-
-     the evaluator will manage the computation, but will be informed by the computation in the _actionManagement field
-
-     The action management system needs a way to describe the relationship between objects and verbs.
-
-for example having parsed "plant the pot plant in the plant pot", the plant object would need a way to describe that it's the
-object being planted, the pot object would be the object being acted upon, and the trowel object
-would be the instrument doing thhe planting. The structure of Sentence needs to be leveraged
-  -}
 
 type World :: Type
 data World = World

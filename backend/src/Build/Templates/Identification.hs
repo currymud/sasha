@@ -27,21 +27,7 @@ gidDeclaration tag' binding' literal = pure [sigd, value]
                    (AppE
                      (ConE gid)
                      (LitE (IntegerL literal)))) []
-                       {-
-labelTemplate :: Name -> String -> Lexeme -> DecsQ
-labelTemplate typeName binding lexeme = pure desc
-  where
-    desc        = [sigd,vald]
-    sigd        = SigD decLabel appt
-    appt        = AppT labelType' objectType'
-    decLabel    = mkName (binding <> "Label")
-    labelType'  = ConT labelName
-    objectType' = ConT typeName  -- Use the Name directly
-    vald = ValD (VarP decLabel) eval' []
-    eval' = NormalB (AppE (ConE labelName) uvar)
-    uvar = UnboundVarE $ (mkName . show) lexeme
-    labelName = mkName "Model.Label.Label"
--}
+
 labelTemplate :: Exp -> Lexeme -> DecsQ
 labelTemplate exp lexeme = do
   case exp of
@@ -74,12 +60,7 @@ makeLabels expLexemePairs = do
 
   declarations <- mapM (uncurry labelTemplate) pairs
   pure (concat declarations)
-  {-
-makeLabels :: Name -> [(String, Lexeme)] -> DecsQ
-makeLabels typeName bindingLexemePairs = do
-  declarations <- mapM (uncurry (labelTemplate typeName)) bindingLexemePairs
-  pure (concat declarations)
--}
+
 makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeActionGIDsAndMap expQs = do
   exps <- sequence expQs
@@ -110,25 +91,6 @@ makeActionGID exp gidValue = do
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeActionGID expects a simple variable name"
-      {-
--- Helper function to create the map declaration
-makeMapDeclaration :: [(Exp, Int)] -> Q Dec
-makeMapDeclaration numberedPairs = do
-  let mapName = mkName "actionMap"
-      mapType = AppT (ConT ''GIDToDataMap)
-                     (AppT (AppT (ConT ''ActionF) (ConT ''ResolutionF))
-                           (AppT (ConT ''ActionF) (ConT ''ResolutionF)))
-
-      -- Create list of (GID, Action) tuples
-      tupleExps = map makeTuple numberedPairs
-      listExp = ListE tupleExps
-
-      -- GIDToDataMap (Map.fromList [...])
-      mapFromListExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
-      gidToDataMapExp = AppE (ConE 'GIDToDataMap) mapFromListExp
-
-  pure $ ValD (VarP mapName) (NormalB gidToDataMapExp) []
--}
 -- Helper to create (gid', action) tuple expressions
 makeTuple :: (Exp, Int) -> Exp
 makeTuple (exp, _gidValue) =
@@ -139,20 +101,7 @@ makeTuple (exp, _gidValue) =
           gidName = mkName gidNameStr
       in TupE [Just (VarE gidName), Just (VarE functionName)]
     _ -> error "Expected VarE in makeTuple"
-      {-
-makeGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeGIDsAndMap expQs = do
-  exps <- sequence expQs
-  let numberedPairs = zip exps [1..]
 
-  -- Generate GID declarations
-  gidDeclarations <- concat <$> mapM (uncurry makeGID) numberedPairs
-
-  -- Generate the map declaration
-  mapDeclaration <- makeMapDeclaration numberedPairs
-
-  pure (gidDeclarations ++ [mapDeclaration])
--}
 makeGID :: Exp -> Int -> Q [Dec]
 makeGID exp gidValue = do
   case exp of
@@ -189,6 +138,9 @@ makeGIDsAndMapWithName mapName expQs = do
 
 makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeLocationGIDsAndMap = makeGIDsAndMapWithName "locationMap"
+
+makeObjectGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeObjectGIDsAndMap = makeGIDsAndMapWithName "objectMap"
 
 makeMapDeclarationWithName :: String -> [(Exp, Int)] -> Q Dec
 makeMapDeclarationWithName _ [] = fail "Cannot create map from empty list"
