@@ -2,6 +2,7 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
   ActionF (ImplicitStimulusF)
+  , ActionMap (ActionMap, unActionMap)
   , Evaluator (Evaluator)
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
@@ -29,7 +30,7 @@ import           Model.Parser.GCase   (VerbKey)
 
 type ActionF :: Type -> Type
 data ActionF a
-  = ImplicitStimulusF (Either a (GID Location -> a))
+  = ImplicitStimulusF (Either a (Location -> a))
   {-
 
 Evaluator should not return a GameStateExceptT(), but rather return a ResolutionT , which holds GameStateExceptT function)
@@ -51,19 +52,25 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadState GameState
                    , MonadIO)
 
+type ActionMap :: Type
+newtype ActionMap
+  = ActionMap {
+      unActionMap :: GIDToDataMap (ActionF ResolutionF) (ActionF ResolutionF)
+    }
+
 type GameState :: Type
 data GameState = GameState
   { _world      :: World
   , _player     :: Player
   , _narration  :: Narration
   , _evaluation :: Evaluator
-  , _actionMap  :: GIDToDataMap (ActionF ResolutionF) (ActionF ResolutionF)
+  , _actionMap  :: ActionMap
   }
 
 type Narration :: Type
 data Narration = Narration
-  { _playerAction      :: [Text]
-  , _actionConsequence :: GID Text
+  { _playerAction      :: [Text] -- what player tried to do
+  , _actionConsequence :: [Text] -- what happened as a result of the action
   }
   deriving stock (Show)
 

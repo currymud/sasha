@@ -8,10 +8,8 @@ import           Model.GameState        (ActionF (ImplicitStimulusF),
 
 
 agentCanSee :: ActionF ResolutionF
-agentCanSee = ImplicitStimulusF $ Right $ \locationGID ->
-  ResolutionF $ do
-    desc <- _title <$> getLocation locationGID
-    liftIO $ print desc
+agentCanSee = ImplicitStimulusF $ Right $ \loc ->
+  ResolutionF $ liftIO $ print (_title loc)
 
 agentCannotSee :: Text -> ActionF ResolutionF
 agentCannotSee nosee = ImplicitStimulusF $ Left $ ResolutionF $

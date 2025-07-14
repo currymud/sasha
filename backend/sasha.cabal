@@ -62,6 +62,7 @@ library
       Build.Templates.Identification
       Build.World
       Error
+      Evaluators.General
       Location
       Model.GameState
       Model.GID
@@ -73,6 +74,7 @@ library
       Model.Parser.Composites.Verbs
       Model.Parser.GCase
       Model.Parser.Lexer
+      GameState
       Grammar.Parser
       Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adverbs
