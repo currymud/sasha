@@ -30,7 +30,7 @@ import           Model.Parser.GCase   (VerbKey)
 
 type ActionF :: Type -> Type
 data ActionF a
-  = ImplicitStimulusF (Either a (Location -> a))
+  = ImplicitStimulusF (Either a (Text -> a))
   {-
 
 Evaluator should not return a GameStateExceptT(), but rather return a ResolutionT , which holds GameStateExceptT function)

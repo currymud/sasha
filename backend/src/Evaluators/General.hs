@@ -1,9 +1,12 @@
 module Evaluators.General where
 import qualified Data.Map.Strict
 import           Data.Text                     (Text)
-import           Error                         (throwMaybeM)
+import           Error                         (throwLeftM, throwMaybeM)
+import           GameState                     (getActionF)
+import           GHC.TypeError                 (ErrorMessage (Text))
 import           Location                      (getLocation)
 import           Model.GameState               (ActionF (ImplicitStimulusF),
+                                                GameStateExceptT,
                                                 Location (Location),
                                                 ResolutionF (ResolutionF))
 import           Model.GID                     (GID)
@@ -11,7 +14,8 @@ import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
                                                 StimulusVerbPhrase (ImplicitStimulusVerb))
-import           Model.Parser.GCase            (VerbKey, mkVerbKey)
+import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey),
+                                                mkVerbKey)
 import           Relude.String.Conversion      (toText)
 
   {-
@@ -31,10 +35,19 @@ evalStimulusVerbPhrase :: StimulusVerbPhrase
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
 -}
 evalImplicitStimulusVerb :: ImplicitStimulusVerb
-                              -> (VerbKey -> Location -> ResolutionF)
-evalImplicitStimulusVerb isv = \verbkey (Location _ _ amap) -> ResolutionF $ do
-  aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbkey amap
-  pure ()
+                              -> GameStateExceptT (Location -> ResolutionF)
+evalImplicitStimulusVerb isv =
+  \(Location desc _ amap) -> do
+      aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey amap
+      actionF <- getActionF aid
+      case actionF of
+        ImplicitStimulusF res -> do
+          f <- throwLeftM caseMismatch res
+          f desc
   where
+    verbKey :: VerbKey
+    verbKey = ImplicitStimulusKey isv
+    caseMismatch :: Text
+    caseMismatch = "Implicit stimulus verb " <> toText isv <> " does not match expected type"
     errMsg :: Text
     errMsg = "Implicit stimulus verb " <> toText isv <> " not found"

@@ -8,8 +8,8 @@ import           Model.GameState     (ActionF, ActionMap,
 import           Model.GID           (GID)
 import           Model.Mappings      (_getGIDToDataMap)
 
-getActionMap :: GID (ActionF ResolutionF) -> GameStateExceptT (ActionF ResolutionF)
-getActionMap vkey = do
+getActionF :: GID (ActionF ResolutionF) -> GameStateExceptT (ActionF ResolutionF)
+getActionF vkey = do
   gs :: GameState <- get
   let amap = _getGIDToDataMap $ unActionMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap

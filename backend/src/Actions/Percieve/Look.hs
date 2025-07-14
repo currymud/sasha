@@ -8,8 +8,8 @@ import           Model.GameState        (ActionF (ImplicitStimulusF),
 
 
 agentCanSee :: ActionF ResolutionF
-agentCanSee = ImplicitStimulusF $ Right $ \loc ->
-  ResolutionF $ liftIO $ print (_title loc)
+agentCanSee = ImplicitStimulusF $ Right $ \msg ->
+  ResolutionF $ liftIO $ print msg
 
 agentCannotSee :: Text -> ActionF ResolutionF
 agentCannotSee nosee = ImplicitStimulusF $ Left $ ResolutionF $
