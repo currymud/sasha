@@ -3,14 +3,15 @@
 module Model.GameState (
   ActionF (ImplicitStimulusF)
   , ActionMap (ActionMap, unActionMap)
-  , Evaluator (Evaluator)
+  , Evaluator
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
-  , GameState (..)
+  , GameState (GameState, _world, _player, _narration, _evaluation)
   , Location (Location, _title, _objectLabelMap, _locationActionManagement)
+  , Narration (Narration, _playerAction, _actionConsequence)
   , Object ( Object, _shortName, _description, _descriptives
            , _objectActionManagement)
-  , Config
+  , Config (Config, _actionMap)
   , Player (Player, _location, _object)
   , ResolutionT (ResolutionT,runResolutionT)
   , World (World, _objectMap,_locationMap)) where
@@ -37,8 +38,8 @@ Evaluator should not return a GameStateExceptT(), but rather return a Resolution
 
 
       -}
-type Evaluator :: Type
-newtype Evaluator = Evaluator (Sentence -> ResolutionT ())
+type Evaluator
+  = (Sentence -> GameStateExceptT (Location -> ResolutionT ()))
 
 type GameStateExceptT :: Type -> Type
 newtype GameStateExceptT a = GameStateExceptT
@@ -64,7 +65,6 @@ data GameState = GameState
   , _player     :: Player
   , _narration  :: Narration
   , _evaluation :: Evaluator
-  , _actionMap  :: ActionMap
   }
 
 type Narration :: Type
@@ -74,8 +74,11 @@ data Narration = Narration
   }
   deriving stock (Show)
 
+-- The ActionMap and other unchangeables
 type Config :: Type
 data Config = Config
+  { _actionMap :: ActionMap
+  }
 
 type Location :: Type
 data Location = Location {

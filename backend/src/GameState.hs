@@ -1,16 +1,20 @@
-module GameState where
-import           Control.Monad.State (get)
+module GameState (getActionF, liftGS) where
+import           Control.Monad.Reader (MonadReader (ask))
 import qualified Data.Map.Strict
-import           Error               (throwMaybeM)
-import           Model.GameState     (ActionF, ActionMap,
-                                      GameState (_actionMap), GameStateExceptT,
-                                      ResolutionT, unActionMap)
-import           Model.GID           (GID)
-import           Model.Mappings      (_getGIDToDataMap)
+import           Error                (throwMaybeM)
+import           Model.GameState      (ActionF, Config (_actionMap),
+                                       GameStateExceptT,
+                                       ResolutionT (ResolutionT), unActionMap)
+import           Model.GID            (GID)
+import           Model.Mappings       (_getGIDToDataMap)
 
 getActionF :: GID (ActionF (ResolutionT ())) -> GameStateExceptT (ActionF (ResolutionT ()))
 getActionF vkey = do
-  gs :: GameState <- get
+  gs :: Config <- ask
   let amap = _getGIDToDataMap $ unActionMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
+
+
+liftGS :: GameStateExceptT a -> ResolutionT a
+liftGS = ResolutionT
 
