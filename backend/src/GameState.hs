@@ -4,14 +4,14 @@ import qualified Data.Map.Strict
 import           Error                (throwMaybeM)
 import           Model.GameState      (ActionF, Config (_actionMap),
                                        GameStateExceptT,
-                                       ResolutionT (ResolutionT), unActionMap)
+                                       ResolutionT (ResolutionT))
 import           Model.GID            (GID)
 import           Model.Mappings       (_getGIDToDataMap)
 
 getActionF :: GID (ActionF (ResolutionT ())) -> GameStateExceptT (ActionF (ResolutionT ()))
 getActionF vkey = do
   gs :: Config <- ask
-  let amap = _getGIDToDataMap $ unActionMap $ _actionMap gs
+  let amap = _getGIDToDataMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
 
 

@@ -2,7 +2,7 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
   ActionF (ImplicitStimulusF)
-  , ActionMap (ActionMap, unActionMap)
+  , ActionMap
   , Evaluator
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
@@ -54,10 +54,7 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadIO)
 
 type ActionMap :: Type
-newtype ActionMap
-  = ActionMap {
-      unActionMap :: GIDToDataMap (ActionF (ResolutionT ())) (ActionF (ResolutionT ()))
-    }
+type ActionMap = GIDToDataMap (ActionF (ResolutionT ())) (ActionF (ResolutionT ()))
 
 type GameState :: Type
 data GameState = GameState

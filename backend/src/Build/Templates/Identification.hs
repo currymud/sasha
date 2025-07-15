@@ -8,7 +8,7 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (ActionF, ResolutionT)
+import           Model.GameState            (ActionF, ActionMap, ResolutionT)
 import           Model.GID                  (GID (GID))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Lexer         (Lexeme)
@@ -60,7 +60,7 @@ makeLabels expLexemePairs = do
 
   declarations <- mapM (uncurry labelTemplate) pairs
   pure (concat declarations)
-
+    {-
 makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeActionGIDsAndMap expQs = do
   exps <- sequence expQs
@@ -72,9 +72,38 @@ makeActionGIDsAndMap expQs = do
   gidDeclarations <- concat <$> mapM (uncurry makeActionGID) numberedPairs
 
   -- Generate the map using makeMapDeclarationWithName directly (most efficient)
-  mapDeclaration <- makeMapDeclarationWithName "actionMap" numberedPairs
+  mapDeclaration <- makeActionMapDeclaration numberedPairs
 
   pure (gidDeclarations ++ [mapDeclaration])
+-}
+
+makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeActionGIDsAndMap expQs = do
+  exps <- sequence expQs
+
+  let numberedPairs :: [(Exp, Int)]
+      numberedPairs = zip exps [1..]
+
+  -- Generate GID declarations
+  gidDeclarations <- concat <$> mapM (uncurry makeActionGID) numberedPairs
+
+  -- Generate the ActionMap declaration with explicit type signature
+  mapDeclarations <- makeActionMapDeclaration numberedPairs
+
+  pure (gidDeclarations ++ mapDeclarations)
+
+makeActionMapDeclaration :: [(Exp, Int)] -> Q [Dec]
+makeActionMapDeclaration [] = fail "Cannot create ActionMap from empty list"
+makeActionMapDeclaration numberedPairs = do
+  let mapName = mkName "actionMap"
+      -- Explicit ActionMap type signature
+      actionMapType = ConT ''ActionMap
+      typeSignature = SigD mapName actionMapType
+
+  -- Use existing function to create the value declaration
+  valueDeclaration <- makeMapDeclarationWithName "actionMap" numberedPairs
+
+  pure [typeSignature, valueDeclaration]
 
 -- Helper function to create a single GID declaration (from Build.Identifiers)
 makeActionGID :: Exp -> Int -> Q [Dec]
