@@ -8,7 +8,7 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (ActionF, ResolutionF)
+import           Model.GameState            (ActionF, ResolutionT)
 import           Model.GID                  (GID (GID))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Lexer         (Lexeme)
@@ -85,7 +85,8 @@ makeActionGID exp gidValue = do
           gidNameStr = originalNameStr ++ "GID"
           gidName = mkName gidNameStr
           gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
-          gidType = AppT (ConT ''GID) (AppT (ConT ''ActionF) (ConT ''ResolutionF))
+          gidType = AppT (ConT ''GID) (AppT (ConT ''ActionF)
+                      (AppT (ConT ''ResolutionT) (ConT ''())))
 
       pure [ SigD gidName gidType
            , ValD (VarP gidName) (NormalB gidExpr) []

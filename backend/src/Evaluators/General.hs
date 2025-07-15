@@ -8,7 +8,7 @@ import           Location                      (getLocation)
 import           Model.GameState               (ActionF (ImplicitStimulusF),
                                                 GameStateExceptT,
                                                 Location (Location),
-                                                ResolutionF (ResolutionF))
+                                                ResolutionT (ResolutionT))
 import           Model.GID                     (GID)
 import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
@@ -34,10 +34,11 @@ evalStimulusVerbPhrase :: StimulusVerbPhrase
                             -> (VerbKey -> Location -> ResolutionF)
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
 -}
+{-
 evalImplicitStimulusVerb :: ImplicitStimulusVerb
-                              -> GameStateExceptT (Location -> ResolutionF)
+                              -> GameStateExceptT (Location -> ResolutionT ())
 evalImplicitStimulusVerb isv =
-  \(Location desc _ amap) -> do
+  pure $ \(Location desc _ amap) -> do
       aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey amap
       actionF <- getActionF aid
       case actionF of
@@ -51,3 +52,21 @@ evalImplicitStimulusVerb isv =
     caseMismatch = "Implicit stimulus verb " <> toText isv <> " does not match expected type"
     errMsg :: Text
     errMsg = "Implicit stimulus verb " <> toText isv <> " not found"
+    -}
+
+getActionM :: ImplicitStimulusVerb -> GameStateExceptT (Location -> ResolutionT ())
+getActionM  verbKey = pure $
+  \(Location desc _ amap) -> do
+      aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey amap
+      actionF <- getActionF aid
+      case actionF of
+        ImplicitStimulusF res -> do
+          f <- throwLeftM caseMismatch res
+          f desc
+  where
+
+    caseMismatch :: Text
+    caseMismatch = "Implicit stimulus verb does not match expected type"
+
+    errMsg :: Text
+    errMsg = "Implicit stimulus verb not found"

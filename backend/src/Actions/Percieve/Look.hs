@@ -1,16 +1,14 @@
 module Actions.Percieve.Look (agentCanSee,agentCannotSee) where
 import           Control.Monad.IO.Class (MonadIO (liftIO))
 import           Data.Text              (Text)
-import           Location               (getLocation)
 import           Model.GameState        (ActionF (ImplicitStimulusF),
-                                         Location (_title),
-                                         ResolutionF (ResolutionF))
+                                         ResolutionT (ResolutionT))
 
 
-agentCanSee :: ActionF ResolutionF
+agentCanSee :: ActionF (ResolutionT ())
 agentCanSee = ImplicitStimulusF $ Right $ \msg ->
-  ResolutionF $ liftIO $ print msg
+  ResolutionT  $ liftIO $ print msg
 
-agentCannotSee :: Text -> ActionF ResolutionF
-agentCannotSee nosee = ImplicitStimulusF $ Left $ ResolutionF $
+agentCannotSee :: Text -> ActionF (ResolutionT ())
+agentCannotSee nosee = ImplicitStimulusF $ Left $ ResolutionT $
   liftIO $ print nosee

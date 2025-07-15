@@ -4,11 +4,11 @@ import qualified Data.Map.Strict
 import           Error               (throwMaybeM)
 import           Model.GameState     (ActionF, ActionMap,
                                       GameState (_actionMap), GameStateExceptT,
-                                      ResolutionF, unActionMap)
+                                      ResolutionT, unActionMap)
 import           Model.GID           (GID)
 import           Model.Mappings      (_getGIDToDataMap)
 
-getActionF :: GID (ActionF ResolutionF) -> GameStateExceptT (ActionF ResolutionF)
+getActionF :: GID (ActionF (ResolutionT ())) -> GameStateExceptT (ActionF (ResolutionT ()))
 getActionF vkey = do
   gs :: GameState <- get
   let amap = _getGIDToDataMap $ unActionMap $ _actionMap gs

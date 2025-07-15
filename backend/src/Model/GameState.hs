@@ -12,7 +12,7 @@ module Model.GameState (
            , _objectActionManagement)
   , Config
   , Player (Player, _location, _object)
-  , ResolutionF (ResolutionF,runResolutionF)
+  , ResolutionT (ResolutionT,runResolutionT)
   , World (World, _objectMap,_locationMap)) where
 
 import           Control.Monad.Except (ExceptT, MonadError)
@@ -38,7 +38,7 @@ Evaluator should not return a GameStateExceptT(), but rather return a Resolution
 
       -}
 type Evaluator :: Type
-newtype Evaluator = Evaluator (Sentence -> ResolutionF)
+newtype Evaluator = Evaluator (Sentence -> ResolutionT ())
 
 type GameStateExceptT :: Type -> Type
 newtype GameStateExceptT a = GameStateExceptT
@@ -55,7 +55,7 @@ newtype GameStateExceptT a = GameStateExceptT
 type ActionMap :: Type
 newtype ActionMap
   = ActionMap {
-      unActionMap :: GIDToDataMap (ActionF ResolutionF) (ActionF ResolutionF)
+      unActionMap :: GIDToDataMap (ActionF (ResolutionT ())) (ActionF (ResolutionT ()))
     }
 
 type GameState :: Type
@@ -81,7 +81,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectLabelMap           :: LabelToGIDListMapping Object Object
-  , _locationActionManagement :: Map VerbKey (GID (ActionF ResolutionF))
+  , _locationActionManagement :: Map VerbKey (GID (ActionF (ResolutionT ())))
 }
 
 type Player :: Type
@@ -95,13 +95,19 @@ data Object = Object
  { _shortName              :: Text
  , _description            :: Text
  , _descriptives           :: Set (Label Text)
- , _objectActionManagement :: Map VerbKey (GID (ActionF ResolutionF))-- Placeholder for action management logic
+ , _objectActionManagement :: Map VerbKey (GID (ActionF (ResolutionT ())))-- Placeholder for action management logic
  }
 
-type ResolutionF :: Type
-newtype ResolutionF = ResolutionF
-  { runResolutionF :: GameStateExceptT () }
-
+type ResolutionT :: Type -> Type
+newtype ResolutionT a = ResolutionT
+  { runResolutionT :: GameStateExceptT a }
+  deriving newtype ( Functor
+                   , Applicative
+                   , Monad
+                   , MonadReader Config
+                   , MonadError Text
+                   , MonadState GameState
+                   , MonadIO)
 type World :: Type
 data World = World
   { _objectMap   :: GIDToDataMap Object Object
