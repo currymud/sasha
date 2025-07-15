@@ -54,7 +54,7 @@ evalImplicitStimulusVerb isv =
     errMsg = "Implicit stimulus verb " <> toText isv <> " not found"
     -}
 
-getActionM :: ImplicitStimulusVerb -> GameStateExceptT (Location -> ResolutionT ())
+getActionM :: VerbKey -> GameStateExceptT (Location -> ResolutionT ())
 getActionM  verbKey = pure $
   \(Location desc _ amap) -> do
       aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey amap
