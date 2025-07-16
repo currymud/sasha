@@ -1,10 +1,10 @@
 module Build.GameState where
-import           Build.BedPuzzle.Player (player)
-import           Build.World            (world)
-import           Data.Text              (Text)
-import           Evaluators.General     (eval)
-import           Model.GameState        (GameState (GameState, _evaluation, _narration, _player, _world),
-                                         Narration (..))
+import           Build.BedPuzzle.Player      (player)
+import           Build.World                 (world)
+import           Data.Text                   (Text)
+import           Evaluators.Location.General (eval)
+import           Model.GameState             (GameState (GameState, _evaluation, _narration, _player, _world),
+                                              Narration (..))
 
 initNarration :: Narration
 initNarration = Narration

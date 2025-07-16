@@ -61,9 +61,12 @@ library
       Build.Identifiers.Objects
       Build.Templates.Identification
       Build.World
+      Engine
       Error
-      Evaluators.General
+      Evaluators.Location.General
+      Evaluators.Player.General
       Location
+      Model.Action.LocationAction
       Model.GameState
       Model.GID
       Model.Label
@@ -99,6 +102,7 @@ library
      base >=4.7 && <5
    , Earley
    , hashable
+   , haskeline
    , megaparsec
    , mtl
    , relude

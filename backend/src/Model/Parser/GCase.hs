@@ -4,6 +4,7 @@
 module Model.Parser.GCase where
 import           Data.Kind                     (Type)
 import           GHC.Generics                  (Generic)
+import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitBoundaryVerb,
@@ -23,8 +24,9 @@ data VerbKey
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
 
-mkVerbKey :: Imperative -> VerbKey
-mkVerbKey (StimulusVerbPhrase vphrase) = fromStimulusVerbPhrase vphrase
+mkVerbKey :: Sentence -> VerbKey
+mkVerbKey (Imperative imperative) = case imperative of
+  (StimulusVerbPhrase vphrase) -> fromStimulusVerbPhrase vphrase
 
 fromStimulusVerbPhrase :: StimulusVerbPhrase -> VerbKey
 fromStimulusVerbPhrase (ImplicitStimulusVerb v) = ImplicitStimulusKey v

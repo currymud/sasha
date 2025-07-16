@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionF (ImplicitStimulusF)
+  ActionF (ComputeLocation, ComputeAction)
   , ActionMap
   , Evaluator
   , GameStateExceptT (GameStateExceptT)
@@ -13,6 +13,8 @@ module Model.GameState (
            , _objectActionManagement)
   , Config (Config, _actionMap)
   , Player (Player, _location, _object)
+  , PlayerEvaluator
+  , ProcessSentence (ImplicitStimulusF)
   , ResolutionT (ResolutionT,runResolutionT)
   , World (World, _objectMap,_locationMap)) where
 
@@ -29,17 +31,20 @@ import           Model.Mappings       (GIDToDataMap, LabelToGIDListMapping)
 import           Model.Parser         (Sentence)
 import           Model.Parser.GCase   (VerbKey)
 
-type ActionF :: Type -> Type
-data ActionF a
-  = ImplicitStimulusF (Either a (Text -> a))
-  {-
+data ActionF
+  = ComputeLocation (ResolutionT Location)
+  | ComputeAction ProcessSentence
 
-Evaluator should not return a GameStateExceptT(), but rather return a ResolutionT , which holds GameStateExceptT function)
+data ProcessSentence
+  = ImplicitStimulusF (Either (ResolutionT ()) (Text -> ResolutionT ()))
 
-
-      -}
+type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameStateExceptT (Location -> ResolutionT ()))
+
+type PlayerEvaluator :: Type
+type PlayerEvaluator
+  = (VerbKey -> GameStateExceptT (ResolutionT Location))
 
 type GameStateExceptT :: Type -> Type
 newtype GameStateExceptT a = GameStateExceptT
@@ -54,7 +59,7 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadIO)
 
 type ActionMap :: Type
-type ActionMap = GIDToDataMap (ActionF (ResolutionT ())) (ActionF (ResolutionT ()))
+type ActionMap = GIDToDataMap ActionF ActionF
 
 type GameState :: Type
 data GameState = GameState
@@ -81,7 +86,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectLabelMap           :: LabelToGIDListMapping Object Object
-  , _locationActionManagement :: Map VerbKey (GID (ActionF (ResolutionT ())))
+  , _locationActionManagement :: Map VerbKey (GID ActionF)
 }
 
 type Player :: Type
@@ -95,7 +100,7 @@ data Object = Object
  { _shortName              :: Text
  , _description            :: Text
  , _descriptives           :: Set (Label Text)
- , _objectActionManagement :: Map VerbKey (GID (ActionF (ResolutionT ())))-- Placeholder for action management logic
+ , _objectActionManagement :: Map VerbKey (GID ActionF) -- Placeholder for action management logic
  }
 
 type ResolutionT :: Type -> Type

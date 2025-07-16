@@ -1,9 +1,9 @@
-module Evaluators.General where
+module Evaluators.Location.General where
 import qualified Data.Map.Strict
 import           Data.Text                     (Text)
 import           Error                         (throwLeftM, throwMaybeM)
 import           GameState                     (getActionF, liftGS)
-import           Model.GameState               (ActionF (ImplicitStimulusF),
+import           Model.GameState               (ActionF (ComputeAction),
                                                 GameStateExceptT,
                                                 Location (Location),
                                                 ResolutionT)
@@ -29,7 +29,7 @@ evalImplicitStimulusVerb :: ImplicitStimulusVerb
 evalImplicitStimulusVerb isv = pure $
   \(Location desc _ amap) -> do
       aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey amap
-      actionF <- liftGS $ getActionF aid  -- Even simpler!
+      actionF <- liftGS $ getActionF aid
       case actionF of
         ImplicitStimulusF res -> do
           f <- throwLeftM caseMismatch res

@@ -8,7 +8,7 @@ import           Model.GameState      (ActionF, Config (_actionMap),
 import           Model.GID            (GID)
 import           Model.Mappings       (_getGIDToDataMap)
 
-getActionF :: GID (ActionF (ResolutionT ())) -> GameStateExceptT (ActionF (ResolutionT ()))
+getActionF :: GID ActionF -> GameStateExceptT ActionF
 getActionF vkey = do
   gs :: Config <- ask
   let amap = _getGIDToDataMap $ _actionMap gs
