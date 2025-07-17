@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionF (ComputeLocation, ComputeAction)
+  ActionF (ComputeLocation, ComputeAction, ExecuteAction)
   , ActionMap
   , Evaluator
+  , GameComputation
   , GameStateExceptT (GameStateExceptT)
   , runGameStateExceptT
   , GameState (GameState, _world, _player, _narration, _evaluation)
@@ -31,9 +32,12 @@ import           Model.Mappings       (GIDToDataMap, LabelToGIDListMapping)
 import           Model.Parser         (Sentence)
 import           Model.Parser.GCase   (VerbKey)
 
+type GameComputation :: Type
+type GameComputation = ResolutionT (GameStateExceptT ())
+
+type ActionF :: Type
 data ActionF
-  = ComputeLocation (ResolutionT Location)
-  | ComputeAction ProcessSentence
+  = ComputeImplicitStimulusAction (GID Location -> GameComputation)
 
 data ProcessSentence
   = ImplicitStimulusF (Either (ResolutionT ()) (Text -> ResolutionT ()))

@@ -1,24 +1,32 @@
 module Location where
 import           Control.Monad.State.Strict (MonadState (get), modify')
 import           Data.Functor               ((<&>))
+import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (GameStateExceptT, Location,
+import           Model.GameState            (ActionF, GameStateExceptT,
+                                             Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
-getLocationID :: GameStateExceptT (GID Location)
-getLocationID = get <&> (_location . _player)
+import           Model.Parser.GCase         (VerbKey)
+getLocationIdM :: GameStateExceptT (GID Location)
+getLocationIdM = get <&> (_location . _player)
 
-updateLocationID :: GID Location -> GameStateExceptT ()
-updateLocationID newLocID = do
+updateLocationIdM :: GID Location -> GameStateExceptT ()
+updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocation :: GID Location -> GameStateExceptT Location
-getLocation locID = do
+getLocationActionMapM :: GID Location -> GameStateExceptT (Map VerbKey (GID ActionF))
+getLocationActionMapM locID = do
+  location <- getLocationM locID
+  pure $ _locationActionManagement location
+
+getLocationM :: GID Location -> GameStateExceptT Location
+getLocationM locID = do
   locationMap <- get <&> (_getGIDToDataMap . _locationMap . _world)
   throwMaybeM err_msg $  Data.Map.Strict.lookup locID locationMap
   where

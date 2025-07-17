@@ -63,7 +63,6 @@ library
       Build.World
       Engine
       Error
-      Evaluators.Location.General
       Evaluators.Player.General
       Location
       Model.Action.LocationAction
