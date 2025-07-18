@@ -1,4 +1,4 @@
-module Actions.Percieve.Look (locationSeen,agentCannotSee, manageLookProcess) where
+module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess) where
 
 import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Data.Text                  (Text)
@@ -13,28 +13,17 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
 import           Control.Monad.RWS          (MonadReader (local))
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 
--- has the ability to see and will compute a Location
-locationSeen :: ActionF
-locationSeen = ImplicitStimulusAction (\loc -> pure $ ResolutionT $ pure $ do
-  liftIO $ print ("You see: " <> _title loc))
+agentCanSee :: ActionF
+agentCanSee = ImplicitStimulusAction (\loc ->
+  pure $ ResolutionT $ liftIO $ print ("You see: " <> _title loc))
 
 agentCannotSee :: Text -> ActionF
-agentCannotSee nosee = ImplicitStimulusAction $ pure $ ResolutionT $ pure $ do
-  liftIO $ print nosee
+agentCannotSee nosee = ImplicitStimulusAction $ \loc ->
+  pure $ ResolutionT $ liftIO $ print nosee
 
 manageImplicitStimulusProcess :: ProcessSentence
-manageImplicitStimulusProcess = ImplicitStimulusF (\isv -> do
-  pure $ ResolutionT ( pure () :: GameStateExceptT ()))
-  {-
-  pure $ ResolutionT $ pure $ do
-     amap <- _locationActionManagement <$> getPlayerLocationM
-     case Data.Map.Strict.lookup verbKey amap of
-       Nothing -> liftIO $ print "can't do that here"
-       Just res -> case res of
-                     Left res' -> res'
+manageImplicitStimulusProcess = ImplicitStimulusF (\isv ->
+  pure $ ResolutionT $ pure ())
 
--}
 noSeeLoc :: Text -> GameComputation
-noSeeLoc nosee = pure $ ResolutionT $ do
-  pure $ liftIO $ print nosee
-
+noSeeLoc nosee = pure $ ResolutionT $ liftIO $ print nosee
