@@ -13,9 +13,10 @@ module Model.GameState (
   , Object ( Object, _shortName, _description, _descriptives
            , _objectActionManagement)
   , Config (Config, _actionMap)
-  , Player (Player, _location, _object)
+  , Player (Player, _location, _sentenceManagement)
   , PlayerEvaluator
-  , ProcessSentence (ImplicitStimulusF)
+  , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
+  , ProcessImplicitVerbMap
   , ResolutionT (ResolutionT,runResolutionT)
   , World (World, _objectMap,_locationMap)) where
 
@@ -77,8 +78,6 @@ newtype GameStateExceptT a = GameStateExceptT
 type ActionMap :: Type
 type ActionMap = GIDToDataMap ActionF ActionF
 
-type SentenceProcessingMap :: Type
-type SentenceProcessingMap = Map VerbKey (GID ProcessSentence)
 type GameState :: Type
 data GameState = GameState
   { _world      :: World
@@ -105,7 +104,7 @@ data Location = Location {
 type Player :: Type
 data Player = Player
   { _location           :: GID Location
-  , _sentenceManagement :: Map VerbKey (GID ProcessSentence)
+  , _sentenceManagement :: SentenceProcessingMaps
   }
 
 type Object :: Type

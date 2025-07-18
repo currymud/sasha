@@ -1,5 +1,4 @@
 module Build.GameState where
-import           Build.BedPuzzle.Player    (player)
 import           Build.World               (world)
 import           Data.Text                 (Text)
 import           Evaluators.Player.General (eval)
@@ -14,7 +13,7 @@ initNarration = Narration
 
 initialAction :: Text
 initialAction = "Finally! Let's see how look works"
-
+  {-
 gameState :: GameState
 gameState = GameState
   { _world = world
@@ -22,4 +21,4 @@ gameState = GameState
   , _narration = initNarration
   , _evaluation = eval
   }
-
+-}

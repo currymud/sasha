@@ -1,4 +1,4 @@
-module GameState (getActionF, getPlayerActionF, getObjectM, liftGS) where
+module GameState (getActionF,  getObjectM, liftGS) where
 import           Control.Monad.Reader (MonadReader (ask), asks)
 import           Control.Monad.State  (get, gets)
 import           Data.Functor         ((<&>))
@@ -10,7 +10,6 @@ import           Model.GameState      (ActionF (ImplicitStimulusAction),
                                        GameState (_player, _world),
                                        GameStateExceptT,
                                        Object (_objectActionManagement),
-                                       Player (_object),
                                        ResolutionT (ResolutionT),
                                        World (_objectMap))
 import           Model.GID            (GID)
@@ -22,7 +21,7 @@ getActionF vkey = do
   gs :: Config <- ask
   let amap = _getGIDToDataMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
-
+    {-
 getPlayerActionF :: VerbKey -> GameStateExceptT (Either Text ActionF)
 getPlayerActionF vkey = do
   oid <- gets ( _object . _player)
@@ -30,6 +29,7 @@ getPlayerActionF vkey = do
   case Data.Map.Strict.lookup vkey pamap of
     Just actionF -> Right <$> getActionF actionF
     Nothing      -> pure $ Left $ "Action not found in player action map: " <> pack (show vkey)
+-}
       {-
 getPlayerImplicitStimulusActionF :: VerbKey -> GameStateExceptT ActionF
 getPlayerImplicitStimulusActionF verbKey = do

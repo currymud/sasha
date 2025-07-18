@@ -1,10 +1,7 @@
 module Evaluators.Player.General where
 import           Control.Monad.IO.Class        (MonadIO (liftIO))
 import           Data.Text                     (Text)
-import           GameState                     (getPlayerActionF)
-import           Location                      (getLocationIdM)
 import           Model.GameState               (ActionF, GameComputation,
-                                                GameStateExceptT,
                                                 ResolutionT (ResolutionT))
 import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
@@ -14,8 +11,8 @@ import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 
 
 eval :: Sentence -> GameComputation
-eval (Imperative imperative) = evalImperative imperative
-
+eval (Imperative imperative) = undefined -- evalImperative imperative
+  {-
 evalImperative :: Imperative -> GameComputation
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
@@ -36,7 +33,7 @@ evalImplicitStimulusVerb isv = do
 evalActionF :: ActionF -> GameComputation
 evalActionF _ =
   pure $ ResolutionT $ liftIO (print "Evaluating action")
-
+-}
 
 printWrong :: Text -> GameComputation
 printWrong msg =
