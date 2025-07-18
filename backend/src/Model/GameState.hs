@@ -15,6 +15,7 @@ module Model.GameState (
            , _objectActionManagement)
   , Player (Player, _location, _sentenceManagement)
   , PlayerEvaluator
+  , ProcessImplicitVerbMap
   , PlayerProcessImplicitVerbMap
   , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
@@ -56,10 +57,11 @@ type SentenceProcessingMaps :: Type
 data SentenceProcessingMaps = SentenceProcessingMaps
   {_processImplicitVerbMap :: ProcessImplicitVerbMaps}
 
+type ProcessImplicitVerbMap :: Type
+type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb
+
 type ProcessImplicitVerbMaps :: Type
-type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb
-                                (Map (GID ProcessImplicitStimulusVerb)
-                                     ProcessImplicitStimulusVerb)
+type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
 
 type PlayerProcessImplicitVerbMap :: Type
 type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
