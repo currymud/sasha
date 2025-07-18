@@ -106,8 +106,8 @@ data Location = Location {
 
 type Player :: Type
 data Player = Player
-  { _location :: GID Location
-  , _object   :: GID Object
+  { _location           :: GID Location
+  , _sentenceManagement :: Map VerbKey (GID ProcessSentence)
   }
 
 type Object :: Type
