@@ -105,7 +105,6 @@ makeActionMapDeclaration numberedPairs = do
 
   pure [typeSignature, valueDeclaration]
 
--- Helper function to create a single GID declaration (from Build.Identifiers)
 makeActionGID :: Exp -> Int -> Q [Dec]
 makeActionGID exp gidValue = do
   case exp of
@@ -114,13 +113,14 @@ makeActionGID exp gidValue = do
           gidNameStr = originalNameStr ++ "GID"
           gidName = mkName gidNameStr
           gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
-          gidType = AppT (ConT ''GID) (AppT (ConT ''ActionF)
-                      (AppT (ConT ''ResolutionT) (ConT ''())))
+          -- Fix: ActionF is a concrete type, not a type constructor
+          gidType = AppT (ConT ''GID) (ConT ''ActionF)
 
       pure [ SigD gidName gidType
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeActionGID expects a simple variable name"
+
 -- Helper to create (gid', action) tuple expressions
 makeTuple :: (Exp, Int) -> Exp
 makeTuple (exp, _gidValue) =

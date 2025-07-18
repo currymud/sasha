@@ -6,7 +6,6 @@ import qualified Data.Map.Strict
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
 import           Model.GameState                                      (ActionF,
                                                                        Location (Location, _locationActionManagement),
-                                                                       ResolutionT,
                                                                        _objectLabelMap,
                                                                        _title)
 import           Model.GID                                            (GID)
@@ -21,5 +20,5 @@ bedroomInBed = Location
   , _locationActionManagement = actionMap
   }
 
-actionMap :: Map VerbKey (GID (ActionF (ResolutionT ())))
+actionMap :: Map VerbKey (GID ActionF)
 actionMap = fromList [(ImplicitStimulusKey look, agentCanSeeGID)]

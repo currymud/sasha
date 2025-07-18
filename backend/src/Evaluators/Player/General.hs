@@ -35,10 +35,10 @@ evalImplicitStimulusVerb isv = do
 
 evalActionF :: ActionF -> GameComputation
 evalActionF _ =
-  pure $ ResolutionT $ pure (liftIO $ print "Evaluating action")
+  pure $ ResolutionT $ liftIO (print "Evaluating action")
 
 
 printWrong :: Text -> GameComputation
 printWrong msg =
-  pure $ ResolutionT $ pure (liftIO $ print ("Wrong: " <> show msg))
+  pure $ ResolutionT $ liftIO $ print ("Wrong: " <> show msg)
 
