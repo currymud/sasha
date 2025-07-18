@@ -6,12 +6,13 @@ import qualified Data.Map.Strict
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
-                                             Config (_actionMap),
+                                             Config (_actionMap, _sentenceProcessingMaps),
+                                             GameComputation,
                                              GameState (_player, _world),
                                              GameStateExceptT,
                                              Object (_objectActionManagement),
                                              Player (_sentenceManagement),
-                                             ProcessImplicitVerbMap,
+                                             ProcessImplicitVerbMaps,
                                              ResolutionT (ResolutionT),
                                              SentenceProcessingMaps (_processImplicitVerbMap),
                                              World (_objectMap))
@@ -33,6 +34,14 @@ getPlayerActionF vkey = do
   case Data.Map.Strict.lookup vkey pamap of
     Just actionF -> Right <$> getActionF actionF
     Nothing      -> pure $ Left $ "Action not found in player action map: " <> pack (show vkey)
+-}
+  {-
+getImplicitStimulusVerbProcessors :: ImplicitStimulusVerb
+                                      -> GameStateExceptT (Either Text ProcessImplicitVerbMap)
+getImplicitStimulusVerbProcessors ivp = do
+  processImplicitVerbMap <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
+    case lookup ivp processImplicitVerbMap of
+      Nothing -> pure $ Left $ "Implicit stimulus verb processor not found: " <> pack (show ivp)
 -}
       {-
 getPlayerImplicitStimulusActionF :: VerbKey -> GameStateExceptT ActionF

@@ -3,6 +3,7 @@
 module Model.GameState (
   ActionF (ImplicitStimulusAction)
   , ActionMap
+  , Config (Config, _actionMap, _sentenceProcessingMaps)
   , Evaluator
   , GameComputation
   , GameStateExceptT (GameStateExceptT)
@@ -12,13 +13,12 @@ module Model.GameState (
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object ( Object, _shortName, _description, _descriptives
            , _objectActionManagement)
-  , Config (Config, _actionMap)
   , Player (Player, _location, _sentenceManagement)
   , PlayerEvaluator
   , PlayerProcessImplicitVerbMap
   , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
-  , ProcessImplicitVerbMap
+  , ProcessImplicitVerbMaps
   , ResolutionT (ResolutionT,runResolutionT)
   , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
   , World (World, _objectMap,_locationMap)) where
@@ -48,16 +48,16 @@ data ActionF
 -- The ActionMap and other unchangeables
 type Config :: Type
 data Config = Config
-  { _actionMap             :: ActionMap
-  , _sentenceProcessingMap :: SentenceProcessingMaps
+  { _actionMap              :: ActionMap
+  , _sentenceProcessingMaps :: SentenceProcessingMaps
   }
 
 type SentenceProcessingMaps :: Type
 data SentenceProcessingMaps = SentenceProcessingMaps
-  {_processImplicitVerbMap :: ProcessImplicitVerbMap}
+  {_processImplicitVerbMap :: ProcessImplicitVerbMaps}
 
-type ProcessImplicitVerbMap :: Type
-type ProcessImplicitVerbMap = Map ImplicitStimulusVerb
+type ProcessImplicitVerbMaps :: Type
+type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb
                                 (Map (GID ProcessImplicitStimulusVerb)
                                      ProcessImplicitStimulusVerb)
 
@@ -68,6 +68,7 @@ type PlayerSentenceProcessingMaps :: Type
 data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
   { _playerProcessImplicitVerbMap :: PlayerProcessImplicitVerbMap
   }
+
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
 

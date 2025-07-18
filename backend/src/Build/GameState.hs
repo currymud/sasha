@@ -1,6 +1,7 @@
 module Build.GameState where
 import           Build.Identifiers.Locations          (bedroomInBedGID)
-import           Build.Identifiers.SentenceProcessing (processImplicitVerbMap)
+import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
+                                                       processImplicitVerbMap)
 import           Build.World                          (world)
 import           Data.Text                            (Text)
 import           Evaluators.Player.General            (eval)
@@ -17,7 +18,7 @@ initNarration = Narration
 
 initialAction :: Text
 initialAction = "Finally! Let's see how look works"
-  {-
+
 gameState :: GameState
 gameState = GameState
   { _world = world
@@ -29,9 +30,9 @@ gameState = GameState
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _sentenceManagement = sentenceManagement
+  , _sentenceManagement = playerProcessImplicitVerbMap
   }
--}
+
 sentenceManagement :: SentenceProcessingMaps
 sentenceManagement = SentenceProcessingMaps
   { _processImplicitVerbMap = processImplicitVerbMap }

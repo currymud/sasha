@@ -8,9 +8,14 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (ActionF, ActionMap, ResolutionT)
+import           Model.GameState            (ActionF, ActionMap,
+                                             PlayerProcessImplicitVerbMap,
+                                             ProcessImplicitStimulusVerb,
+                                             ProcessImplicitVerbMap,
+                                             ResolutionT)
 import           Model.GID                  (GID (GID))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.Lexer         (Lexeme)
 import           Prelude                    hiding (exp)
 
@@ -201,3 +206,130 @@ extractType :: Type -> Q Type
 extractType (ForallT _ _ t)               = extractType t
 extractType (AppT (AppT ArrowT _) result) = extractType result
 extractType t                             = pure t
+
+-- | Creates GIDs and ProcessImplicitVerbMap from a list of (verb, [processes]) pairs
+makeProcessImplicitVerbMapTH :: ExpQ -> Q [Dec]
+makeProcessImplicitVerbMapTH expQ = do
+  exp <- expQ
+  case exp of
+    ListE pairExps -> do
+      -- Extract all unique processes from all pairs
+      processes <- extractProcesses pairExps
+      let numberedProcesses = zip processes [1..]
+
+      -- Create GID declarations for each process
+      processGidDeclarations <- concat <$> mapM (uncurry makeProcessGID) numberedProcesses
+
+      -- Create the ProcessImplicitVerbMap declaration
+      mapDeclarations <- makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses
+
+      pure (processGidDeclarations ++ mapDeclarations)
+    _ -> fail "makeProcessImplicitVerbMapTH expects a list expression"
+
+-- | Create the PlayerProcessImplicitVerbMap declaration
+makePlayerProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
+makePlayerProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
+  let mapName = mkName "playerProcessImplicitVerbMap"
+      mapType = ConT ''PlayerProcessImplicitVerbMap
+      typeSignature = SigD mapName mapType
+
+  -- Create the map structure - each verb maps to the first process GID
+  pairExprs <- mapM (createPlayerMapPairExpression numberedProcesses) pairExps
+  let outerListExp = ListE pairExprs
+      outerMapExp = AppE (VarE 'Data.Map.Strict.fromList) outerListExp
+
+  let valueDeclaration = ValD (VarP mapName) (NormalB outerMapExp) []
+
+  pure [typeSignature, valueDeclaration]
+
+-- | Create a single pair expression for the player map: (verb, firstProcessGID)
+createPlayerMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
+createPlayerMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
+  case processes of
+    [] -> fail "Empty process list in verb mapping"
+    (firstProcess:_) -> do
+      -- Get the GID for the first process
+      firstProcessGID <- createPlayerMapProcessGID numberedProcesses firstProcess
+      pure $ TupE [Just verbExp, Just firstProcessGID]
+createPlayerMapPairExpression _ _ = fail "Expected tuple with (verb, [processes])"
+
+createPlayerMapProcessGID :: [(Exp, Int)] -> Exp -> Q Exp
+createPlayerMapProcessGID numberedProcesses processExp = do
+  case processExp of
+    VarE processName -> do
+      let originalNameStr = nameBase processName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+      pure $ VarE gidName
+    _ -> fail "Expected process variable"
+-- | Extract all unique processes from pair expressions
+
+extractProcesses :: [Exp] -> Q [Exp]
+extractProcesses pairExps = do
+  allProcesses <- concat <$> mapM extractProcessesFromPair pairExps
+  pure $ removeDuplicates allProcesses
+  where
+    removeDuplicates [] = []
+    removeDuplicates (x:xs) = x : removeDuplicates (filter (not . expEqual x) xs)
+
+    expEqual (VarE n1) (VarE n2) = n1 == n2
+    expEqual _ _                 = False
+
+-- | Extract processes from a single pair expression
+extractProcessesFromPair :: Exp -> Q [Exp]
+extractProcessesFromPair (TupE [Just _, Just (ListE processes)]) = pure processes
+extractProcessesFromPair _ = fail "Expected tuple with (verb, [processes])"
+
+-- | Create GID declaration for a process
+makeProcessGID :: Exp -> Int -> Q [Dec]
+makeProcessGID exp gidValue = do
+  case exp of
+    VarE functionName -> do
+      let originalNameStr = nameBase functionName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''ProcessImplicitStimulusVerb)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail "makeProcessGID expects a simple variable name"
+
+-- | Create the ProcessImplicitVerbMap declaration
+makeProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
+makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
+  let mapName = mkName "processImplicitVerbMap"
+      mapType = ConT ''ProcessImplicitVerbMap
+      typeSignature = SigD mapName mapType
+
+  -- Create the nested map structure
+  pairExprs <- mapM (createMapPairExpression numberedProcesses) pairExps
+  let outerListExp = ListE pairExprs
+      outerMapExp = AppE (VarE 'Data.Map.Strict.fromList) outerListExp
+
+  let valueDeclaration = ValD (VarP mapName) (NormalB outerMapExp) []
+
+  pure [typeSignature, valueDeclaration]
+
+-- | Create a single pair expression for the outer map: (verb, innerMap)
+createMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
+createMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
+  -- Create inner map from processes
+  innerPairs <- mapM (createInnerMapPair numberedProcesses) processes
+  let innerListExp = ListE innerPairs
+      innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) innerListExp
+
+  pure $ TupE [Just verbExp, Just innerMapExp]
+createMapPairExpression _ _ = fail "Expected tuple with (verb, [processes])"
+
+-- | Create a pair for the inner map: (processGID, process)
+createInnerMapPair :: [(Exp, Int)] -> Exp -> Q Exp
+createInnerMapPair numberedProcesses processExp = do
+  case processExp of
+    VarE processName -> do
+      let originalNameStr = nameBase processName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+      pure $ TupE [Just (VarE gidName), Just processExp]
+    _ -> fail "Expected process variable"
