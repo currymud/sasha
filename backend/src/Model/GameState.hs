@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionF (ComputeLocation, ComputeAction, ExecuteAction)
+  ActionF (ImplicitStimulusAction)
   , ActionMap
   , Evaluator
   , GameComputation
@@ -19,28 +19,42 @@ module Model.GameState (
   , ResolutionT (ResolutionT,runResolutionT)
   , World (World, _objectMap,_locationMap)) where
 
-import           Control.Monad.Except (ExceptT, MonadError)
-import           Control.Monad.Reader (MonadReader, ReaderT)
-import           Control.Monad.State  (MonadIO, MonadState, StateT)
-import           Data.Kind            (Type)
-import           Data.Map.Strict      (Map)
-import           Data.Set             (Set)
-import           Data.Text            (Text)
-import           Model.GID            (GID)
-import           Model.Label          (Label)
-import           Model.Mappings       (GIDToDataMap, LabelToGIDListMapping)
-import           Model.Parser         (Sentence)
-import           Model.Parser.GCase   (VerbKey)
+import           Control.Monad.Except       (ExceptT, MonadError)
+import           Control.Monad.Reader       (MonadReader, ReaderT)
+import           Control.Monad.State        (MonadIO, MonadState, StateT)
+import           Data.Kind                  (Type)
+import           Data.Map.Strict            (Map)
+import           Data.Set                   (Set)
+import           Data.Text                  (Text)
+import           Model.GID                  (GID)
+import           Model.Label                (Label)
+import           Model.Mappings             (GIDToDataMap,
+                                             LabelToGIDListMapping)
+import           Model.Parser               (Sentence)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Model.Parser.GCase         (VerbKey)
 
 type GameComputation :: Type
-type GameComputation = ResolutionT (GameStateExceptT ())
+type GameComputation = GameStateExceptT (ResolutionT (GameStateExceptT ()))
 
 type ActionF :: Type
 data ActionF
-  = ComputeImplicitStimulusAction (GID Location -> GameComputation)
+  = ImplicitStimulusAction (Location -> GameComputation)
+
+-- The ActionMap and other unchangeables
+type Config :: Type
+data Config = Config
+  { _actionMap             :: ActionMap
+  , _sentenceProcessingMap :: SentenceProcessingMaps
+  }
+
+type SentenceProcessingMaps :: Type
+data SentenceProcessingMaps  = ProcessSentenceMaps
+  { _implicitStimulus :: Map VerbKey ( Map (GID ProcessSentence) ProcessSentence)
+  }
 
 data ProcessSentence
-  = ImplicitStimulusF (Either (ResolutionT ()) (Text -> ResolutionT ()))
+  = ImplicitStimulusF (ImplicitStimulusVerb -> GameComputation)
 
 type Evaluator :: Type
 type Evaluator
@@ -65,6 +79,8 @@ newtype GameStateExceptT a = GameStateExceptT
 type ActionMap :: Type
 type ActionMap = GIDToDataMap ActionF ActionF
 
+type SentenceProcessingMap :: Type
+type SentenceProcessingMap = Map VerbKey (GID ProcessSentence)
 type GameState :: Type
 data GameState = GameState
   { _world      :: World
@@ -80,11 +96,6 @@ data Narration = Narration
   }
   deriving stock (Show)
 
--- The ActionMap and other unchangeables
-type Config :: Type
-data Config = Config
-  { _actionMap :: ActionMap
-  }
 
 type Location :: Type
 data Location = Location {

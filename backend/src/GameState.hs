@@ -5,7 +5,8 @@ import           Data.Functor         ((<&>))
 import qualified Data.Map.Strict
 import           Data.Text            (Text, pack)
 import           Error                (throwMaybeM)
-import           Model.GameState      (ActionF, Config (_actionMap),
+import           Model.GameState      (ActionF (ImplicitStimulusAction),
+                                       Config (_actionMap),
                                        GameState (_player, _world),
                                        GameStateExceptT,
                                        Object (_objectActionManagement),
@@ -29,7 +30,13 @@ getPlayerActionF vkey = do
   case Data.Map.Strict.lookup vkey pamap of
     Just actionF -> Right <$> getActionF actionF
     Nothing      -> pure $ Left $ "Action not found in player action map: " <> pack (show vkey)
-
+      {-
+getPlayerImplicitStimulusActionF :: VerbKey -> GameStateExceptT ActionF
+getPlayerImplicitStimulusActionF verbKey = do
+  actionF <- getPlayerActionF verbKey
+  case actionF of
+    ImplicitStimulusAction action -> getActionF action
+    -}
 getObjectM :: GID Object -> GameStateExceptT Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)

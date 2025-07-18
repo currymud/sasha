@@ -12,6 +12,7 @@ import           Model.GameState            (ActionF, GameStateExceptT,
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.GCase         (VerbKey)
+
 getLocationIdM :: GameStateExceptT (GID Location)
 getLocationIdM = get <&> (_location . _player)
 
@@ -33,3 +34,6 @@ getLocationM locID = do
     err_msg :: Text
     err_msg = pack
       $ "Location with ID " ++ show locID ++ " not found in the location map."
+
+getPlayerLocationM :: GameStateExceptT Location
+getPlayerLocationM =  getLocationIdM >>= getLocationM
