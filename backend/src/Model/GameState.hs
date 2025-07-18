@@ -48,13 +48,11 @@ data Config = Config
   , _sentenceProcessingMap :: SentenceProcessingMaps
   }
 
-type SentenceProcessingMaps :: Type
-data SentenceProcessingMaps  = ProcessSentenceMaps
-  { _implicitStimulus :: Map VerbKey ( Map (GID ProcessSentence) ProcessSentence)
-  }
+data SentenceProcessingMaps = SentenceProcessingMaps
+  {_processImplicitVerbMap :: ProcessImplicitVerbMap}
 
-data ProcessSentence
-  = ImplicitStimulusF (ImplicitStimulusVerb -> GameComputation)
+type ProcessImplicitVerbMap = Map ImplicitStimulusVerb (Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb)
+newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
 
 type Evaluator :: Type
 type Evaluator
