@@ -150,6 +150,4 @@ executable sasha-tests
      , relude
      , template-haskell
      , text
-     , sasha
      , sasha-testing
-

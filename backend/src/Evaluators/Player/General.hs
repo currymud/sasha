@@ -13,23 +13,23 @@ import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
 import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 
 
-eval :: Sentence -> GameStateExceptT GameComputation
+eval :: Sentence -> GameComputation
 eval (Imperative imperative) = evalImperative imperative
 
-evalImperative :: Imperative -> GameStateExceptT GameComputation
+evalImperative :: Imperative -> GameComputation
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
 
-evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameStateExceptT GameComputation
+evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
 
-evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameStateExceptT GameComputation
+evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation
 evalImplicitStimulusVerb isv = do
   -- Step 1: Access the player's action map
   playerAction <- getPlayerActionF verbKey
   case playerAction of
-    Left err     -> pure $ printWrong err
-    Right action -> pure $ evalActionF action
+    Left err     -> printWrong err
+    Right action -> evalActionF action
   where
     verbKey = ImplicitStimulusKey isv
 

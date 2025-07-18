@@ -58,7 +58,7 @@ data ProcessSentence
 
 type Evaluator :: Type
 type Evaluator
-  = (Sentence -> GameStateExceptT (Location -> ResolutionT ()))
+  = (Sentence -> GameComputation)
 
 type PlayerEvaluator :: Type
 type PlayerEvaluator
