@@ -15,9 +15,12 @@ module Model.GameState (
   , Config (Config, _actionMap)
   , Player (Player, _location, _sentenceManagement)
   , PlayerEvaluator
+  , PlayerProcessImplicitVerbMap
+  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
   , ResolutionT (ResolutionT,runResolutionT)
+  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
   , World (World, _objectMap,_locationMap)) where
 
 import           Control.Monad.Except       (ExceptT, MonadError)
@@ -49,10 +52,23 @@ data Config = Config
   , _sentenceProcessingMap :: SentenceProcessingMaps
   }
 
+type SentenceProcessingMaps :: Type
 data SentenceProcessingMaps = SentenceProcessingMaps
   {_processImplicitVerbMap :: ProcessImplicitVerbMap}
 
-type ProcessImplicitVerbMap = Map ImplicitStimulusVerb (Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb)
+type ProcessImplicitVerbMap :: Type
+type ProcessImplicitVerbMap = Map ImplicitStimulusVerb
+                                (Map (GID ProcessImplicitStimulusVerb)
+                                     ProcessImplicitStimulusVerb)
+
+type PlayerProcessImplicitVerbMap :: Type
+type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
+
+type PlayerSentenceProcessingMaps :: Type
+data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
+  { _playerProcessImplicitVerbMap :: PlayerProcessImplicitVerbMap
+  }
+type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
 
 type Evaluator :: Type
@@ -104,7 +120,7 @@ data Location = Location {
 type Player :: Type
 data Player = Player
   { _location           :: GID Location
-  , _sentenceManagement :: SentenceProcessingMaps
+  , _sentenceManagement :: PlayerProcessImplicitVerbMap
   }
 
 type Object :: Type

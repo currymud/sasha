@@ -18,6 +18,7 @@ agentCannotSee nosee = ImplicitStimulusAction $ \loc ->
 
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
 manageImplicitStimulusProcess = ProcessImplicitStimulusVerb (\isv ->
+
   pure $ ResolutionT $ pure ())
 
 noSeeLoc :: Text -> GameComputation

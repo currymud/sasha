@@ -1,9 +1,13 @@
 module Build.GameState where
-import           Build.World               (world)
-import           Data.Text                 (Text)
-import           Evaluators.Player.General (eval)
-import           Model.GameState           (GameState (GameState, _evaluation, _narration, _player, _world),
-                                            Narration (..))
+import           Build.Identifiers.Locations          (bedroomInBedGID)
+import           Build.Identifiers.SentenceProcessing (processImplicitVerbMap)
+import           Build.World                          (world)
+import           Data.Text                            (Text)
+import           Evaluators.Player.General            (eval)
+import           Model.GameState                      (GameState (GameState, _evaluation, _narration, _player, _world),
+                                                       Narration (..),
+                                                       Player (Player, _location, _sentenceManagement),
+                                                       SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 
 initNarration :: Narration
 initNarration = Narration
@@ -21,4 +25,13 @@ gameState = GameState
   , _narration = initNarration
   , _evaluation = eval
   }
+
+player :: Player
+player = Player
+  { _location = bedroomInBedGID
+  , _sentenceManagement = sentenceManagement
+  }
 -}
+sentenceManagement :: SentenceProcessingMaps
+sentenceManagement = SentenceProcessingMaps
+  { _processImplicitVerbMap = processImplicitVerbMap }

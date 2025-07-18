@@ -1,20 +1,24 @@
-module GameState (getActionF,  getObjectM, liftGS) where
-import           Control.Monad.Reader (MonadReader (ask), asks)
-import           Control.Monad.State  (get, gets)
-import           Data.Functor         ((<&>))
+module GameState (getActionF,  getObjectM, getPlayerM, liftGS) where
+import           Control.Monad.Reader       (MonadReader (ask), asks)
+import           Control.Monad.State        (get, gets)
+import           Data.Functor               ((<&>))
 import qualified Data.Map.Strict
-import           Data.Text            (Text, pack)
-import           Error                (throwMaybeM)
-import           Model.GameState      (ActionF (ImplicitStimulusAction),
-                                       Config (_actionMap),
-                                       GameState (_player, _world),
-                                       GameStateExceptT,
-                                       Object (_objectActionManagement),
-                                       ResolutionT (ResolutionT),
-                                       World (_objectMap))
-import           Model.GID            (GID)
-import           Model.Mappings       (_getGIDToDataMap)
-import           Model.Parser.GCase   (VerbKey)
+import           Data.Text                  (Text, pack)
+import           Error                      (throwMaybeM)
+import           Model.GameState            (ActionF (ImplicitStimulusAction),
+                                             Config (_actionMap),
+                                             GameState (_player, _world),
+                                             GameStateExceptT,
+                                             Object (_objectActionManagement),
+                                             Player (_sentenceManagement),
+                                             ProcessImplicitVerbMap,
+                                             ResolutionT (ResolutionT),
+                                             SentenceProcessingMaps (_processImplicitVerbMap),
+                                             World (_objectMap))
+import           Model.GID                  (GID)
+import           Model.Mappings             (_getGIDToDataMap)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Model.Parser.GCase         (VerbKey)
 
 getActionF :: GID ActionF -> GameStateExceptT ActionF
 getActionF vkey = do
@@ -37,6 +41,19 @@ getPlayerImplicitStimulusActionF verbKey = do
   case actionF of
     ImplicitStimulusAction action -> getActionF action
     -}
+
+getPlayerM :: GameStateExceptT Player
+getPlayerM = gets _player
+
+  {-
+getPlayerImplicitStimulusActionF :: ImplicitStimulusVerb
+                                      -> GameStateExceptT (Either Text (Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb)
+getPlayerImplicitStimulusActionF verb = do
+ ivpMap <- _processImplicitVerbMap <$> _sentenceManagement <$> getPlayerM
+ case Data.Map.Strict.lookup verb ivpMap of
+  Just ivp -> pure $ Right ivp
+  Nothing      -> pure $ Left $ "Implicit stimulus action not found for verb: " <> pack (show verb)
+-}
 getObjectM :: GID Object -> GameStateExceptT Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
