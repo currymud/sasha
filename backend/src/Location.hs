@@ -21,10 +21,9 @@ updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocationActionMapM :: GID Location -> GameStateExceptT (Map VerbKey (GID ActionF))
-getLocationActionMapM locID = do
-  location <- getLocationM locID
-  pure $ _locationActionManagement location
+getLocationActionMapM :: GameStateExceptT (Map VerbKey (GID ActionF))
+getLocationActionMapM = _locationActionManagement <$> getPlayerLocationM
+
 
 getLocationM :: GID Location -> GameStateExceptT Location
 getLocationM locID = do

@@ -1,4 +1,9 @@
-module GameState (getActionF,  getObjectM, getPlayerM, liftGS) where
+module GameState (getActionF
+                 , getObjectM
+                 , getImplicitStimulusVerbProcessors
+                 , getPlayerM
+                 , getImplicitStimulusVerbProcessor
+                 , liftGS) where
 import           Control.Monad.Reader       (MonadReader (ask), asks)
 import           Control.Monad.State        (get, gets)
 import           Data.Functor               ((<&>))
@@ -12,6 +17,8 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              GameStateExceptT,
                                              Object (_objectActionManagement),
                                              Player (_sentenceManagement),
+                                             ProcessImplicitStimulusVerb,
+                                             ProcessImplicitVerbMap,
                                              ProcessImplicitVerbMaps,
                                              ResolutionT (ResolutionT),
                                              SentenceProcessingMaps (_processImplicitVerbMap),
@@ -26,23 +33,26 @@ getActionF vkey = do
   gs :: Config <- ask
   let amap = _getGIDToDataMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
-    {-
-getPlayerActionF :: VerbKey -> GameStateExceptT (Either Text ActionF)
-getPlayerActionF vkey = do
-  oid <- gets ( _object . _player)
-  pamap <- getObjectM oid <&> _objectActionManagement
-  case Data.Map.Strict.lookup vkey pamap of
-    Just actionF -> Right <$> getActionF actionF
-    Nothing      -> pure $ Left $ "Action not found in player action map: " <> pack (show vkey)
--}
-  {-
+
+getImplicitStimulusVerbProcessor :: ImplicitStimulusVerb
+                                      -> GID ProcessImplicitStimulusVerb
+                                      -> GameStateExceptT (Either Text ProcessImplicitStimulusVerb)
+getImplicitStimulusVerbProcessor ivp pid = do
+  processImplicitVerbMap' <- getImplicitStimulusVerbProcessors ivp
+  case processImplicitVerbMap' of
+      Left err -> pure $ Left err
+      Right processImplicitVerbMap ->
+        case Data.Map.Strict.lookup pid processImplicitVerbMap of
+          Nothing -> pure $ Left $ "Implicit stimulus verb processor not found for player: " <> pack (show pid)
+          Just ivpProcessor -> pure $ Right ivpProcessor
+
 getImplicitStimulusVerbProcessors :: ImplicitStimulusVerb
                                       -> GameStateExceptT (Either Text ProcessImplicitVerbMap)
 getImplicitStimulusVerbProcessors ivp = do
   processImplicitVerbMap <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
-    case lookup ivp processImplicitVerbMap of
+  case Data.Map.Strict.lookup ivp processImplicitVerbMap of
       Nothing -> pure $ Left $ "Implicit stimulus verb processor not found: " <> pack (show ivp)
--}
+      Just ivpMap -> pure $ Right ivpMap
       {-
 getPlayerImplicitStimulusActionF :: VerbKey -> GameStateExceptT ActionF
 getPlayerImplicitStimulusActionF verbKey = do

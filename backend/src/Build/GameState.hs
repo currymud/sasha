@@ -1,7 +1,7 @@
 module Build.GameState where
 import           Build.Identifiers.Locations          (bedroomInBedGID)
 import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
-                                                       processImplicitVerbMap)
+                                                       processImplicitVerbMaps)
 import           Build.World                          (world)
 import           Data.Text                            (Text)
 import           Evaluators.Player.General            (eval)
@@ -35,4 +35,4 @@ player = Player
 
 sentenceManagement :: SentenceProcessingMaps
 sentenceManagement = SentenceProcessingMaps
-  { _processImplicitVerbMap = processImplicitVerbMap }
+  { _processImplicitVerbMap = processImplicitVerbMaps }

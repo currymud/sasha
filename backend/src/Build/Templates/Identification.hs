@@ -1,6 +1,6 @@
 module Build.Templates.Identification where
+import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict
-
 import           Language.Haskell.TH        (reify)
 import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
 import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
@@ -12,6 +12,7 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
 import           Model.GameState            (ActionF, ActionMap,
                                              PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
+                                             ProcessImplicitVerbMap,
                                              ProcessImplicitVerbMaps,
                                              ResolutionT)
 import           Model.GID                  (GID (GID))
@@ -24,10 +25,10 @@ import           Prelude                    hiding (exp)
 -- CORE HELPER FUNCTIONS
 -- =============================================================================
 
--- | Generic GID creation helper
-makeGIDHelper :: Name -> Int -> Q [Dec]
-makeGIDHelper typeName gidValue = do
-  let originalNameStr = nameBase typeName
+-- | Generic GID creation helper for function names with specific type
+makeGIDHelperWithType :: Name -> Name -> Int -> Q [Dec]
+makeGIDHelperWithType functionName typeName gidValue = do
+  let originalNameStr = nameBase functionName
       gidNameStr = originalNameStr ++ "GID"
       gidName = mkName gidNameStr
       gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
@@ -141,6 +142,7 @@ makeActionGID exp gidValue = do
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeActionGID expects a simple variable name"
+
 -- =============================================================================
 -- GENERIC MAP CREATION
 -- =============================================================================
@@ -209,7 +211,7 @@ makeMapDeclarationWithName mapNameStr numberedPairs@((firstExp, _):_) = do
 -- PROCESS IMPLICIT VERB MAP CREATION
 -- =============================================================================
 
--- | Creates GIDs and both ProcessImplicitVerbMaps and PlayerProcessImplicitVerbMaps
+-- | Creates GIDs and both ProcessImplicitVerbMap and PlayerProcessImplicitVerbMap
 makeProcessImplicitVerbMapsTH :: ExpQ -> Q [Dec]
 makeProcessImplicitVerbMapsTH expQ = do
   exp <- expQ
@@ -223,11 +225,11 @@ makeProcessImplicitVerbMapsTH expQ = do
       processGidDeclarations <- concat <$> mapM (uncurry makeProcessGID) numberedProcesses
 
       -- Create both maps
-      regularMapDecls <- makeProcessImplicitVerbMapsDeclaration pairExps numberedProcesses
+      regularMapDecls <- makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses
       playerMapDecls <- makePlayerProcessImplicitVerbMapDeclaration pairExps numberedProcesses
 
       pure (processGidDeclarations ++ regularMapDecls ++ playerMapDecls)
-    _ -> fail "makeProcessImplicitVerbMapsTH expects a list expression"
+    _ -> fail "makeProcessImplicitVerbMapTH expects a list expression"
 
 -- | Extract all unique processes from pair expressions (efficient version)
 extractProcesses :: [Exp] -> Q [Exp]
@@ -255,14 +257,16 @@ makeProcessGID exp gidValue = do
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeProcessGID expects a simple variable name"
+
 -- =============================================================================
--- REGULAR PROCESS MAP
+-- MAIN PROCESS MAP (ProcessImplicitVerbMaps)
 -- =============================================================================
 
--- | Create the ProcessImplicitVerbMaps declaration
-makeProcessImplicitVerbMapsDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
-makeProcessImplicitVerbMapsDeclaration pairExps numberedProcesses = do
-  let mapName = mkName "processImplicitVerbMap"
+-- | Create the ProcessImplicitVerbMaps declaration (note: plural, the main outer map)
+makeProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
+makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
+  let mapName = mkName "processImplicitVerbMaps"
+      -- This should be ProcessImplicitVerbMaps (plural) - the outer map type
       mapType = ConT ''ProcessImplicitVerbMaps
       typeSignature = SigD mapName mapType
 
@@ -275,9 +279,10 @@ makeProcessImplicitVerbMapsDeclaration pairExps numberedProcesses = do
   pure [typeSignature, valueDeclaration]
 
 -- | Create a single pair expression for the outer map: (verb, innerMap)
+-- Creates: (ImplicitStimulusVerb, ProcessImplicitVerbMap)
 createMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
 createMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
-  -- Create inner map from processes
+  -- Create inner map from processes: Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb
   innerPairs <- mapM (createInnerMapPair numberedProcesses) processes
   let innerListExp = ListE innerPairs
       innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) innerListExp
@@ -286,6 +291,7 @@ createMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE proce
 createMapPairExpression _ _ = fail "Expected tuple with (verb, [processes]) in regular map"
 
 -- | Create a pair for the inner map: (processGID, process)
+-- Creates: (GID ProcessImplicitStimulusVerb, ProcessImplicitStimulusVerb)
 createInnerMapPair :: [(Exp, Int)] -> Exp -> Q Exp
 createInnerMapPair _numberedProcesses processExp = do
   case processExp of
@@ -302,7 +308,9 @@ createInnerMapPair _numberedProcesses processExp = do
 makePlayerProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
 makePlayerProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
   let mapName = mkName "playerProcessImplicitVerbMap"
-      mapType = ConT ''PlayerProcessImplicitVerbMap
+      -- Construct the type explicitly: Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
+      mapType = AppT (AppT (ConT ''Map) (ConT ''ImplicitStimulusVerb))
+                     (AppT (ConT ''GID) (ConT ''ProcessImplicitStimulusVerb))
       typeSignature = SigD mapName mapType
 
   -- Create the map structure - each verb maps to the first process GID
