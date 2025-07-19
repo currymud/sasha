@@ -4,7 +4,8 @@ import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
 import           Data.Text                (Text, pack)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (GameState (_narration),
+import           Model.GameState          (GameComputation,
+                                           GameState (_narration),
                                            GameStateExceptT,
                                            ResolutionT (ResolutionT, runResolutionT),
                                            _actionConsequence, _playerAction)
@@ -13,11 +14,18 @@ import           Relude.String.Conversion (ToText (toText))
 import           System.Console.Haskeline (InputT, defaultSettings,
                                            getInputLine, runInputT)
 
-topLevel :: ResolutionT (GameStateExceptT ()) -> GameStateExceptT ()
-topLevel resolution = do
-  _ <- runResolutionT resolution
-  displayResult
-  pure ()
+initComp :: GameComputation
+initComp = do
+  pure $ ResolutionT $ pure ()
+
+topLevel :: GameStateExceptT ()
+topLevel = runGame initComp
+  where
+    runGame :: GameComputation -> GameStateExceptT ()
+    runGame comp' = do
+      comp :: ResolutionT () <- comp'
+      runResolutionT comp
+      displayResult
 
 displayResult :: GameStateExceptT ()
 displayResult = do

@@ -91,6 +91,7 @@ library
       Grammar.Parser.Rules.Atomics.Verbs
       Grammar.Parser.Rules.Atomics.Utils
       Grammar.Parser.Rules.Composites.Verbs
+      TopLevel
   hs-source-dirs:
       src
 
