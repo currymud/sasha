@@ -28,19 +28,20 @@ agentCannotSee nosee = ImplicitStimulusAction $ \loc ->
   pure $ ResolutionT $ liftIO $ print nosee
 
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
-manageImplicitStimulusProcess = ProcessImplicitStimulusVerb (\isv -> do
-    actionMap <- asks (_getGIDToDataMap . _actionMap)
-    locationActionMap <- getLocationActionMapM
-    let errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
+manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
+  where
+    go isv = do
+      actionMap <- asks (_getGIDToDataMap . _actionMap)
+      locationActionMap <- getLocationActionMapM
+      aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey locationActionMap
+      actionF <- throwMaybeM errMsg $ Data.Map.Strict.lookup aid actionMap
+      case actionF of
+        ImplicitStimulusAction actionFunc -> do
+          currentLocation <- getPlayerLocationM
+          actionFunc currentLocation
+      where
+        errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
         verbKey = ImplicitStimulusKey isv
-    aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey locationActionMap
-    actionF <- throwMaybeM errMsg $ Data.Map.Strict.lookup aid actionMap
-    case actionF of
-      ImplicitStimulusAction actionFunc -> do
-        currentLocation <- getPlayerLocationM
-        actionFunc currentLocation
-  )
-
 
   {-
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
