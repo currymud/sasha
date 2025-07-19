@@ -14,13 +14,8 @@ import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 
 
 eval :: Sentence -> GameComputation
-eval (Imperative imperative) = undefined -- evalImperative imperative
+eval (Imperative imperative) = evalImperative imperative
 
-evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation
-evalImplicitStimulusVerb isv = do
-  (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv
-  f isv
-  {-
 evalImperative :: Imperative -> GameComputation
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
@@ -30,20 +25,10 @@ evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
 
 evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation
 evalImplicitStimulusVerb isv = do
-  -- Step 1: Access the player's action map
-  playerAction <- getPlayerActionF verbKey
-  case playerAction of
-    Left err     -> printWrong err
-    Right action -> evalActionF action
-  where
-    verbKey = ImplicitStimulusKey isv
-
-evalActionF :: ActionF -> GameComputation
-evalActionF _ =
-  pure $ ResolutionT $ liftIO (print "Evaluating action")
--}
-
+  (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv
+  f isv
+    {-
 printWrong :: Text -> GameComputation
 printWrong msg =
   pure $ ResolutionT $ liftIO $ print ("Wrong: " <> show msg)
-
+-}
