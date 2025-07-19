@@ -2,6 +2,7 @@ module TopLevel where
 import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
                                            gets)
 import           Data.Text                (Text, pack)
+import           GameState                (clearNarration)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
 import           Model.GameState          (GameComputation,
@@ -41,6 +42,7 @@ displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)
   liftIO $ mapM_ print (_actionConsequence narration)
+  clearNarration
 
 trySentence :: Text -> Either Text Sentence
 trySentence input = do

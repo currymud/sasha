@@ -6,6 +6,7 @@ import           Control.Monad.RWS          (MonadReader (local))
 import qualified Data.Map.Strict
 import           Data.Text                  (Text)
 import           Error                      (throwMaybeM)
+import           GameState                  (modifyNarration)
 import           Location                   (getLocationActionMapM,
                                              getLocationM, getPlayerLocationM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
@@ -13,7 +14,8 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              GameComputation, GameStateExceptT,
                                              Location (_title),
                                              ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
-                                             ResolutionT (ResolutionT))
+                                             ResolutionT (ResolutionT),
+                                             updateActionConsequence)
 import           Model.Mappings             (GIDToDataMap (_getGIDToDataMap))
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey (ImplicitStimulusKey))
@@ -21,11 +23,12 @@ import           Relude.String.Conversion   (ToText (toText))
 
 agentCanSee :: ActionF
 agentCanSee = ImplicitStimulusAction (\loc ->
-  pure $ ResolutionT $ liftIO $ print ("You see: " <> _title loc))
+  pure $ ResolutionT $
+   modifyNarration $ updateActionConsequence ("You see: " <> _title loc))
 
 agentCannotSee :: Text -> ActionF
-agentCannotSee nosee = ImplicitStimulusAction $ \loc ->
-  pure $ ResolutionT $ liftIO $ print nosee
+agentCannotSee nosee = ImplicitStimulusAction $ \_ ->
+  pure $ ResolutionT $ modifyNarration $ updateActionConsequence nosee
 
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
 manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go

@@ -1,33 +1,32 @@
-module GameState (getActionF
+module GameState ( clearNarration
+                 , getActionF
                  , getObjectM
                  , getImplicitStimulusVerbProcessors
                  , getPlayerM
                  , getImplicitStimulusVerbProcessorGID
                  , getImplicitStimulusVerbProcessor
-                 , liftGS) where
+                 , liftGS
+                 , modifyNarration) where
 import           Control.Monad.Reader       (MonadReader (ask), asks)
-import           Control.Monad.State        (get, gets)
-import           Data.Functor               ((<&>))
+import           Control.Monad.State        (gets, modify')
 import qualified Data.Map.Strict
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap, _sentenceProcessingMaps),
-                                             GameComputation,
-                                             GameState (_player, _world),
+                                             GameState (_narration, _player, _world),
                                              GameStateExceptT,
+                                             Narration (Narration),
                                              Object (_objectActionManagement),
                                              Player (_sentenceManagement),
                                              ProcessImplicitStimulusVerb,
                                              ProcessImplicitVerbMap,
-                                             ProcessImplicitVerbMaps,
                                              ResolutionT (ResolutionT),
                                              SentenceProcessingMaps (_processImplicitVerbMap),
                                              World (_objectMap))
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Model.Parser.GCase         (VerbKey)
 import           Relude                     (ToText (toText))
 
 getActionF :: GID ActionF -> GameStateExceptT ActionF
@@ -59,31 +58,26 @@ getImplicitStimulusVerbProcessors ivp = do
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp processImplicitVerbMap
   where
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
-      {-
-getPlayerImplicitStimulusActionF :: VerbKey -> GameStateExceptT ActionF
-getPlayerImplicitStimulusActionF verbKey = do
-  actionF <- getPlayerActionF verbKey
-  case actionF of
-    ImplicitStimulusAction action -> getActionF action
-    -}
 
 getPlayerM :: GameStateExceptT Player
 getPlayerM = gets _player
 
-  {-
-getPlayerImplicitStimulusActionF :: ImplicitStimulusVerb
-                                      -> GameStateExceptT (Either Text (Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb)
-getPlayerImplicitStimulusActionF verb = do
- ivpMap <- _processImplicitVerbMap <$> _sentenceManagement <$> getPlayerM
- case Data.Map.Strict.lookup verb ivpMap of
-  Just ivp -> pure $ Right ivp
-  Nothing      -> pure $ Left $ "Implicit stimulus action not found for verb: " <> pack (show verb)
--}
 getObjectM :: GID Object -> GameStateExceptT Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
 
+modifyNarration :: (Narration -> Narration)
+                     -> GameStateExceptT ()
+modifyNarration narrationF = do
+  current_narration <- gets _narration
+  let updatedNarrative = narrationF current_narration
+  modify' (\gs -> gs{ _narration = updatedNarrative })
+
+clearNarration :: GameStateExceptT ()
+clearNarration = modifyNarration (const emptyNarration)
+  where
+    emptyNarration :: Narration
+    emptyNarration = Narration mempty mempty
 liftGS :: GameStateExceptT a -> ResolutionT a
 liftGS = ResolutionT
-

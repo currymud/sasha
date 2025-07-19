@@ -22,7 +22,8 @@ module Model.GameState (
   , ProcessImplicitVerbMaps
   , ResolutionT (ResolutionT,runResolutionT)
   , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
-  , World (World, _objectMap,_locationMap)) where
+  , World (World, _objectMap,_locationMap)
+  , updateActionConsequence, updatePlayerAction) where
 
 import           Control.Monad.Except       (ExceptT, MonadError)
 import           Control.Monad.Reader       (MonadReader, ReaderT)
@@ -111,6 +112,15 @@ data Narration = Narration
   , _actionConsequence :: [Text] -- what happened as a result of the action
   }
   deriving stock (Show)
+
+updatePlayerAction :: Text -> Narration -> Narration
+updatePlayerAction action narration =
+  narration { _playerAction = action : _playerAction narration }
+
+updateActionConsequence :: Text -> Narration -> Narration
+updateActionConsequence consequence narration =
+  narration { _actionConsequence = consequence : _actionConsequence narration }
+
 
 
 type Location :: Type
