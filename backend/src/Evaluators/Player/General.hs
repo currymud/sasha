@@ -27,8 +27,3 @@ evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation
 evalImplicitStimulusVerb isv = do
   (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv
   f isv
-    {-
-printWrong :: Text -> GameComputation
-printWrong msg =
-  pure $ ResolutionT $ liftIO $ print ("Wrong: " <> show msg)
--}
