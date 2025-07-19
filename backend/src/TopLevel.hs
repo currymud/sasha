@@ -17,15 +17,14 @@ import           System.Console.Haskeline (InputT, defaultSettings,
 
 initComp :: GameComputation
 initComp = do
-  pure $ ResolutionT $ pure ()
+  pure ()
 
 topLevel :: GameStateExceptT ()
 topLevel = runGame initComp
   where
     runGame :: GameComputation -> GameStateExceptT ()
     runGame comp' = do
-      comp :: ResolutionT () <- comp'
-      runResolutionT comp
+      comp'
       displayResult
       attSentence <- trySentence <$> liftIO getInput
       case attSentence of
@@ -65,14 +64,11 @@ getInput = do
     go = do
       minput <- getInputLine "What Do? "
       case minput of
-        Nothing    -> go
-        Just input -> pure $ pack input
+        Nothing -> error "fail"
+        Just input
+          | null input -> go
+          | otherwise  -> pure $ pack input
 
 errorHandler :: Text -> GameComputation
-errorHandler err = do
-  pure $ ResolutionT $ do
-    liftIO $ print $ "Lexer failed: " <> err
-
-
-placeHolder :: GameStateExceptT (ResolutionT ())
-placeHolder = pure $ ResolutionT $ pure ()
+errorHandler err =
+  liftIO $ print $ "Lexer failed: " <> err

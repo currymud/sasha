@@ -23,12 +23,11 @@ import           Relude.String.Conversion   (ToText (toText))
 
 agentCanSee :: ActionF
 agentCanSee = ImplicitStimulusAction (\loc ->
-  pure $ ResolutionT $
    modifyNarration $ updateActionConsequence ("You see: " <> _title loc))
 
 agentCannotSee :: Text -> ActionF
 agentCannotSee nosee = ImplicitStimulusAction $ \_ ->
-  pure $ ResolutionT $ modifyNarration $ updateActionConsequence nosee
+  modifyNarration $ updateActionConsequence nosee
 
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
 manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
@@ -45,19 +44,3 @@ manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
       where
         errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
         verbKey = ImplicitStimulusKey isv
-
-  {-
-manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
-manageImplicitStimulusProcess = ProcessImplicitStimulusVerb (\isv ->
-  pure $ ResolutionT $ do
-    actionMap <- asks (_getGIDToDataMap . _actionMap)
-    locationActionMap <- getLocationActionMapM
-    let errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
-        verbKey = ImplicitStimulusKey isv
-    aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey locationActionMap
-    throwMaybeM errMsg $ Data.Map.Strict.lookup aid actionMap
-    )
--}
-
-noSeeLoc :: Text -> GameComputation
-noSeeLoc nosee = pure $ ResolutionT $ liftIO $ print nosee

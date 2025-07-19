@@ -41,7 +41,7 @@ import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey)
 
 type GameComputation :: Type
-type GameComputation = GameStateExceptT (ResolutionT ())
+type GameComputation = GameStateExceptT ()
 
 type ActionF :: Type
 data ActionF
