@@ -1,4 +1,5 @@
 module TopLevel where
+import           Control.Monad.Identity   (Identity)
 import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
                                            MonadTrans (lift), gets)
 import           Data.Text                (Text, pack)
@@ -69,6 +70,5 @@ getInput = do
           | null input -> go
           | otherwise  -> pure $ pack input
 
-errorHandler :: Text -> GameComputation
-errorHandler err =
-  liftIO $ print $ "Lexer failed: " <> err
+errorHandler :: Text -> GameComputation Identity ()
+errorHandler err = pure ()
