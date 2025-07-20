@@ -6,10 +6,10 @@ module Model.GameState (
   , Config (Config, _actionMap, _sentenceProcessingMaps)
                        , DisplayT (DisplayT, runDisplayT)
   , Evaluator
-  , GameComputation
+--  , GameComputation
   , GameStateM (GameStateM, runGameState)
-  , GameStateExceptT (GameStateExceptT)
-  , runGameStateExceptT
+--  , GameStateExceptT (GameStateExceptT)
+--  , runGameStateExceptT
   , GameState (GameState, _world, _player, _narration, _evaluation)
   , Location (Location, _title, _objectLabelMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
@@ -42,7 +42,7 @@ import           Model.Mappings             (GIDToDataMap,
 import           Model.Parser               (Sentence)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey)
-
+  {-
 type GameComputation :: (Type -> Type) -> Type -> Type
 newtype GameComputation m a = GameComputation
   { runGameComputation :: GameStateExceptT m a }
@@ -52,7 +52,7 @@ newtype GameComputation m a = GameComputation
                    , MonadState GameState)
 instance MonadTrans GameComputation where
   lift = GameComputation . lift
-
+-}
 type GameStateM :: (Type -> Type) -> Type -> Type
 newtype GameStateM m a = GameStateM {runGameState :: StateT GameState m a}
   deriving newtype ( Functor
@@ -62,19 +62,17 @@ newtype GameStateM m a = GameStateM {runGameState :: StateT GameState m a}
 
 instance MonadTrans GameStateM where
   lift = GameStateM . lift
-                     {-
-type GameStateExceptT :: Type -> Type
-newtype GameStateExceptT a = GameStateExceptT
-  { runGameStateExceptT :: ReaderT Config (ExceptT Text (StateT GameState IO)) a
-  }
-  deriving newtype ( Functor
-                   , Applicative
-                   , Monad
-                   , MonadReader Config
-                   , MonadError Text
-                   , MonadState GameState
-                   , MonadIO)
--}
+
+newtype GameT m a = GameT
+  { runGameT :: ReaderT Config (ExceptT Text (StateT GameState m)) a }
+  deriving newtype
+    ( Functor, Applicative, Monad
+    , MonadReader Config, MonadError Text, MonadState GameState, MonadIO
+    )
+
+instance MonadTrans GameT where
+  lift = GameT . lift . lift . lift
+    {-
 type GameStateExceptT :: (Type -> Type) -> Type -> Type
 newtype GameStateExceptT m a = GameStateExceptT
   { runGameStateExceptT :: ReaderT Config (ExceptT Text (GameStateM m)) a
@@ -88,7 +86,8 @@ newtype GameStateExceptT m a = GameStateExceptT
 
 instance MonadTrans GameStateExceptT where
   lift = GameStateExceptT . lift . lift . lift
-
+-}
+  {-
 type TopLevelT :: (Type -> Type) -> Type -> Type
 newtype TopLevelT m a = TopLevelT
   { runTopLevelT :: ReaderT Config (ExceptT Text (GameStateM m)) a
@@ -100,7 +99,7 @@ newtype TopLevelT m a = TopLevelT
                    , MonadError Text
                    , MonadIO
                    , MonadState GameState)
-
+-}
 type DisplayT :: (Type -> Type) -> Type -> Type
 newtype DisplayT m a = DisplayT { runDisplayT :: GameStateM m a }
   deriving newtype ( Functor
@@ -141,7 +140,7 @@ newtype GameStateExceptT a = GameStateExceptT
 -}
 type ActionF :: Type
 data ActionF
-  = ImplicitStimulusAction (Location -> GameComputation Identity ())
+  = ImplicitStimulusAction (Location -> GameT Identity ())
 
 -- The ActionMap and other unchangeables
 type Config :: Type
