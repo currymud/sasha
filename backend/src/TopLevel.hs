@@ -20,10 +20,10 @@ initComp :: GameComputation Identity ()
 initComp = do
   pure ()
 
-topLevel :: TopLevelT IO ()
+topLevel :: GameT IO ()
 topLevel = runGame initComp
   where
-    runGame :: GameComputation Identity () -> TopLevelT IO ()
+    runGame :: GameComputation Identity () -> GameT IO ()
     runGame comp' = do
       comp'
       displayResult
