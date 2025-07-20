@@ -1,16 +1,11 @@
 module Evaluators.Player.General where
-import           Control.Monad.IO.Class        (MonadIO (liftIO))
-import           Data.Data                     (Data (dataTypeOf))
-import           Data.Text                     (Text)
 import           GameState                     (getImplicitStimulusVerbProcessor)
-import           Model.GameState               (ActionF, GameComputation,
-                                                ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
-                                                ResolutionT (ResolutionT))
+import           Model.GameState               (GameComputation,
+                                                ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb))
 import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
                                                 StimulusVerbPhrase (ImplicitStimulusVerb))
-import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 
 
 eval :: Sentence -> GameComputation

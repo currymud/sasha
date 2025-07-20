@@ -1,23 +1,18 @@
 module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess) where
 
-import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Control.Monad.Reader.Class (asks)
-import           Control.Monad.RWS          (MonadReader (local))
 import qualified Data.Map.Strict
 import           Data.Text                  (Text)
 import           Error                      (throwMaybeM)
 import           GameState                  (modifyNarration)
 import           Location                   (getLocationActionMapM,
-                                             getLocationM, getPlayerLocationM)
+                                             getPlayerLocationM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap),
-                                             GameComputation, GameStateExceptT,
                                              Location (_title),
                                              ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
-                                             ResolutionT (ResolutionT),
                                              updateActionConsequence)
 import           Model.Mappings             (GIDToDataMap (_getGIDToDataMap))
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey (ImplicitStimulusKey))
 import           Relude.String.Conversion   (ToText (toText))
 

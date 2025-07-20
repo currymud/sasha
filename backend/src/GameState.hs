@@ -5,7 +5,6 @@ module GameState ( clearNarration
                  , getPlayerM
                  , getImplicitStimulusVerbProcessorGID
                  , getImplicitStimulusVerbProcessor
-                 , liftGS
                  , modifyNarration) where
 import           Control.Monad.Reader       (MonadReader (ask), asks)
 import           Control.Monad.State        (gets, modify')
@@ -14,6 +13,7 @@ import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap, _sentenceProcessingMaps),
+                                             DisplayT,
                                              GameState (_narration, _player, _world),
                                              GameStateExceptT,
                                              Narration (Narration),
@@ -21,7 +21,6 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Player (_sentenceManagement),
                                              ProcessImplicitStimulusVerb,
                                              ProcessImplicitVerbMap,
-                                             ResolutionT (ResolutionT),
                                              SentenceProcessingMaps (_processImplicitVerbMap),
                                              World (_objectMap))
 import           Model.GID                  (GID)
@@ -68,16 +67,14 @@ getObjectM oid = do
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
 
 modifyNarration :: (Narration -> Narration)
-                     -> GameStateExceptT ()
+                     -> DisplayT ()
 modifyNarration narrationF = do
   current_narration <- gets _narration
   let updatedNarrative = narrationF current_narration
   modify' (\gs -> gs{ _narration = updatedNarrative })
 
-clearNarration :: GameStateExceptT ()
+clearNarration :: DisplayT ()
 clearNarration = modifyNarration (const emptyNarration)
   where
     emptyNarration :: Narration
     emptyNarration = Narration mempty mempty
-liftGS :: GameStateExceptT a -> ResolutionT a
-liftGS = ResolutionT

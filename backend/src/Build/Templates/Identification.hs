@@ -10,11 +10,8 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
 import           Model.GameState            (ActionF, ActionMap,
-                                             PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
-                                             ProcessImplicitVerbMap,
-                                             ProcessImplicitVerbMaps,
-                                             ResolutionT)
+                                             ProcessImplicitVerbMaps)
 import           Model.GID                  (GID (GID))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)

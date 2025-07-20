@@ -5,10 +5,9 @@ import           Data.Text                (Text, pack)
 import           GameState                (clearNarration)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (GameComputation,
+import           Model.GameState          (DisplayT, GameComputation,
                                            GameState (_evaluation, _narration),
-                                           GameStateExceptT,
-                                           ResolutionT (ResolutionT, runResolutionT),
+                                           GameStateExceptT, TopLevelT,
                                            _actionConsequence, _playerAction)
 import           Model.Parser             (Sentence)
 import           Relude.String.Conversion (ToText (toText))
@@ -22,7 +21,7 @@ initComp = do
 topLevel :: GameStateExceptT ()
 topLevel = runGame initComp
   where
-    runGame :: GameComputation -> GameStateExceptT ()
+    runGame :: GameComputation -> TopLevelT ()
     runGame comp' = do
       comp'
       displayResult
@@ -36,7 +35,7 @@ toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
 
-displayResult :: GameStateExceptT ()
+displayResult :: DisplayT ()
 displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)
