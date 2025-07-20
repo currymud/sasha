@@ -13,7 +13,7 @@ import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap, _sentenceProcessingMaps),
-                                             DisplayT,
+                                             DisplayT, GameComputation,
                                              GameState (_narration, _player, _world),
                                              GameStateExceptT,
                                              Narration (Narration),
@@ -26,15 +26,16 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Relude                     (ToText (toText))
+import           Relude                     (Identity, ToText (toText))
 
-getActionF :: GID ActionF -> GameStateExceptT ActionF
+getActionF :: GID ActionF -> GameStateExceptT Identity ActionF
 getActionF vkey = do
   gs :: Config <- ask
   let amap = _getGIDToDataMap $ _actionMap gs
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
 
-getImplicitStimulusVerbProcessorGID :: ImplicitStimulusVerb -> GameStateExceptT (GID ProcessImplicitStimulusVerb)
+getImplicitStimulusVerbProcessorGID :: ImplicitStimulusVerb
+                                         -> GameStateExceptT Identity (GID ProcessImplicitStimulusVerb)
 getImplicitStimulusVerbProcessorGID ivp = do
   sentenceManagement <- gets (_sentenceManagement . _player)
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp sentenceManagement
@@ -43,7 +44,7 @@ getImplicitStimulusVerbProcessorGID ivp = do
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
 
 getImplicitStimulusVerbProcessor :: ImplicitStimulusVerb
-                                      -> GameStateExceptT ProcessImplicitStimulusVerb
+                                      -> GameStateExceptT Identity ProcessImplicitStimulusVerb
 getImplicitStimulusVerbProcessor ivp = do
   pid <- getImplicitStimulusVerbProcessorGID ivp
   let errMsg = "Implicit stimulus verb processor not found for player: " <> toText pid
@@ -51,29 +52,29 @@ getImplicitStimulusVerbProcessor ivp = do
   throwMaybeM errMsg $ Data.Map.Strict.lookup pid processImplicitVerbMap
 
 getImplicitStimulusVerbProcessors :: ImplicitStimulusVerb
-                                      -> GameStateExceptT ProcessImplicitVerbMap
+                                      -> GameStateExceptT Identity ProcessImplicitVerbMap
 getImplicitStimulusVerbProcessors ivp = do
   processImplicitVerbMap <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp processImplicitVerbMap
   where
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
 
-getPlayerM :: GameStateExceptT Player
+getPlayerM :: GameStateExceptT Identity Player
 getPlayerM = gets _player
 
-getObjectM :: GID Object -> GameStateExceptT Object
+getObjectM :: GID Object -> GameStateExceptT Identity Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
 
 modifyNarration :: (Narration -> Narration)
-                     -> DisplayT ()
+                     -> GameComputation Identity ()
 modifyNarration narrationF = do
   current_narration <- gets _narration
   let updatedNarrative = narrationF current_narration
   modify' (\gs -> gs{ _narration = updatedNarrative })
 
-clearNarration :: DisplayT ()
+clearNarration :: GameComputation Identity ()
 clearNarration = modifyNarration (const emptyNarration)
   where
     emptyNarration :: Narration

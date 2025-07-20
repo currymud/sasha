@@ -1,11 +1,12 @@
 module TopLevel where
 import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
-                                           gets)
+                                           MonadTrans (lift), gets)
 import           Data.Text                (Text, pack)
 import           GameState                (clearNarration)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (DisplayT, GameComputation,
+import           Model.GameState          (DisplayT (runDisplayT),
+                                           GameComputation,
                                            GameState (_evaluation, _narration),
                                            GameStateExceptT, TopLevelT,
                                            _actionConsequence, _playerAction)
@@ -18,10 +19,10 @@ initComp :: GameComputation
 initComp = do
   pure ()
 
-topLevel :: GameStateExceptT ()
+topLevel :: TopLevelT IO ()
 topLevel = runGame initComp
   where
-    runGame :: GameComputation -> TopLevelT ()
+    runGame :: GameComputation -> TopLevelT IO ()
     runGame comp' = do
       comp'
       displayResult
@@ -35,7 +36,7 @@ toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
 
-displayResult :: DisplayT ()
+displayResult :: DisplayT IO ()
 displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)

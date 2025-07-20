@@ -1,4 +1,5 @@
 module Location where
+import           Control.Monad.Identity     (Identity)
 import           Control.Monad.State.Strict (MonadState (get), modify')
 import           Data.Functor               ((<&>))
 import           Data.Map.Strict            (Map)
@@ -13,19 +14,19 @@ import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.GCase         (VerbKey)
 
-getLocationIdM :: GameStateExceptT (GID Location)
+getLocationIdM :: GameStateExceptT Identity (GID Location)
 getLocationIdM = get <&> (_location . _player)
 
-updateLocationIdM :: GID Location -> GameStateExceptT ()
+updateLocationIdM :: GID Location -> GameStateExceptT Identity ()
 updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocationActionMapM :: GameStateExceptT (Map VerbKey (GID ActionF))
+getLocationActionMapM :: GameStateExceptT Identity (Map VerbKey (GID ActionF))
 getLocationActionMapM = _locationActionManagement <$> getPlayerLocationM
 
 
-getLocationM :: GID Location -> GameStateExceptT Location
+getLocationM :: GID Location -> GameStateExceptT Identity Location
 getLocationM locID = do
   locationMap <- get <&> (_getGIDToDataMap . _locationMap . _world)
   throwMaybeM err_msg $  Data.Map.Strict.lookup locID locationMap
@@ -34,5 +35,5 @@ getLocationM locID = do
     err_msg = pack
       $ "Location with ID " ++ show locID ++ " not found in the location map."
 
-getPlayerLocationM :: GameStateExceptT Location
+getPlayerLocationM :: GameStateExceptT Identity Location
 getPlayerLocationM =  getLocationIdM >>= getLocationM

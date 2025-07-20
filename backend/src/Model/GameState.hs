@@ -28,8 +28,9 @@ module Model.GameState (
 
 import           Control.Monad.Except       (ExceptT, MonadError)
 import           Control.Monad.Identity     (Identity)
-import           Control.Monad.Reader       (MonadReader, ReaderT)
+import           Control.Monad.Reader       (MonadReader, ReaderT, lift)
 import           Control.Monad.State        (MonadIO, MonadState, StateT)
+import           Control.Monad.Trans        (MonadTrans)
 import           Data.Kind                  (Type)
 import           Data.Map.Strict            (Map)
 import           Data.Set                   (Set)
@@ -42,15 +43,25 @@ import           Model.Parser               (Sentence)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey)
 
-type GameComputation :: Type
-type GameComputation = GameStateExceptT ()
+type GameComputation :: (Type -> Type) -> Type -> Type
+newtype GameComputation m a = GameComputation
+  { runGameComputation :: GameStateExceptT m a }
+  deriving newtype ( Functor
+                   , Applicative
+                   , Monad
+                   , MonadState GameState)
+instance MonadTrans GameComputation where
+  lift = GameComputation . lift
 
 type GameStateM :: (Type -> Type) -> Type -> Type
 newtype GameStateM m a = GameStateM {runGameState :: StateT GameState m a}
   deriving newtype ( Functor
                    , Applicative
                    , Monad
-                   , MonadState GameState)
+                   , MonadState GameState,MonadIO)
+
+instance MonadTrans GameStateM where
+  lift = GameStateM . lift
                      {-
 type GameStateExceptT :: Type -> Type
 newtype GameStateExceptT a = GameStateExceptT
@@ -64,9 +75,9 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadState GameState
                    , MonadIO)
 -}
-type GameStateExceptT :: Type -> Type
-newtype GameStateExceptT a = GameStateExceptT
-  { runGameStateExceptT :: ReaderT Config (ExceptT Text (GameStateM Identity)) a
+type GameStateExceptT :: (Type -> Type) -> Type -> Type
+newtype GameStateExceptT m a = GameStateExceptT
+  { runGameStateExceptT :: ReaderT Config (ExceptT Text (GameStateM m)) a
   }
   deriving newtype ( Functor
                    , Applicative
@@ -75,24 +86,31 @@ newtype GameStateExceptT a = GameStateExceptT
                    , MonadError Text
                    , MonadState GameState)
 
-type TopLevelT :: Type -> Type
-newtype TopLevelT a = TopLevelT
-  { runTopLevelT :: ReaderT Config (ExceptT Text (GameStateM IO)) a
+instance MonadTrans GameStateExceptT where
+  lift = GameStateExceptT . lift . lift . lift
+
+type TopLevelT :: (Type -> Type) -> Type -> Type
+newtype TopLevelT m a = TopLevelT
+  { runTopLevelT :: ReaderT Config (ExceptT Text (GameStateM m)) a
   }
   deriving newtype ( Functor
                    , Applicative
                    , Monad
                    , MonadReader Config
                    , MonadError Text
+                   , MonadIO
                    , MonadState GameState)
 
-type DisplayT :: Type -> Type
-newtype DisplayT a = DisplayT { runDisplayT :: GameStateM IO a }
+type DisplayT :: (Type -> Type) -> Type -> Type
+newtype DisplayT m a = DisplayT { runDisplayT :: GameStateM m a }
   deriving newtype ( Functor
                    , Applicative
                    , Monad
+                   , MonadIO
                    , MonadState GameState)
 
+instance MonadTrans DisplayT where
+  lift = DisplayT . lift
                      {-
 
 type GameStateExceptT :: Type -> Type
@@ -123,7 +141,7 @@ newtype GameStateExceptT a = GameStateExceptT
 -}
 type ActionF :: Type
 data ActionF
-  = ImplicitStimulusAction (Location -> GameComputation)
+  = ImplicitStimulusAction (Location -> GameComputation Identity ())
 
 -- The ActionMap and other unchangeables
 type Config :: Type
@@ -151,16 +169,12 @@ data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
   }
 
 type ProcessImplicitStimulusVerb :: Type
-newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
+newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb
+  { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()}
 
 type Evaluator :: Type
 type Evaluator
-  = (Sentence -> GameComputation)
-    {-
-type PlayerEvaluator :: Type
-type PlayerEvaluator
-  = (VerbKey -> GameStateExceptT (ResolutionT Location))
--}
+  = (Sentence -> GameComputation Identity ())
 
 type ActionMap :: Type
 type ActionMap = GIDToDataMap ActionF ActionF
