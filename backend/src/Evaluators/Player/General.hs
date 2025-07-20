@@ -1,4 +1,5 @@
 module Evaluators.Player.General where
+import           Control.Monad.Identity        (Identity)
 import           GameState                     (getImplicitStimulusVerbProcessor)
 import           Model.GameState               (GameComputation,
                                                 ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb))
@@ -8,17 +9,17 @@ import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
                                                 StimulusVerbPhrase (ImplicitStimulusVerb))
 
 
-eval :: Sentence -> GameComputation
+eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 
-evalImperative :: Imperative -> GameComputation
+evalImperative :: Imperative -> GameComputation Identity ()
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
 
-evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation
+evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
 
-evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation
+evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()
 evalImplicitStimulusVerb isv = do
   (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv
   f isv

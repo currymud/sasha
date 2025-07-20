@@ -16,14 +16,14 @@ import           Relude.String.Conversion (ToText (toText))
 import           System.Console.Haskeline (InputT, defaultSettings,
                                            getInputLine, runInputT)
 
-initComp :: GameComputation
+initComp :: GameComputation Identity ()
 initComp = do
   pure ()
 
 topLevel :: TopLevelT IO ()
 topLevel = runGame initComp
   where
-    runGame :: GameComputation -> TopLevelT IO ()
+    runGame :: GameComputation Identity () -> TopLevelT IO ()
     runGame comp' = do
       comp'
       displayResult
@@ -32,7 +32,7 @@ topLevel = runGame initComp
         Left err       -> runGame $ errorHandler err
         Right sentence -> runGame $ toGameComputation sentence
 
-toGameComputation :: Sentence -> GameComputation
+toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
