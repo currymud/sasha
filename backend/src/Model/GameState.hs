@@ -43,6 +43,18 @@ import           Model.Parser.GCase         (VerbKey)
 type GameComputation :: Type
 type GameComputation = GameStateExceptT ()
 
+type GameStateExceptT' :: (Type -> Type) -> Type -> Type
+newtype GameStateExceptT' m a = GameStateExceptT'
+  { runGameStateExceptT' :: ReaderT Config (ExceptT Text (StateT GameState m)) a
+  }
+  deriving newtype ( Functor
+                   , Applicative
+                   , Monad
+                   , MonadReader Config
+                   , MonadError Text
+                   , MonadState GameState
+                   , MonadIO)
+
 type ActionF :: Type
 data ActionF
   = ImplicitStimulusAction (Location -> GameComputation)
@@ -75,6 +87,8 @@ data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
 
+data ProcessImplicitStimulusVerb' a where
+  ProcessImplicitStimulusVerb' :: (Monad m) => ImplicitStimulusVerb -> ProcessImplicitStimulusVerb' (GameStateExceptT' m a)
 type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameComputation)
