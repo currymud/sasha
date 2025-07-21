@@ -87,8 +87,8 @@ data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation }
 
-data ProcessImplicitStimulusVerb' a where
-  ProcessImplicitStimulusVerb' :: (Monad m) => ImplicitStimulusVerb -> ProcessImplicitStimulusVerb' (GameStateExceptT' m a)
+data ProcessVerb a where
+  ProcessImplicitStimulusVerb' :: (Monad m) => ImplicitStimulusVerb -> ProcessVerb (GameStateExceptT' m a)
 type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameComputation)
