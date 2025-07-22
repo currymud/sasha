@@ -13,7 +13,7 @@ import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap, _sentenceProcessingMaps),
-                                             DisplayT, GameComputation,
+                                             GameComputation,
                                              GameState (_narration, _player, _world),
                                              GameStateExceptT,
                                              Narration (Narration),
@@ -35,7 +35,7 @@ getActionF vkey = do
   throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
 
 getImplicitStimulusVerbProcessorGID :: ImplicitStimulusVerb
-                                         -> GameStateExceptT Identity (GID ProcessImplicitStimulusVerb)
+                                         -> GameComputation Identity (GID ProcessImplicitStimulusVerb)
 getImplicitStimulusVerbProcessorGID ivp = do
   sentenceManagement <- gets (_sentenceManagement . _player)
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp sentenceManagement
@@ -44,7 +44,7 @@ getImplicitStimulusVerbProcessorGID ivp = do
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
 
 getImplicitStimulusVerbProcessor :: ImplicitStimulusVerb
-                                      -> GameStateExceptT Identity ProcessImplicitStimulusVerb
+                                      -> GameComputation Identity ProcessImplicitStimulusVerb
 getImplicitStimulusVerbProcessor ivp = do
   pid <- getImplicitStimulusVerbProcessorGID ivp
   let errMsg = "Implicit stimulus verb processor not found for player: " <> toText pid
@@ -52,7 +52,7 @@ getImplicitStimulusVerbProcessor ivp = do
   throwMaybeM errMsg $ Data.Map.Strict.lookup pid processImplicitVerbMap
 
 getImplicitStimulusVerbProcessors :: ImplicitStimulusVerb
-                                      -> GameStateExceptT Identity ProcessImplicitVerbMap
+                                      -> GameComputation Identity ProcessImplicitVerbMap
 getImplicitStimulusVerbProcessors ivp = do
   processImplicitVerbMap <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp processImplicitVerbMap

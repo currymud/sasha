@@ -1,7 +1,8 @@
 module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess) where
 
+import           Control.Monad.Identity     (Identity)
+import           Control.Monad.IO.Class     (MonadIO (liftIO))
 import           Control.Monad.Reader.Class (asks)
-import qualified Data.Map.Strict
 import           Data.Text                  (Text)
 import           Error                      (throwMaybeM)
 import           GameState                  (modifyNarration)
@@ -27,6 +28,7 @@ agentCannotSee nosee = ImplicitStimulusAction $ \_ ->
 manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
 manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
   where
+    go :: ImplicitStimulusVerb -> GameComputation Identity ()
     go isv = do
       actionMap <- asks (_getGIDToDataMap . _actionMap)
       locationActionMap <- getLocationActionMapM

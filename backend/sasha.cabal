@@ -61,6 +61,7 @@ library
       Build.Identifiers.Objects
       Build.Identifiers.SentenceProcessing 
       Build.Templates.Identification
+      Build.Templates.Sentence
       Build.World
       Error
       Evaluators.Player.General
@@ -104,6 +105,7 @@ library
    , hashable
    , haskeline
    , megaparsec
+   , mmorph
    , mtl
    , relude
    , template-haskell

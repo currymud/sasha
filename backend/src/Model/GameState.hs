@@ -4,13 +4,13 @@ module Model.GameState (
   ActionF (ImplicitStimulusAction)
   , ActionMap
   , Config (Config, _actionMap, _sentenceProcessingMaps)
-                       , DisplayT (DisplayT, runDisplayT)
+  , DisplayM (DisplayM, runDisplayM)
   , Evaluator
-  , GameComputation
-  , GameStateM (GameStateM, runGameState)
---  , GameStateExceptT (GameStateExceptT)
---  , runGameStateExceptT
+  , GameComputation (GameComputation, runGameComputation)
+  , GameStateExceptT (GameStateExceptT)
+  , runGameStateExceptT
   , GameState (GameState, _world, _player, _narration, _evaluation)
+  , GameT (GameT, runGameT)
   , Location (Location, _title, _objectLabelMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object ( Object, _shortName, _description, _descriptives
@@ -22,6 +22,7 @@ module Model.GameState (
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMaps
   , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
+  , transformToIO, liftDisplay
   , World (World, _objectMap,_locationMap)
   , fromDisplay
   , liftGameState
@@ -31,10 +32,11 @@ module Model.GameState (
   , updatePlayerAction) where
 
 import           Control.Monad.Except       (ExceptT, MonadError)
-import           Control.Monad.Identity     (Identity)
-import           Control.Monad.Reader       (MonadReader, ReaderT, lift)
+import           Control.Monad.Identity     (Identity, runIdentity)
+import           Control.Monad.Morph        (MFunctor (hoist))
+import           Control.Monad.Reader       (MonadReader, ReaderT)
 import           Control.Monad.State        (MonadIO, MonadState, StateT)
-import           Control.Monad.Trans        (MonadTrans)
+import           Control.Monad.Trans        (MonadTrans (lift))
 import           Data.Kind                  (Type)
 import           Data.Map.Strict            (Map)
 import           Data.Set                   (Set)
@@ -47,27 +49,37 @@ import           Model.Parser               (Sentence)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey)
 
-newtype GameComputation m a = GameComputation
-  { runGameComputation :: ExceptT Text (GameStateM m) a }
-  deriving newtype
-    ( Functor, Applicative, Monad
-    , MonadState GameState
-    , MonadError Text
-    )
-  deriving anyclass (MonadTrans)
 
-type GameStateM :: (Type -> Type) -> Type -> Type
-newtype GameStateM m a = GameStateM {runGameState :: StateT GameState m a}
+type GameStateT :: (Type -> Type) -> Type -> Type
+newtype GameStateT m a = GameStateT {runGameStateT :: StateT GameState m a}
   deriving newtype ( Functor
                    , Applicative
                    , Monad
                    , MonadState GameState,MonadIO)
+  deriving anyclass (MonadTrans)
 
-instance MonadTrans GameStateM where
-  lift = GameStateM . lift
+-- | Display monad - no config, no errors, just state + IO
+type DisplayM :: (Type -> Type) -> Type -> Type
+newtype DisplayM m a = DisplayM
+  { runDisplayM :: GameStateT m a }
+  deriving newtype
+    ( Functor, Applicative, Monad
+    , MonadState GameState, MonadIO
+    )
+  deriving anyclass (MonadTrans)
 
+type GameComputation :: (Type -> Type) -> Type -> Type
+newtype GameComputation m a = GameComputation
+  { runGameComputation :: ReaderT Config (ExceptT Text (GameStateT m)) a }
+  deriving newtype
+    ( Functor, Applicative, Monad
+    , MonadReader Config, MonadError Text, MonadState GameState
+    )
+  deriving anyclass (MonadTrans)
+
+type GameT :: (Type -> Type) -> Type -> Type
 newtype GameT m a = GameT
-  { runGameT :: ReaderT Config (ExceptT Text (GameStateM m)) a }
+  { runGameT :: ReaderT Config (ExceptT Text (GameStateT m)) a }
   deriving newtype
     ( Functor, Applicative, Monad
     , MonadReader Config, MonadError Text, MonadState GameState, MonadIO
@@ -75,7 +87,7 @@ newtype GameT m a = GameT
   deriving anyclass (MonadTrans)
 
 type DisplayT :: (Type -> Type) -> Type -> Type
-newtype DisplayT m a = DisplayT { runDisplayT :: GameStateM m a }
+newtype DisplayT m a = DisplayT { runDisplayT :: GameStateT m a }
   deriving newtype ( Functor
                    , Applicative
                    , Monad
@@ -85,7 +97,7 @@ newtype DisplayT m a = DisplayT { runDisplayT :: GameStateM m a }
 
 type ActionF :: Type
 data ActionF
-  = ImplicitStimulusAction (Location -> GameT Identity ())
+  = ImplicitStimulusAction (Location -> GameComputation Identity ())
 
 -- The ActionMap and other unchangeables
 type Config :: Type
@@ -174,17 +186,29 @@ data World = World
   }
 
 -- | Lift GameStateM to GameComputation
-liftGameState :: GameStateM m a -> GameComputation m a
-liftGameState = GameComputation . lift
+liftGameState :: GameStateT m a -> GameComputation m a
+liftGameState = GameComputation . lift . lift
 
 -- | Lift GameComputation to GameEngine
 liftGameComputation :: GameComputation m a -> GameT m a
 liftGameComputation = GameT . lift
 
 -- | Lift GameStateM to DisplayM (this is just id, but for clarity)
-liftToDisplay :: GameStateM m a -> DisplayT m a
+liftToDisplay :: GameStateT m a -> DisplayT m a
 liftToDisplay = DisplayT
 
 -- | Convert DisplayM to GameStateM (for when you need the base layer)
-fromDisplay :: DisplayT m a -> GameStateM m a
+fromDisplay :: DisplayT m a -> GameStateT m a
 fromDisplay = runDisplayT
+
+identityToIO :: Identity a -> IO a
+identityToIO = return . runIdentity
+
+-- | Transform GameComputation Identity to GameT IO - change base monad using hoist
+-- This is much cleaner than manual unwrapping!
+transformToIO :: GameComputation Identity a -> GameT IO a
+transformToIO comp = GameT $ hoist (hoist (hoist identityToIO)) (runGameComputation comp)
+
+-- | Lift DisplayM to GameT - add Reader and ExceptT layers
+liftDisplay :: (Monad  m) => DisplayM m a -> GameT m a
+liftDisplay display = GameT $ lift $ lift (runDisplayM display)

@@ -1,16 +1,15 @@
 module TopLevel where
-import           Control.Monad.Identity   (Identity)
-import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
-                                           MonadTrans (lift), gets)
+import           Control.Monad.Identity   (Identity (Identity))
 import           Data.Text                (Text, pack)
-import           GameState                (clearNarration)
+import           GameState                (clearNarration, modifyNarration)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (DisplayT (runDisplayT),
-                                           GameComputation,
+import           Model.GameState          (DisplayM, GameComputation,
                                            GameState (_evaluation, _narration),
-                                           GameStateExceptT, TopLevelT,
-                                           _actionConsequence, _playerAction)
+                                           GameT, _actionConsequence,
+                                           _playerAction, liftDisplay,
+                                           transformToIO,
+                                           updateActionConsequence)
 import           Model.Parser             (Sentence)
 import           Relude.String.Conversion (ToText (toText))
 import           System.Console.Haskeline (InputT, defaultSettings,
@@ -25,8 +24,9 @@ topLevel = runGame initComp
   where
     runGame :: GameComputation Identity () -> GameT IO ()
     runGame comp' = do
-      comp'
-      displayResult
+      transformToIO comp'
+      liftDisplay displayResult
+      transformToIO clearNarration
       attSentence <- trySentence <$> liftIO getInput
       case attSentence of
         Left err       -> runGame $ errorHandler err
@@ -37,12 +37,11 @@ toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
 
-displayResult :: DisplayT IO ()
+displayResult :: DisplayM IO ()
 displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)
   liftIO $ mapM_ print (_actionConsequence narration)
-  clearNarration
 
 trySentence :: Text -> Either Text Sentence
 trySentence input = do
@@ -71,4 +70,5 @@ getInput = do
           | otherwise  -> pure $ pack input
 
 errorHandler :: Text -> GameComputation Identity ()
-errorHandler err = pure ()
+errorHandler err =
+   modifyNarration $ updateActionConsequence ("lexer err " <>  err)
