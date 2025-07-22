@@ -3,7 +3,7 @@
 module Build.Identifiers.SentenceProcessing where
 
 import           Actions.Percieve.Look                                (manageImplicitStimulusProcess)
-import           Build.Templates.Identification                       (makeProcessImplicitVerbMapsTH)
+import           Build.Templates.Sentence                             (makeProcessImplicitVerbMapsTH)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
 
 -- processImplicitVerbMap :: Model.GameState.ProcessImplicitVerbMap

@@ -61,6 +61,7 @@ library
       Build.Identifiers.Objects
       Build.Identifiers.SentenceProcessing 
       Build.Templates.Identification
+      Build.Templates.Sentence
       Build.World
       Engine
       Error
