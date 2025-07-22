@@ -1,11 +1,13 @@
 module Location where
+import           Control.Monad.Identity     (Identity)
 import           Control.Monad.State.Strict (MonadState (get), modify')
 import           Data.Functor               ((<&>))
 import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionF, GameStateExceptT,
+import           Model.GameState            (ActionF, GameComputation,
+                                             GameStateExceptT,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
@@ -13,7 +15,7 @@ import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.GCase         (VerbKey)
 
-getLocationIdM :: GameStateExceptT (GID Location)
+getLocationIdM :: GameComputation Identity (GID Location)
 getLocationIdM = get <&> (_location . _player)
 
 updateLocationIdM :: GID Location -> GameStateExceptT ()
@@ -21,11 +23,10 @@ updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocationActionMapM :: GameStateExceptT (Map VerbKey (GID ActionF))
+getLocationActionMapM :: GameComputation Identity (Map VerbKey (GID ActionF))
 getLocationActionMapM = _locationActionManagement <$> getPlayerLocationM
 
-
-getLocationM :: GID Location -> GameStateExceptT Location
+getLocationM :: GID Location -> GameComputation Identity Location
 getLocationM locID = do
   locationMap <- get <&> (_getGIDToDataMap . _locationMap . _world)
   throwMaybeM err_msg $  Data.Map.Strict.lookup locID locationMap
@@ -34,5 +35,5 @@ getLocationM locID = do
     err_msg = pack
       $ "Location with ID " ++ show locID ++ " not found in the location map."
 
-getPlayerLocationM :: GameStateExceptT Location
+getPlayerLocationM :: GameComputation Identity Location
 getPlayerLocationM =  getLocationIdM >>= getLocationM

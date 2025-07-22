@@ -1,47 +1,48 @@
 module TopLevel where
-import           Control.Monad.State      (MonadIO (liftIO), MonadState (get),
-                                           gets)
+import           Control.Monad.Identity   (Identity (Identity))
+import           Control.Monad.State      (MonadIO (liftIO), gets)
 import           Data.Text                (Text, pack)
-import           GameState                (clearNarration)
+import           GameState                (clearNarration, modifyNarration)
 import           Grammar.Parser           (parseTokens)
 import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (GameComputation,
+import           Model.GameState          (DisplayM, GameComputation,
                                            GameState (_evaluation, _narration),
-                                           GameStateExceptT,
-                                           ResolutionT (ResolutionT, runResolutionT),
-                                           _actionConsequence, _playerAction)
+                                           GameT, _actionConsequence,
+                                           _playerAction, liftDisplay,
+                                           transformToIO,
+                                           updateActionConsequence)
 import           Model.Parser             (Sentence)
 import           Relude.String.Conversion (ToText (toText))
 import           System.Console.Haskeline (InputT, defaultSettings,
                                            getInputLine, runInputT)
 
-initComp :: GameComputation
+initComp :: GameComputation Identity ()
 initComp = do
   pure ()
 
-topLevel :: GameStateExceptT ()
+topLevel :: GameT IO ()
 topLevel = runGame initComp
   where
-    runGame :: GameComputation -> GameStateExceptT ()
+    runGame :: GameComputation Identity () -> GameT IO ()
     runGame comp' = do
-      comp'
-      displayResult
+      transformToIO comp'
+      liftDisplay displayResult
+      transformToIO clearNarration
       attSentence <- trySentence <$> liftIO getInput
       case attSentence of
         Left err       -> runGame $ errorHandler err
         Right sentence -> runGame $ toGameComputation sentence
 
-toGameComputation :: Sentence -> GameComputation
+toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
 
-displayResult :: GameStateExceptT ()
+displayResult :: DisplayM IO ()
 displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)
   liftIO $ mapM_ print (_actionConsequence narration)
-  clearNarration
 
 trySentence :: Text -> Either Text Sentence
 trySentence input = do
@@ -69,6 +70,7 @@ getInput = do
           | null input -> go
           | otherwise  -> pure $ pack input
 
-errorHandler :: Text -> GameComputation
+errorHandler :: Text -> GameComputation Identity ()
 errorHandler err =
-  liftIO $ print $ "Lexer failed: " <> err
+   modifyNarration $ updateActionConsequence ("lexer err " <>  err)
+

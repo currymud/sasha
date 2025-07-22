@@ -105,6 +105,7 @@ library
    , hashable
    , haskeline
    , megaparsec
+   , mmorph
    , mtl
    , relude
    , template-haskell
