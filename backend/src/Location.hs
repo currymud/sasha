@@ -7,7 +7,6 @@ import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionF, GameComputation,
-                                             GameStateExceptT,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)

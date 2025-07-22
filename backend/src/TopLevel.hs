@@ -1,19 +1,21 @@
 module TopLevel where
-import           Control.Monad.Identity   (Identity (Identity))
-import           Data.Text                (Text, pack)
-import           GameState                (clearNarration, modifyNarration)
-import           Grammar.Parser           (parseTokens)
-import           Grammar.Parser.Lexer     (Lexeme, lexify, tokens)
-import           Model.GameState          (DisplayM, GameComputation,
-                                           GameState (_evaluation, _narration),
-                                           GameT, _actionConsequence,
-                                           _playerAction, liftDisplay,
-                                           transformToIO,
-                                           updateActionConsequence)
-import           Model.Parser             (Sentence)
-import           Relude.String.Conversion (ToText (toText))
-import           System.Console.Haskeline (InputT, defaultSettings,
-                                           getInputLine, runInputT)
+import           Control.Monad.Identity    (Identity (Identity))
+import           Control.Monad.IO.Class    (MonadIO (liftIO))
+import           Control.Monad.State.Class (gets)
+import           Data.Text                 (Text, pack)
+import           GameState                 (clearNarration, modifyNarration)
+import           Grammar.Parser            (parseTokens)
+import           Grammar.Parser.Lexer      (Lexeme, lexify, tokens)
+import           Model.GameState           (DisplayT, GameComputation,
+                                            GameState (_evaluation, _narration),
+                                            GameT, _actionConsequence,
+                                            _playerAction, liftDisplay,
+                                            transformToIO,
+                                            updateActionConsequence)
+import           Model.Parser              (Sentence)
+import           Relude.String.Conversion  (ToText (toText))
+import           System.Console.Haskeline  (InputT, defaultSettings,
+                                            getInputLine, runInputT)
 
 initComp :: GameComputation Identity ()
 initComp = do
@@ -37,7 +39,7 @@ toGameComputation sentence = do
   evaluator <- gets _evaluation
   evaluator sentence
 
-displayResult :: DisplayM IO ()
+displayResult :: DisplayT IO ()
 displayResult = do
   narration <- gets _narration
   liftIO $ mapM_ print (_playerAction narration)

@@ -15,7 +15,6 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap, _sentenceProcessingMaps),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
-                                             GameStateExceptT,
                                              Narration (Narration),
                                              Object (_objectActionManagement),
                                              Player (_sentenceManagement),
@@ -28,7 +27,7 @@ import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Relude                     (Identity, ToText (toText))
 
-getActionF :: GID ActionF -> GameStateExceptT Identity ActionF
+getActionF :: GID ActionF -> GameComputation Identity ActionF
 getActionF vkey = do
   gs :: Config <- ask
   let amap = _getGIDToDataMap $ _actionMap gs
@@ -59,10 +58,10 @@ getImplicitStimulusVerbProcessors ivp = do
   where
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
 
-getPlayerM :: GameStateExceptT Identity Player
+getPlayerM :: GameComputation Identity Player
 getPlayerM = gets _player
 
-getObjectM :: GID Object -> GameStateExceptT Identity Object
+getObjectM :: GID Object -> GameComputation Identity Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
