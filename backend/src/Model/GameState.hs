@@ -1,31 +1,29 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionF (ImplicitStimulusAction)
+    ActionF (ImplicitStimulusAction, DirectionalStimulusAction)
   , ActionMap
   , Config (Config, _actionMap, _sentenceProcessingMaps)
-                       , DisplayT (DisplayT, runDisplayT)
-  , Evaluator
+  , DisplayT (DisplayT, runDisplayT)
+  ,  Evaluator
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , Location (Location, _title, _objectLabelMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
-  , Object ( Object, _shortName, _description, _descriptives
-           , _objectActionManagement)
-  , Player (Player, _location, _sentenceManagement)
-  , ProcessImplicitVerbMap
-  , PlayerProcessImplicitVerbMap
-  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
-  , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
-  , ProcessImplicitVerbMaps
-  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
+  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
+  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap, _processDirectionalVerbMap)
   , transformToIO, liftDisplay
-  , World (World, _objectMap,_locationMap)
   , fromDisplay
-
-
+  , Player (Player, _location, _sentenceManagement)
+  , PlayerProcessImplicitVerbMap
+  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap, _playerProcessDirectionalVerbMap)
+  , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
+  , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
+  , ProcessImplicitVerbMap
+  , ProcessImplicitVerbMaps
+  , World (World, _objectMap, _locationMap)
   , liftToDisplay
   , updateActionConsequence
   , updatePlayerAction) where
@@ -45,10 +43,11 @@ import           Model.Label                (Label)
 import           Model.Mappings             (GIDToDataMap,
                                              LabelToGIDListMapping)
 import           Model.Parser               (Sentence)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
+                                             ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey)
 
-
+-- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
 newtype GameStateT m a = GameStateT {runGameStateT :: StateT GameState m a}
   deriving newtype ( Functor
@@ -59,7 +58,6 @@ newtype GameStateT m a = GameStateT {runGameStateT :: StateT GameState m a}
 
 instance MonadTrans GameStateT where
   lift = GameStateT . lift
-
 
 type GameComputation :: (Type -> Type) -> Type -> Type
 newtype GameComputation m a = GameComputation
@@ -93,38 +91,51 @@ newtype DisplayT m a = DisplayT { runDisplayT :: GameStateT m a }
 
 instance MonadTrans DisplayT where
   lift = DisplayT . lift
+
+
+-- Computation builders
 type ActionF :: Type
 data ActionF
   = ImplicitStimulusAction (Location -> GameComputation Identity ())
+  | DirectionalStimulusAction (Location -> GameComputation Identity ())
 
--- The ActionMap and other unchangeables
-type Config :: Type
-data Config = Config
-  { _actionMap              :: ActionMap
-  , _sentenceProcessingMaps :: SentenceProcessingMaps
-  }
+-- Sentence Processing Maps
 
 type SentenceProcessingMaps :: Type
 data SentenceProcessingMaps = SentenceProcessingMaps
-  {_processImplicitVerbMap :: ProcessImplicitVerbMaps}
+  { _processImplicitVerbMap    :: ProcessImplicitVerbMaps
+  , _processDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
+  }
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb
 
+type ProcessDirectionalVerbMap :: Type
+type ProcessDirectionalVerbMap = Map (GID ProcessDirectionalStimulusVerb) ProcessDirectionalStimulusVerb
+
 type ProcessImplicitVerbMaps :: Type
 type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
+
+type ProcessDirectionalStimulusVerbMaps :: Type
+type ProcessDirectionalStimulusVerbMaps = Map DirectionalStimulusVerb ProcessDirectionalVerbMap
 
 type PlayerProcessImplicitVerbMap :: Type
 type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
 
-type PlayerSentenceProcessingMaps :: Type
-data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
-  { _playerProcessImplicitVerbMap :: PlayerProcessImplicitVerbMap
-  }
-
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb
   { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()}
+
+type ProcessDirectionalStimulusVerb :: Type
+newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
+  { _unProcessDirectionalStimlusVerb :: DirectionalStimulusVerb -> GameComputation Identity ()}
+
+
+type PlayerSentenceProcessingMaps :: Type
+data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
+  { _playerProcessImplicitVerbMap    :: PlayerProcessImplicitVerbMap
+  , _playerProcessDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
+  }
 
 type Evaluator :: Type
 type Evaluator
@@ -132,6 +143,14 @@ type Evaluator
 
 type ActionMap :: Type
 type ActionMap = GIDToDataMap ActionF ActionF
+
+-- Game Objects
+
+type Config :: Type
+data Config = Config
+  { _actionMap              :: ActionMap
+  , _sentenceProcessingMaps :: SentenceProcessingMaps
+  }
 
 type GameState :: Type
 data GameState = GameState
@@ -141,12 +160,31 @@ data GameState = GameState
   , _evaluation :: Evaluator
   }
 
+type Location :: Type
+data Location = Location {
+    _title                    :: Text
+  , _objectLabelMap           :: LabelToGIDListMapping Object Object
+  , _locationActionManagement :: Map VerbKey (GID ActionF)
+}
+
 type Narration :: Type
 data Narration = Narration
   { _playerAction      :: [Text] -- what player tried to do
   , _actionConsequence :: [Text] -- what happened as a result of the action
   }
   deriving stock (Show)
+
+type Player :: Type
+data Player = Player
+  { _location           :: GID Location
+  , _sentenceManagement :: PlayerProcessImplicitVerbMap
+  }
+
+type World :: Type
+data World = World
+  { _objectMap   :: GIDToDataMap Object Object
+  , _locationMap :: GIDToDataMap Location Location
+  }
 
 updatePlayerAction :: Text -> Narration -> Narration
 updatePlayerAction action narration =
@@ -156,18 +194,6 @@ updateActionConsequence :: Text -> Narration -> Narration
 updateActionConsequence consequence narration =
   narration { _actionConsequence = consequence : _actionConsequence narration }
 
-type Location :: Type
-data Location = Location {
-    _title                    :: Text
-  , _objectLabelMap           :: LabelToGIDListMapping Object Object
-  , _locationActionManagement :: Map VerbKey (GID ActionF)
-}
-
-type Player :: Type
-data Player = Player
-  { _location           :: GID Location
-  , _sentenceManagement :: PlayerProcessImplicitVerbMap
-  }
 
 type Object :: Type
 data Object = Object
@@ -176,12 +202,6 @@ data Object = Object
  , _descriptives           :: Set (Label Text)
  , _objectActionManagement :: Map VerbKey (GID ActionF) -- Placeholder for action management logic
  }
-
-type World :: Type
-data World = World
-  { _objectMap   :: GIDToDataMap Object Object
-  , _locationMap :: GIDToDataMap Location Location
-  }
 
 -- | Lift GameStateM to GameComputation
 
