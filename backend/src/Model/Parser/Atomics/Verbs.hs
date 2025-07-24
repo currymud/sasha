@@ -32,6 +32,15 @@ newtype ImplicitStimulusVerb =
 instance HasLexeme ImplicitStimulusVerb where
   toLexeme = _fromImplicitStimulusVerb
 
+type InstrumentActionVerb :: Type
+newtype InstrumentActionVerb =
+  InstrumentActionVerb { _fromInstrumentActionVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme InstrumentActionVerb where
+  toLexeme = _fromInstrumentActionVerb
+
 type DirectionalStimulusVerb :: Type
 newtype DirectionalStimulusVerb = DirectionalStimulusVerb { _fromDirectionalStimulusVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)

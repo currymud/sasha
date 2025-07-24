@@ -88,6 +88,7 @@ library
       Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
       Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
+      Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
       Grammar.Parser.Partitions.Templates.Atomics
       Grammar.Parser.Rules.Atomics.Adverbs
       Grammar.Parser.Rules.Atomics.Verbs
