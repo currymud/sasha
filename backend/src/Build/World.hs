@@ -8,7 +8,7 @@ import           Model.GameState             (Location, Object (Object),
                                               World (World))
 import           Model.Mappings              (GIDToDataMap (GIDToDataMap))
 world :: World
-world = World objectMap locationMap'
+world = World objectMap locationMap' mempty
  where
    locationMap' :: GIDToDataMap Location Location
    locationMap' = locationMap

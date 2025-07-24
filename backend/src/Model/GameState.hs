@@ -45,7 +45,8 @@ import           Model.Mappings                (GIDToDataMap,
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+                                                NounPhrase)
 import           Model.Parser.GCase            (VerbKey)
 
 -- Game Transformers
@@ -187,6 +188,7 @@ type World :: Type
 data World = World
   { _objectMap   :: GIDToDataMap Object Object
   , _locationMap :: GIDToDataMap Location Location
+  , _perceptionMap :: Map (NounPhrase DirectionalStimulusNounPhrase) (Set (GID Object))
   }
 
 updatePlayerAction :: Text -> Narration -> Narration
