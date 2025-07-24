@@ -74,25 +74,38 @@ library
       Model.Label
       Model.Mappings
       Model.Parser
-      Model.Parser.Atomics.Verbs
+      Model.Parser.Atomics.Adjectives
       Model.Parser.Atomics.Adverbs
+      Model.Parser.Atomics.Nouns
+      Model.Parser.Atomics.Misc
+      Model.Parser.Atomics.Prepositions
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Composites.Nouns
       Model.Parser.Composites.Verbs
       Model.Parser.GCase
       Model.Parser.Lexer
       GameState
       Grammar.Parser
       Grammar.Parser.Lexer
+      Grammar.Parser.Partitions.Adjectives
       Grammar.Parser.Partitions.Adverbs
+      Grammar.Parser.Partitions.Misc
+      Grammar.Parser.Partitions.Nouns
+      Grammar.Parser.Partitions.Prepositions
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
       Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
       Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
+      Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs
       Grammar.Parser.Partitions.Templates.Atomics
       Grammar.Parser.Rules.Atomics.Adverbs
+      Grammar.Parser.Rules.Atomics.Nouns
+      Grammar.Parser.Rules.Atomics.Prepositions
       Grammar.Parser.Rules.Atomics.Verbs
       Grammar.Parser.Rules.Atomics.Utils
+      Grammar.Parser.Rules.Composites.Nouns
       Grammar.Parser.Rules.Composites.Verbs
       TopLevel
   hs-source-dirs:

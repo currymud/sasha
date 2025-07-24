@@ -2,7 +2,7 @@ module Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb where
 
 import           Data.HashSet                                (HashSet,
                                                               singleton)
-import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Verbs                  (DirectionalStimulusVerb (DirectionalStimulusVerb))
 import           Model.Parser.Lexer                          (Lexeme (LOOK))
 
@@ -15,7 +15,7 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeVerbValues [| DirectionalStimulusVerb |] [LOOK]
+makeSemanticValues [| DirectionalStimulusVerb |] [LOOK]
 -- Verbs that can take directional prepositions like "at"
 directionalStimulusVerbs :: HashSet DirectionalStimulusVerb
 directionalStimulusVerbs = singleton look

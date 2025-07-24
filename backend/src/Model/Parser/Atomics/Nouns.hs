@@ -1,9 +1,11 @@
 module Model.Parser.Atomics.Nouns where
 import           Data.Hashable            (Hashable)
 import           Data.Kind                (Type)
+import           Data.Text                (Text)
 import           Grammar.Parser.Lexer     (HasLexeme (toLexeme))
 import           Model.Parser.Lexer       (Lexeme)
 import           Relude.String.Conversion (ToText)
+import           Text.Earley              (Prod)
 
 type DirectionalStimulus :: Type
 newtype DirectionalStimulus = DirectionalStimulus { _fromDirectionalStimulus :: Lexeme }
@@ -12,6 +14,10 @@ newtype DirectionalStimulus = DirectionalStimulus { _fromDirectionalStimulus :: 
 
 instance HasLexeme DirectionalStimulus where
   toLexeme = _fromDirectionalStimulus
+
+type DirectionalStimulusRule :: (Type -> Type -> Type -> Type) -> Type
+newtype DirectionalStimulusRule r = DirectionalStimulusRule
+  { _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus}
 
 type Objective :: Type
 newtype Objective = Objective { _fromObjective :: Lexeme }

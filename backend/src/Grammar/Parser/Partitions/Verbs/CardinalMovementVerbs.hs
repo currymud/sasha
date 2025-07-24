@@ -1,7 +1,7 @@
 module Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
          (go,sail,sneak,run,march,flee,walk, cardinalMovementVerbs) where
 
-import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 
 import           Data.HashSet                                (HashSet, fromList)
 import           Model.Parser.Atomics.Verbs                  (CardinalMovementVerb (CardinalMovementVerb))
@@ -16,7 +16,7 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeVerbValues [| CardinalMovementVerb |] [GO, SAIL, SNEAK, RUN, MARCH, FLEE, WALK]
+makeSemanticValues [| CardinalMovementVerb |] [GO, SAIL, SNEAK, RUN, MARCH, FLEE, WALK]
 
 cardinalMovementVerbs :: HashSet CardinalMovementVerb
 cardinalMovementVerbs = fromList $ [go,sail,sneak,run,march,flee,walk]

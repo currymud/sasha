@@ -1,10 +1,10 @@
 module Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
          (push,instrumentActionVerb) where
 
-import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
 
 import           Data.HashSet                                (HashSet,
                                                               singleton)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Verbs                  (InstrumentActionVerb (InstrumentActionVerb))
 import           Model.Parser.Lexer                          (Lexeme (PUSH))
 
@@ -17,7 +17,7 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeVerbValues [| InstrumentActionVerb |] [PUSH]
+makeSemanticValues [| InstrumentActionVerb |] [PUSH]
 
 instrumentActionVerb :: HashSet InstrumentActionVerb
 instrumentActionVerb = singleton push

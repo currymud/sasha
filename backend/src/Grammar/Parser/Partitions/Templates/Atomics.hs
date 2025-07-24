@@ -5,8 +5,8 @@ import           Language.Haskell.TH  (Body (NormalB), Dec (SigD, ValD),
                                        Exp (AppE, ConE), ExpQ, Pat (VarP), Q,
                                        Type (ConT), mkName, nameBase)
 
-makeVerbValue :: Lexeme -> ExpQ -> Q [Dec]
-makeVerbValue lexeme constructorExpQ = do
+makeSemanticValue :: Lexeme -> ExpQ -> Q [Dec]
+makeSemanticValue lexeme constructorExpQ = do
   constructorExp <- constructorExpQ
   case constructorExp of
     ConE constructorName -> do
@@ -30,8 +30,8 @@ makeVerbValue lexeme constructorExpQ = do
     _ -> fail "makeVerbValue expects a constructor expression"
 
 
-makeVerbValues :: ExpQ -> [Lexeme] -> Q [Dec]
-makeVerbValues constructorExpQ lexemes = do
-  declarations <- mapM (`makeVerbValue` constructorExpQ) lexemes
+makeSemanticValues :: ExpQ -> [Lexeme] -> Q [Dec]
+makeSemanticValues constructorExpQ lexemes = do
+  declarations <- mapM (`makeSemanticValue` constructorExpQ) lexemes
   pure (concat declarations)
 

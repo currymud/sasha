@@ -1,4 +1,4 @@
-module Model.Parser.Atomics.Misc (Determiner (_fromDeterminer)) where
+module Model.Parser.Atomics.Misc (Determiner (Determiner,_fromDeterminer)) where
 import           Data.Hashable            (Hashable)
 import           Data.Kind                (Type)
 import           Grammar.Parser.Lexer     (HasLexeme (toLexeme))

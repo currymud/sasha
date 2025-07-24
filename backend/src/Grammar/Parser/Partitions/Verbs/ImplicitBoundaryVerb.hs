@@ -3,7 +3,7 @@ module Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
 
 import           Data.HashSet                                (HashSet,
                                                               singleton)
-import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Verbs                  (ImplicitBoundaryVerb (ImplicitBoundaryVerb))
 import           Model.Parser.Lexer                          (Lexeme (EXIT))
 
@@ -16,7 +16,7 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeVerbValues [| ImplicitBoundaryVerb |] [EXIT]
+makeSemanticValues [| ImplicitBoundaryVerb |] [EXIT]
 implicitBoundaryVerbs :: HashSet ImplicitBoundaryVerb
 implicitBoundaryVerbs = singleton exit
 

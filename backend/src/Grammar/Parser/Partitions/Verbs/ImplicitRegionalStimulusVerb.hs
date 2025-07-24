@@ -2,7 +2,7 @@ module Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
          (wait,sleep,implicitRegionalStimulusVerbs) where
 
 import           Data.HashSet                                (HashSet, fromList)
-import           Grammar.Parser.Partitions.Templates.Atomics (makeVerbValues)
+import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Verbs                  (ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb))
 import           Model.Parser.Lexer                          (Lexeme (SLEEP, WAIT))
 
@@ -15,7 +15,7 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeVerbValues [| ImplicitRegionalStimulusVerb |] [WAIT, SLEEP]
+makeSemanticValues [| ImplicitRegionalStimulusVerb |] [WAIT, SLEEP]
 
 implicitRegionalStimulusVerbs :: HashSet ImplicitRegionalStimulusVerb
 implicitRegionalStimulusVerbs =

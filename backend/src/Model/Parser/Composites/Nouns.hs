@@ -11,15 +11,10 @@ import           Prelude                         hiding (unwords)
 import           Relude.String.Conversion        (ToText (toText))
 import           Text.Earley                     (Prod)
 
-
 type DirectionalStimulusNounPhrase :: Type
 newtype DirectionalStimulusNounPhrase = DirectionalStimulusNounPhrase (NounPhrase DirectionalStimulus)
   deriving stock (Show, Eq, Ord,Generic)
   deriving newtype (ToText)
-
-type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
-newtype DirectionalStimulusNounRules r = DirectionalStimulusNounRules
-  { _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus}
 
 type NounPhrase :: Type -> Type
 data NounPhrase a
