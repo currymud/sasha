@@ -28,24 +28,25 @@ module Model.GameState (
   , updateActionConsequence
   , updatePlayerAction) where
 
-import           Control.Monad.Except       (ExceptT, MonadError)
-import           Control.Monad.Identity     (Identity, runIdentity)
-import           Control.Monad.Morph        (MFunctor (hoist))
-import           Control.Monad.Reader       (MonadReader, ReaderT)
-import           Control.Monad.State        (MonadIO, MonadState, StateT)
-import           Control.Monad.Trans        (MonadTrans (lift))
-import           Data.Kind                  (Type)
-import           Data.Map.Strict            (Map)
-import           Data.Set                   (Set)
-import           Data.Text                  (Text)
-import           Model.GID                  (GID)
-import           Model.Label                (Label)
-import           Model.Mappings             (GIDToDataMap,
-                                             LabelToGIDListMapping)
-import           Model.Parser               (Sentence)
-import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
-                                             ImplicitStimulusVerb)
-import           Model.Parser.GCase         (VerbKey)
+import           Control.Monad.Except          (ExceptT, MonadError)
+import           Control.Monad.Identity        (Identity, runIdentity)
+import           Control.Monad.Morph           (MFunctor (hoist))
+import           Control.Monad.Reader          (MonadReader, ReaderT)
+import           Control.Monad.State           (MonadIO, MonadState, StateT)
+import           Control.Monad.Trans           (MonadTrans (lift))
+import           Data.Kind                     (Type)
+import           Data.Map.Strict               (Map)
+import           Data.Set                      (Set)
+import           Data.Text                     (Text)
+import           Model.GID                     (GID)
+import           Model.Label                   (Label)
+import           Model.Mappings                (GIDToDataMap,
+                                                LabelToGIDListMapping)
+import           Model.Parser                  (Sentence)
+import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.GCase            (VerbKey)
 
 -- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -128,8 +129,10 @@ newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb
 
 type ProcessDirectionalStimulusVerb :: Type
 newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
-  { _unProcessDirectionalStimlusVerb :: DirectionalStimulusVerb -> GameComputation Identity ()}
-
+  { _unProcessDirectionalStimlusVerb :: DirectionalStimulusVerb
+                                          -> DirectionalStimulusNounPhrase
+                                          -> GameComputation Identity ()
+  }
 
 type PlayerSentenceProcessingMaps :: Type
 data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps

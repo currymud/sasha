@@ -9,7 +9,7 @@ import           Model.GameState               (GameComputation,
 import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
-                                                StimulusVerbPhrase (ImplicitStimulusVerb))
+                                                StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb))
 
 
 eval :: Sentence -> GameComputation Identity ()
@@ -21,7 +21,7 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
 
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
-
+evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = pure ()
 evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()
 evalImplicitStimulusVerb isv = do
   (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv

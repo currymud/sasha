@@ -1,5 +1,6 @@
 module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess) where
 
+import           Control.Monad.Except       (MonadError (throwError))
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
@@ -39,6 +40,9 @@ manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
         ImplicitStimulusAction actionFunc -> do
           currentLocation <- getPlayerLocationM
           actionFunc currentLocation
+        _ -> throwError errMsg'
       where
+        errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
         errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
         verbKey = ImplicitStimulusKey isv
+
