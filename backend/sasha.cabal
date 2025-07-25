@@ -90,7 +90,11 @@ library
       Grammar.Parser.Partitions.Adjectives
       Grammar.Parser.Partitions.Adverbs
       Grammar.Parser.Partitions.Misc
-      Grammar.Parser.Partitions.Nouns
+      Grammar.Parser.Partitions.Nouns.Containers
+      Grammar.Parser.Partitions.Nouns.DirectionalStimulus
+      Grammar.Parser.Partitions.Nouns.Objectives
+      Grammar.Parser.Partitions.Nouns.Supportives
+      Grammar.Parser.Partitions.Nouns.Utils
       Grammar.Parser.Partitions.Prepositions
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb

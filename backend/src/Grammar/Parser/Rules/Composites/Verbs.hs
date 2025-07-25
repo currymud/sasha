@@ -7,7 +7,7 @@ import           GHC.Base                                                (Altern
 import           Grammar.Parser.Lexer                                    (Lexeme)
 import           Grammar.Parser.Partitions.Adjectives                    (adjectives)
 import           Grammar.Parser.Partitions.Misc                          (determiners)
-import           Grammar.Parser.Partitions.Nouns                         (directionalStimulii)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule)
 import           Grammar.Parser.Rules.Atomics.Utils                      (parseRule)
