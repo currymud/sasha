@@ -4,9 +4,13 @@ import qualified Data.Set
 import           Model.GameState (Object (Object, _description, _descriptives, _objectActionManagement, _shortName))
 
 pill :: Object
-pill = Object
-  { _shortName = "pill"
-  , _description = "A small, round pill. Probably good for headaches."
-  , _descriptives = Data.Set.empty
-  , _objectActionManagement = Data.Map.Strict.empty
-  }
+pill =
+  let
+--    longDescrition = DirectionionalStimulusNounPhrase (DescriptiveNounPhrase white
+  in Object
+       { _shortName = "pill"
+       , _description = "A small, round pill. Probably good for headaches."
+       , _descriptives = Data.Set.empty -- fromList [longDescription,shortDescription]
+       , _objectActionManagement = Data.Map.Strict.empty
+       }
+

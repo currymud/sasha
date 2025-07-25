@@ -39,10 +39,10 @@ import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
 import           Model.GID                     (GID)
-import           Model.Label                   (Label)
 import           Model.Mappings                (GIDToDataMap,
                                                 LabelToGIDListMapping)
 import           Model.Parser                  (Sentence)
+import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
@@ -99,7 +99,7 @@ instance MonadTrans DisplayT where
 type ActionF :: Type
 data ActionF
   = ImplicitStimulusAction (Location -> GameComputation Identity ())
-  | DirectionalStimulusAction (Location -> GameComputation Identity ())
+  | DirectionalStimulusAction (GameComputation Identity ())
 
 -- Sentence Processing Maps
 
@@ -186,9 +186,9 @@ data Player = Player
 
 type World :: Type
 data World = World
-  { _objectMap   :: GIDToDataMap Object Object
-  , _locationMap :: GIDToDataMap Location Location
-  , _perceptionMap :: Map (NounPhrase DirectionalStimulusNounPhrase) (Set (GID Object))
+  { _objectMap     :: GIDToDataMap Object Object
+  , _locationMap   :: GIDToDataMap Location Location
+  , _perceptionMap :: Map DirectionalStimulus (Set (GID Object))
   }
 
 updatePlayerAction :: Text -> Narration -> Narration
@@ -204,7 +204,7 @@ type Object :: Type
 data Object = Object
  { _shortName              :: Text
  , _description            :: Text
- , _descriptives           :: Set (Label Text)
+ , _descriptives           :: Set DirectionalStimulusNounPhrase
  , _objectActionManagement :: Map VerbKey (GID ActionF) -- Placeholder for action management logic
  }
 

@@ -53,7 +53,7 @@ library
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Objects.Pill
-      Build.BedPuzzle.Actions.Objects.Pill.Look.WhatPill
+      Build.BedPuzzle.Actions.Objects.Pill.Look
       Build.BedPuzzle.BedRoom
       Build.BedPuzzle.Objects
       Build.BedPuzzle.Player
@@ -61,7 +61,7 @@ library
       Build.Identifiers.Actions
       Build.Identifiers.Locations
       Build.Identifiers.Objects
-      Build.Identifiers.SentenceProcessing 
+      Build.Identifiers.SentenceProcessing
       Build.Templates.Identification
       Build.Templates.Sentence
       Build.World
