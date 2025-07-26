@@ -6,3 +6,7 @@ import           Model.GameState             (Player (Player))
 player :: Player
 player = Player bedroomInBedGID _
 -}
+  {-
+inventory :: Object
+inventory = Object name desc
+-}

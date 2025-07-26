@@ -1,20 +1,16 @@
 {-# OPTIONS_GHC -Wno-missed-specialisations #-}
 module Model.Parser.Lexer where
 
-import           Control.Applicative        (Alternative, (<|>))
-import           Control.Monad              (MonadPlus, void)
-import           Data.Hashable              (Hashable, hashUsing, hashWithSalt)
-import           Data.Kind                  (Type)
-import           Data.Text                  (Text)
-import           Data.Void                  (Void)
-import           Relude.String.Conversion   (ToString (toString),
-                                             ToText (toText))
-import           Text.Megaparsec            (MonadParsec, Parsec)
-import           Text.Megaparsec.Char       (spaceChar)
-import qualified Text.Megaparsec.Char.Lexer as L
+import           Control.Applicative      (Alternative)
+import           Control.Monad            (MonadPlus)
+import           Data.Hashable            (Hashable, hashUsing, hashWithSalt)
+import           Data.Kind                (Type)
+import           Data.Text                (Text)
+import           Data.Void                (Void)
+import           Relude.String.Conversion (ToString (toString), ToText (toText))
+import           Text.Megaparsec          (Parsec)
 #ifdef TESTING
-import           Test.QuickCheck            (Arbitrary (..),
-                                             arbitraryBoundedEnum)
+import           Test.QuickCheck          (Arbitrary (..), arbitraryBoundedEnum)
 #endif
 type Lexer :: Type -> Type
 newtype Lexer a = Lexer {runLexer :: Parsec Void Text a}
@@ -23,6 +19,7 @@ newtype Lexer a = Lexer {runLexer :: Parsec Void Text a}
 type Lexeme :: Type
 data Lexeme
   = FROM
+  | INVENTORY
   | WHITE
   | CHAIR
   | PILL

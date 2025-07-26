@@ -11,7 +11,6 @@ import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
                                                 StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb))
 
-
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 

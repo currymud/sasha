@@ -41,6 +41,7 @@ term =
   PORTAL <$ symbol "PORTAL"
     <|> CHAIR <$ symbol "CHAIR"
     <|> WHITE <$ symbol "WHITE"
+    <|> INVENTORY <$ symbol "INVENTORY"
     <|> PILL <$ symbol "PILL"
     <|> TOWEL <$ symbol "TOWEL"
     <|> SEPERATOR <$ symbol ","

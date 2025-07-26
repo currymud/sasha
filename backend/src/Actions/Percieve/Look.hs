@@ -12,10 +12,12 @@ import           Location                   (getLocationActionMapM,
 import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Config (_actionMap),
                                              GameComputation, Location (_title),
+                                             ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb),
                                              ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
                                              updateActionConsequence)
 import           Model.Mappings             (GIDToDataMap (_getGIDToDataMap))
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
+                                             ImplicitStimulusVerb)
 import           Model.Parser.GCase         (VerbKey (ImplicitStimulusKey))
 import           Relude.String.Conversion   (ToText (toText))
 
@@ -45,4 +47,14 @@ manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
         errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
         errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
         verbKey = ImplicitStimulusKey isv
-
+          {-
+manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
+manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go
+  where
+    go :: DirectionalStimulusVerb -> GameComputation Identity ()
+    go _ = pure ()
+      where
+        errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
+        errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
+        verbKey = ImplicitStimulusKey isv
+        -}
