@@ -2,6 +2,7 @@ module Grammar.Parser.Partitions.Nouns.Containers (containers,satchel,robe) wher
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (ROBE, SATCHEL))
+import           Grammar.Parser.Partitions.Nouns.Utils       (containers')
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Nouns                  (Container (Container))
 
@@ -11,7 +12,7 @@ import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitra
                                                               elements)
 #endif
 
-makeSemanticValues [| Container |] [SATCHEL,ROBE]
+makeSemanticValues [| Container |] containers'
 
 containers :: HashSet Container
 containers = HashSet.fromList [satchel,robe]

@@ -2,6 +2,7 @@ module Grammar.Parser.Partitions.Nouns.Objectives (objectives,pill,mail,satchel,
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (MAIL, PILL, ROBE, SATCHEL, TOWEL))
+import           Grammar.Parser.Partitions.Nouns.Utils       (objectives')
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Nouns                  (Objective (Objective))
 
@@ -11,7 +12,7 @@ import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitra
                                                               elements)
 #endif
 
-makeSemanticValues [| Objective |] [PILL,MAIL,SATCHEL,TOWEL,ROBE]
+makeSemanticValues [| Objective |] objectives'
 
 objectives :: HashSet Objective
 objectives = HashSet.fromList [pill, mail, satchel, towel, robe]

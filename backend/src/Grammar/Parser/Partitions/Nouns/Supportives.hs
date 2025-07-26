@@ -2,6 +2,7 @@ module Grammar.Parser.Partitions.Nouns.Supportives (supportives,chair,table,satc
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (CHAIR, SATCHEL, TABLE))
+import           Grammar.Parser.Partitions.Nouns.Utils       (supportives')
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Nouns                  (Supportive (Supportive))
 
@@ -11,7 +12,7 @@ import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitra
                                                               elements)
 #endif
 
-makeSemanticValues [| Supportive |] [CHAIR,TABLE,SATCHEL]
+makeSemanticValues [| Supportive |] supportives'
 
 supportives :: HashSet Supportive
 supportives = HashSet.fromList [chair,table,satchel]
