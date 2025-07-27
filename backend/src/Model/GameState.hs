@@ -13,12 +13,13 @@ module Model.GameState (
   , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
-  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap, _processDirectionalVerbMap)
+  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
   , transformToIO, liftDisplay
   , fromDisplay
-  , Player (Player, _location, _sentenceManagement)
+  , Perceptables (Perceptables, _perceptables)
+  , Player (Player, _location, _sentenceManagement, _perceptables)
   , PlayerProcessImplicitVerbMap
-  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap, _playerProcessDirectionalVerbMap)
+  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
@@ -108,7 +109,7 @@ data ActionF
 type SentenceProcessingMaps :: Type
 data SentenceProcessingMaps = SentenceProcessingMaps
   { _processImplicitVerbMap    :: ProcessImplicitVerbMaps
-  , _processDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
+--  , _processDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
   }
 
 type ProcessImplicitVerbMap :: Type
@@ -140,7 +141,6 @@ newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
 type PlayerSentenceProcessingMaps :: Type
 data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
   { _playerProcessImplicitVerbMap    :: PlayerProcessImplicitVerbMap
-  , _playerProcessDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
   }
 
 type Evaluator :: Type
@@ -169,7 +169,7 @@ data GameState = GameState
 type Location :: Type
 data Location = Location {
     _title                    :: Text
-  , _objectSemanticMap        :: Map NounKey (Set (GID Object))
+  , _objectSemanticMap        :: Map NounKey (GID Object)
   , _locationActionManagement :: Map VerbKey (GID ActionF)
 }
 
@@ -183,7 +183,7 @@ data Narration = Narration
 type Player :: Type
 data Player = Player
   { _location           :: GID Location
-  , _sentenceManagement :: PlayerProcessImplicitVerbMap
+  , _sentenceManagement :: PlayerSentenceProcessingMaps   -- PlayerProcessImplicitVerbMap
   , _perceptables       :: Perceptables
   }
 

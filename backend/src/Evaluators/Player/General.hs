@@ -1,4 +1,5 @@
 module Evaluators.Player.General where
+import           Actions.Percieve.Look         (manageDirectionalStimulusProcess)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.IO.Class        (MonadIO (liftIO))
 import           Data.Data                     (Data (dataTypeOf))

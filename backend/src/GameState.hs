@@ -18,6 +18,7 @@ import           Model.GameState            (ActionF (ImplicitStimulusAction),
                                              Narration (Narration),
                                              Object (_objectActionManagement),
                                              Player (_sentenceManagement),
+                                             PlayerSentenceProcessingMaps (_playerProcessImplicitVerbMap),
                                              ProcessImplicitStimulusVerb,
                                              ProcessImplicitVerbMap,
                                              SentenceProcessingMaps (_processImplicitVerbMap),
@@ -36,7 +37,7 @@ getActionF vkey = do
 getImplicitStimulusVerbProcessorGID :: ImplicitStimulusVerb
                                          -> GameComputation Identity (GID ProcessImplicitStimulusVerb)
 getImplicitStimulusVerbProcessorGID ivp = do
-  sentenceManagement <- gets (_sentenceManagement . _player)
+  sentenceManagement <- gets (_playerProcessImplicitVerbMap . _sentenceManagement . _player)
   throwMaybeM errMsg $ Data.Map.Strict.lookup ivp sentenceManagement
   where
     errMsg :: Text

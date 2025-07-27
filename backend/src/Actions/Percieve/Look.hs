@@ -1,25 +1,27 @@
-module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess) where
+module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess, manageDirectionalStimulusProcess) where
 
-import           Control.Monad.Except       (MonadError (throwError))
-import           Control.Monad.Identity     (Identity)
-import           Control.Monad.Reader.Class (asks)
+import           Control.Monad.Except          (MonadError (throwError))
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
-import           Data.Text                  (Text)
-import           Error                      (throwMaybeM)
-import           GameState                  (modifyNarration)
-import           Location                   (getLocationActionMapM,
-                                             getPlayerLocationM)
-import           Model.GameState            (ActionF (ImplicitStimulusAction),
-                                             Config (_actionMap),
-                                             GameComputation, Location (_title),
-                                             ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb),
-                                             ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
-                                             updateActionConsequence)
-import           Model.Mappings             (GIDToDataMap (_getGIDToDataMap))
-import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
-                                             ImplicitStimulusVerb)
-import           Model.Parser.GCase         (VerbKey (ImplicitStimulusKey))
-import           Relude.String.Conversion   (ToText (toText))
+import           Data.Text                     (Text)
+import           Error                         (throwMaybeM)
+import           GameState                     (modifyNarration)
+import           Location                      (getLocationActionMapM,
+                                                getPlayerLocationM)
+import           Model.GameState               (ActionF (ImplicitStimulusAction),
+                                                Config (_actionMap),
+                                                GameComputation,
+                                                Location (_title),
+                                                ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb),
+                                                ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
+                                                updateActionConsequence)
+import           Model.Mappings                (GIDToDataMap (_getGIDToDataMap))
+import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
+import           Relude.String.Conversion      (ToText (toText))
 
 agentCanSee :: ActionF
 agentCanSee = ImplicitStimulusAction (\loc ->
@@ -47,14 +49,9 @@ manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
         errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
         errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
         verbKey = ImplicitStimulusKey isv
-          {-
+
 manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
 manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go
   where
-    go :: DirectionalStimulusVerb -> GameComputation Identity ()
-    go _ = pure ()
-      where
-        errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
-        errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
-        verbKey = ImplicitStimulusKey isv
-        -}
+    go :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
+    go _  _ = pure ()

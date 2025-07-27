@@ -9,7 +9,9 @@ import           Evaluators.Player.General            (eval)
 import           Model.GameState                      (Config (Config, _actionMap, _sentenceProcessingMaps),
                                                        GameState (GameState, _evaluation, _narration, _player, _world),
                                                        Narration (..),
-                                                       Player (Player, _location, _sentenceManagement),
+                                                       Perceptables (Perceptables),
+                                                       Player (Player, _location, _perceptables, _sentenceManagement),
+                                                       PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
                                                        SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 
 initNarration :: Narration
@@ -44,7 +46,8 @@ sentenceProcessingMaps = SentenceProcessingMaps
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _sentenceManagement = playerProcessImplicitVerbMap
+  , _sentenceManagement = PlayerSentenceProcessingMaps playerProcessImplicitVerbMap
+  , _perceptables = Perceptables mempty
   }
 
 sentenceManagement :: SentenceProcessingMaps
