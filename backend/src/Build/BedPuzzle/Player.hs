@@ -7,6 +7,6 @@ player :: Player
 player = Player bedroomInBedGID _
 -}
   {-
-inventory :: Object
+inventory :: Location
 inventory = Object name desc
 -}

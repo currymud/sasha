@@ -11,4 +11,5 @@ import           Model.Label                    (Label (Label))
 
 makeLabels [ ([| bedroomInBed |],BED)]
 
+-- locationMap :: GIDToDataMap Location Location
 makeLocationGIDsAndMap [ [| bedroomInBed |] ]

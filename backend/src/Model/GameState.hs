@@ -10,7 +10,7 @@ module Model.GameState (
   , GameState (GameState, _world, _player, _narration, _evaluation)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
-  , Location (Location, _title, _objectLabelMap, _locationActionManagement)
+  , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
   , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap, _processDirectionalVerbMap)
@@ -23,6 +23,8 @@ module Model.GameState (
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
   , ProcessImplicitVerbMaps
+  , SpatialRelationship (ContainedIn, Contains, Supports, SupportedBy)
+  , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
   , World (World, _objectMap, _locationMap)
   , liftToDisplay
   , updateActionConsequence
@@ -47,7 +49,7 @@ import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
                                                 NounPhrase)
-import           Model.Parser.GCase            (VerbKey)
+import           Model.Parser.GCase            (NounKey, VerbKey)
 
 -- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -167,7 +169,7 @@ data GameState = GameState
 type Location :: Type
 data Location = Location {
     _title                    :: Text
-  , _objectLabelMap           :: LabelToGIDListMapping Object Object
+  , _objectSemanticMap        :: Map NounKey (Set (GID Object))
   , _locationActionManagement :: Map VerbKey (GID ActionF)
 }
 
@@ -182,13 +184,33 @@ type Player :: Type
 data Player = Player
   { _location           :: GID Location
   , _sentenceManagement :: PlayerProcessImplicitVerbMap
+  , _perceptables       :: Perceptables
   }
+
+type SpatialRelationshipMap :: Type
+newtype SpatialRelationshipMap = SpatialRelationshipMap
+  { _spatialRelationshipMap :: Map (GID Object) (Set SpatialRelationship) }
+  deriving stock (Show, Eq, Ord)
+
+type SpatialRelationship :: Type
+data SpatialRelationship
+  = ContainedIn (GID Object)
+  | Contains (Set (GID Object))
+  | Supports (Set (GID Object))
+  | SupportedBy (GID Object)
+  deriving stock (Show, Eq, Ord)
+
+type Perceptables :: Type
+newtype Perceptables = Perceptables
+  { _perceptables :: Set (GID Object) }
+  deriving stock (Show,Eq,Ord)
 
 type World :: Type
 data World = World
-  { _objectMap     :: GIDToDataMap Object Object
-  , _locationMap   :: GIDToDataMap Location Location
-  , _perceptionMap :: Map DirectionalStimulus (Set (GID Object))
+  { _objectMap              :: GIDToDataMap Object Object
+  , _locationMap            :: GIDToDataMap Location Location
+  , _perceptionMap          :: Map DirectionalStimulus (Set (GID Object))
+  , _spatialRelationshipMap :: SpatialRelationshipMap
   }
 
 updatePlayerAction :: Text -> Narration -> Narration

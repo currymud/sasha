@@ -1,6 +1,7 @@
 module Build.Identifiers.Objects  where
+import           Build.BedPuzzle.Actions.Objects.Pill (pillObj)
+import           Build.BedPuzzle.Objects              (playerOBJ)
+import           Build.Templates.Identification       (makeObjectGIDsAndMap)
 
-import           Build.BedPuzzle.Objects        (playerOBJ)
-import           Build.Templates.Identification (makeObjectGIDsAndMap)
-
--- makeObjectGIDsAndMap [[| playerOBJ|]]
+-- objectMap :: GIDToDataMap Object
+makeObjectGIDsAndMap [[| pillObj|]]

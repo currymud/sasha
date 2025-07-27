@@ -3,22 +3,24 @@ import           Build.Identifiers.Actions                            (agentCanS
 import           Data.Map.Strict                                      (Map,
                                                                        fromList)
 import qualified Data.Map.Strict
+import           Data.Set                                             (Set)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
 import           Model.GameState                                      (ActionF,
-                                                                       Location (Location, _locationActionManagement),
-                                                                       _objectLabelMap,
-                                                                       _title)
+                                                                       Location (Location, _locationActionManagement, _objectSemanticMap, _title),
+                                                                       Object)
 import           Model.GID                                            (GID)
-import           Model.Mappings                                       (LabelToGIDListMapping (LabelToGIDListMapping))
-import           Model.Parser.GCase                                   (VerbKey (ImplicitStimulusKey))
+import           Model.Parser.GCase                                   (NounKey,
+                                                                       VerbKey (ImplicitStimulusKey))
 
 
 bedroomInBed :: Location
 bedroomInBed = Location
   { _title = "Bedroom in Bed"
-  , _objectLabelMap = LabelToGIDListMapping Data.Map.Strict.empty
+  , _objectSemanticMap = objectSemanticMap
   , _locationActionManagement = actionMap
   }
 
+objectSemanticMap :: Map NounKey (Set (GID Object))
+objectSemanticMap = Data.Map.Strict.empty
 actionMap :: Map VerbKey (GID ActionF)
 actionMap = fromList [(ImplicitStimulusKey look, agentCanSeeGID)]

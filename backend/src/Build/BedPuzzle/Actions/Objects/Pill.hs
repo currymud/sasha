@@ -11,7 +11,7 @@ import           Model.GameState                                         (Action
 import           Model.GID                                               (GID)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
-import           Model.Parser.GCase                                      (VerbKey (DirectionalStimulusKey))
+import           Model.Parser.GCase                                      (VerbKey (DirectionalStimulusVerbKey))
 
 pillObj :: Object
 pillObj =
@@ -26,4 +26,4 @@ pillObj =
        }
   where
     verbMaps :: [(VerbKey, GID ActionF)]
-    verbMaps = [(DirectionalStimulusKey look, whatPillGID)]
+    verbMaps = [(DirectionalStimulusVerbKey look, whatPillGID)]
