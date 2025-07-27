@@ -1,16 +1,16 @@
 module Grammar.Parser.Rules.Composites.Nouns where
-import           Control.Applicative                (Alternative ((<|>)))
-import           Data.Text                          (Text)
-import           Grammar.Parser.Rules.Atomics.Nouns (DirectionalStimulusNounRule (..))
-import           Model.Parser.Atomics.Adjectives    (Adjective)
-import           Model.Parser.Atomics.Misc          (Determiner)
-import           Model.Parser.Atomics.Nouns         (DirectionalStimulus)
-import           Model.Parser.Composites.Nouns      (DirectionalStimulusNounPhrase (..),
-                                                     NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                     NounPhraseRules (..))
-import           Model.Parser.Lexer                 (Lexeme)
-import           Text.Earley                        (Grammar)
-import           Text.Earley.Grammar                (Prod, rule)
+import           Control.Applicative             (Alternative ((<|>)))
+import           Data.Text                       (Text)
+import           Model.Parser.Atomics.Adjectives (Adjective)
+import           Model.Parser.Atomics.Misc       (Determiner)
+import           Model.Parser.Atomics.Nouns      (DirectionalStimulus, Edible)
+import           Model.Parser.Composites.Nouns   (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                  EdibleNounPhrase (EdibleNounPhrase),
+                                                  NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                  NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule))
+import           Model.Parser.Lexer              (Lexeme)
+import           Text.Earley                     (Grammar)
+import           Text.Earley.Grammar             (Prod, rule)
 
 nounPhraseRule :: NounPhraseRules a r
                     -> Grammar r (Prod r Text Lexeme (NounPhrase a))
@@ -38,3 +38,17 @@ directionalStimulusNounPhraseRules determinerRule adjRule directionalStimulusRul
           , _nounRule = directionalStimulusRule
           }
 
+edibleNounPhraseRules :: Prod r Text Lexeme Determiner
+                                       -> Prod r Text Lexeme Adjective
+                                       -> Prod r Text Lexeme Edible
+                                       -> Grammar r (Prod r Text Lexeme EdibleNounPhrase)
+edibleNounPhraseRules determinerRule adjRule directionalStimulusRule =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ EdibleNounPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = determinerRule
+          , _adjRule = adjRule
+          , _nounRule = directionalStimulusRule
+          }

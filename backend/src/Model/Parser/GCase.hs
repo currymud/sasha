@@ -10,6 +10,7 @@ import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus,
                                                 Supportive, ToggleNoun)
 import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
                                                 DirectionalStimulusVerb,
+                                                EdibleConsumptionVerb,
                                                 ImplicitBoundaryVerb,
                                                 ImplicitRegionalStimulusVerb,
                                                 ImplicitStimulusVerb,
@@ -20,10 +21,11 @@ import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
 type VerbKey :: Type
 data VerbKey
   = CardinalMovementKey         CardinalMovementVerb
+  | DirectionalStimulusVerbKey  DirectionalStimulusVerb
+  | EdibleConsumptionKey        EdibleConsumptionVerb
   | ImplicitBoundaryKey         ImplicitBoundaryVerb
   | ImplicitStimulusKey         ImplicitStimulusVerb
-  | DirectionalStimulusVerbKey      DirectionalStimulusVerb
-  | SimpleAccessVerbKey             SimpleAccessVerb
+  | SimpleAccessVerbKey         SimpleAccessVerb
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
 

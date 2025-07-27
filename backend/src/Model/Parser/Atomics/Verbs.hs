@@ -14,6 +14,15 @@ newtype CardinalMovementVerb =
 instance HasLexeme CardinalMovementVerb where
   toLexeme = _fromCardinalMovementVerb
 
+type EdibleConsumptionVerb :: Type
+newtype EdibleConsumptionVerb =
+  EdibleConsumptionVerb { _fromEdibleConsumptionVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme EdibleConsumptionVerb where
+  toLexeme = _fromEdibleConsumptionVerb
+
 type ImplicitBoundaryVerb :: Type
 newtype ImplicitBoundaryVerb =
   ImplicitBoundaryVerb { _fromImplicitBoundaryVerb :: Lexeme }

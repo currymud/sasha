@@ -22,5 +22,6 @@ bedroomInBed = Location
 
 objectSemanticMap :: Map NounKey (Set (GID Object))
 objectSemanticMap = Data.Map.Strict.empty
+
 actionMap :: Map VerbKey (GID ActionF)
 actionMap = fromList [(ImplicitStimulusKey look, agentCanSeeGID)]

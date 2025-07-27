@@ -39,6 +39,7 @@ sc = Lexer $ L.space (void spaceChar) lineCmnt blockCmnt
 term :: Lexer Lexeme
 term =
   PORTAL <$ symbol "PORTAL"
+    <|> EAT <$ symbol "EAT"
     <|> CHAIR <$ symbol "CHAIR"
     <|> WHITE <$ symbol "WHITE"
     <|> INVENTORY <$ symbol "INVENTORY"
