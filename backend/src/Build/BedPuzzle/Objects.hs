@@ -10,11 +10,3 @@ import           Model.GameState                                      (Object (O
                                                                        _shortName)
 import           Model.Parser.GCase                                   (VerbKey (ImplicitStimulusKey))
 
-playerOBJ :: Object
-playerOBJ = Object
-  { _shortName = "test player"
-  , _description = "A test player object for the game."
-  , _descriptives = Data.Set.empty
-  , _objectActionManagement = Data.Map.Strict.fromList
-      [ (ImplicitStimulusKey look, pitchBlackFGID)]
-  }
