@@ -1,9 +1,8 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-    ActionF (ImplicitStimulusAction, DirectionalStimulusAction)
-  , ActionMap
-  , Config (Config, _actionMap, _sentenceProcessingMaps)
+   ActionMaps
+  , Config (Config, _actionMaps, _sentenceProcessingMaps)
   , DisplayT (DisplayT, runDisplayT)
   ,  Evaluator
   , GameComputation (GameComputation, runGameComputation)
@@ -97,12 +96,30 @@ newtype DisplayT m a = DisplayT { runDisplayT :: GameStateT m a }
 instance MonadTrans DisplayT where
   lift = DisplayT . lift
 
-
+  {-
 -- Computation builders
 type ActionF :: Type
 data ActionF
   = ImplicitStimulusAction (Location -> GameComputation Identity ())
   | DirectionalStimulusAction (GameComputation Identity ())
+-}
+
+data ActionMaps = ActionMaps
+  { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
+  , _directionalStimulusActionMap :: DirectionalStimulusActionMap
+  }
+
+type ImplicitStimulusActionMap = Map (GID ImplicitStimulusVerb) ImplicitStimulusActionF
+
+type ImplicitStimulusActionF :: Type
+newtype ImplicitStimulusActionF = ImplicitStimulusActionF
+  { _implicitStimulusAction :: Location -> GameComputation Identity () }
+
+type DirectionalStimulusActionMap = Map (GID DirectionalStimulusVerb) DirectionalStimulusActionF
+
+type DirectionalStimulusActionF :: Type
+newtype DirectionalStimulusActionF = DirectionalStimulusActionF
+  { _directionalStimulusAction :: GameComputation Identity () }
 
 -- Sentence Processing Maps
 
@@ -147,14 +164,11 @@ type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameComputation Identity ())
 
-type ActionMap :: Type
-type ActionMap = GIDToDataMap ActionF ActionF
-
 -- Game Objects
 
 type Config :: Type
 data Config = Config
-  { _actionMap              :: ActionMap
+  { _actionMaps             :: ActionMaps
   , _sentenceProcessingMaps :: SentenceProcessingMaps
   }
 
@@ -170,8 +184,14 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectSemanticMap        :: Map NounKey (GID Object)
-  , _locationActionManagement :: Map VerbKey (GID ActionF)
+  , _locationActionManagement :: ActionManagement
 }
+
+data ActionManagement = ActionManagement
+  { _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusVerb)
+  , _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusVerb)
+  }
+  deriving stock (Show, Eq, Ord)
 
 type Narration :: Type
 data Narration = Narration
@@ -227,7 +247,7 @@ data Object = Object
  { _shortName              :: Text
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
- , _objectActionManagement :: Map VerbKey (GID ActionF) -- Placeholder for action management logic
+ , _objectActionManagement :: ActionManagement
  }
 
 -- | Lift GameStateM to GameComputation
