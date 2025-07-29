@@ -137,13 +137,13 @@ data SentenceProcessingMaps = SentenceProcessingMaps
   }
 
 type ProcessImplicitVerbMap :: Type
-type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) ProcessImplicitStimulusVerb
+type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 
 type ProcessDirectionalVerbMap :: Type
 type ProcessDirectionalVerbMap = Map (GID ProcessDirectionalStimulusVerb) ProcessDirectionalStimulusVerb
 
 type ProcessImplicitVerbMaps :: Type
-type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb (ImplicitStimulusVerb -> ImplicitStimulusActionF)
+type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
 
 type ProcessDirectionalStimulusVerbMaps :: Type
 type ProcessDirectionalStimulusVerbMaps = Map DirectionalStimulusVerb ProcessDirectionalVerbMap
