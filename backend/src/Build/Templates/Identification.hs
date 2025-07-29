@@ -64,6 +64,7 @@ makeObjectGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 
 -- Updated for new action system
+
 makeImplicitStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusVerb "implicitStimulusActionMap"
 
@@ -94,7 +95,7 @@ makeGIDForType _ _ = fail "Expected variable"
 makeMapForType :: Name -> String -> [(Exp, Int)] -> Q Dec
 makeMapForType typeName mapName pairs = do
   let mapNameQ = mkName mapName
-      mapType = AppT (ConT typeName) (ConT typeName)
+      mapType = AppT (ConT typeName) (ConT typeName)  -- This line looks wrong
 
       tuples = [TupE [Just (VarE (mkName (nameBase name ++ "GID"))), Just (VarE name)]
                | (VarE name, _) <- pairs]
@@ -103,7 +104,6 @@ makeMapForType typeName mapName pairs = do
       mapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
 
   pure $ ValD (VarP mapNameQ) (NormalB mapExp) []
-
 -- =============================================================================
 -- CORE HELPER FUNCTIONS
 -- =============================================================================
