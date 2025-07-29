@@ -12,7 +12,7 @@ import           Model.GameState             (ActionMaps (ActionMaps),
                                               GameState (GameState, _evaluation, _narration, _player, _world),
                                               Narration (..),
                                               Perceptables (Perceptables),
-                                              Player (Player, _location, _perceptables, _sentenceManagement),
+                                              Player (Player, _location, _perceptables),
                                               PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
                                               SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 

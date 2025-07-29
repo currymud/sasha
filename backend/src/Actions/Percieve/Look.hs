@@ -5,15 +5,19 @@ import           Control.Monad.Reader.Class    (asks)
 import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import           Data.Text                     (Text)
-import           GameState                     (getPlayerM, modifyNarration)
+import           GameState                     (getPlayerActionsM, getPlayerM,
+                                                modifyNarration)
+import           GHC.RTS.Flags                 (ProfFlags (doHeapProfile))
 import           Location                      (getPlayerLocationM)
 import           Model.GameState               (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
                                                 ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps, _sentenceProcessingMaps),
                                                 GameComputation,
                                                 ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
+                                                ImplicitStimulusActionMap,
                                                 Location (_locationActionManagement, _title),
-                                                Player (_location, _sentenceManagement),
+                                                Player (_location),
+                                                PlayerActions (_implicitStimulusActions),
                                                 PlayerProcessImplicitVerbMap,
                                                 PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap),
                                                 ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb),
@@ -43,23 +47,23 @@ actionEnabled isv = ImplicitStimulusActionF $ do
   let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
   case Data.Map.Strict.lookup isv actionMap of
     Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-    Just (actionGID :: GID ImplicitStimulusVerb) -> do
-      actionMap' ::  Map (GID ImplicitStimulusVerb) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
+    Just (actionGID :: GID ImplicitStimulusActionF) -> do
+      actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap' of
         Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
         Just (ImplicitStimulusActionF actionFunc) -> actionFunc
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
-  spMaps :: ProcessImplicitVerbMaps <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
-  gidMap :: PlayerProcessImplicitVerbMap <- _playerProcessImplicitVerbMap . _sentenceManagement <$> getPlayerM
-  case Data.Map.Strict.lookup isv gidMap of
-    Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
-    Just (gid :: GID ProcessImplicitStimulusVerb) -> case Data.Map.Strict.lookup isv spMaps of
-      Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
-      Just (amap :: ProcessImplicitVerbMap )-> case Data.Map.Strict.lookup gid amap of
-         Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-         Just action -> _implicitStimulusAction (action isv)
+  availableActions <- _implicitStimulusActions <$> getPlayerActionsM
+  case Data.Map.Strict.lookup isv availableActions of
+    Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+    Just (actionGID :: GID ImplicitStimulusActionF) -> do
+      actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error $ "Programmer Error: No implicit stimulus action found for GID: "
+        Just (ImplicitStimulusActionF actionFunc) -> actionFunc
+      pure ()
 
 manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
 manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go

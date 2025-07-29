@@ -5,7 +5,6 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.IO.Class        (MonadIO (liftIO))
 import           Data.Data                     (Data (dataTypeOf))
 import           Data.Text                     (Text)
-import           GameState                     (getImplicitStimulusVerbProcessor)
 import           Model.GameState               (GameComputation,
                                                 ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb))
 import           Model.Parser                  (Sentence (Imperative))

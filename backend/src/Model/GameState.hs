@@ -22,7 +22,8 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _location, _sentenceManagement, _perceptables)
+  , Player (Player, _location, _perceptables, _playerActions)
+  , PlayerActions (PlayerActions, _implicitStimulusActions)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
@@ -115,14 +116,14 @@ data ActionMaps = ActionMaps
   }
 
 type ImplicitStimulusActionMap :: Type
-type ImplicitStimulusActionMap = Map (GID ImplicitStimulusVerb) ImplicitStimulusActionF
+type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF
 
 type ImplicitStimulusActionF :: Type
 newtype ImplicitStimulusActionF = ImplicitStimulusActionF
   { _implicitStimulusAction :: GameComputation Identity () }
 
 type DirectionalStimulusActionMap :: Type
-type DirectionalStimulusActionMap = Map (GID DirectionalStimulusVerb) DirectionalStimulusActionF
+type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
 type DirectionalStimulusActionF :: Type
 newtype DirectionalStimulusActionF = DirectionalStimulusActionF
@@ -196,8 +197,8 @@ data Location = Location {
 
 type ActionManagement :: Type
 data ActionManagement = ActionManagement
-  { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusVerb)
-  , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusVerb)
+  { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -210,10 +211,14 @@ data Narration = Narration
 
 type Player :: Type
 data Player = Player
-  { _location           :: GID Location
-  , _sentenceManagement :: PlayerSentenceProcessingMaps
-  , _perceptables       :: Perceptables
+  { _location      :: GID Location
+  , _playerActions :: PlayerActions
+  , _perceptables  :: Perceptables
   }
+
+type PlayerActions :: Type
+data PlayerActions = PlayerActions
+ { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF) }
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap
