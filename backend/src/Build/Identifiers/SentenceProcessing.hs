@@ -10,4 +10,4 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
 -- playerProcessImplicitVerbMap :: PlayerProcessImplicitVerbMap
 -- manageImplicitStimulusProcessGID
 
-makeProcessImplicitVerbMapsTH [| [ (look, [manageImplicitStimulusProcess]) ] |]
+makeProcessImplicitVerbMapsTH [| [ (look, [actionEnabled]) ] |]

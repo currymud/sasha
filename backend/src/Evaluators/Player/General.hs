@@ -1,5 +1,6 @@
 module Evaluators.Player.General where
-import           Actions.Percieve.Look         (manageDirectionalStimulusProcess)
+import           Actions.Percieve.Look         (manageDirectionalStimulusProcess,
+                                                manageImplicitStimulusProcess)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.IO.Class        (MonadIO (liftIO))
 import           Data.Data                     (Data (dataTypeOf))
@@ -20,9 +21,5 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
 
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
-evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = evalImplicitStimulusVerb isv
+evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
 evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = pure ()
-evalImplicitStimulusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()
-evalImplicitStimulusVerb isv = do
-  (ProcessImplicitStimulusVerb f) <- getImplicitStimulusVerbProcessor isv
-  f isv

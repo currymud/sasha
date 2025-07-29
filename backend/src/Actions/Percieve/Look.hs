@@ -52,14 +52,14 @@ actionEnabled isv = ImplicitStimulusActionF $ do
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
   spMaps :: ProcessImplicitVerbMaps <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
-  gidMap <- _playerProcessImplicitVerbMap . _sentenceManagement <$> getPlayerM
+  gidMap :: PlayerProcessImplicitVerbMap <- _playerProcessImplicitVerbMap . _sentenceManagement <$> getPlayerM
   case Data.Map.Strict.lookup isv gidMap of
     Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
-    Just gid -> case Data.Map.Strict.lookup isv spMaps of
+    Just (gid :: GID ProcessImplicitStimulusVerb) -> case Data.Map.Strict.lookup isv spMaps of
       Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
-      Just amap -> case Data.Map.Strict.lookup gid amap of
+      Just (amap :: ProcessImplicitVerbMap )-> case Data.Map.Strict.lookup gid amap of
          Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-         Just (ProcessImplicitStimulusVerb action) -> action isv
+         Just action -> _implicitStimulusAction (action isv)
 
 manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
 manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go

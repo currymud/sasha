@@ -14,7 +14,8 @@ import           Error                      (throwMaybeM)
 import           Model.GameState            (Config (_actionMaps, _sentenceProcessingMaps),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
-                                             Location, Narration (Narration),
+                                             ImplicitStimulusActionF, Location,
+                                             Narration (Narration),
                                              Object (_objectActionManagement),
                                              Player (_location, _sentenceManagement),
                                              PlayerSentenceProcessingMaps (_playerProcessImplicitVerbMap),
@@ -37,7 +38,7 @@ getImplicitStimulusVerbProcessorGID ivp = do
     errMsg = "Implicit stimulus verb processor not found: " <> toText ivp
 
 getImplicitStimulusVerbProcessor :: ImplicitStimulusVerb
-                                      -> GameComputation Identity ProcessImplicitStimulusVerb
+                                      -> GameComputation Identity (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 getImplicitStimulusVerbProcessor ivp = do
   pid <- getImplicitStimulusVerbProcessorGID ivp
   let errMsg = "Implicit stimulus verb processor not found for player: " <> toText pid
