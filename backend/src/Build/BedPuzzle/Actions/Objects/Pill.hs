@@ -31,9 +31,9 @@ pillObj =
   where
     verbMaps :: ActionManagement
     verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs
-    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusVerb)
+    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
-    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusVerb)
+    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
     directionalStimulusVerbs = Data.Map.Strict.fromList [(look, whatPillGID)]
 
   {-
