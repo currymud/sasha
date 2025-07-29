@@ -1,20 +1,20 @@
 module Build.GameState where
-import           Build.Identifiers.Actions            (directionalStimulusActionMap,
-                                                       implicitStimulusActionMap)
-import           Build.Identifiers.Locations          (bedroomInBedGID)
-import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
-                                                       processImplicitVerbMaps)
-import           Build.World                          (world)
-import           Data.Text                            (Text)
-import           Evaluators.Player.General            (eval)
-import           Model.GameState                      (ActionMaps (ActionMaps),
-                                                       Config (Config, _actionMaps, _sentenceProcessingMaps),
-                                                       GameState (GameState, _evaluation, _narration, _player, _world),
-                                                       Narration (..),
-                                                       Perceptables (Perceptables),
-                                                       Player (Player, _location, _perceptables, _sentenceManagement),
-                                                       PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
-                                                       SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
+import           Build.Identifiers.Actions   (directionalStimulusActionMap,
+                                              implicitStimulusActionMap)
+import           Build.Identifiers.Locations (bedroomInBedGID)
+-- import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
+--                                                       processImplicitVerbMaps)
+import           Build.World                 (world)
+import           Data.Text                   (Text)
+import           Evaluators.Player.General   (eval)
+import           Model.GameState             (ActionMaps (ActionMaps),
+                                              Config (Config, _actionMaps, _sentenceProcessingMaps),
+                                              GameState (GameState, _evaluation, _narration, _player, _world),
+                                              Narration (..),
+                                              Perceptables (Perceptables),
+                                              Player (Player, _location, _perceptables, _sentenceManagement),
+                                              PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
+                                              SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 
 initNarration :: Narration
 initNarration = Narration
@@ -24,7 +24,7 @@ initNarration = Narration
 
 initialAction :: Text
 initialAction = "Finally! Let's see how look works"
-
+  {-
 gameState :: GameState
 gameState = GameState
   { _world = world
@@ -57,3 +57,4 @@ player = Player
 sentenceManagement :: SentenceProcessingMaps
 sentenceManagement = SentenceProcessingMaps
   { _processImplicitVerbMap = processImplicitVerbMaps }
+-}
