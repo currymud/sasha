@@ -9,7 +9,8 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (ActionF, ActionMap, Location,
+import           Model.GameState            (DirectionalStimulusActionF,
+                                             ImplicitStimulusActionF, Location,
                                              Object,
                                              PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
@@ -17,7 +18,8 @@ import           Model.GameState            (ActionF, ActionMap, Location,
 import           Model.GID                  (GID (GID))
 import           Model.Label                (Label (Label))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
+import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
+                                             ImplicitStimulusVerb)
 import           Model.Parser.Lexer         (Lexeme)
 import           Prelude                    hiding (exp)
 
@@ -35,7 +37,7 @@ makeLabels expLexemePairs = do
 
       info <- reify varName
       baseType <- case info of
-        VarI _ typ _ -> pure $ simplifyType typ  -- Much simpler than extractType
+        VarI _ typ _ -> pure $ simplifyType typ
         _            -> fail "Expected variable"
 
       -- CONSTRUCT DECLARATIONS
@@ -61,8 +63,12 @@ makeLocationGIDsAndMap = makeGIDsAndMapForType ''Location "locationMap"
 makeObjectGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 
-makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeActionGIDsAndMap = makeGIDsAndMapForType ''ActionF "actionMap"
+-- Updated for new action system
+makeImplicitStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusVerb "implicitStimulusActionMap"
+
+makeDirectionalStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeDirectionalStimulusActionGIDsAndMap = makeGIDsAndMapForType ''DirectionalStimulusVerb "directionalStimulusActionMap"
 
 makeGIDsAndMapForType :: Name -> String -> [ExpQ] -> Q [Dec]
 makeGIDsAndMapForType typeName mapName expQs = do
@@ -88,23 +94,19 @@ makeGIDForType _ _ = fail "Expected variable"
 makeMapForType :: Name -> String -> [(Exp, Int)] -> Q Dec
 makeMapForType typeName mapName pairs = do
   let mapNameQ = mkName mapName
-      mapType = AppT (ConT ''GIDToDataMap)
-                     (AppT (ConT typeName) (ConT typeName))
+      mapType = AppT (ConT typeName) (ConT typeName)
 
       tuples = [TupE [Just (VarE (mkName (nameBase name ++ "GID"))), Just (VarE name)]
                | (VarE name, _) <- pairs]
 
       listExp = ListE tuples
       mapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
-      wrappedExp = AppE (ConE 'GIDToDataMap) mapExp
 
-  pure $ ValD (VarP mapNameQ) (NormalB wrappedExp) []
-
+  pure $ ValD (VarP mapNameQ) (NormalB mapExp) []
 
 -- =============================================================================
 -- CORE HELPER FUNCTIONS
 -- =============================================================================
-
 
 -- | Create GID variable name from expression
 gidNameFromExp :: Exp -> Name
@@ -132,22 +134,36 @@ removeDuplicatesEfficient = go []
       | x `elem` seen = go seen xs
       | otherwise = go (x:seen) xs
 
-makeActionGID :: Exp -> Int -> Q [Dec]
-makeActionGID exp gidValue = do
+-- Updated for new action system
+makeImplicitStimulusActionGID :: Exp -> Int -> Q [Dec]
+makeImplicitStimulusActionGID exp gidValue = do
   case exp of
     VarE functionName -> do
       let originalNameStr = nameBase functionName
           gidNameStr = originalNameStr ++ "GID"
           gidName = mkName gidNameStr
           gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
-          -- ActionF is a concrete type, not derived from function name
-          gidType = AppT (ConT ''GID) (ConT ''ActionF)
+          gidType = AppT (ConT ''GID) (ConT ''ImplicitStimulusActionF)
 
       pure [ SigD gidName gidType
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
-    _ -> fail "makeActionGID expects a simple variable name"
+    _ -> fail "makeImplicitStimulusActionGID expects a simple variable name"
 
+makeDirectionalStimulusActionGID :: Exp -> Int -> Q [Dec]
+makeDirectionalStimulusActionGID exp gidValue = do
+  case exp of
+    VarE functionName -> do
+      let originalNameStr = nameBase functionName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''DirectionalStimulusActionF)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail "makeDirectionalStimulusActionGID expects a simple variable name"
 
 -- | Extract all unique processes from pair expressions (efficient version)
 extractProcesses :: [Exp] -> Q [Exp]
@@ -175,7 +191,6 @@ makeProcessGID exp gidValue = do
            , ValD (VarP gidName) (NormalB gidExpr) []
            ]
     _ -> fail "makeProcessGID expects a simple variable name"
-
 
 -- =============================================================================
 -- PLAYER PROCESS MAP

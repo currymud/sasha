@@ -4,6 +4,11 @@ module Build.Identifiers.Actions where
 import           Actions.Percieve.Look                     (agentCanSee)
 import           Build.BedPuzzle.Actions.Look              (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look (seePill, whatPill)
-import           Build.Templates.Identification            (makeActionGIDsAndMap)
+import           Build.Templates.Identification            (makeDirectionalStimulusActionGIDsAndMap,
+                                                            makeImplicitStimulusActionGIDsAndMap)
+-- implicitStimulusActionMap
 
-makeActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| whatPill |], [| seePill |]]
+makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |]]
+
+-- directionalStimulusActionMap
+makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |]]

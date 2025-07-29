@@ -1,10 +1,10 @@
 module Build.BedPuzzle.Actions.Look where
 import           Actions.Percieve.Look (agentCannotSee)
 import           Data.Text             (Text)
-import           Model.GameState       (ActionF)
+import           Model.GameState       (ImplicitStimulusActionF)
 
 
-pitchBlackF :: ActionF
+pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF =  agentCannotSee pitchBlack
   where
     pitchBlack :: Text

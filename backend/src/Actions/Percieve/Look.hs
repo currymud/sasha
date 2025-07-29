@@ -1,54 +1,65 @@
-module Actions.Percieve.Look (agentCanSee,agentCannotSee, manageImplicitStimulusProcess, manageDirectionalStimulusProcess) where
+module Actions.Percieve.Look (actionEnabled,agentCanSee,agentCannotSee, manageImplicitStimulusProcess, manageDirectionalStimulusProcess) where
 
-import           Control.Monad.Except          (MonadError (throwError))
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
+import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import           Data.Text                     (Text)
-import           Error                         (throwMaybeM)
-import           GameState                     (modifyNarration)
-import           Location                      (getLocationActionMapM,
-                                                getPlayerLocationM)
-import           Model.GameState               (ActionF (ImplicitStimulusAction),
-                                                Config (_actionMap),
+import           GameState                     (getPlayerM, modifyNarration)
+import           Location                      (getPlayerLocationM)
+import           Model.GameState               (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
+                                                ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
+                                                Config (_actionMaps, _sentenceProcessingMaps),
                                                 GameComputation,
-                                                Location (_title),
+                                                ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
+                                                Location (_locationActionManagement, _title),
+                                                Player (_location, _sentenceManagement),
+                                                PlayerProcessImplicitVerbMap,
+                                                PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap),
                                                 ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb),
                                                 ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb),
+                                                ProcessImplicitVerbMap,
+                                                ProcessImplicitVerbMaps,
+                                                SentenceProcessingMaps (_processImplicitVerbMap),
                                                 updateActionConsequence)
-import           Model.Mappings                (GIDToDataMap (_getGIDToDataMap))
+import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 import           Relude.String.Conversion      (ToText (toText))
 
-agentCanSee :: ActionF
-agentCanSee = ImplicitStimulusAction (\loc ->
-   modifyNarration $ updateActionConsequence ("You see: " <> _title loc))
+agentCanSee :: ImplicitStimulusActionF
+agentCanSee = ImplicitStimulusActionF $
+   modifyNarration $ updateActionConsequence ("You see: " )
 
-agentCannotSee :: Text -> ActionF
-agentCannotSee nosee = ImplicitStimulusAction $ \_ ->
+agentCannotSee :: Text -> ImplicitStimulusActionF
+agentCannotSee nosee = ImplicitStimulusActionF $
   modifyNarration $ updateActionConsequence nosee
 
-manageImplicitStimulusProcess :: ProcessImplicitStimulusVerb
-manageImplicitStimulusProcess = ProcessImplicitStimulusVerb go
-  where
-    go :: ImplicitStimulusVerb -> GameComputation Identity ()
-    go isv = do
-      actionMap <- asks (_getGIDToDataMap . _actionMap)
-      locationActionMap <- getLocationActionMapM
-      aid <- throwMaybeM errMsg $ Data.Map.Strict.lookup verbKey locationActionMap
-      actionF <- throwMaybeM errMsg $ Data.Map.Strict.lookup aid actionMap
-      case actionF of
-        ImplicitStimulusAction actionFunc -> do
-          currentLocation <- getPlayerLocationM
-          actionFunc currentLocation
-        _ -> throwError errMsg'
-      where
-        errMsg' = "Programmer Error: Somehow tried to process non-implicit stimulus action for: " <> toText isv
-        errMsg = "Programmer Error: No implicit stimulus action found for verb: " <> toText isv
-        verbKey = ImplicitStimulusKey isv
+actionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
+actionEnabled isv = ImplicitStimulusActionF $ do
+  loc <- getPlayerLocationM
+  let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
+  case Data.Map.Strict.lookup isv actionMap of
+    Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+    Just (actionGID :: GID ImplicitStimulusVerb) -> do
+      actionMap' ::  Map (GID ImplicitStimulusVerb) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap' of
+        Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+        Just (ImplicitStimulusActionF actionFunc) -> actionFunc
+
+manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
+manageImplicitStimulusProcess isv = do
+  spMaps :: ProcessImplicitVerbMaps <- asks (_processImplicitVerbMap . _sentenceProcessingMaps)
+  gidMap <- _playerProcessImplicitVerbMap . _sentenceManagement <$> getPlayerM
+  case Data.Map.Strict.lookup isv gidMap of
+    Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
+    Just gid -> case Data.Map.Strict.lookup isv spMaps of
+      Nothing -> error $ "Programmer Error: No implicit stimulus verb found for: "
+      Just amap -> case Data.Map.Strict.lookup gid amap of
+         Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+         Just (ProcessImplicitStimulusVerb action) -> action isv
 
 manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
 manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go

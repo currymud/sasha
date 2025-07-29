@@ -1,38 +1,31 @@
 module GameState ( clearNarration
-                 , getActionF
                  , getObjectM
                  , getImplicitStimulusVerbProcessors
                  , getPlayerM
                  , getImplicitStimulusVerbProcessorGID
                  , getImplicitStimulusVerbProcessor
+                 , getPlayerLocationM
                  , modifyNarration) where
 import           Control.Monad.Reader       (MonadReader (ask), asks)
 import           Control.Monad.State        (gets, modify')
 import qualified Data.Map.Strict
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionF (ImplicitStimulusAction),
-                                             Config (_actionMap, _sentenceProcessingMaps),
+import           Model.GameState            (Config (_actionMaps, _sentenceProcessingMaps),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
-                                             Narration (Narration),
+                                             Location, Narration (Narration),
                                              Object (_objectActionManagement),
-                                             Player (_sentenceManagement),
+                                             Player (_location, _sentenceManagement),
                                              PlayerSentenceProcessingMaps (_playerProcessImplicitVerbMap),
                                              ProcessImplicitStimulusVerb,
                                              ProcessImplicitVerbMap,
                                              SentenceProcessingMaps (_processImplicitVerbMap),
-                                             World (_objectMap))
+                                             World (_locationMap, _objectMap))
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Relude                     (Identity, ToText (toText))
-
-getActionF :: GID ActionF -> GameComputation Identity ActionF
-getActionF vkey = do
-  gs :: Config <- ask
-  let amap = _getGIDToDataMap $ _actionMap gs
-  throwMaybeM "Action not found in action map" $ Data.Map.Strict.lookup vkey amap
 
 getImplicitStimulusVerbProcessorGID :: ImplicitStimulusVerb
                                          -> GameComputation Identity (GID ProcessImplicitStimulusVerb)
@@ -66,6 +59,12 @@ getObjectM :: GID Object -> GameComputation Identity Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
+
+getPlayerLocationM :: GameComputation Identity Location
+getPlayerLocationM = do
+  location <- _location <$> getPlayerM
+  locationMap <- gets (_getGIDToDataMap . _locationMap . _world)
+  throwMaybeM "Player location not found" $ Data.Map.Strict.lookup location locationMap
 
 modifyNarration :: (Narration -> Narration)
                      -> GameComputation Identity ()

@@ -1,24 +1,29 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-   ActionMaps
+  ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
+  , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap)
   , Config (Config, _actionMaps, _sentenceProcessingMaps)
+  , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
+  , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  ,  Evaluator
+  , Evaluator
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
+  , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
+  , ImplicitStimulusActionMap
   , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
+  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _location, _sentenceManagement, _perceptables)
   , PlayerProcessImplicitVerbMap
-  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
@@ -41,8 +46,7 @@ import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
 import           Model.GID                     (GID)
-import           Model.Mappings                (GIDToDataMap,
-                                                LabelToGIDListMapping)
+import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
@@ -104,17 +108,20 @@ data ActionF
   | DirectionalStimulusAction (GameComputation Identity ())
 -}
 
+type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   }
 
+type ImplicitStimulusActionMap :: Type
 type ImplicitStimulusActionMap = Map (GID ImplicitStimulusVerb) ImplicitStimulusActionF
 
 type ImplicitStimulusActionF :: Type
 newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: Location -> GameComputation Identity () }
+  { _implicitStimulusAction :: GameComputation Identity () }
 
+type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusVerb) DirectionalStimulusActionF
 
 type DirectionalStimulusActionF :: Type
@@ -136,7 +143,7 @@ type ProcessDirectionalVerbMap :: Type
 type ProcessDirectionalVerbMap = Map (GID ProcessDirectionalStimulusVerb) ProcessDirectionalStimulusVerb
 
 type ProcessImplicitVerbMaps :: Type
-type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
+type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 
 type ProcessDirectionalStimulusVerbMaps :: Type
 type ProcessDirectionalStimulusVerbMaps = Map DirectionalStimulusVerb ProcessDirectionalVerbMap
@@ -187,9 +194,10 @@ data Location = Location {
   , _locationActionManagement :: ActionManagement
 }
 
+type ActionManagement :: Type
 data ActionManagement = ActionManagement
-  { _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusVerb)
-  , _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusVerb)
+  { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusVerb)
+  , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusVerb)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -203,7 +211,7 @@ data Narration = Narration
 type Player :: Type
 data Player = Player
   { _location           :: GID Location
-  , _sentenceManagement :: PlayerSentenceProcessingMaps   -- PlayerProcessImplicitVerbMap
+  , _sentenceManagement :: PlayerSentenceProcessingMaps
   , _perceptables       :: Perceptables
   }
 

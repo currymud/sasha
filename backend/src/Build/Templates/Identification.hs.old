@@ -1,4 +1,5 @@
 module Build.Templates.Identification where
+import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict
 import           Language.Haskell.TH        (reify)
 import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
@@ -8,107 +9,128 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (ActionF, ActionMap,
+import           Model.GameState            (ActionF, ActionMap, Location,
+                                             Object,
                                              PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
-                                             ProcessImplicitVerbMap,
-                                             ResolutionT)
+                                             ProcessImplicitVerbMaps)
 import           Model.GID                  (GID (GID))
+import           Model.Label                (Label (Label))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.Lexer         (Lexeme)
 import           Prelude                    hiding (exp)
 
-gidDeclaration :: String -> String -> Integer -> DecsQ
-gidDeclaration tag' binding' literal = pure [sigd, value]
+makeLabels :: [(ExpQ, Lexeme)] -> Q [Dec]
+makeLabels expLexemePairs = do
+  exps <- mapM fst expLexemePairs
+  let lexemes = map snd expLexemePairs
+      pairs = zip exps lexemes
+
+  concat <$> mapM (uncurry labelDecl) pairs
   where
-    sigd    = SigD binding type'
-    binding = mkName (binding' <> "GID")
-    type'   = AppT (ConT gid) (ConT tag)
-    gid     = mkName "GID"
-    tag     = mkName tag'
-    value = ValD (VarP binding)
-                 (NormalB
-                   (AppE
-                     (ConE gid)
-                     (LitE (IntegerL literal)))) []
+    labelDecl :: Exp -> Lexeme -> Q [Dec]
+    labelDecl (VarE varName) lexeme = do
+      let labelName = mkName (nameBase varName ++ "'")
 
-labelTemplate :: Exp -> Lexeme -> DecsQ
-labelTemplate exp lexeme = do
-  case exp of
-    VarE varName -> do
-      -- Reify to get type information
       info <- reify varName
-      valueType <- case info of
-        VarI _ typ _ -> extractType typ
-        _            -> fail $ "Expected a variable, got: " ++ show info
+      baseType <- case info of
+        VarI _ typ _ -> pure $ simplifyType typ  -- Much simpler than extractType
+        _            -> fail "Expected variable"
 
-      let originalNameStr = nameBase varName
-          labelNameStr = originalNameStr ++ "'"
-          labelName = mkName labelNameStr
-          lexemeVar = UnboundVarE (mkName (show lexeme))
-          labelConstructor = ConE (mkName "Model.Label.Label")
-          labelExpr = AppE labelConstructor lexemeVar
-          labelTypeConstructor = ConT (mkName "Model.Label.Label")
-          labelType = AppT labelTypeConstructor valueType
+      -- CONSTRUCT DECLARATIONS
+      let lexemeExpr = ConE (mkName (show lexeme))
+          labelExpr = AppE (ConE 'Label) lexemeExpr
+          labelType = AppT (ConT ''Label) baseType
 
       pure [ SigD labelName labelType
            , ValD (VarP labelName) (NormalB labelExpr) []
            ]
-    _ -> fail "labelTemplate expects a simple variable name"
+    labelDecl _ _ = fail "Expected variable"
 
-makeLabels :: [(ExpQ, Lexeme)] -> DecsQ
-makeLabels expLexemePairs = do
-  exps <- mapM fst expLexemePairs
-  let lexemes = map snd expLexemePairs
-  let pairs = zip exps lexemes
+-- Much simpler type simplification (handles 90% of cases)
+simplifyType :: Type -> Type
+simplifyType (ForallT _ _ t)               = simplifyType t           -- Remove forall
+simplifyType (AppT (AppT ArrowT _) result) = result     -- a -> Location becomes Location
+simplifyType (ConT name)                   = ConT name                    -- Location stays Location
+simplifyType t                             = t                                      -- Everything else unchanged
 
-  declarations <- mapM (uncurry labelTemplate) pairs
-  pure (concat declarations)
-    {-
-makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeActionGIDsAndMap expQs = do
-  exps <- sequence expQs
+makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeLocationGIDsAndMap = makeGIDsAndMapForType ''Location "locationMap"
 
-  let numberedPairs :: [(Exp, Int)]
-      numberedPairs = zip exps [1..]
-
-  -- Generate GID declarations
-  gidDeclarations <- concat <$> mapM (uncurry makeActionGID) numberedPairs
-
-  -- Generate the map using makeMapDeclarationWithName directly (most efficient)
-  mapDeclaration <- makeActionMapDeclaration numberedPairs
-
-  pure (gidDeclarations ++ [mapDeclaration])
--}
+makeObjectGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 
 makeActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeActionGIDsAndMap expQs = do
+makeActionGIDsAndMap = makeGIDsAndMapForType ''ActionF "actionMap"
+
+makeGIDsAndMapForType :: Name -> String -> [ExpQ] -> Q [Dec]
+makeGIDsAndMapForType typeName mapName expQs = do
   exps <- sequence expQs
+  let pairs = zip exps [1..]
 
-  let numberedPairs :: [(Exp, Int)]
-      numberedPairs = zip exps [1..]
+  gidDecls <- concat <$> mapM (makeGIDForType typeName) pairs
+  mapDecl <- makeMapForType typeName mapName pairs
 
-  -- Generate GID declarations
-  gidDeclarations <- concat <$> mapM (uncurry makeActionGID) numberedPairs
+  pure (gidDecls ++ [mapDecl])
 
-  -- Generate the ActionMap declaration with explicit type signature
-  mapDeclarations <- makeActionMapDeclaration numberedPairs
+makeGIDForType :: Name -> (Exp, Int) -> Q [Dec]
+makeGIDForType typeName (VarE name, gidValue) = do
+  let gidName = mkName (nameBase name ++ "GID")
+      gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+      gidType = AppT (ConT ''GID) (ConT typeName)
 
-  pure (gidDeclarations ++ mapDeclarations)
+  pure [ SigD gidName gidType
+       , ValD (VarP gidName) (NormalB gidExpr) []
+       ]
+makeGIDForType _ _ = fail "Expected variable"
 
-makeActionMapDeclaration :: [(Exp, Int)] -> Q [Dec]
-makeActionMapDeclaration [] = fail "Cannot create ActionMap from empty list"
-makeActionMapDeclaration numberedPairs = do
-  let mapName = mkName "actionMap"
-      -- Explicit ActionMap type signature
-      actionMapType = ConT ''ActionMap
-      typeSignature = SigD mapName actionMapType
+makeMapForType :: Name -> String -> [(Exp, Int)] -> Q Dec
+makeMapForType typeName mapName pairs = do
+  let mapNameQ = mkName mapName
+      mapType = AppT (ConT ''GIDToDataMap)
+                     (AppT (ConT typeName) (ConT typeName))
 
-  -- Use existing function to create the value declaration
-  valueDeclaration <- makeMapDeclarationWithName "actionMap" numberedPairs
+      tuples = [TupE [Just (VarE (mkName (nameBase name ++ "GID"))), Just (VarE name)]
+               | (VarE name, _) <- pairs]
 
-  pure [typeSignature, valueDeclaration]
+      listExp = ListE tuples
+      mapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
+      wrappedExp = AppE (ConE 'GIDToDataMap) mapExp
+
+  pure $ ValD (VarP mapNameQ) (NormalB wrappedExp) []
+
+
+-- =============================================================================
+-- CORE HELPER FUNCTIONS
+-- =============================================================================
+
+
+-- | Create GID variable name from expression
+gidNameFromExp :: Exp -> Name
+gidNameFromExp (VarE functionName) =
+  mkName (nameBase functionName ++ "GID")
+gidNameFromExp _ = error "Expected VarE in gidNameFromExp"
+
+-- | Create tuple for map entries
+makeTupleHelper :: (Exp, Int) -> Exp
+makeTupleHelper (exp, _) =
+  TupE [Just (VarE (gidNameFromExp exp)), Just exp]
+
+-- | Extract type from complex type signatures
+extractType :: Type -> Q Type
+extractType (ForallT _ _ t)               = extractType t
+extractType (AppT (AppT ArrowT _) result) = extractType result
+extractType t                             = pure t
+
+-- | Efficient duplicate removal using manual comparison
+removeDuplicatesEfficient :: [Exp] -> [Exp]
+removeDuplicatesEfficient = go []
+  where
+    go seen [] = reverse seen
+    go seen (x:xs)
+      | x `elem` seen = go seen xs
+      | otherwise = go (x:seen) xs
 
 makeActionGID :: Exp -> Int -> Q [Dec]
 makeActionGID exp gidValue = do
@@ -118,7 +140,7 @@ makeActionGID exp gidValue = do
           gidNameStr = originalNameStr ++ "GID"
           gidName = mkName gidNameStr
           gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
-          -- Fix: ActionF is a concrete type, not a type constructor
+          -- ActionF is a concrete type, not derived from function name
           gidType = AppT (ConT ''GID) (ConT ''ActionF)
 
       pure [ SigD gidName gidType
@@ -126,154 +148,12 @@ makeActionGID exp gidValue = do
            ]
     _ -> fail "makeActionGID expects a simple variable name"
 
--- Helper to create (gid', action) tuple expressions
-makeTuple :: (Exp, Int) -> Exp
-makeTuple (exp, _gidValue) =
-  case exp of
-    VarE functionName ->
-      let originalNameStr = nameBase functionName
-          gidNameStr = originalNameStr ++ "GID"
-          gidName = mkName gidNameStr
-      in TupE [Just (VarE gidName), Just (VarE functionName)]
-    _ -> error "Expected VarE in makeTuple"
 
-makeGID :: Exp -> Int -> Q [Dec]
-makeGID exp gidValue = do
-  case exp of
-    VarE name -> do
-      -- Reify to get type information
-      info <- reify name
-      valueType <- case info of
-        VarI _ typ _ -> extractType typ
-        _            -> fail $ "Expected a variable, got: " ++ show info
-
-      let originalNameStr = nameBase name
-          gidNameStr = originalNameStr ++ "GID"
-          gidName = mkName gidNameStr
-          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
-          gidType = AppT (ConT ''GID) valueType
-
-      pure [ SigD gidName gidType
-           , ValD (VarP gidName) (NormalB gidExpr) []
-           ]
-    _ -> fail "makeGID expects a simple variable name"
-
-makeGIDsAndMapWithName :: String -> [ExpQ] -> Q [Dec]
-makeGIDsAndMapWithName mapName expQs = do
-  exps <- sequence expQs
-  let numberedPairs = zip exps [1..]
-
-  -- Generate GID declarations
-  gidDeclarations <- concat <$> mapM (uncurry makeGID) numberedPairs
-
-  -- Generate the map declaration with custom name
-  mapDeclaration <- makeMapDeclarationWithName mapName numberedPairs
-
-  pure (gidDeclarations ++ [mapDeclaration])
-
-makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeLocationGIDsAndMap = makeGIDsAndMapWithName "locationMap"
-
-makeObjectGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeObjectGIDsAndMap = makeGIDsAndMapWithName "objectMap"
-
-makeMapDeclarationWithName :: String -> [(Exp, Int)] -> Q Dec
-makeMapDeclarationWithName _ [] = fail "Cannot create map from empty list"
-makeMapDeclarationWithName mapNameStr numberedPairs@((firstExp, _):_) = do
-  -- Get the type from the first expression
-  valueType <- case firstExp of
-    VarE name -> do
-      info <- reify name
-      case info of
-        VarI _ typ _ -> extractType typ
-        _            -> fail "Expected a variable"
-    _ -> fail "Expected a variable expression"
-
-  let mapName = mkName mapNameStr
-      mapType = AppT (ConT ''GIDToDataMap)
-                     (AppT valueType valueType)
-
-      -- Create list of (GID, value) tuples
-      tupleExps = map makeTuple numberedPairs
-      listExp = ListE tupleExps
-
-      -- GIDToDataMap (Map.fromList [...])
-      mapFromListExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
-      gidToDataMapExp = AppE (ConE 'GIDToDataMap) mapFromListExp
-  pure $ ValD (VarP mapName) (NormalB gidToDataMapExp) []
-
-extractType :: Type -> Q Type
-extractType (ForallT _ _ t)               = extractType t
-extractType (AppT (AppT ArrowT _) result) = extractType result
-extractType t                             = pure t
-
--- | Creates GIDs and ProcessImplicitVerbMap from a list of (verb, [processes]) pairs
-makeProcessImplicitVerbMapTH :: ExpQ -> Q [Dec]
-makeProcessImplicitVerbMapTH expQ = do
-  exp <- expQ
-  case exp of
-    ListE pairExps -> do
-      -- Extract all unique processes from all pairs
-      processes <- extractProcesses pairExps
-      let numberedProcesses = zip processes [1..]
-
-      -- Create GID declarations for each process
-      processGidDeclarations <- concat <$> mapM (uncurry makeProcessGID) numberedProcesses
-
-      -- Create the ProcessImplicitVerbMap declaration
-      mapDeclarations <- makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses
-
-      pure (processGidDeclarations ++ mapDeclarations)
-    _ -> fail "makeProcessImplicitVerbMapTH expects a list expression"
-
--- | Create the PlayerProcessImplicitVerbMap declaration
-makePlayerProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
-makePlayerProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
-  let mapName = mkName "playerProcessImplicitVerbMap"
-      mapType = ConT ''PlayerProcessImplicitVerbMap
-      typeSignature = SigD mapName mapType
-
-  -- Create the map structure - each verb maps to the first process GID
-  pairExprs <- mapM (createPlayerMapPairExpression numberedProcesses) pairExps
-  let outerListExp = ListE pairExprs
-      outerMapExp = AppE (VarE 'Data.Map.Strict.fromList) outerListExp
-
-  let valueDeclaration = ValD (VarP mapName) (NormalB outerMapExp) []
-
-  pure [typeSignature, valueDeclaration]
-
--- | Create a single pair expression for the player map: (verb, firstProcessGID)
-createPlayerMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
-createPlayerMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
-  case processes of
-    [] -> fail "Empty process list in verb mapping"
-    (firstProcess:_) -> do
-      -- Get the GID for the first process
-      firstProcessGID <- createPlayerMapProcessGID numberedProcesses firstProcess
-      pure $ TupE [Just verbExp, Just firstProcessGID]
-createPlayerMapPairExpression _ _ = fail "Expected tuple with (verb, [processes])"
-
-createPlayerMapProcessGID :: [(Exp, Int)] -> Exp -> Q Exp
-createPlayerMapProcessGID numberedProcesses processExp = do
-  case processExp of
-    VarE processName -> do
-      let originalNameStr = nameBase processName
-          gidNameStr = originalNameStr ++ "GID"
-          gidName = mkName gidNameStr
-      pure $ VarE gidName
-    _ -> fail "Expected process variable"
--- | Extract all unique processes from pair expressions
-
+-- | Extract all unique processes from pair expressions (efficient version)
 extractProcesses :: [Exp] -> Q [Exp]
 extractProcesses pairExps = do
   allProcesses <- concat <$> mapM extractProcessesFromPair pairExps
-  pure $ removeDuplicates allProcesses
-  where
-    removeDuplicates [] = []
-    removeDuplicates (x:xs) = x : removeDuplicates (filter (not . expEqual x) xs)
-
-    expEqual (VarE n1) (VarE n2) = n1 == n2
-    expEqual _ _                 = False
+  pure $ removeDuplicatesEfficient allProcesses
 
 -- | Extract processes from a single pair expression
 extractProcessesFromPair :: Exp -> Q [Exp]
@@ -296,40 +176,61 @@ makeProcessGID exp gidValue = do
            ]
     _ -> fail "makeProcessGID expects a simple variable name"
 
--- | Create the ProcessImplicitVerbMap declaration
-makeProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
-makeProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
-  let mapName = mkName "processImplicitVerbMap"
-      mapType = ConT ''ProcessImplicitVerbMap
+
+-- =============================================================================
+-- PLAYER PROCESS MAP
+-- =============================================================================
+
+-- | Create the PlayerProcessImplicitVerbMap declaration
+makePlayerProcessImplicitVerbMapDeclaration :: [Exp] -> [(Exp, Int)] -> Q [Dec]
+makePlayerProcessImplicitVerbMapDeclaration pairExps numberedProcesses = do
+  let mapName = mkName "playerProcessImplicitVerbMap"
+      -- Construct the type explicitly: Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
+      mapType = AppT (AppT (ConT ''Map) (ConT ''ImplicitStimulusVerb))
+                     (AppT (ConT ''GID) (ConT ''ProcessImplicitStimulusVerb))
       typeSignature = SigD mapName mapType
 
-  -- Create the nested map structure
-  pairExprs <- mapM (createMapPairExpression numberedProcesses) pairExps
+  -- Create the map structure - each verb maps to the first process GID
+  pairExprs <- mapM (createPlayerMapPairExpression numberedProcesses) pairExps
   let outerListExp = ListE pairExprs
       outerMapExp = AppE (VarE 'Data.Map.Strict.fromList) outerListExp
-
-  let valueDeclaration = ValD (VarP mapName) (NormalB outerMapExp) []
+      valueDeclaration = ValD (VarP mapName) (NormalB outerMapExp) []
 
   pure [typeSignature, valueDeclaration]
 
--- | Create a single pair expression for the outer map: (verb, innerMap)
-createMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
-createMapPairExpression numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
-  -- Create inner map from processes
-  innerPairs <- mapM (createInnerMapPair numberedProcesses) processes
-  let innerListExp = ListE innerPairs
-      innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) innerListExp
+-- | Create a single pair expression for the player map: (verb, firstProcessGID)
+createPlayerMapPairExpression :: [(Exp, Int)] -> Exp -> Q Exp
+createPlayerMapPairExpression _numberedProcesses (TupE [Just verbExp, Just (ListE processes)]) = do
+  case processes of
+    [] -> fail "Empty process list in verb mapping"
+    (firstProcess:_) -> do
+      firstProcessGID <- createPlayerMapProcessGID firstProcess
+      pure $ TupE [Just verbExp, Just firstProcessGID]
+createPlayerMapPairExpression _ _ = fail "Expected tuple with (verb, [processes]) in player map"
 
-  pure $ TupE [Just verbExp, Just innerMapExp]
-createMapPairExpression _ _ = fail "Expected tuple with (verb, [processes])"
-
--- | Create a pair for the inner map: (processGID, process)
-createInnerMapPair :: [(Exp, Int)] -> Exp -> Q Exp
-createInnerMapPair numberedProcesses processExp = do
+-- | Get the GID variable expression for a process in the player map
+createPlayerMapProcessGID :: Exp -> Q Exp
+createPlayerMapProcessGID processExp = do
   case processExp of
     VarE processName -> do
-      let originalNameStr = nameBase processName
-          gidNameStr = originalNameStr ++ "GID"
-          gidName = mkName gidNameStr
-      pure $ TupE [Just (VarE gidName), Just processExp]
-    _ -> fail "Expected process variable"
+      let gidName = mkName (nameBase processName ++ "GID")
+      pure $ VarE gidName
+    _ -> fail "Expected process variable in player map"
+
+-- =============================================================================
+-- LEGACY/UNUSED FUNCTIONS (kept for backward compatibility)
+-- =============================================================================
+
+gidDeclaration :: String -> String -> Integer -> DecsQ
+gidDeclaration tag' binding' literal = pure [sigd, value]
+  where
+    sigd    = SigD binding type'
+    binding = mkName (binding' <> "GID")
+    type'   = AppT (ConT gid) (ConT tag)
+    gid     = mkName "GID"
+    tag     = mkName tag'
+    value = ValD (VarP binding)
+                 (NormalB
+                   (AppE
+                     (ConE gid)
+                     (LitE (IntegerL literal)))) []

@@ -1,12 +1,14 @@
 module Build.GameState where
-import           Build.Identifiers.Actions            (actionMap)
+import           Build.Identifiers.Actions            (directionalStimulusActionMap,
+                                                       implicitStimulusActionMap)
 import           Build.Identifiers.Locations          (bedroomInBedGID)
 import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
                                                        processImplicitVerbMaps)
 import           Build.World                          (world)
 import           Data.Text                            (Text)
 import           Evaluators.Player.General            (eval)
-import           Model.GameState                      (Config (Config, _actionMap, _sentenceProcessingMaps),
+import           Model.GameState                      (ActionMaps (ActionMaps),
+                                                       Config (Config, _actionMaps, _sentenceProcessingMaps),
                                                        GameState (GameState, _evaluation, _narration, _player, _world),
                                                        Narration (..),
                                                        Perceptables (Perceptables),
@@ -23,7 +25,6 @@ initNarration = Narration
 initialAction :: Text
 initialAction = "Finally! Let's see how look works"
 
-
 gameState :: GameState
 gameState = GameState
   { _world = world
@@ -34,9 +35,12 @@ gameState = GameState
 
 config :: Config
 config = Config
-  { _actionMap = actionMap
+  { _actionMaps = actionMaps
   , _sentenceProcessingMaps = sentenceProcessingMaps
   }
+  where
+    actionMaps :: ActionMaps
+    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap
 
 sentenceProcessingMaps :: SentenceProcessingMaps
 sentenceProcessingMaps = SentenceProcessingMaps

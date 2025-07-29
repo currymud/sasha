@@ -1,18 +1,18 @@
 module Build.BedPuzzle.Actions.Objects.Pill.Look where
 import           Data.Text       (Text)
 import           GameState       (modifyNarration)
-import           Model.GameState (ActionF (DirectionalStimulusAction),
+import           Model.GameState (DirectionalStimulusActionF (DirectionalStimulusActionF),
                                   updateActionConsequence)
 
-whatPill :: ActionF
-whatPill = DirectionalStimulusAction
+whatPill :: DirectionalStimulusActionF
+whatPill = DirectionalStimulusActionF
   (modifyNarration $ updateActionConsequence msg)
   where
     msg :: Text
     msg = "You don't see a pill here, but you have a hazy memory of having one in your bathrobe pocket"
 
-seePill :: ActionF
-seePill = DirectionalStimulusAction
+seePill :: DirectionalStimulusActionF
+seePill = DirectionalStimulusActionF
   (modifyNarration $ updateActionConsequence msg)
   where
     msg :: Text

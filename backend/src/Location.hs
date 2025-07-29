@@ -2,17 +2,15 @@ module Location where
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.State.Strict (MonadState (get), modify')
 import           Data.Functor               ((<&>))
-import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionF, GameComputation,
+import           Model.GameState            (ActionManagement, GameComputation,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
 import           Model.GID                  (GID)
 import           Model.Mappings             (_getGIDToDataMap)
-import           Model.Parser.GCase         (VerbKey)
 
 getLocationIdM :: GameComputation Identity (GID Location)
 getLocationIdM = get <&> (_location . _player)
@@ -22,8 +20,9 @@ updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocationActionMapM :: GameComputation Identity (Map VerbKey (GID ActionF))
-getLocationActionMapM = _locationActionManagement <$> getPlayerLocationM
+getLocationActionMapM :: GameComputation Identity ActionManagement
+getLocationActionMapM = _locationActionManagement
+                          <$> getPlayerLocationM
 
 getLocationM :: GID Location -> GameComputation Identity Location
 getLocationM locID = do
