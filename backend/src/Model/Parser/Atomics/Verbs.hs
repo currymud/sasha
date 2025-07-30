@@ -66,6 +66,16 @@ newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }
 instance HasLexeme SimpleAccessVerb where
   toLexeme = _fromSimpleAccessVerb
 
+type SomaticAccessVerb :: Type
+newtype SomaticAccessVerb =
+  SomaticAccessVerb { _fromSomaticAccessVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme SomaticAccessVerb where
+  toLexeme = _fromSomaticAccessVerb
+
+
 type ImplicitRegionalStimulusVerb :: Type
 newtype ImplicitRegionalStimulusVerb =
   ImplicitRegionalStimulusVerb { _fromImplicitRegionalStimulusVerb :: Lexeme }

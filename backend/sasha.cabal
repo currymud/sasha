@@ -96,6 +96,7 @@ library
       Grammar.Parser.Partitions.Nouns.DirectionalStimulus
       Grammar.Parser.Partitions.Nouns.Edibles
       Grammar.Parser.Partitions.Nouns.Objectives
+      Grammar.Parser.Partitions.Nouns.SomaticStimulus
       Grammar.Parser.Partitions.Nouns.Supportives
       Grammar.Parser.Partitions.Nouns.Utils
       Grammar.Parser.Partitions.Prepositions
@@ -107,6 +108,7 @@ library
       Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
       Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
       Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs
+      Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs
       Grammar.Parser.Partitions.Templates.Atomics
       Grammar.Parser.Rules.Atomics.Adverbs
       Grammar.Parser.Rules.Atomics.Nouns

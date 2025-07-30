@@ -36,6 +36,14 @@ type DirectionalStimulusRule :: (Type -> Type -> Type -> Type) -> Type
 newtype DirectionalStimulusRule r = DirectionalStimulusRule
   { _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus}
 
+type SomaticStimulus :: Type
+newtype SomaticStimulus = SomaticStimulus { _fromSomaticStimulus :: Lexeme }
+  deriving newtype (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme SomaticStimulus where
+  toLexeme = _fromSomaticStimulus
+
 type Edible :: Type
 newtype Edible = Edible { _fromEdible :: Lexeme }
   deriving newtype (Show,Eq,Ord)
