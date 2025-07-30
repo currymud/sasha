@@ -1,35 +1,37 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 module Actions.Percieve.Look ( lookAt, dsvActionEnabled, isvActionEnabled,agentCanSee,agentCannotSee, manageImplicitStimulusProcess, manageDirectionalStimulusProcess) where
 
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.Reader.Class    (asks)
-import           Data.Map.Strict               (Map)
+import           Control.Monad.Identity                                  (Identity)
+import           Control.Monad.Reader.Class                              (asks)
+import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
-import           Data.Text                     (Text)
-import           GameState                     (getPlayerActionsM,
-                                                modifyNarration)
-import           Location                      (getPlayerLocationM)
-import           Model.GameState               (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
-                                                ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
-                                                Config (_actionMaps),
-                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
-                                                GameComputation,
-                                                ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
-                                                ImplicitStimulusActionMap,
-                                                Location (_locationActionManagement, _objectSemanticMap, _title),
-                                                PlayerActions (_implicitStimulusActions),
-                                                updateActionConsequence)
-import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Nouns    (DirectionalStimulus (DirectionalStimulus))
-import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
-                                                ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
-import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
-import           Relude.String.Conversion      (ToText (toText))
+import           Data.Text                                               (Text)
+import           GameState                                               (getActionManagementM,
+                                                                          getPlayerActionsM,
+                                                                          modifyNarration)
+import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
+import           Location                                                (getPlayerLocationM)
+import           Model.GameState                                         (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
+                                                                          ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
+                                                                          Config (_actionMaps),
+                                                                          DirectionalStimulusActionF (DirectionalStimulusActionF),
+                                                                          GameComputation,
+                                                                          ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
+                                                                          ImplicitStimulusActionMap,
+                                                                          Location (_locationActionManagement, _objectSemanticMap, _title),
+                                                                          PlayerActions (_implicitStimulusActions),
+                                                                          updateActionConsequence)
+import           Model.GID                                               (GID)
+import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus))
+import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
+                                                                          ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                                          NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
+import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey))
+import           Relude.String.Conversion                                (ToText (toText))
 
 agentCanSee :: ImplicitStimulusActionF
-agentCanSee = ImplicitStimulusActionF $ (\loc -> do
+agentCanSee = ImplicitStimulusActionF (\loc -> do
    modifyNarration $ updateActionConsequence ("You see: " <> toText (_title loc)))
 
 agentCannotSee :: Text -> ImplicitStimulusActionF
@@ -37,13 +39,13 @@ agentCannotSee nosee = ImplicitStimulusActionF $ (\_ -> do
   modifyNarration $ updateActionConsequence nosee)
 
 lookAt :: DirectionalStimulusNounPhrase -> DirectionalStimulusActionF
-lookAt (DirectionalStimulusNounPhrase np) =
+lookAt dsnp@(DirectionalStimulusNounPhrase np) =
   let dsn' = case np of
               SimpleNounPhrase dsn             -> dsn
               NounPhrase _ dsn                 -> dsn
               DescriptiveNounPhrase  _ dsn     -> dsn
               DescriptiveNounPhraseDet _ _ dsn -> dsn
-  in DirectionalStimulusActionF (lookAt' dsn')
+  in DirectionalStimulusActionF  (const (lookAt' dsn'))
  where
    lookAt' :: DirectionalStimulus -> Location -> GameComputation Identity ()
    lookAt' ds loc =
@@ -51,7 +53,18 @@ lookAt (DirectionalStimulusNounPhrase np) =
      in case Data.Map.Strict.lookup nounKey (_objectSemanticMap loc) of
        Nothing -> do
          modifyNarration $ updateActionConsequence "That's not here. Try something else."
-       Just objGID -> pure ()
+       Just objGID -> do
+         dsActionMap <- _directionalStimulusActionManagement <$> getActionManagementM objGID
+         case Data.Map.Strict.lookup look dsActionMap of
+           Nothing -> do
+             modifyNarration $ updateActionConsequence "Programmer made a thing you can't look at"
+           Just dsaGID -> do
+             dsActionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
+             case Data.Map.Strict.lookup dsaGID dsActionMap' of
+               Nothing -> do
+                 modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
+               Just (DirectionalStimulusActionF actionFunc) -> do
+                 actionFunc dsnp loc
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
@@ -66,10 +79,10 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
             Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
             Just (ImplicitStimulusActionF actionFunc) -> actionFunc loc
 
-dsvActionEnabled :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> DirectionalStimulusActionF
-dsvActionEnabled dsv dsp = DirectionalStimulusActionF actionEnabled
+dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
+dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
   where
-    actionEnabled loc = do
+    actionEnabled dsnp loc = do
       let actionMap = _directionalStimulusActionManagement $ _locationActionManagement loc
       case Data.Map.Strict.lookup dsv actionMap of
         Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
@@ -77,7 +90,7 @@ dsvActionEnabled dsv dsp = DirectionalStimulusActionF actionEnabled
           actionMap' :: Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF <- asks (_directionalStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
-            Just (DirectionalStimulusActionF actionFunc) -> pure () -- actionFunc loc dsp
+            Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp loc
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do

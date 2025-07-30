@@ -1,5 +1,6 @@
 module GameState ( clearNarration
                  , getObjectM
+                 , getActionManagementM
                  , getPlayerM
                  , getPlayerActionsM
                  , getPlayerLocationM
@@ -9,7 +10,8 @@ import           Control.Monad.State        (gets, modify')
 import qualified Data.Map.Strict
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (Config (_actionMaps),
+import           Model.GameState            (ActionManagement,
+                                             Config (_actionMaps),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
                                              ImplicitStimulusActionF, Location,
@@ -37,6 +39,10 @@ getObjectM :: GID Object -> GameComputation Identity Object
 getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
+
+getActionManagementM :: GID Object -> GameComputation Identity ActionManagement
+getActionManagementM oid = _objectActionManagement <$> getObjectM oid
+
 
 getPlayerLocationM :: GameComputation Identity Location
 getPlayerLocationM = do
