@@ -6,15 +6,18 @@ import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker)
 import           Model.Parser.Atomics.Verbs        (DirectionalStimulusVerb,
                                                     EdibleConsumptionVerb,
-                                                    ImplicitStimulusVerb)
+                                                    ImplicitStimulusVerb,
+                                                    SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (DirectionalStimulusNounPhrase,
-                                                    EdibleNounPhrase)
+                                                    EdibleNounPhrase,
+                                                    SomaticStimulusNounPhrase)
 import           Relude.String.Conversion          (ToText (toText))
 
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
   | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNounPhrase
+  | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 type ConsumptionVerbPhrase :: Type

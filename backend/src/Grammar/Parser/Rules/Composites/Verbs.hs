@@ -9,22 +9,27 @@ import           Grammar.Parser.Partitions.Adjectives                    (adject
 import           Grammar.Parser.Partitions.Misc                          (determiners)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
 import           Grammar.Parser.Partitions.Nouns.Edibles                 (edibles)
+import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs  (edibleConsumptionVerbs)
+import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
 import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule)
 import           Grammar.Parser.Rules.Atomics.Utils                      (parseRule)
 import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule)
 import           Grammar.Parser.Rules.Composites.Nouns                   (directionalStimulusNounPhraseRules,
-                                                                          edibleNounPhraseRules)
+                                                                          edibleNounPhraseRules,
+                                                                          somaticStimulusNounPhraseRules)
 import           Model.Parser.Atomics.Adjectives                         (Adjective (Adjective))
 import           Model.Parser.Atomics.Misc                               (Determiner (Determiner))
 import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus),
-                                                                          Edible (Edible))
+                                                                          Edible (Edible),
+                                                                          SomaticStimulus (SomaticStimulus))
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb (DirectionalStimulusVerb),
-                                                                          EdibleConsumptionVerb (EdibleConsumptionVerb))
+                                                                          EdibleConsumptionVerb (EdibleConsumptionVerb),
+                                                                          SomaticAccessVerb (SomaticAccessVerb))
 import           Model.Parser.Composites.Verbs                           (ConsumptionVerbPhrase (EdibleVerbPhrase),
                                                                           Imperative (ConsumptionVerbPhrase, StimulusVerbPhrase),
-                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb))
+                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
                                                                           rule)
@@ -35,14 +40,20 @@ stimulusVerbPhraseRules = do
   directionalStimulusMarker <- directionalStimulusMarkerRule
   directionalStimulusVerb <- parseRule directionalStimulusVerbs DirectionalStimulusVerb
   directionalStimulusNoun <- parseRule directionalStimulii DirectionalStimulus
+  somaticAccessVerb <- parseRule somaticAccessVerbs SomaticAccessVerb
+  somaticStimulus <- parseRule somaticStimulii SomaticStimulus
   determiner <- parseRule determiners Determiner
   adj <- parseRule adjectives Adjective
   directionalStimulusNounPhrase <- directionalStimulusNounPhraseRules determiner adj directionalStimulusNoun
+  somaticStimulusNounPhrase <- somaticStimulusNounPhraseRules determiner adj somaticStimulus
   rule $ ImplicitStimulusVerb <$> implicitStimulusVerb
            <|> DirectStimulusVerbPhrase
              <$> directionalStimulusVerb
              <*> directionalStimulusMarker
              <*> directionalStimulusNounPhrase
+           <|> SomaticStimulusVerbPhrase
+             <$> somaticAccessVerb
+             <*> somaticStimulusNounPhrase
 
 consumptionVerbPhraseRules :: Grammar r (Prod r Text Lexeme ConsumptionVerbPhrase)
 consumptionVerbPhraseRules = do

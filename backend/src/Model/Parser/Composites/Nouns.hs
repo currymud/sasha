@@ -5,7 +5,8 @@ import           Data.Text                       (Text, unwords)
 import           GHC.Generics                    (Generic)
 import           Model.Parser.Atomics.Adjectives (Adjective)
 import           Model.Parser.Atomics.Misc       (Determiner)
-import           Model.Parser.Atomics.Nouns      (DirectionalStimulus, Edible)
+import           Model.Parser.Atomics.Nouns      (DirectionalStimulus, Edible,
+                                                  SomaticStimulus)
 import           Model.Parser.Lexer              (Lexeme)
 import           Prelude                         hiding (unwords)
 import           Relude.String.Conversion        (ToText (toText))
@@ -18,6 +19,11 @@ newtype DirectionalStimulusNounPhrase = DirectionalStimulusNounPhrase (NounPhras
 
 type EdibleNounPhrase :: Type
 newtype EdibleNounPhrase = EdibleNounPhrase (NounPhrase Edible)
+  deriving stock (Show, Eq, Ord,Generic)
+  deriving newtype (ToText)
+
+type SomaticStimulusNounPhrase :: Type
+newtype SomaticStimulusNounPhrase = SomaticStimulusNounPhrase (NounPhrase SomaticStimulus)
   deriving stock (Show, Eq, Ord,Generic)
   deriving newtype (ToText)
 

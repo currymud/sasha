@@ -3,11 +3,13 @@ import           Control.Applicative             (Alternative ((<|>)))
 import           Data.Text                       (Text)
 import           Model.Parser.Atomics.Adjectives (Adjective)
 import           Model.Parser.Atomics.Misc       (Determiner)
-import           Model.Parser.Atomics.Nouns      (DirectionalStimulus, Edible)
+import           Model.Parser.Atomics.Nouns      (DirectionalStimulus, Edible,
+                                                  SomaticStimulus)
 import           Model.Parser.Composites.Nouns   (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                   EdibleNounPhrase (EdibleNounPhrase),
                                                   NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                  NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule))
+                                                  NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
+                                                  SomaticStimulusNounPhrase (SomaticStimulusNounPhrase))
 import           Model.Parser.Lexer              (Lexeme)
 import           Text.Earley                     (Grammar)
 import           Text.Earley.Grammar             (Prod, rule)
@@ -51,4 +53,19 @@ edibleNounPhraseRules determinerRule adjRule directionalStimulusRule =
           { _determinerRule = determinerRule
           , _adjRule = adjRule
           , _nounRule = directionalStimulusRule
+          }
+
+somaticStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
+                                       -> Prod r Text Lexeme Adjective
+                                       -> Prod r Text Lexeme SomaticStimulus
+                                       -> Grammar r (Prod r Text Lexeme SomaticStimulusNounPhrase)
+somaticStimulusNounPhraseRules determinerRule adjRule somaticStimulusRule =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ SomaticStimulusNounPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = determinerRule
+          , _adjRule = adjRule
+          , _nounRule = somaticStimulusRule
           }
