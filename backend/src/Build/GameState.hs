@@ -2,12 +2,12 @@ module Build.GameState where
 import           Build.Identifiers.Actions                               (directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
-                                                                          isaEnabledLookGID)
+                                                                          isaEnabledLookGID,
+                                                                          somaticAccessActionMap)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
--- import           Build.Identifiers.SentenceProcessing (playerProcessImplicitVerbMap,
---                                                       processImplicitVerbMaps)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
+                                                                          empty,
                                                                           fromList)
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
@@ -23,10 +23,12 @@ import           Model.GameState                                         (Action
                                                                           Player (Player, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
                                                                           PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
-                                                                          SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
+                                                                          SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap),
+                                                                          SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb)
+                                                                          ImplicitStimulusVerb,
+                                                                          SomaticAccessVerb)
 
 initNarration :: Narration
 initNarration = Narration
@@ -51,12 +53,12 @@ config = Config
   }
   where
     actionMaps :: ActionMaps
-    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap
+    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap somaticAccessActionMap
 
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _playerActions = PlayerActions isaMap dsaMap
+  , _playerActions = PlayerActions isaMap dsaMap saMap
   , _perceptables = Perceptables mempty
   }
   where
@@ -66,3 +68,5 @@ player = Player
     isaMap :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)]
     isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
+    saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
+    saMap = Data.Map.Strict.empty

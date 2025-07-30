@@ -5,29 +5,20 @@ module GameState ( clearNarration
                  , getPlayerActionsM
                  , getPlayerLocationM
                  , modifyNarration) where
-import           Control.Monad.Reader       (MonadReader (ask), asks)
-import           Control.Monad.State        (gets, modify')
+import           Control.Monad.Identity (Identity)
+import           Control.Monad.State    (gets, modify')
 import qualified Data.Map.Strict
-import           Data.Text                  (Text, pack)
-import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionManagement,
-                                             Config (_actionMaps),
-                                             GameComputation,
-                                             GameState (_narration, _player, _world),
-                                             ImplicitStimulusActionF, Location,
-                                             Narration (Narration),
-                                             Object (_objectActionManagement),
-                                             Player (_location, _playerActions),
-                                             PlayerActions,
-                                             PlayerSentenceProcessingMaps (_playerProcessImplicitVerbMap),
-                                             ProcessImplicitStimulusVerb,
-                                             ProcessImplicitVerbMap,
-                                             SentenceProcessingMaps (_processImplicitVerbMap),
-                                             World (_locationMap, _objectMap))
-import           Model.GID                  (GID)
-import           Model.Mappings             (_getGIDToDataMap)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Relude                     (Identity, ToText (toText))
+import           Data.Text              (pack)
+import           Error                  (throwMaybeM)
+import           Model.GameState        (ActionManagement, GameComputation,
+                                         GameState (_narration, _player, _world),
+                                         Location, Narration (Narration),
+                                         Object (_objectActionManagement),
+                                         Player (_location, _playerActions),
+                                         PlayerActions,
+                                         World (_locationMap, _objectMap))
+import           Model.GID              (GID)
+import           Model.Mappings         (_getGIDToDataMap)
 
 getPlayerActionsM :: GameComputation Identity  PlayerActions
 getPlayerActionsM =  _playerActions <$> getPlayerM
@@ -42,7 +33,6 @@ getObjectM oid = do
 
 getActionManagementM :: GID Object -> GameComputation Identity ActionManagement
 getActionManagementM oid = _objectActionManagement <$> getObjectM oid
-
 
 getPlayerLocationM :: GameComputation Identity Location
 getPlayerLocationM = do

@@ -23,12 +23,14 @@ module Model.GameState (
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _location, _perceptables, _playerActions)
-  , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions)
+  , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
   , ProcessImplicitVerbMaps
+  , SomaticAccessActionF (SomaticAccessActionF, _somaticAccessAction)
+  , SomaticStimulusActionMap
   , SpatialRelationship (ContainedIn, Contains, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
   , World (World, _objectMap, _locationMap)
@@ -51,9 +53,11 @@ import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
-                                                ImplicitStimulusVerb)
+                                                ImplicitStimulusVerb,
+                                                SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
-                                                NounPhrase)
+                                                NounPhrase,
+                                                SomaticStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey, VerbKey)
 
 -- Game Transformers
@@ -105,6 +109,7 @@ type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
+  , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   }
 
 type ImplicitStimulusActionMap :: Type
@@ -121,6 +126,12 @@ type DirectionalStimulusActionF :: Type
 newtype DirectionalStimulusActionF = DirectionalStimulusActionF
   { _directionalStimulusAction :: DirectionalStimulusNounPhrase -> Location -> GID Object -> GameComputation Identity () }
 
+type SomaticStimulusActionMap :: Type
+type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
+
+type SomaticAccessActionF :: Type
+newtype SomaticAccessActionF = SomaticAccessActionF
+  { _somaticAccessAction :: SomaticStimulusNounPhrase -> GameComputation Identity () }
 -- Sentence Processing Maps
 
 type SentenceProcessingMaps :: Type
@@ -186,6 +197,7 @@ type ActionManagement :: Type
 data ActionManagement = ActionManagement
   { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+  , _somaticStimulusActionManagement :: Map SomaticAccessVerb (GID SomaticAccessActionF)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -207,7 +219,9 @@ type PlayerActions :: Type
 data PlayerActions = PlayerActions
  { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
  , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+ , _somaticStimulusActions :: Map SomaticAccessVerb (GID SomaticAccessActionF)
  }
+  deriving stock (Show, Eq, Ord)
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap

@@ -9,8 +9,8 @@ import           Model.GameState        (DirectionalStimulusActionF (Directional
 whatTable :: DirectionalStimulusActionF
 whatTable = DirectionalStimulusActionF (const (const (const whatTable')))
   where
-    whatTable' ::GameComputation Identity ()
-    whatTable'  = modifyNarration $ updateActionConsequence msg
+    whatTable' :: GameComputation Identity ()
+    whatTable' = modifyNarration $ updateActionConsequence msg
 
     msg :: Text
     msg = "It would be alot easier to see the table if you would open your eyes. Literally."

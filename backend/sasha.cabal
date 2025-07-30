@@ -52,6 +52,7 @@ library
   exposed-modules:
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Look
+      Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Objects.Pill
       Build.BedPuzzle.Actions.Objects.Pill.Look
       Build.BedPuzzle.Actions.Objects.Table

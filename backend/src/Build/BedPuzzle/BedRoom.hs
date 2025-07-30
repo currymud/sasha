@@ -15,10 +15,12 @@ import           Model.GameState                                              (A
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                                Location (Location, _locationActionManagement, _objectSemanticMap, _title),
-                                                                               Object)
+                                                                               Object,
+                                                                               SomaticAccessActionF)
 import           Model.GID                                                    (GID)
 import           Model.Parser.Atomics.Verbs                                   (DirectionalStimulusVerb,
-                                                                               ImplicitStimulusVerb)
+                                                                               ImplicitStimulusVerb,
+                                                                               SomaticAccessVerb)
 import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
@@ -34,12 +36,14 @@ objectSemanticMap :: Map NounKey (GID Object)
 objectSemanticMap = Data.Map.Strict.fromList [(DirectionalStimulusKey pill,pillObjGID), (DirectionalStimulusKey table, tableObjGID)]
 
 actionMap :: ActionManagement
-actionMap = ActionManagement directionalStimulus implicitStimulus
+actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs
  where
    implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
    implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, agentCanSeeGID)]
    directionalStimulus :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
    directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
+   somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
+   somaticAccessVerbs = Data.Map.Strict.empty
 
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look

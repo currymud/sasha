@@ -14,7 +14,8 @@ import           Model.GameState            (DirectionalStimulusActionF,
                                              Object,
                                              PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
-                                             ProcessImplicitVerbMaps)
+                                             ProcessImplicitVerbMaps,
+                                             SomaticAccessActionF)
 import           Model.GID                  (GID (GID))
 import           Model.Label                (Label (Label))
 import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
@@ -70,6 +71,9 @@ makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusA
 
 makeDirectionalStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeDirectionalStimulusActionGIDsAndMap = makeGIDsAndMapForType ''DirectionalStimulusActionF "directionalStimulusActionMap"
+
+makeSomaticAccessActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeSomaticAccessActionGIDsAndMap = makeGIDsAndMapForType ''SomaticAccessActionF "somaticAccessActionMap"
 
 makeGIDsAndMapForType :: Name -> String -> [ExpQ] -> Q [Dec]
 makeGIDsAndMapForType typeName mapName expQs = do

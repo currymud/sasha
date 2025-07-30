@@ -10,8 +10,11 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Look               (seePil
                                                                           whatPill)
 import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTable,
                                                                           whatTable)
+import           Build.BedPuzzle.Actions.Open                            (openEyes,
+                                                                          openEyesDenied)
 import           Build.Templates.Identification                          (makeDirectionalStimulusActionGIDsAndMap,
-                                                                          makeImplicitStimulusActionGIDsAndMap)
+                                                                          makeImplicitStimulusActionGIDsAndMap,
+                                                                          makeSomaticAccessActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import           Model.GameState                                         (DirectionalStimulusActionF,
@@ -31,3 +34,5 @@ makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| i
 
 -- directionalStimulusActionMap
 makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |], [| whatTable |], [| seeTable |] ]
+
+makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]  ]

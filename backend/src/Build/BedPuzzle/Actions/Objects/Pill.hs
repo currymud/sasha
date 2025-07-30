@@ -10,10 +10,12 @@ import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName))
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
+                                                                          SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb)
+                                                                          ImplicitStimulusVerb,
+                                                                          SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
 
@@ -30,12 +32,13 @@ pillObj =
        }
   where
     verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs
+    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
     directionalStimulusVerbs = Data.Map.Strict.fromList [(look, whatPillGID :: GID DirectionalStimulusActionF)]
-
+    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
+    somaticAccessVerbs = Data.Map.Strict.empty
   {-
 When faced with the possibility Location and Object had different verb case management functions,
 I'm opting to keep it the same to manage clarification
