@@ -120,7 +120,7 @@ type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimu
 
 type ImplicitStimulusActionF :: Type
 newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: GameComputation Identity () }
+  { _implicitStimulusAction :: Location -> GameComputation Identity () }
 
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF

@@ -34,24 +34,25 @@ import           Model.Parser.GCase            (VerbKey (ImplicitStimulusKey))
 import           Relude.String.Conversion      (ToText (toText))
 
 agentCanSee :: ImplicitStimulusActionF
-agentCanSee = ImplicitStimulusActionF $
-   modifyNarration $ updateActionConsequence ("You see: " )
+agentCanSee = ImplicitStimulusActionF $ (\loc -> do
+   modifyNarration $ updateActionConsequence ("You see: " <> toText (_title loc)))
 
 agentCannotSee :: Text -> ImplicitStimulusActionF
-agentCannotSee nosee = ImplicitStimulusActionF $
-  modifyNarration $ updateActionConsequence nosee
+agentCannotSee nosee = ImplicitStimulusActionF $ (\_ -> do
+  modifyNarration $ updateActionConsequence nosee)
 
 actionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
-actionEnabled isv = ImplicitStimulusActionF $ do
-  loc <- getPlayerLocationM
-  let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
-  case Data.Map.Strict.lookup isv actionMap of
-    Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-    Just (actionGID :: GID ImplicitStimulusActionF) -> do
-      actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap' of
+actionEnabled isv = ImplicitStimulusActionF actionEnabled'
+  where
+    actionEnabled' loc = do
+      let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
+      case Data.Map.Strict.lookup isv actionMap of
         Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-        Just (ImplicitStimulusActionF actionFunc) -> actionFunc
+        Just (actionGID :: GID ImplicitStimulusActionF) -> do
+          actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
+          case Data.Map.Strict.lookup actionGID actionMap' of
+            Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+            Just (ImplicitStimulusActionF actionFunc) -> actionFunc loc
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
@@ -62,8 +63,9 @@ manageImplicitStimulusProcess isv = do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No implicit stimulus action found for GID: "
-        Just (ImplicitStimulusActionF actionFunc) -> actionFunc
-      pure ()
+        Just (ImplicitStimulusActionF actionFunc) -> do
+          location <- getPlayerLocationM
+          actionFunc location
 
 manageDirectionalStimulusProcess :: ProcessDirectionalStimulusVerb
 manageDirectionalStimulusProcess = ProcessDirectionalStimulusVerb go

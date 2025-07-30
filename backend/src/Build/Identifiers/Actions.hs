@@ -9,9 +9,14 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Look            (seePill,
 import           Build.Templates.Identification                       (makeDirectionalStimulusActionGIDsAndMap,
                                                                        makeImplicitStimulusActionGIDsAndMap)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
+import           Model.GameState                                      (ImplicitStimulusActionF)
+
+
+enabledLook :: ImplicitStimulusActionF
+enabledLook = actionEnabled look
 -- implicitStimulusActionMap
 
-makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| actionEnabled look |]]
+makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| enabledLook |]]
 
 -- directionalStimulusActionMap
 makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |]]
