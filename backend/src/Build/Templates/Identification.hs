@@ -66,10 +66,10 @@ makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 -- Updated for new action system
 
 makeImplicitStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusVerb "implicitStimulusActionMap"
+makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusActionF "implicitStimulusActionMap"
 
 makeDirectionalStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeDirectionalStimulusActionGIDsAndMap = makeGIDsAndMapForType ''DirectionalStimulusVerb "directionalStimulusActionMap"
+makeDirectionalStimulusActionGIDsAndMap = makeGIDsAndMapForType ''DirectionalStimulusActionF "directionalStimulusActionMap"
 
 makeGIDsAndMapForType :: Name -> String -> [ExpQ] -> Q [Dec]
 makeGIDsAndMapForType typeName mapName expQs = do

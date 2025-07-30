@@ -34,7 +34,7 @@ pillObj =
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs = Data.Map.Strict.fromList [(look, whatPillGID)]
+    directionalStimulusVerbs = Data.Map.Strict.fromList [(look, whatPillGID :: GID DirectionalStimulusActionF)]
 
   {-
 When faced with the possibility Location and Object had different verb case management functions,
