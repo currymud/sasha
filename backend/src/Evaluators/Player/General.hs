@@ -21,4 +21,4 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
 
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
-evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = pure ()
+evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = manageDirectionalStimulusProcess dsv dsp

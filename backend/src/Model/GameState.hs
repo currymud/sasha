@@ -127,7 +127,7 @@ type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) Directi
 
 type DirectionalStimulusActionF :: Type
 newtype DirectionalStimulusActionF = DirectionalStimulusActionF
-  { _directionalStimulusAction :: GameComputation Identity () }
+  { _directionalStimulusAction :: Location -> GameComputation Identity () }
 
 -- Sentence Processing Maps
 
@@ -218,7 +218,9 @@ data Player = Player
 
 type PlayerActions :: Type
 data PlayerActions = PlayerActions
- { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF) }
+ { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+ , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+ }
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap
