@@ -1,5 +1,6 @@
 module Build.GameState where
 import           Build.Identifiers.Actions                               (directionalStimulusActionMap,
+                                                                          dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
@@ -60,7 +61,7 @@ player = Player
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    dsaMap = mempty
+    dsaMap = Data.Map.Strict.fromList [(dsaLook, dsvEnabledLookGID)]
     dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
     isaMap :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)]

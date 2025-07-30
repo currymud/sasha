@@ -23,7 +23,7 @@ module Model.GameState (
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _location, _perceptables, _playerActions)
-  , PlayerActions (PlayerActions, _implicitStimulusActions)
+  , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)

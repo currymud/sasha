@@ -19,7 +19,7 @@ import           Model.GameState                                         (Action
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
-                                                                          PlayerActions (_implicitStimulusActions),
+                                                                          PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus))
@@ -106,5 +106,14 @@ manageImplicitStimulusProcess isv = do
           actionFunc location
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
-manageDirectionalStimulusProcess dsv dsp = do
-    pure ()
+manageDirectionalStimulusProcess dsv dsnp = do
+  availableActions <- _directionalStimulusActions <$> getPlayerActionsM
+  case Data.Map.Strict.lookup dsv availableActions of
+    Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
+    Just (actionGID :: GID DirectionalStimulusActionF) -> do
+      actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error $ "Programmer Error: No directional stimulus action found for GID: "
+        Just (DirectionalStimulusActionF actionFunc) -> do
+          location <- getPlayerLocationM
+          actionFunc dsnp location
