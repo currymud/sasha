@@ -1,11 +1,13 @@
 module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
                                                                                lookAtGID)
-import           Build.Identifiers.Objects                                    (pillObjGID)
+import           Build.Identifiers.Objects                                    (pillObjGID,
+                                                                               tableObjGID)
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
                                                                                fromList)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (pill)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (pill,
+                                                                               table)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
@@ -29,7 +31,7 @@ bedroomInBed = Location
   }
 
 objectSemanticMap :: Map NounKey (GID Object)
-objectSemanticMap = Data.Map.Strict.fromList [(DirectionalStimulusKey pill,pillObjGID)]
+objectSemanticMap = Data.Map.Strict.fromList [(DirectionalStimulusKey pill,pillObjGID), (DirectionalStimulusKey table, tableObjGID)]
 
 actionMap :: ActionManagement
 actionMap = ActionManagement directionalStimulus implicitStimulus

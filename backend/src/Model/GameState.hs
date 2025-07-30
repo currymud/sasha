@@ -101,14 +101,6 @@ newtype DisplayT m a = DisplayT { runDisplayT :: GameStateT m a }
 instance MonadTrans DisplayT where
   lift = DisplayT . lift
 
-  {-
--- Computation builders
-type ActionF :: Type
-data ActionF
-  = ImplicitStimulusAction (Location -> GameComputation Identity ())
-  | DirectionalStimulusAction (GameComputation Identity ())
--}
-
 type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
@@ -140,14 +132,9 @@ data SentenceProcessingMaps = SentenceProcessingMaps
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 
-type ProcessDirectionalVerbMap :: Type
-type ProcessDirectionalVerbMap = Map (GID ProcessDirectionalStimulusVerb) ProcessDirectionalStimulusVerb
-
 type ProcessImplicitVerbMaps :: Type
 type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
 
-type ProcessDirectionalStimulusVerbMaps :: Type
-type ProcessDirectionalStimulusVerbMaps = Map DirectionalStimulusVerb ProcessDirectionalVerbMap
 
 type PlayerProcessImplicitVerbMap :: Type
 type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)

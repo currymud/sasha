@@ -8,6 +8,8 @@ import           Actions.Percieve.Look                                   (agentC
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (seePill,
                                                                           whatPill)
+import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTable,
+                                                                          whatTable)
 import           Build.Templates.Identification                          (makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
@@ -28,4 +30,4 @@ dsvEnabledLook =
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
 
 -- directionalStimulusActionMap
-makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |]]
+makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |], [| whatTable |], [| seeTable |] ]

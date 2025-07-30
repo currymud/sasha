@@ -1,5 +1,6 @@
 module Build.BedPuzzle.Actions.Objects.Table where
-import           Build.Identifiers.Actions                               (whatPillGID)
+import           Build.Identifiers.Actions                               (whatPillGID,
+                                                                          whatTableGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -36,7 +37,7 @@ tableObj =
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.empty -- Data.Map.Strict.fromList [(look, whatPillGID :: GID DirectionalStimulusActionF)]
+    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatTableGID :: GID DirectionalStimulusActionF)]
 
   {-
 When faced with the possibility Location and Object had different verb case management functions,

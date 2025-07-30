@@ -21,4 +21,4 @@ seeTable = DirectionalStimulusActionF (const (const (const seeTable')))
     seeTable' :: GameComputation Identity ()
     seeTable' = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "Your salvation in pill form! Cure your headache and get out of bed!"
+    msg = "You see a table. It is a table. It is not a very interesting table, but it is a table nonetheless."
