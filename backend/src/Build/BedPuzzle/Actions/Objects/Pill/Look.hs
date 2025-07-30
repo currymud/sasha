@@ -7,7 +7,7 @@ import           Model.GameState        (DirectionalStimulusActionF (Directional
                                          Location, updateActionConsequence)
 
 whatPill :: DirectionalStimulusActionF
-whatPill = DirectionalStimulusActionF (const (const whatPill'))
+whatPill = DirectionalStimulusActionF (const (const (const whatPill')))
   where
     whatPill' ::GameComputation Identity ()
     whatPill'  = modifyNarration $ updateActionConsequence msg
@@ -16,7 +16,7 @@ whatPill = DirectionalStimulusActionF (const (const whatPill'))
     msg = "You don't see a pill here, but you have a hazy memory of having one in your bathrobe pocket"
 
 seePill :: DirectionalStimulusActionF
-seePill = DirectionalStimulusActionF (const (const seePill'))
+seePill = DirectionalStimulusActionF (const (const (const seePill')))
   where
     seePill' :: GameComputation Identity ()
     seePill' = modifyNarration $ updateActionConsequence msg

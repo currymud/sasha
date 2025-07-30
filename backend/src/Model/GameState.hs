@@ -127,7 +127,7 @@ type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) Directi
 
 type DirectionalStimulusActionF :: Type
 newtype DirectionalStimulusActionF = DirectionalStimulusActionF
-  { _directionalStimulusAction :: DirectionalStimulusNounPhrase -> Location -> GameComputation Identity () }
+  { _directionalStimulusAction :: DirectionalStimulusNounPhrase -> Location -> GID Object -> GameComputation Identity () }
 
 -- Sentence Processing Maps
 

@@ -7,7 +7,7 @@ import           Model.GameState        (DirectionalStimulusActionF (Directional
                                          Location, updateActionConsequence)
 
 whatTable :: DirectionalStimulusActionF
-whatTable = DirectionalStimulusActionF (const (const whatTable'))
+whatTable = DirectionalStimulusActionF (const (const (const whatTable')))
   where
     whatTable' ::GameComputation Identity ()
     whatTable'  = modifyNarration $ updateActionConsequence msg
@@ -16,7 +16,7 @@ whatTable = DirectionalStimulusActionF (const (const whatTable'))
     msg = "It would be alot easier to see the table if you would open your eyes. Literally."
 
 seeTable :: DirectionalStimulusActionF
-seeTable = DirectionalStimulusActionF (const (const seeTable'))
+seeTable = DirectionalStimulusActionF (const (const (const seeTable')))
   where
     seeTable' :: GameComputation Identity ()
     seeTable' = modifyNarration $ updateActionConsequence msg
