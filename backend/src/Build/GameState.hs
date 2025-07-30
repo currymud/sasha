@@ -12,7 +12,7 @@ import           Model.GameState             (ActionMaps (ActionMaps),
                                               GameState (GameState, _evaluation, _narration, _player, _world),
                                               Narration (..),
                                               Perceptables (Perceptables),
-                                              Player (Player, _location, _perceptables),
+                                              Player (Player, _location, _perceptables, _playerActions),
                                               PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
                                               SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 
@@ -50,7 +50,7 @@ sentenceProcessingMaps = SentenceProcessingMaps
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _sentenceManagement = PlayerSentenceProcessingMaps playerProcessImplicitVerbMap
+  , _playerActions = mempty
   , _perceptables = Perceptables mempty
   }
 
