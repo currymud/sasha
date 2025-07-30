@@ -1,10 +1,12 @@
 module Build.BedPuzzle.BedRoom where
-import           Build.Identifiers.Actions                                    (agentCanSeeGID)
+import           Build.Identifiers.Actions                                    (agentCanSeeGID,
+                                                                               lookAtGID)
 import           Build.Identifiers.Objects                                    (pillObjGID)
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
                                                                                fromList)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (pill)
+import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
 import           Model.GameState                                              (ActionManagement (ActionManagement),
@@ -35,8 +37,10 @@ actionMap = ActionManagement directionalStimulus implicitStimulus
    implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
    implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, agentCanSeeGID)]
    directionalStimulus :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-   directionalStimulus = Data.Map.Strict.empty
+   directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
 
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 
+directionalStimulusLook :: DirectionalStimulusVerb
+directionalStimulusLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look

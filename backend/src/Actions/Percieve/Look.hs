@@ -38,6 +38,35 @@ agentCannotSee :: Text -> ImplicitStimulusActionF
 agentCannotSee nosee = ImplicitStimulusActionF $ (\_ -> do
   modifyNarration $ updateActionConsequence nosee)
 
+lookAt :: DirectionalStimulusActionF
+lookAt = DirectionalStimulusActionF $ lookAt'
+  where
+    lookAt' :: DirectionalStimulusNounPhrase -> Location -> GameComputation Identity ()
+    lookAt' dsnp@(DirectionalStimulusNounPhrase np) loc = do
+      case Data.Map.Strict.lookup nounKey (_objectSemanticMap loc) of
+        Nothing -> do
+          modifyNarration $ updateActionConsequence "That's not here. Try something else."
+        Just objGID -> do
+          dsActionMap <- _directionalStimulusActionManagement <$> getActionManagementM objGID
+          case Data.Map.Strict.lookup look dsActionMap of
+            Nothing -> do
+              modifyNarration $ updateActionConsequence "Programmer made a thing you can't look at"
+            Just dsaGID -> do
+              dsActionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
+              case Data.Map.Strict.lookup dsaGID dsActionMap' of
+                Nothing -> do
+                  modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
+                Just (DirectionalStimulusActionF actionFunc) -> do
+                  actionFunc dsnp loc
+
+      where
+      nounKey = DirectionalStimulusKey dsn'
+      dsn' = case np of
+               SimpleNounPhrase dsn             -> dsn
+               NounPhrase _ dsn                 -> dsn
+               DescriptiveNounPhrase  _ dsn     -> dsn
+               DescriptiveNounPhraseDet _ _ dsn -> dsn
+                 {-
 lookAt :: DirectionalStimulusNounPhrase -> DirectionalStimulusActionF
 lookAt dsnp@(DirectionalStimulusNounPhrase np) =
   let dsn' = case np of
@@ -65,7 +94,7 @@ lookAt dsnp@(DirectionalStimulusNounPhrase np) =
                  modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
                Just (DirectionalStimulusActionF actionFunc) -> do
                  actionFunc dsnp loc
-
+-}
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
   where

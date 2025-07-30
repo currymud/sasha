@@ -3,7 +3,8 @@
 module Build.Identifiers.Actions where
 import           Actions.Percieve.Look                                   (agentCanSee,
                                                                           dsvActionEnabled,
-                                                                          isvActionEnabled)
+                                                                          isvActionEnabled,
+                                                                          lookAt)
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (seePill,
                                                                           whatPill)
@@ -27,4 +28,4 @@ dsvEnabledLook =
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
 
 -- directionalStimulusActionMap
-makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|]]
+makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |]]
