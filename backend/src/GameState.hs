@@ -9,7 +9,7 @@ import           Control.Monad.State        (gets, modify')
 import qualified Data.Map.Strict
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (Config (_actionMaps, _sentenceProcessingMaps),
+import           Model.GameState            (Config (_actionMaps),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
                                              ImplicitStimulusActionF, Location,

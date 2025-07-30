@@ -3,7 +3,7 @@
 module Model.GameState (
   ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
   , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap)
-  , Config (Config, _actionMaps, _sentenceProcessingMaps)
+  , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
@@ -177,7 +177,7 @@ type Evaluator
 type Config :: Type
 data Config = Config
   { _actionMaps             :: ActionMaps
-  , _sentenceProcessingMaps :: SentenceProcessingMaps
+--  , _sentenceProcessingMaps :: SentenceProcessingMaps
   }
 
 type GameState :: Type

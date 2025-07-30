@@ -8,11 +8,12 @@ import           Build.World                 (world)
 import           Data.Text                   (Text)
 import           Evaluators.Player.General   (eval)
 import           Model.GameState             (ActionMaps (ActionMaps),
-                                              Config (Config, _actionMaps, _sentenceProcessingMaps),
+                                              Config (Config, _actionMaps),
                                               GameState (GameState, _evaluation, _narration, _player, _world),
                                               Narration (..),
                                               Perceptables (Perceptables),
                                               Player (Player, _location, _perceptables, _playerActions),
+                                              PlayerActions (PlayerActions),
                                               PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
                                               SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap))
 
@@ -24,7 +25,7 @@ initNarration = Narration
 
 initialAction :: Text
 initialAction = "Finally! Let's see how look works"
-  {-
+
 gameState :: GameState
 gameState = GameState
   { _world = world
@@ -36,24 +37,23 @@ gameState = GameState
 config :: Config
 config = Config
   { _actionMaps = actionMaps
-  , _sentenceProcessingMaps = sentenceProcessingMaps
   }
   where
     actionMaps :: ActionMaps
     actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap
-
+      {-
 sentenceProcessingMaps :: SentenceProcessingMaps
 sentenceProcessingMaps = SentenceProcessingMaps
   { _processImplicitVerbMap = processImplicitVerbMaps
   }
-
+-}
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _playerActions = mempty
+  , _playerActions = PlayerActions implicitStimulusActionMap
   , _perceptables = Perceptables mempty
   }
-
+    {-
 sentenceManagement :: SentenceProcessingMaps
 sentenceManagement = SentenceProcessingMaps
   { _processImplicitVerbMap = processImplicitVerbMaps }

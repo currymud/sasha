@@ -11,7 +11,7 @@ import           GHC.RTS.Flags                 (ProfFlags (doHeapProfile))
 import           Location                      (getPlayerLocationM)
 import           Model.GameState               (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
                                                 ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
-                                                Config (_actionMaps, _sentenceProcessingMaps),
+                                                Config (_actionMaps),
                                                 GameComputation,
                                                 ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
                                                 ImplicitStimulusActionMap,
