@@ -131,7 +131,7 @@ type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActi
 
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: SomaticStimulusNounPhrase -> GameComputation Identity () }
+  { _somaticAccessAction :: GID ImplicitStimulusActionF -> GameComputation Identity () }
 -- Sentence Processing Maps
 
 type SentenceProcessingMaps :: Type

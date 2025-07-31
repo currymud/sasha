@@ -8,6 +8,7 @@ import           GameState                     (getPlayerActionsM)
 import           Model.GameState               (ActionMaps (_somaticStimulusActionMap),
                                                 Config (_actionMaps),
                                                 GameComputation,
+                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                 PlayerActions (_somaticStimulusActions),
                                                 SomaticAccessActionF (SomaticAccessActionF))
 import           Model.GID                     (GID)
@@ -17,8 +18,8 @@ import           Model.Parser.Composites.Nouns (SomaticStimulusNounPhrase)
 savActionEnabled :: SomaticAccessVerb -> SomaticAccessActionF
 savActionEnabled sav = SomaticAccessActionF actionEnabled
   where
-    actionEnabled :: SomaticStimulusNounPhrase -> GameComputation Identity ()
-    actionEnabled snp = do
+    actionEnabled :: GID ImplicitStimulusActionF -> GameComputation Identity ()
+    actionEnabled aid = do
       somaticActionMap <- _somaticStimulusActions <$> getPlayerActionsM
       case Data.Map.Strict.lookup sav somaticActionMap of
         Nothing -> error "Programmer Error: No somatic access action found for verb: "
@@ -26,10 +27,10 @@ savActionEnabled sav = SomaticAccessActionF actionEnabled
           actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap of
             Nothing -> error $ "Programmer Error: No somatic access action found for GID: "
-            Just (SomaticAccessActionF actionFunc) -> actionFunc snp
+            Just (SomaticAccessActionF actionFunc) -> actionFunc aid
 
-manageSomaticAccessProcess :: SomaticAccessVerb -> SomaticStimulusNounPhrase -> GameComputation Identity ()
-manageSomaticAccessProcess sav snp = do
+manageSomaticAccessProcess :: SomaticAccessVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
+manageSomaticAccessProcess sav aid = do
   availableActions <- _somaticStimulusActions <$> getPlayerActionsM
   case Data.Map.Strict.lookup sav availableActions of
     Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
@@ -37,4 +38,4 @@ manageSomaticAccessProcess sav snp = do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No directional stimulus action found for GID: "
-        Just (SomaticAccessActionF actionFunc) -> actionFunc snp
+        Just (SomaticAccessActionF actionFunc) -> actionFunc aid

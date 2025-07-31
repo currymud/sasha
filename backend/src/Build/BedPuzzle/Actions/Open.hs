@@ -1,5 +1,4 @@
 module Build.BedPuzzle.Actions.Open where
-import           Build.Identifiers.Actions                            (agentCanSeeGID)
 import           Control.Monad.Identity                               (Identity)
 import qualified Data.Map.Strict
 import           Data.Text                                            (Text)
@@ -10,7 +9,7 @@ import           GameState                                            (changeImp
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
 import           Model.GameState                                      (ActionManagement (_implicitStimulusActionManagement),
                                                                        GameComputation,
-                                                                       ImplicitStimulusActionF,
+                                                                       ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                        Location (_locationActionManagement),
                                                                        SomaticAccessActionF (SomaticAccessActionF),
                                                                        updateActionConsequence)
@@ -26,9 +25,9 @@ openEyesDenied = SomaticAccessActionF (const denied)
     msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
-openEyes = SomaticAccessActionF (const opened)
+openEyes = SomaticAccessActionF opened
   where
-    opened :: GameComputation Identity ()
-    opened = changeImplicit look agentCanSeeGID >> modifyNarration (updateActionConsequence msg)
+    opened :: GID ImplicitStimulusActionF ->  GameComputation Identity ()
+    opened aid = changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
     msg :: Text
     msg = "You open your eyes, and the world comes into focus."
