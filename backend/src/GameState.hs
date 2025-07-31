@@ -1,10 +1,11 @@
-module GameState ( clearNarration
+module GameState ( changeImplicit, clearNarration
                  , getObjectM
                  , getActionManagementM
                  , getLocationActionMapsM
                  , getPlayerM
                  , getPlayerActionsM
                  , getPlayerLocationM
+                 , getPlayerLocationGID
                  , modifyLocationMapM
                  , modifyLocationActionMapsM
                  , modifyLocationM
@@ -26,8 +27,10 @@ import qualified Data.Map.Strict
 import           Data.Set                   (Set)
 import           Data.Text                  (pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionManagement, GameComputation,
+import           Model.GameState            (ActionManagement (_implicitStimulusActionManagement),
+                                             GameComputation,
                                              GameState (_narration, _player, _world),
+                                             ImplicitStimulusActionF,
                                              Location (_locationActionManagement),
                                              Narration (Narration),
                                              Object (_objectActionManagement),
@@ -39,7 +42,23 @@ import           Model.GameState            (ActionManagement, GameComputation,
 import           Model.GID                  (GID)
 import           Model.Mappings             (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Nouns (DirectionalStimulus)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (NounKey)
+
+
+changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
+changeImplicit verb newActionGID = do
+  playerLocationGID <- getPlayerLocationGID
+  modifyLocationM playerLocationGID $ \loc ->
+    let actionMgmt = _locationActionManagement loc
+        implicitMap = _implicitStimulusActionManagement actionMgmt
+        updatedImplicitMap = Data.Map.Strict.insert verb newActionGID implicitMap
+        updatedActionMgmt = actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
+    in loc { _locationActionManagement = updatedActionMgmt }
+-- There is some cruft forming
+getPlayerLocationGID :: GameComputation Identity (GID Location)
+getPlayerLocationGID =
+  _location <$> getPlayerM
 
 getPlayerActionsM :: GameComputation Identity  PlayerActions
 getPlayerActionsM =  _playerActions <$> getPlayerM
