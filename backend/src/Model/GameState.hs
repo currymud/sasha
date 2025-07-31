@@ -33,7 +33,7 @@ module Model.GameState (
   , SomaticStimulusActionMap
   , SpatialRelationship (ContainedIn, Contains, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
-  , World (World, _objectMap, _locationMap)
+  , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
   , updateActionConsequence
   , updatePlayerAction) where

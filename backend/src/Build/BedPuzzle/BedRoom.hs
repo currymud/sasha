@@ -1,6 +1,7 @@
 module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
-                                                                               lookAtGID)
+                                                                               lookAtGID,
+                                                                               pitchBlackFGID)
 import           Build.Identifiers.Objects                                    (pillObjGID,
                                                                                tableObjGID)
 import           Data.Map.Strict                                              (Map,
@@ -39,7 +40,7 @@ actionMap :: ActionManagement
 actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs
  where
    implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-   implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, agentCanSeeGID)]
+   implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, pitchBlackFGID)]
    directionalStimulus :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
    directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
