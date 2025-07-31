@@ -16,15 +16,18 @@ import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
-import           Model.GameState                                         (ActionMaps (ActionMaps),
+import           Model.GameState                                         (ActionEffect,
+                                                                          ActionEffectKey,
+                                                                          ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           DirectionalStimulusActionF,
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _location, _perceptables, _playerActions),
+                                                                          Player (Player, _location, _perceptables, _playerActions, _playerEffects),
                                                                           PlayerActions (PlayerActions),
+                                                                          PlayerEffects (PlayerEffects),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -61,6 +64,7 @@ player = Player
   { _location = bedroomInBedGID
   , _playerActions = PlayerActions isaMap dsaMap saMap
   , _perceptables = Perceptables mempty
+  , _playerEffects = PlayerEffects isEffects dsEffects saEffects
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -72,3 +76,9 @@ player = Player
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
+    isEffects :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
+    isEffects = mempty
+    dsEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
+    dsEffects = mempty
+    saEffects :: Map SomaticAccessVerb (Map ActionEffectKey ActionEffect)
+    saEffects = fromList [(saOpen, empty)]

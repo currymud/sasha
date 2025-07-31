@@ -15,7 +15,8 @@ import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (l
 import           Model.GameState                                              (ActionManagement (ActionManagement),
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                                                               Location (Location, _locationActionManagement, _objectSemanticMap, _title),
+                                                                               Location (Location, _locationActionManagement, _locationEffects, _objectSemanticMap, _title),
+                                                                               LocationEffects (LocationEffects),
                                                                                Object,
                                                                                SomaticAccessActionF)
 import           Model.GID                                                    (GID)
@@ -31,6 +32,7 @@ bedroomInBed = Location
   { _title = "Bedroom in Bed"
   , _objectSemanticMap = objectSemanticMap
   , _locationActionManagement = actionMap
+  , _locationEffects = locationEffects
   }
 
 objectSemanticMap :: Map NounKey (GID Object)
@@ -46,6 +48,8 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
 
+locationEffects :: LocationEffects
+locationEffects = LocationEffects mempty mempty mempty
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 

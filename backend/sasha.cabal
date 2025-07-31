@@ -59,8 +59,6 @@ library
       Build.BedPuzzle.Actions.Objects.Table
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.BedRoom
-      Build.BedPuzzle.Objects
-      Build.BedPuzzle.Player
       Build.GameState
       Build.Identifiers.Actions
       Build.Identifiers.Locations

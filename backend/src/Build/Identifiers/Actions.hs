@@ -7,7 +7,8 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           isvActionEnabled,
                                                                           lookAt)
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
-import           Build.BedPuzzle.Actions.Objects.Pill.Look               (seePill,
+import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
+                                                                          seePill,
                                                                           whatPill)
 import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTable,
                                                                           whatTable)
@@ -40,6 +41,6 @@ somaticAccessOpenEyes =
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
 
 -- directionalStimulusActionMap
-makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |], [| whatTable |], [| seeTable |] ]
+makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| notEvenPill|] , [| whatPill |], [| dsvEnabledLook|], [| lookAt |], [| whatTable |], [| seeTable |] ]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|], [| somaticAccessOpenEyes |]]

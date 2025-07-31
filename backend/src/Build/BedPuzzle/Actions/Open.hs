@@ -17,7 +17,7 @@ import           Model.GID                                            (GID)
 import           Model.Parser.Atomics.Verbs                           (ImplicitStimulusVerb)
 
 openEyesDenied :: SomaticAccessActionF
-openEyesDenied = SomaticAccessActionF (const denied)
+openEyesDenied = SomaticAccessActionF (const (const (const denied)))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -25,9 +25,9 @@ openEyesDenied = SomaticAccessActionF (const denied)
     msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
-openEyes = SomaticAccessActionF opened
+openEyes = SomaticAccessActionF (const (const (const opened)))
   where
-    opened :: GID ImplicitStimulusActionF ->  GameComputation Identity ()
-    opened aid = changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
+    opened :: GameComputation Identity ()
+    opened = pure () -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
     msg :: Text
     msg = "You open your eyes, and the world comes into focus."

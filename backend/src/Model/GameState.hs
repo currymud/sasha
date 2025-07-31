@@ -1,7 +1,9 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
+  ActionEffect (ImplicitStimulusActionEffect, DirectionalStimulusActionEffect, SomaticAccessActionEffect)
+  , ActionEffectKey (ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
+  , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
   , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
@@ -14,16 +16,18 @@ module Model.GameState (
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
   , ImplicitStimulusActionMap
-  , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
+  , Location (Location, _title, _objectSemanticMap, _locationActionManagement, _locationEffects)
+  , LocationEffects (LocationEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
   , Narration (Narration, _playerAction, _actionConsequence)
-  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
-  , PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps, _playerProcessImplicitVerbMap)
-  , SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap)
+  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement, _objectEffects)
+  , ObjectEffects (ObjectEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
+  , ObjectEffectsMap
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _location, _perceptables, _playerActions)
+  , Player (Player, _location, _perceptables, _playerActions, _playerEffects)
   , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
+  , PlayerEffects (PlayerEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
@@ -55,10 +59,8 @@ import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
-                                                NounPhrase,
-                                                SomaticStimulusNounPhrase)
-import           Model.Parser.GCase            (NounKey, VerbKey)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.GCase            (NounKey)
 
 -- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -129,16 +131,13 @@ newtype DirectionalStimulusActionF = DirectionalStimulusActionF
 type SomaticStimulusActionMap :: Type
 type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
 
+type ObjectEffectsMap :: Type
+type ObjectEffectsMap = Map (GID Object) ObjectEffects
+
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: GID ImplicitStimulusActionF -> GameComputation Identity () }
+  { _somaticAccessAction :: PlayerEffects -> LocationEffects -> ObjectEffectsMap -> GameComputation Identity () }
 -- Sentence Processing Maps
-
-type SentenceProcessingMaps :: Type
-data SentenceProcessingMaps = SentenceProcessingMaps
-  { _processImplicitVerbMap    :: ProcessImplicitVerbMaps
---  , _processDirectionalVerbMap :: ProcessDirectionalStimulusVerbMaps
-  }
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
@@ -161,20 +160,51 @@ newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
                                           -> GameComputation Identity ()
   }
 
-type PlayerSentenceProcessingMaps :: Type
-data PlayerSentenceProcessingMaps = PlayerSentenceProcessingMaps
-  { _playerProcessImplicitVerbMap    :: PlayerProcessImplicitVerbMap
-  }
-
 type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameComputation Identity ())
 
 -- Game Objects
+type ActionEffectKey :: Type
+data ActionEffectKey
+  = ImplicitStimulusActionKey ImplicitStimulusVerb
+  | DirectionalStimulusActionKey DirectionalStimulusVerb
+  | SomaticAccessActionKey SomaticAccessVerb
+  deriving stock (Show, Eq, Ord)
 
+type ActionEffect :: Type
+data ActionEffect
+  = ImplicitStimulusActionEffect (GID ImplicitStimulusActionF)
+  | DirectionalStimulusActionEffect (GID DirectionalStimulusActionF)
+  | SomaticAccessActionEffect (GID SomaticAccessActionF)
+
+-- what location-related verbs get changed when
+type LocationEffects :: Type
+data LocationEffects = LocationEffects
+  { _implicitStimulusEffects    :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _directionalStimulusEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _somaticAccessEffects :: Map SomaticAccessVerb  (Map ActionEffectKey ActionEffect)
+  }
+
+-- what object-related verbs get changed when
+type ObjectEffects :: Type
+data ObjectEffects = ObjectEffects
+  { _implicitStimulusEffects :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _directionalStimulusEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _somaticAccessEffects :: Map SomaticAccessVerb (Map ActionEffectKey ActionEffect)
+  }
+
+-- what player-related verbs get changed when
+type PlayerEffects :: Type
+data PlayerEffects = PlayerEffects
+  { _implicitStimulusEffects :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _directionalStimulusEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
+  , _somaticAccessEffects :: Map SomaticAccessVerb (Map ActionEffectKey ActionEffect)
+  }
 type Config :: Type
 data Config = Config
   { _actionMaps             :: ActionMaps
+
 --  , _sentenceProcessingMaps :: SentenceProcessingMaps
   }
 
@@ -191,6 +221,7 @@ data Location = Location {
     _title                    :: Text
   , _objectSemanticMap        :: Map NounKey (GID Object)
   , _locationActionManagement :: ActionManagement
+  , _locationEffects          :: LocationEffects
 }
 
 type ActionManagement :: Type
@@ -213,6 +244,7 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
   , _perceptables  :: Perceptables
+  , _playerEffects :: PlayerEffects
   }
 
 type PlayerActions :: Type
@@ -264,6 +296,7 @@ data Object = Object
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
  , _objectActionManagement :: ActionManagement
+ , _objectEffects          :: ObjectEffects
  }
 
 -- | Lift GameStateM to GameComputation

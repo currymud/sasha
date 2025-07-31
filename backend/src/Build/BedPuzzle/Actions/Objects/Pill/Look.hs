@@ -15,6 +15,14 @@ whatPill = DirectionalStimulusActionF (const (const (const whatPill')))
     msg :: Text
     msg = "You don't see a pill here, but you have a hazy memory of having one in your bathrobe pocket"
 
+notEvenPill :: DirectionalStimulusActionF
+notEvenPill = DirectionalStimulusActionF (const (const (const notEvenPill')))
+  where
+    notEvenPill' :: GameComputation Identity ()
+    notEvenPill' = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "It's a slow start to the day, your eyes aren't even open yet, let alone seeing a pill."
+
 seePill :: DirectionalStimulusActionF
 seePill = DirectionalStimulusActionF (const (const (const seePill')))
   where
