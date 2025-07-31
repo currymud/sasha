@@ -3,6 +3,7 @@ import           Build.Identifiers.Actions                               (direct
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
+                                                                          openEyesGID,
                                                                           somaticAccessActionMap,
                                                                           somaticAccessOpenEyesGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
@@ -70,4 +71,4 @@ player = Player
     isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    saMap = Data.Map.Strict.fromList [(saOpen, somaticAccessOpenEyesGID)]
+    saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
