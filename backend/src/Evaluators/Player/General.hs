@@ -4,7 +4,10 @@ import           Actions.Percieve.Look                 (manageDirectionalStimulu
                                                         manageImplicitStimulusProcess)
 import           Build.Identifiers.Actions             (agentCanSeeGID)
 import           Control.Monad.Identity                (Identity)
-import           Model.GameState                       (GameComputation)
+import           Model.GameState                       (GameComputation,
+                                                        LocationEffects (LocationEffects),
+                                                        ObjectEffects (ObjectEffects),
+                                                        PlayerEffects (PlayerEffects))
 import           Model.Parser                          (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs         (Imperative (StimulusVerbPhrase),
                                                         StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
@@ -19,4 +22,8 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
 evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = manageDirectionalStimulusProcess dsv dsp
-evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav snp) = manageSomaticAccessProcess
+evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav snp) = manageSomaticAccessProcess sav plph leph oeph
+
+plph = PlayerEffects mempty mempty mempty
+leph = LocationEffects mempty mempty mempty
+oeph = mempty

@@ -12,3 +12,14 @@ newtype GID a = GID {unGID :: Int}
 instance ToText (GID a) where
   toText :: GID a -> Text
   toText = pack . show
+
+type role ActionId phantom
+type ActionId :: Type -> Type
+newtype ActionId a = ActionId {unActionId :: GID a}
+  deriving newtype (Show, Ord, Eq)
+
+actionIdToGID :: ActionId a -> GID a
+actionIdToGID (ActionId gid) = gid
+
+gidToActionId :: GID a -> ActionId a
+gidToActionId = ActionId

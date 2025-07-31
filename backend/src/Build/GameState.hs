@@ -4,8 +4,7 @@ import           Build.Identifiers.Actions                               (direct
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
-                                                                          somaticAccessActionMap,
-                                                                          somaticAccessOpenEyesGID)
+                                                                          somaticAccessActionMap)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,

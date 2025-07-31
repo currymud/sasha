@@ -52,7 +52,7 @@ import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
-import           Model.GID                     (GID)
+import           Model.GID                     (ActionId, GID)
 import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
@@ -167,9 +167,9 @@ type Evaluator
 -- Game Objects
 type ActionEffectKey :: Type
 data ActionEffectKey
-  = ImplicitStimulusActionKey ImplicitStimulusVerb
-  | DirectionalStimulusActionKey DirectionalStimulusVerb
-  | SomaticAccessActionKey SomaticAccessVerb
+  = ImplicitStimulusActionKey (ActionId ImplicitStimulusActionF)
+  | DirectionalStimulusActionKey (ActionId DirectionalStimulusActionF)
+  | SomaticAccessActionKey (ActionId SomaticAccessActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type
