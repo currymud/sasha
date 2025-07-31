@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
-module Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess,savActionEnabled ) where
+module Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess,savActionEnabled) where
 
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)

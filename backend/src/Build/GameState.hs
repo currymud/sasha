@@ -3,7 +3,8 @@ import           Build.Identifiers.Actions                               (direct
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
-                                                                          somaticAccessActionMap)
+                                                                          somaticAccessActionMap,
+                                                                          somaticAccessOpenEyesGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
@@ -13,6 +14,7 @@ import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
+import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           DirectionalStimulusActionF,
@@ -22,8 +24,6 @@ import           Model.GameState                                         (Action
                                                                           Perceptables (Perceptables),
                                                                           Player (Player, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
-                                                                          PlayerSentenceProcessingMaps (PlayerSentenceProcessingMaps),
-                                                                          SentenceProcessingMaps (SentenceProcessingMaps, _processImplicitVerbMap),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -68,5 +68,6 @@ player = Player
     isaMap :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)]
     isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
+    saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    saMap = Data.Map.Strict.empty
+    saMap = Data.Map.Strict.fromList [(saOpen, somaticAccessOpenEyesGID)]

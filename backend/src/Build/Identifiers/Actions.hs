@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-missing-exported-signatures #-}
 module Build.Identifiers.Actions where
+import           Actions.Manipulate.SomaticAccess.Open                   (savActionEnabled)
 import           Actions.Percieve.Look                                   (agentCanSee,
                                                                           dsvActionEnabled,
                                                                           isvActionEnabled,
@@ -17,8 +18,10 @@ import           Build.Templates.Identification                          (makeDi
                                                                           makeSomaticAccessActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
+import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (DirectionalStimulusActionF,
-                                                                          ImplicitStimulusActionF)
+                                                                          ImplicitStimulusActionF,
+                                                                          SomaticAccessActionF)
 
 
 isaEnabledLook :: ImplicitStimulusActionF
@@ -28,6 +31,10 @@ isaEnabledLook =
 dsvEnabledLook :: DirectionalStimulusActionF
 dsvEnabledLook =
   dsvActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
+
+somaticAccessOpenEyes :: SomaticAccessActionF
+somaticAccessOpenEyes =
+  savActionEnabled Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
 -- implicitStimulusActionMap
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
@@ -35,4 +42,4 @@ makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| i
 -- directionalStimulusActionMap
 makeDirectionalStimulusActionGIDsAndMap [[| seePill |], [| whatPill |], [| dsvEnabledLook|], [| lookAt |], [| whatTable |], [| seeTable |] ]
 
-makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]  ]
+makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|], [| somaticAccessOpenEyes |]]
