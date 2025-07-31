@@ -2,7 +2,7 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
   ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
-  , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap)
+  , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
