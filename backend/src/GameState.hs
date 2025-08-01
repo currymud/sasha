@@ -2,6 +2,7 @@ module GameState ( changeImplicit, clearNarration
                  , getObjectM
                  , getActionManagementM
                  , getLocationActionMapsM
+                 , getLocationM
                  , getPlayerM
                  , getPlayerActionsM
                  , getPlayerLocationM
@@ -59,6 +60,12 @@ changeImplicit verb newActionGID = do
 getPlayerLocationGID :: GameComputation Identity (GID Location)
 getPlayerLocationGID =
   _location <$> getPlayerM
+
+getLocationM :: GID Location -> GameComputation Identity Location
+getLocationM lid = do
+  locationMap <- gets (_getGIDToDataMap . _locationMap . _world)
+  throwMaybeM ("Location not found in location map" <> pack (show lid))
+    $ Data.Map.Strict.lookup lid locationMap
 
 getPlayerActionsM :: GameComputation Identity  PlayerActions
 getPlayerActionsM =  _playerActions <$> getPlayerM
