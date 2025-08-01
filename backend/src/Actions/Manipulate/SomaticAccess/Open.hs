@@ -4,14 +4,16 @@ module Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess) where
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
+import qualified Data.Set
 import           GameState                  (getPlayerActionsM, getPlayerM)
-import           Model.GameState            (ActionEffectMap (ActionEffectMap),
+import           Model.GameState            (ActionEffectKey (LocationKey),
+                                             ActionEffectMap (ActionEffectMap),
                                              ActionKey (SomaticAccessActionKey),
                                              ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              GameComputation,
-                                             Player (_actionKeyMap),
+                                             Player (_actionKeyMap, _location),
                                              PlayerActions (_somaticStimulusActions),
                                              SomaticAccessActionF (SomaticAccessActionF))
 import           Model.GID                  (GID)
@@ -31,7 +33,9 @@ manageSomaticAccessProcess sav = do
           actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
           case Data.Map.Strict.lookup actionKey actionKeyMap of
             Nothing -> error $ "Programmer Error: No action key found for GID: "
-            Just actionEffectMap -> actionFunc actionEffectMap
+            Just actionEffectMap -> do
+              lid <- _location <$> getPlayerM
+              actionFunc (Data.Set.singleton (LocationKey lid)) actionEffectMap
           where
             actionKey :: ActionKey
             actionKey = SomaticAccessActionKey actionGID

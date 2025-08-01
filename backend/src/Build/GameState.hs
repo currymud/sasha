@@ -11,6 +11,7 @@ import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
                                                                           empty,
                                                                           fromList)
+import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
@@ -93,16 +94,12 @@ openEyesKey  = SomaticAccessActionKey openEyesGID
 openEyesEffectMap :: ActionEffectMap
 openEyesEffectMap = ActionEffectMap
   $ fromList
-      [ (bedroomOpenEyesKey, bedroomOpenEyesEffect)
+      [ (bedroomOpenEyesKey, Data.Set.singleton openEyesEffect)
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
 bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
-bedroomOpenEyesEffect :: ActionEffect
-bedroomOpenEyesEffect = SomaticAccessActionEffect
-  $ fromList
-     [(openEyesGID, openEyesEffect)]
 
 openEyesEffect :: Effect
 openEyesEffect = ImplicitStimulusEffect look agentCanSeeGID

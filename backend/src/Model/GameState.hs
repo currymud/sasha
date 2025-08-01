@@ -133,7 +133,7 @@ type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActi
 
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: ActionEffectMap -> GameComputation Identity () }
+  { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
 -- Sentence Processing Maps
 
 type ProcessImplicitVerbMap :: Type
@@ -191,7 +191,7 @@ data ActionEffect
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
-  { _actionEffectMap :: Map ActionEffectKey ActionEffect}
+  { _actionEffectMap :: Map ActionEffectKey (Set Effect)}
   deriving stock (Show, Eq, Ord)
 
 type ActionKeyMap :: Type
