@@ -3,7 +3,8 @@
 module Model.GameState (
   ActionEffect (ImplicitStimulusActionEffect, DirectionalStimulusActionEffect, SomaticAccessActionEffect)
   , ActionEffectKey (ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
-                       , ActionKeyMap (ActionKeyMap, _actionKeyMap)
+  , ActionEffectMap (ActionEffectMap, _actionEffectMap)
+  , ActionKeyMap (ActionKeyMap, _actionKeyMap)
   , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
   , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
   , Config (Config, _actionMaps)
@@ -137,7 +138,7 @@ type ObjectEffectsMap = Map (GID Object) ObjectEffects
 
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: PlayerEffects -> LocationEffects -> ObjectEffectsMap -> GameComputation Identity () }
+  { _somaticAccessAction :: ActionEffectMap -> GameComputation Identity () }
 -- Sentence Processing Maps
 
 type ProcessImplicitVerbMap :: Type
@@ -207,7 +208,7 @@ data ActionEffect'
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
-  { _actionEffectMap :: Map ActionEffectKey ActionEffect' }
+  { _actionEffectMap :: Map ActionEffectKey ActionEffect'}
   deriving stock (Show, Eq, Ord)
 
 type ActionKeyMap :: Type

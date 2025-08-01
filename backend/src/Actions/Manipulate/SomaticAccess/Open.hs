@@ -5,22 +5,18 @@ import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
 import           GameState                  (getPlayerActionsM)
-import           Model.GameState            (ActionMaps (_somaticStimulusActionMap),
+import           Model.GameState            (ActionEffectMap (ActionEffectMap),
+                                             ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
-                                             GameComputation, LocationEffects,
-                                             ObjectEffectsMap,
+                                             GameComputation,
                                              PlayerActions (_somaticStimulusActions),
-                                             PlayerEffects,
                                              SomaticAccessActionF (SomaticAccessActionF))
 import           Model.GID                  (GID)
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 
 manageSomaticAccessProcess :: SomaticAccessVerb
-                                -> PlayerEffects
-                                -> LocationEffects
-                                -> ObjectEffectsMap
                                 -> GameComputation Identity ()
-manageSomaticAccessProcess sav playerEffects locationEffects objEffectsMap = do
+manageSomaticAccessProcess sav = do
   availableActions <- _somaticStimulusActions <$> getPlayerActionsM
   case Data.Map.Strict.lookup sav availableActions of
     Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
@@ -28,4 +24,4 @@ manageSomaticAccessProcess sav playerEffects locationEffects objEffectsMap = do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No directional stimulus action found for GID: "
-        Just (SomaticAccessActionF actionFunc) -> actionFunc playerEffects locationEffects objEffectsMap
+        Just (SomaticAccessActionF actionFunc) -> actionFunc (ActionEffectMap mempty)

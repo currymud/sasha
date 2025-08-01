@@ -22,8 +22,4 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
 evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = manageDirectionalStimulusProcess dsv dsp
-evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav snp) = manageSomaticAccessProcess sav plph leph oeph
-
-plph = PlayerEffects mempty mempty mempty
-leph = LocationEffects mempty mempty mempty
-oeph = mempty
+evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessProcess sav

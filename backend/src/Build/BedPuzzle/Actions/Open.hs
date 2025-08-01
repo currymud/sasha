@@ -23,7 +23,7 @@ I need maps of GIDs to actions, to tell me how to handle
 effects of opening eyes
      -}
 openEyesDenied :: SomaticAccessActionF
-openEyesDenied = SomaticAccessActionF (const (const (const denied)))
+openEyesDenied = SomaticAccessActionF (const denied)
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -31,7 +31,7 @@ openEyesDenied = SomaticAccessActionF (const (const (const denied)))
     msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
-openEyes = SomaticAccessActionF (const (const (const opened)))
+openEyes = SomaticAccessActionF (const opened)
   where
     opened :: GameComputation Identity ()
     opened = pure () -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
