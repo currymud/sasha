@@ -14,7 +14,6 @@ import           Model.GameState                                         (Action
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
                                                                           Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
-                                                                          ObjectEffects (ObjectEffects),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,

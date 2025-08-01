@@ -1,5 +1,6 @@
 module Build.GameState where
-import           Build.Identifiers.Actions                               (directionalStimulusActionMap,
+import           Build.Identifiers.Actions                               (agentCanSeeGID,
+                                                                          directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
@@ -13,20 +14,24 @@ import           Data.Map.Strict                                         (Map,
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
-import           Model.GameState                                         (ActionEffect,
-                                                                          ActionEffectKey,
+import           Model.GameState                                         (ActionEffect (ImplicitStimulusActionEffect, SomaticAccessActionEffect),
+                                                                          ActionEffectKey (LocationKey),
+                                                                          ActionEffectMap (ActionEffectMap),
+                                                                          ActionKey (SomaticAccessActionKey),
+                                                                          ActionKeyMap (ActionKeyMap),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           DirectionalStimulusActionF,
+                                                                          Effect (ImplicitStimulusEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _location, _perceptables, _playerActions),
+                                                                          Player (Player, _actionKeyMap, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
-                                                                          PlayerEffects (PlayerEffects),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -63,6 +68,7 @@ player = Player
   { _location = bedroomInBedGID
   , _playerActions = PlayerActions isaMap dsaMap saMap
   , _perceptables = Perceptables mempty
+  , _actionKeyMap = actionKeyMap
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -74,3 +80,29 @@ player = Player
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
+
+actionKeyMap :: ActionKeyMap
+actionKeyMap = ActionKeyMap
+  $ fromList
+      [ (openEyesKey,openEyesEffectMap)
+      ]
+
+openEyesKey :: ActionKey
+openEyesKey  = SomaticAccessActionKey openEyesGID
+
+openEyesEffectMap :: ActionEffectMap
+openEyesEffectMap = ActionEffectMap
+  $ fromList
+      [ (bedroomOpenEyesKey, bedroomOpenEyesEffect)
+      ]
+
+bedroomOpenEyesKey :: ActionEffectKey
+bedroomOpenEyesKey = LocationKey bedroomInBedGID
+
+bedroomOpenEyesEffect :: ActionEffect
+bedroomOpenEyesEffect = SomaticAccessActionEffect
+  $ fromList
+     [(openEyesGID, openEyesEffect)]
+
+openEyesEffect :: Effect
+openEyesEffect = ImplicitStimulusEffect look agentCanSeeGID

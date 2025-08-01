@@ -16,7 +16,6 @@ import           Model.GameState                                              (A
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                                Location (Location, _locationActionManagement, _objectSemanticMap, _title),
-                                                                               LocationEffects (LocationEffects),
                                                                                Object,
                                                                                SomaticAccessActionF)
 import           Model.GID                                                    (GID)

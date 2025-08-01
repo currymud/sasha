@@ -8,7 +8,8 @@ import           GameState                                            (changeImp
                                                                        modifyLocationM,
                                                                        modifyNarration)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (look)
-import           Model.GameState                                      (ActionManagement (_implicitStimulusActionManagement),
+import           Model.GameState                                      (ActionEffectMap,
+                                                                       ActionManagement (_implicitStimulusActionManagement),
                                                                        GameComputation,
                                                                        ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                        Location (_locationActionManagement),
@@ -31,9 +32,9 @@ openEyesDenied = SomaticAccessActionF (const denied)
     msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
-openEyes = SomaticAccessActionF (const opened)
+openEyes = SomaticAccessActionF opened
   where
-    opened :: GameComputation Identity ()
-    opened = pure () -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
+    opened :: ActionEffectMap -> GameComputation Identity ()
+    opened _ = modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
     msg :: Text
     msg = "You open your eyes, and the world comes into focus."

@@ -4,11 +4,14 @@ module Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess) where
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
-import           GameState                  (getPlayerActionsM)
+import           GameState                  (getPlayerActionsM, getPlayerM)
 import           Model.GameState            (ActionEffectMap (ActionEffectMap),
+                                             ActionKey (SomaticAccessActionKey),
+                                             ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              GameComputation,
+                                             Player (_actionKeyMap),
                                              PlayerActions (_somaticStimulusActions),
                                              SomaticAccessActionF (SomaticAccessActionF))
 import           Model.GID                  (GID)
@@ -24,4 +27,11 @@ manageSomaticAccessProcess sav = do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No directional stimulus action found for GID: "
-        Just (SomaticAccessActionF actionFunc) -> actionFunc (ActionEffectMap mempty)
+        Just (SomaticAccessActionF actionFunc) -> do
+          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
+          case Data.Map.Strict.lookup actionKey actionKeyMap of
+            Nothing -> error $ "Programmer Error: No action key found for GID: "
+            Just actionEffectMap -> actionFunc actionEffectMap
+          where
+            actionKey :: ActionKey
+            actionKey = SomaticAccessActionKey actionGID

@@ -4,10 +4,7 @@ import           Actions.Percieve.Look                 (manageDirectionalStimulu
                                                         manageImplicitStimulusProcess)
 import           Build.Identifiers.Actions             (agentCanSeeGID)
 import           Control.Monad.Identity                (Identity)
-import           Model.GameState                       (GameComputation,
-                                                        LocationEffects (LocationEffects),
-                                                        ObjectEffects (ObjectEffects),
-                                                        PlayerEffects (PlayerEffects))
+import           Model.GameState                       (GameComputation)
 import           Model.Parser                          (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs         (Imperative (StimulusVerbPhrase),
                                                         StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
