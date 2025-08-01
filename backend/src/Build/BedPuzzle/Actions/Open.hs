@@ -4,12 +4,15 @@ import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
 import           Data.Set                  (Set, toList)
 import           Data.Text                 (Text)
-import           GameState                 (getLocationM, modifyNarration)
+import           GameState                 (getLocationM, modifyLocationM,
+                                            modifyNarration)
 import           Model.GameState           (ActionEffectKey (LocationKey),
                                             ActionEffectMap (ActionEffectMap),
                                             Effect (ImplicitStimulusEffect),
                                             GameComputation,
+                                            Location (_locationActionManagement),
                                             SomaticAccessActionF (SomaticAccessActionF),
+                                            _implicitStimulusActionManagement,
                                             updateActionConsequence)
 
 
@@ -40,7 +43,14 @@ openEyes = SomaticAccessActionF opened
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
-                                                                                      modifyNarration (updateActionConsequence msg)
+  -- Use the lid from the outer scope to modify the location's action management
+                modifyLocationM lid $ \loc ->
+                  let actionMgmt = _locationActionManagement loc
+                      implicitMap = _implicitStimulusActionManagement actionMgmt
+                      updatedImplicitMap = Data.Map.Strict.insert implicitStimulusVerb changeTo implicitMap
+                      updatedActionMgmt = actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
+                  in loc { _locationActionManagement = updatedActionMgmt }
+                modifyNarration (updateActionConsequence msg)
               handleEffect _ = throwError "UndefinedEffect"
         process _ = throwError "ActionEffectKey unimplemented"
 --          modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
