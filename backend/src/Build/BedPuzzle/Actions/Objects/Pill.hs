@@ -13,7 +13,7 @@ import           Model.GameState                                         (Action
                                                                           ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _objectEffects, _shortName),
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
                                                                           ObjectEffects (ObjectEffects),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
@@ -33,7 +33,6 @@ pillObj =
        , _description = "A small, round pill. Probably good for headaches."
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
-       , _objectEffects = ObjectEffects implicitStimulusEffects directionalStimulusEffects somaticAccessEffects
        }
   where
     verbMaps :: ActionManagement
@@ -44,12 +43,6 @@ pillObj =
     directionalStimulusVerbs = Data.Map.Strict.fromList [(look, notEvenPillGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty
-    implicitStimulusEffects :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
-    implicitStimulusEffects = mempty
-    directionalStimulusEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
-    directionalStimulusEffects = mempty
-    somaticAccessEffects :: Map SomaticAccessVerb (Map ActionEffectKey ActionEffect)
-    somaticAccessEffects = mempty
   {-
 When faced with the possibility Location and Object had different verb case management functions,
 I'm opting to keep it the same to manage clarification

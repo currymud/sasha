@@ -24,7 +24,7 @@ import           Model.GameState                                         (Action
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _location, _perceptables, _playerActions, _playerEffects),
+                                                                          Player (Player, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
                                                                           PlayerEffects (PlayerEffects),
                                                                           SomaticAccessActionF)
@@ -63,7 +63,6 @@ player = Player
   { _location = bedroomInBedGID
   , _playerActions = PlayerActions isaMap dsaMap saMap
   , _perceptables = Perceptables mempty
-  , _playerEffects = PlayerEffects isEffects dsEffects saEffects
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -75,9 +74,3 @@ player = Player
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
-    isEffects :: Map ImplicitStimulusVerb (Map ActionEffectKey ActionEffect)
-    isEffects = mempty
-    dsEffects :: Map DirectionalStimulusVerb (Map ActionEffectKey ActionEffect)
-    dsEffects = mempty
-    saEffects :: Map SomaticAccessVerb (Map ActionEffectKey ActionEffect)
-    saEffects = fromList [(saOpen, empty)]

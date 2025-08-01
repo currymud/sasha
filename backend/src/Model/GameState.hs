@@ -3,6 +3,7 @@
 module Model.GameState (
   ActionEffect (ImplicitStimulusActionEffect, DirectionalStimulusActionEffect, SomaticAccessActionEffect)
   , ActionEffectKey (ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
+                       , ActionKeyMap (ActionKeyMap, _actionKeyMap)
   , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
   , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
   , Config (Config, _actionMaps)
@@ -16,16 +17,16 @@ module Model.GameState (
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
   , ImplicitStimulusActionMap
-  , Location (Location, _title, _objectSemanticMap, _locationActionManagement, _locationEffects)
+  , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , LocationEffects (LocationEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
   , Narration (Narration, _playerAction, _actionConsequence)
-  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement, _objectEffects)
+  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
   , ObjectEffects (ObjectEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
   , ObjectEffectsMap
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _location, _perceptables, _playerActions, _playerEffects)
+  , Player (Player, _actionKeyMap,  _location, _perceptables, _playerActions)
   , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
   , PlayerEffects (PlayerEffects, _implicitStimulusEffects, _directionalStimulusEffects, _somaticAccessEffects)
   , PlayerProcessImplicitVerbMap
@@ -60,7 +61,7 @@ import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
-import           Model.Parser.GCase            (NounKey)
+import           Model.Parser.GCase            (NounKey, VerbKey)
 
 -- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -178,6 +179,41 @@ data ActionEffect
   | DirectionalStimulusActionEffect (GID DirectionalStimulusActionF)
   | SomaticAccessActionEffect (GID SomaticAccessActionF)
 
+type ActionEffectKey' :: Type
+data ActionEffectKey'
+  = LocationKey (GID Location)
+  | ObjectKey (GID Object)
+  | PlayerKey (GID Player)
+  deriving stock (Show, Eq, Ord)
+
+type ActionKey :: Type
+data ActionKey
+  = ImplicitStimulusActionKey' (GID ImplicitStimulusActionF)
+  | DirectionalStimulusActionKey' (GID DirectionalStimulusActionF)
+  | SomaticAccessActionKey' (GID SomaticAccessActionF)
+  deriving stock (Show, Eq, Ord)
+
+type Effect :: Type
+data Effect
+  = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+  | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
+  deriving stock (Show, Eq, Ord)
+
+type ActionEffect' :: Type
+data ActionEffect'
+  = SomaticAccessActionEffect' (Map (GID SomaticAccessActionF) (Map ActionEffectKey' Effect))
+  deriving stock (Show, Eq, Ord)
+
+type ActionEffectMap :: Type
+newtype ActionEffectMap = ActionEffectMap
+  { _actionEffectMap :: Map ActionEffectKey ActionEffect' }
+  deriving stock (Show, Eq, Ord)
+
+type ActionKeyMap :: Type
+newtype ActionKeyMap = ActionKeyMap
+  { _actionKeyMap :: Map ActionKey ActionEffectMap }
+  deriving stock (Show, Eq, Ord)
 -- what location-related verbs get changed when
 type LocationEffects :: Type
 data LocationEffects = LocationEffects
@@ -221,7 +257,7 @@ data Location = Location {
     _title                    :: Text
   , _objectSemanticMap        :: Map NounKey (GID Object)
   , _locationActionManagement :: ActionManagement
-  , _locationEffects          :: LocationEffects
+--  , _locationEffects          :: LocationEffects
 }
 
 type ActionManagement :: Type
@@ -244,7 +280,7 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
   , _perceptables  :: Perceptables
-  , _playerEffects :: PlayerEffects
+  , _actionKeyMap  :: ActionKeyMap
   }
 
 type PlayerActions :: Type
@@ -296,7 +332,7 @@ data Object = Object
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
  , _objectActionManagement :: ActionManagement
- , _objectEffects          :: ObjectEffects
+--  , _objectEffects          :: ObjectEffects
  }
 
 -- | Lift GameStateM to GameComputation

@@ -1,4 +1,5 @@
 module Build.BedPuzzle.Actions.Open where
+import           Control.Exception                                    (handle)
 import           Control.Monad.Identity                               (Identity)
 import qualified Data.Map.Strict
 import           Data.Text                                            (Text)
@@ -16,6 +17,11 @@ import           Model.GameState                                      (ActionMan
 import           Model.GID                                            (GID)
 import           Model.Parser.Atomics.Verbs                           (ImplicitStimulusVerb)
 
+
+  {-
+I need maps of GIDs to actions, to tell me how to handle
+effects of opening eyes
+     -}
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = SomaticAccessActionF (const (const (const denied)))
   where
