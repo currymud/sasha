@@ -5,7 +5,8 @@ import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           GameState                  (getPlayerActionsM, getPlayerM)
+import           GameState                  (getLocationObjectIDsM,
+                                             getPlayerActionsM, getPlayerM)
 import           Model.GameState            (ActionEffectKey (LocationKey),
                                              ActionEffectMap (ActionEffectMap),
                                              ActionKey (SomaticAccessActionKey),
@@ -35,7 +36,8 @@ manageSomaticAccessProcess sav = do
             Nothing -> error $ "Programmer Error: No action key found for GID: "
             Just actionEffectMap -> do
               lid <- _location <$> getPlayerM
-              actionFunc (Data.Set.singleton (LocationKey lid)) actionEffectMap
+              objectActionKeys <- getLocationObjectIDsM lid
+              actionFunc (Data.Set.insert (LocationKey lid) objectActionKeys) actionEffectMap
           where
             actionKey :: ActionKey
             actionKey = SomaticAccessActionKey actionGID

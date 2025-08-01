@@ -3,6 +3,7 @@ module GameState ( changeImplicit, clearNarration
                  , getActionManagementM
                  , getLocationActionMapsM
                  , getLocationM
+                 , getLocationObjectIDsM
                  , getPlayerM
                  , getPlayerActionsM
                  , getPlayerLocationM
@@ -23,12 +24,13 @@ module GameState ( changeImplicit, clearNarration
                  , modifyPerceptionMapM) where
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.State        (gets, modify')
-import           Data.Map.Strict            (Map)
+import           Data.Map.Strict            (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                   (Set)
+import           Data.Set                   (Set, empty, fromList)
 import           Data.Text                  (pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionManagement (_implicitStimulusActionManagement),
+import           Model.GameState            (ActionEffectKey (ObjectKey),
+                                             ActionManagement (_implicitStimulusActionManagement),
                                              GameComputation,
                                              GameState (_narration, _player, _world),
                                              ImplicitStimulusActionF,
@@ -46,6 +48,9 @@ import           Model.Parser.Atomics.Nouns (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (NounKey)
 
+getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEffectKey)
+getLocationObjectIDsM lid =
+  Data.Set.fromList . fmap ObjectKey . elems . _objectSemanticMap <$> getLocationM lid
 
 changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
 changeImplicit verb newActionGID = do
