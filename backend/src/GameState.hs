@@ -52,6 +52,9 @@ import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey)
 
+youSeeM :: Set (GID Object)
+        -> GameComputation Identity ()
+youSeeM objectIDs = do
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
