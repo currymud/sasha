@@ -15,8 +15,10 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
+                                            Object,
                                             SomaticAccessActionF (SomaticAccessActionF),
                                             updateActionConsequence)
+import           Model.GID                 (GID)
 
 
 openEyesDenied :: SomaticAccessActionF
@@ -35,7 +37,7 @@ openEyes = SomaticAccessActionF opened
       oids <- catMaybes <$> mapM process (Data.Set.toList actionEffectKeys)
       modifyNarration (updateActionConsequence msg)
       where
-        process :: ActionEffectKey -> GameComputation Identity (Maybe ActionEffectKey)
+        process :: ActionEffectKey -> GameComputation Identity (Maybe (GID Object))
         process actionEffectKey@(LocationKey lid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
@@ -53,7 +55,7 @@ openEyes = SomaticAccessActionF opened
         process actionEffectKey@(ObjectKey oid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
-            Just effects -> mapM_ handleEffect effects >> pure (Just actionEffectKey)
+            Just effects -> mapM_ handleEffect effects >> pure (Just oid)
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (DirectionalStimulusEffect directionalStimulusVerb changeTo) = do
