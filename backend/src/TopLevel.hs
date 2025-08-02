@@ -32,7 +32,7 @@ topLevel = runGame initComp
       attSentence <- trySentence <$> liftIO getInput
       case attSentence of
         Left err       -> runGame $ errorHandler err
-        Right sentence ->  runGame $ toGameComputation sentence
+        Right sentence ->  transformToIO $ toGameComputation sentence
 
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do

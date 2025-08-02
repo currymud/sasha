@@ -5,28 +5,31 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
+                                                                          seeChairGID,
+                                                                          seePillGID,
+                                                                          seeTableGID,
                                                                           somaticAccessActionMap)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
+import           Build.Identifiers.Objects                               (chairObjGID,
+                                                                          pillObjGID,
+                                                                          tableObjGID)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
-                                                                          empty,
                                                                           fromList)
 import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
-import           Model.GameState                                         (ActionEffect (ImplicitStimulusActionEffect, SomaticAccessActionEffect),
-                                                                          ActionEffectKey (LocationKey),
+import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           DirectionalStimulusActionF,
-                                                                          Effect (ImplicitStimulusEffect),
+                                                                          Effect (DirectionalStimulusEffect, ImplicitStimulusEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
@@ -95,6 +98,9 @@ openEyesEffectMap :: ActionEffectMap
 openEyesEffectMap = ActionEffectMap
   $ fromList
       [ (bedroomOpenEyesKey, Data.Set.singleton openEyesEffect)
+      , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
+      , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
+      , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
@@ -102,4 +108,17 @@ bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
 
 openEyesEffect :: Effect
-openEyesEffect = ImplicitStimulusEffect look agentCanSeeGID
+openEyesEffect = ImplicitStimulusEffect impLook agentCanSeeGID
+
+impLook :: ImplicitStimulusVerb
+impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
+
+dirLook :: DirectionalStimulusVerb
+dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
+
+pillEffect :: Effect
+pillEffect = DirectionalStimulusEffect dirLook seePillGID
+tableEffect :: Effect
+tableEffect = DirectionalStimulusEffect dirLook seeTableGID
+chairEffect :: Effect
+chairEffect = DirectionalStimulusEffect dirLook seeChairGID
