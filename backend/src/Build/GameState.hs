@@ -8,7 +8,8 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           seeChairGID,
                                                                           seePillGID,
                                                                           seeTableGID,
-                                                                          somaticAccessActionMap)
+                                                                          somaticAccessActionMap,
+                                                                          whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
                                                                           pillObjGID,
@@ -117,7 +118,7 @@ dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
 pillEffect :: Effect
-pillEffect = DirectionalStimulusEffect dirLook seePillGID
+pillEffect = DirectionalStimulusEffect dirLook whatPillGID
 tableEffect :: Effect
 tableEffect = DirectionalStimulusEffect dirLook seeTableGID
 chairEffect :: Effect

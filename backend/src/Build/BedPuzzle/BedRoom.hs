@@ -37,7 +37,6 @@ bedroomInBed = Location
 
 objectSemanticMap :: Map NounKey (GID Object)
 objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey chair, chairObjGID)
-                                             , (DirectionalStimulusKey pill,pillObjGID)
                                              , (DirectionalStimulusKey table, tableObjGID)]
 
 actionMap :: ActionManagement

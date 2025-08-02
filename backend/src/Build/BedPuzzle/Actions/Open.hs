@@ -3,12 +3,12 @@ import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
 import           Data.Maybe                (catMaybes)
-import           Data.Set                  (Set, toList)
+import           Data.Set                  (Set, fromList, toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration,
                                             modifyObjectActionManagementM,
-                                            updatePerceptionMapM)
+                                            updatePerceptionMapM, youSeeM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
@@ -22,7 +22,7 @@ import           Model.GID                 (GID)
 
 
 openEyesDenied :: SomaticAccessActionF
-openEyesDenied = SomaticAccessActionF (const(const denied))
+openEyesDenied = SomaticAccessActionF (const (const denied))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -34,7 +34,8 @@ openEyes = SomaticAccessActionF opened
   where
     opened :: Set ActionEffectKey ->  ActionEffectMap -> GameComputation Identity ()
     opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
-      oids <- catMaybes <$> mapM process (Data.Set.toList actionEffectKeys)
+      oids <- Data.Set.fromList . catMaybes <$> mapM process (Data.Set.toList actionEffectKeys)
+      youSeeM oids
       modifyNarration (updateActionConsequence msg)
       where
         process :: ActionEffectKey -> GameComputation Identity (Maybe (GID Object))

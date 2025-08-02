@@ -22,14 +22,14 @@ module GameState ( changeImplicit, clearNarration
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
                  , modifyPerceptionMapM
-                 , updatePerceptionMapM) where
+                 , updatePerceptionMapM,youSeeM) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, empty, fromList, insert,
-                                                toList)
-import           Data.Text                     (pack)
+                                                null, toList)
+import           Data.Text                     (Text, intercalate, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (ActionEffectKey (ObjectKey),
                                                 ActionManagement (_implicitStimulusActionManagement),
@@ -38,16 +38,16 @@ import           Model.GameState               (ActionEffectKey (ObjectKey),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Narration (Narration),
-                                                Object (_descriptives, _objectActionManagement),
+                                                Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PlayerActions,
                                                 SpatialRelationship,
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
-                                                _objectSemanticMap)
+                                                _objectSemanticMap,
+                                                updateActionConsequence)
 import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
-import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey)
@@ -55,6 +55,17 @@ import           Model.Parser.GCase            (NounKey)
 youSeeM :: Set (GID Object)
         -> GameComputation Identity ()
 youSeeM objectIDs = do
+  if Data.Set.null objectIDs
+    then modifyNarration $ updateActionConsequence "You don't see anything interesting."
+    else do
+      descriptions <- mapM getObjectDescription (Data.Set.toList objectIDs)
+      let combinedDescription = "You see: " <> Data.Text.intercalate ", " descriptions
+      modifyNarration $ updateActionConsequence combinedDescription
+  where
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()

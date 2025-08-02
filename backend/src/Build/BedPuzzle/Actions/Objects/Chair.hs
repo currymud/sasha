@@ -27,8 +27,8 @@ chairObj =
   longDescription = DirectionalStimulusNounPhrase (DescriptiveNounPhraseDet the small table)
   shortDescription = DirectionalStimulusNounPhrase (SimpleNounPhrase table)
   in Object
-       { _shortName = "table"
-       , _description = "It's the table next to your bed."
+       { _shortName = "a chair"
+       , _description = "It's the chair next to your bed."
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
        }
