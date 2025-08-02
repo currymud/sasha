@@ -6,14 +6,15 @@ import           Data.Set                  (Set, toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration,
+                                            modifyObjectActionManagementM,
                                             updatePerceptionMapM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
-                                            Effect (ImplicitStimulusEffect),
+                                            ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
+                                            Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
                                             SomaticAccessActionF (SomaticAccessActionF),
-                                            _implicitStimulusActionManagement,
                                             updateActionConsequence)
 
 
@@ -52,9 +53,33 @@ openEyes = SomaticAccessActionF opened
                   in loc { _locationActionManagement = updatedActionMgmt }
                 modifyNarration (updateActionConsequence msg)
               handleEffect _ = throwError "UndefinedEffect"
-        process actioneffecyKey@(ObjectKey oid) = do
-          updatePerceptionMapM oid
-          modifyNarration (updateActionConsequence "doing object things")
+        process actionEffectKey@(ObjectKey oid) = do
+          case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
+            Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
+            Just effects -> mapM_ handleEffect effects
+            where
+              handleEffect :: Effect -> GameComputation Identity ()
+              handleEffect (DirectionalStimulusEffect directionalStimulusVerb changeTo) = do
+                modifyObjectActionManagementM oid $ \actionMgmt ->
+                  let directionalMap = _directionalStimulusActionManagement actionMgmt
+                      updatedDirectionalMap = Data.Map.Strict.insert directionalStimulusVerb changeTo directionalMap
+                  in actionMgmt { _directionalStimulusActionManagement = updatedDirectionalMap }
+                updatePerceptionMapM oid
+                modifyNarration (updateActionConsequence msg)
+              handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
+                modifyObjectActionManagementM oid $ \actionMgmt ->
+                  let implicitMap = _implicitStimulusActionManagement actionMgmt
+                      updatedImplicitMap = Data.Map.Strict.insert implicitStimulusVerb changeTo implicitMap
+                  in actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
+                updatePerceptionMapM oid
+                modifyNarration (updateActionConsequence msg)
+              handleEffect (SomaticAccessEffect somaticAccessVerb changeTo) = do
+                modifyObjectActionManagementM oid $ \actionMgmt ->
+                  let somaticMap = _somaticStimulusActionManagement actionMgmt
+                      updatedSomaticMap = Data.Map.Strict.insert somaticAccessVerb changeTo somaticMap
+                  in actionMgmt { _somaticStimulusActionManagement = updatedSomaticMap }
+                updatePerceptionMapM oid
+                modifyNarration (updateActionConsequence msg)
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 --          modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
 msg :: Text

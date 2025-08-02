@@ -6,7 +6,7 @@ module Model.GameState (
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionKey (ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement)
+  , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement)
   , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
