@@ -273,7 +273,7 @@ type World :: Type
 data World = World
   { _objectMap              :: GIDToDataMap Object Object
   , _locationMap            :: GIDToDataMap Location Location
-  , _perceptionMap          :: Map DirectionalStimulus (Set (GID Object))
+  , _perceptionMap          :: Map DirectionalStimulusNounPhrase (Set (GID Object))
   , _spatialRelationshipMap :: SpatialRelationshipMap
   }
 

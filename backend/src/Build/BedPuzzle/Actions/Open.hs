@@ -6,7 +6,7 @@ import           Data.Set                  (Set, toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration)
-import           Model.GameState           (ActionEffectKey (LocationKey),
+import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             Effect (ImplicitStimulusEffect),
                                             GameComputation,
@@ -43,7 +43,6 @@ openEyes = SomaticAccessActionF opened
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
-  -- Use the lid from the outer scope to modify the location's action management
                 modifyLocationM lid $ \loc ->
                   let actionMgmt = _locationActionManagement loc
                       implicitMap = _implicitStimulusActionManagement actionMgmt
@@ -52,7 +51,8 @@ openEyes = SomaticAccessActionF opened
                   in loc { _locationActionManagement = updatedActionMgmt }
                 modifyNarration (updateActionConsequence msg)
               handleEffect _ = throwError "UndefinedEffect"
-        process _ = throwError "ActionEffectKey unimplemented"
+        process actioneffecyKey@(ObjectKey oid) = modifyNarration (updateActionConsequence "doing object things")
+        process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 --          modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
 msg :: Text
 msg = "You open your eyes, and the world comes into focus."

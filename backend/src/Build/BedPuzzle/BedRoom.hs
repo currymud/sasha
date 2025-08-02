@@ -2,12 +2,14 @@ module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
                                                                                lookAtGID,
                                                                                pitchBlackFGID)
-import           Build.Identifiers.Objects                                    (pillObjGID,
+import           Build.Identifiers.Objects                                    (chairObjGID,
+                                                                               pillObjGID,
                                                                                tableObjGID)
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
                                                                                fromList)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (pill,
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
+                                                                               pill,
                                                                                table)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
@@ -34,7 +36,9 @@ bedroomInBed = Location
   }
 
 objectSemanticMap :: Map NounKey (GID Object)
-objectSemanticMap = Data.Map.Strict.fromList [(DirectionalStimulusKey pill,pillObjGID), (DirectionalStimulusKey table, tableObjGID)]
+objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey chair, chairObjGID)
+                                             , (DirectionalStimulusKey pill,pillObjGID)
+                                             , (DirectionalStimulusKey table, tableObjGID)]
 
 actionMap :: ActionManagement
 actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs

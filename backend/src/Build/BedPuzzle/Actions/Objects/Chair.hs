@@ -1,6 +1,5 @@
-module Build.BedPuzzle.Actions.Objects.Table where
-import           Build.Identifiers.Actions                               (whatPillGID,
-                                                                          whatTableGID)
+module Build.BedPuzzle.Actions.Objects.Chair where
+import           Build.Identifiers.Actions                               (whatChairGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -22,8 +21,8 @@ import           Model.Parser.Atomics.Verbs                              (Direct
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
 
-tableObj :: Object
-tableObj =
+chairObj :: Object
+chairObj =
   let
   longDescription = DirectionalStimulusNounPhrase (DescriptiveNounPhraseDet the small table)
   shortDescription = DirectionalStimulusNounPhrase (SimpleNounPhrase table)
@@ -39,6 +38,6 @@ tableObj =
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatTableGID :: GID DirectionalStimulusActionF)]
+    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatChairGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty

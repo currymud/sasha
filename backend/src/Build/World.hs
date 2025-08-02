@@ -2,13 +2,17 @@
 module Build.World (world) where
 
 import           Build.Identifiers.Locations (locationMap)
-import           Build.Identifiers.Objects   (objectMap)
+import           Build.Identifiers.Objects   (chairObjGID, objectMap)
+import           Data.Map.Strict             (Map)
 import qualified Data.Map.Strict
+import           Data.Set                    (Set)
 import qualified Data.Set
 import           Model.GameState             (Location (Location),
                                               Object (Object),
+                                              SpatialRelationship (Supports),
                                               SpatialRelationshipMap (SpatialRelationshipMap),
                                               World (World))
+import           Model.GID                   (GID)
 import           Model.Mappings              (GIDToDataMap (GIDToDataMap))
 world :: World
 world = World objectMap' locationMap' mempty spatialRelationships
@@ -18,5 +22,7 @@ world = World objectMap' locationMap' mempty spatialRelationships
    locationMap' :: GIDToDataMap Location Location
    locationMap' = GIDToDataMap locationMap
    spatialRelationships :: SpatialRelationshipMap
-   spatialRelationships =  SpatialRelationshipMap Data.Map.Strict.empty
-
+   spatialRelationships =  SpatialRelationshipMap srMap
+   srMap :: Map (GID Object) (Set SpatialRelationship)
+   srMap = Data.Map.Strict.fromList
+     [ (chairObjGID, Data.Set.fromList [Supports Data.Set.empty])]

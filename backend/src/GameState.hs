@@ -26,7 +26,7 @@ import           Control.Monad.Identity     (Identity)
 import           Control.Monad.State        (gets, modify')
 import           Data.Map.Strict            (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                   (Set, empty, fromList)
+import           Data.Set                   (Set, empty, fromList, toList)
 import           Data.Text                  (pack)
 import           Error                      (throwMaybeM)
 import           Model.GameState            (ActionEffectKey (ObjectKey),
@@ -36,7 +36,7 @@ import           Model.GameState            (ActionEffectKey (ObjectKey),
                                              ImplicitStimulusActionF,
                                              Location (_locationActionManagement),
                                              Narration (Narration),
-                                             Object (_objectActionManagement),
+                                             Object (_descriptives, _objectActionManagement),
                                              Player (_location, _playerActions),
                                              PlayerActions, SpatialRelationship,
                                              SpatialRelationshipMap (SpatialRelationshipMap),
@@ -47,6 +47,16 @@ import           Model.Mappings             (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Nouns (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.GCase         (NounKey)
+
+
+updatePerceptionMap :: GID Object
+                       -> GameComputation Identity ()
+updatePerceptionMap oid = do
+  pure ()
+  where
+    descriptives = Data.Set.toList . _descriptives <$> getObjectM oid
+    perceptionMap :: GameComputation Identity (Map DirectionalStimulus (Set (GID Object)))
+    perceptionMap = gets (_perceptionMap . _world)
 
 getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEffectKey)
 getLocationObjectIDsM lid =
