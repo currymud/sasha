@@ -5,7 +5,8 @@ import qualified Data.Map.Strict
 import           Data.Set                  (Set, toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
-                                            modifyNarration)
+                                            modifyNarration,
+                                            updatePerceptionMapM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             Effect (ImplicitStimulusEffect),
@@ -51,7 +52,9 @@ openEyes = SomaticAccessActionF opened
                   in loc { _locationActionManagement = updatedActionMgmt }
                 modifyNarration (updateActionConsequence msg)
               handleEffect _ = throwError "UndefinedEffect"
-        process actioneffecyKey@(ObjectKey oid) = modifyNarration (updateActionConsequence "doing object things")
+        process actioneffecyKey@(ObjectKey oid) = do
+          updatePerceptionMapM oid
+          modifyNarration (updateActionConsequence "doing object things")
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 --          modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
 msg :: Text

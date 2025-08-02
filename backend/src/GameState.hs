@@ -21,42 +21,51 @@ module GameState ( changeImplicit, clearNarration
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
-                 , modifyPerceptionMapM) where
-import           Control.Monad.Identity     (Identity)
-import           Control.Monad.State        (gets, modify')
-import           Data.Map.Strict            (Map, elems)
+                 , modifyPerceptionMapM
+                 , updatePerceptionMapM) where
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.State           (gets, modify')
+import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                   (Set, empty, fromList, toList)
-import           Data.Text                  (pack)
-import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionEffectKey (ObjectKey),
-                                             ActionManagement (_implicitStimulusActionManagement),
-                                             GameComputation,
-                                             GameState (_narration, _player, _world),
-                                             ImplicitStimulusActionF,
-                                             Location (_locationActionManagement),
-                                             Narration (Narration),
-                                             Object (_descriptives, _objectActionManagement),
-                                             Player (_location, _playerActions),
-                                             PlayerActions, SpatialRelationship,
-                                             SpatialRelationshipMap (SpatialRelationshipMap),
-                                             World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
-                                             _objectSemanticMap)
-import           Model.GID                  (GID)
-import           Model.Mappings             (GIDToDataMap, _getGIDToDataMap)
-import           Model.Parser.Atomics.Nouns (DirectionalStimulus)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Model.Parser.GCase         (NounKey)
+import           Data.Set                      (Set, empty, fromList, insert,
+                                                toList)
+import           Data.Text                     (pack)
+import           Error                         (throwMaybeM)
+import           Model.GameState               (ActionEffectKey (ObjectKey),
+                                                ActionManagement (_implicitStimulusActionManagement),
+                                                GameComputation,
+                                                GameState (_narration, _player, _world),
+                                                ImplicitStimulusActionF,
+                                                Location (_locationActionManagement),
+                                                Narration (Narration),
+                                                Object (_descriptives, _objectActionManagement),
+                                                Player (_location, _playerActions),
+                                                PlayerActions,
+                                                SpatialRelationship,
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
+                                                World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                _objectSemanticMap)
+import           Model.GID                     (GID)
+import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
+import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
+import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.GCase            (NounKey)
 
 
-updatePerceptionMap :: GID Object
+updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
-updatePerceptionMap oid = do
-  pure ()
+updatePerceptionMapM oid = do
+  obj <- getObjectM oid
+  let descriptivesList = Data.Set.toList $ _descriptives obj
+  mapM_ addDescriptiveToPerceptionMap descriptivesList
   where
-    descriptives = Data.Set.toList . _descriptives <$> getObjectM oid
-    perceptionMap :: GameComputation Identity (Map DirectionalStimulus (Set (GID Object)))
-    perceptionMap = gets (_perceptionMap . _world)
+    addDescriptiveToPerceptionMap :: DirectionalStimulusNounPhrase -> GameComputation Identity ()
+    addDescriptiveToPerceptionMap dsnp = do
+      modifyPerceptionMapM $ \perceptionMap ->
+        let currentSet = Data.Map.Strict.findWithDefault Data.Set.empty dsnp perceptionMap
+            updatedSet = Data.Set.insert oid currentSet
+        in Data.Map.Strict.insert dsnp updatedSet perceptionMap
 
 getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEffectKey)
 getLocationObjectIDsM lid =
@@ -155,7 +164,7 @@ modifyObjectMapM objectMapF = do
       updatedWorld = world { _objectMap = updatedObjectMap }
   modify' (\gs -> gs { _world = updatedWorld })
 
-modifyPerceptionForStimulusM :: DirectionalStimulus
+modifyPerceptionForStimulusM :: DirectionalStimulusNounPhrase
                              -> (Set (GID Object) -> Set (GID Object))
                              -> GameComputation Identity ()
 modifyPerceptionForStimulusM stimulus setF = do
@@ -187,7 +196,7 @@ modifyObjectM oid objectF = do
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
   modify' (\gs -> gs { _world = updatedWorld })
 
-modifyPerceptionMapM :: (Map DirectionalStimulus (Set (GID Object)) -> Map DirectionalStimulus (Set (GID Object)))
+modifyPerceptionMapM :: (Map DirectionalStimulusNounPhrase (Set (GID Object)) -> Map DirectionalStimulusNounPhrase (Set (GID Object)))
                      -> GameComputation Identity ()
 modifyPerceptionMapM perceptionMapF = do
   world <- gets _world
