@@ -7,7 +7,7 @@ import           Model.GameState        (DirectionalStimulusActionF (Directional
                                          updateActionConsequence)
 
 whatChair :: DirectionalStimulusActionF
-whatChair = DirectionalStimulusActionF (const (const (const whatChair')))
+whatChair = DirectionalStimulusActionF (const (const whatChair'))
   where
     whatChair' :: GameComputation Identity ()
     whatChair' = modifyNarration $ updateActionConsequence msg
@@ -16,7 +16,7 @@ whatChair = DirectionalStimulusActionF (const (const (const whatChair')))
     msg = "It would be alot easier to see the chair if you would open your eyes. Literally."
 
 seeChair :: DirectionalStimulusActionF
-seeChair = DirectionalStimulusActionF (const (const (const seeChair')))
+seeChair = DirectionalStimulusActionF (const (const seeChair'))
   where
     seeChair' :: GameComputation Identity ()
     seeChair' = modifyNarration $ updateActionConsequence msg

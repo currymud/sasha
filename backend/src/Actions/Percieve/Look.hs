@@ -7,6 +7,7 @@ import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import           Data.Text                                               (Text)
 import           GameState                                               (getActionManagementM,
+                                                                          getObjectM,
                                                                           getPlayerActionsM,
                                                                           modifyNarration)
 import           GHC.RTS.Flags                                           (ProfFlags (doHeapProfile))
@@ -20,7 +21,7 @@ import           Model.GameState                                         (Action
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction),
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
-                                                                          Object,
+                                                                          Object (_objectActionManagement),
                                                                           PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
@@ -37,14 +38,14 @@ agentCanSee = ImplicitStimulusActionF (\loc -> do
    modifyNarration $ updateActionConsequence ("You see: " <> toText (_title loc)))
 
 agentCannotSee :: Text -> ImplicitStimulusActionF
-agentCannotSee nosee = ImplicitStimulusActionF $ (\_ -> do
+agentCannotSee nosee = ImplicitStimulusActionF (\_ -> do
   modifyNarration $ updateActionConsequence nosee)
 
 lookAt :: DirectionalStimulusActionF
 lookAt = DirectionalStimulusActionF lookAt'
   where
-    lookAt' :: DirectionalStimulusNounPhrase -> Location -> GID Object -> GameComputation Identity ()
-    lookAt' dsnp loc oid = do
+    lookAt' :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity ()
+    lookAt' dsnp oid = do
           dsActionMap <- _directionalStimulusActionManagement <$> getActionManagementM oid
           case Data.Map.Strict.lookup look dsActionMap of
             Nothing -> do
@@ -55,7 +56,7 @@ lookAt = DirectionalStimulusActionF lookAt'
                 Nothing -> do
                   modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
                 Just (DirectionalStimulusActionF actionFunc) -> do
-                  actionFunc dsnp loc oid
+                  actionFunc dsnp oid
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
@@ -73,15 +74,15 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
 dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
 dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
   where
-    actionEnabled dsnp loc oid = do
-      let actionMap = _directionalStimulusActionManagement $ _locationActionManagement loc
+    actionEnabled dsnp oid = do
+      actionMap <- _directionalStimulusActionManagement .  _objectActionManagement <$> getObjectM oid
       case Data.Map.Strict.lookup dsv actionMap of
         Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
         Just (actionGID :: GID DirectionalStimulusActionF) -> do
           actionMap' :: Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF <- asks (_directionalStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error $ "Programmer Error: No directional stimulus action found for verb: "
-            Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp loc oid
+            Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
@@ -114,7 +115,7 @@ manageDirectionalStimulusProcess dsv dsnp = do
         Nothing -> do
           modifyNarration $ updateActionConsequence "That's not here. Try something else."
         Just objGID -> do
-          actionF dsnp loc objGID
+          actionF dsnp objGID
       where
         nounKey = DirectionalStimulusKey dsn'
         dsn' = case np of
