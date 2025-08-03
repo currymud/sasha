@@ -35,7 +35,7 @@ openEyes = SomaticAccessActionF opened
     opened :: Set ActionEffectKey ->  ActionEffectMap -> GameComputation Identity ()
     opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
       oids <- Data.Set.fromList . catMaybes <$> mapM process (Data.Set.toList actionEffectKeys)
-      youSeeM oids
+      youSeeM
       modifyNarration (updateActionConsequence msg)
       where
         process :: ActionEffectKey -> GameComputation Identity (Maybe (GID Object))

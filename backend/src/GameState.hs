@@ -51,40 +51,11 @@ import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey (ObjectiveKey))
-  {-
+
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   objectSemanticMap <- _objectSemanticMap <$> getPlayerLocationM
--}
-youSeeM :: Set (GID Object) -> GameComputation Identity ()
-youSeeM objectIds = do
-  location <- getPlayerLocationM
-  let objectSemanticMap = _objectSemanticMap location
 
-  -- Filter objectIds to only include those that are ObjectiveKey entries
-  -- We need to check which objects in the location are objectives
-  let objectiveObjects = Data.Map.Strict.foldlWithKey'
-        (\acc nounKey objectId ->
-          case nounKey of
-            ObjectiveKey _ -> if Data.Set.member objectId objectIds
-                            then Data.Set.insert objectId acc
-                            else acc
-            _ -> acc
-        ) Data.Set.empty objectSemanticMap
-
-  if Data.Set.null objectiveObjects
-    then pure () -- Don't show anything if no objectives are visible
-    else do
-      -- Get object descriptions for visible objectives
-      objects <- mapM getObjectM (Data.Set.toList objectiveObjects)
-      let descriptions = map _description objects
-
-      -- Create a combined message showing what the player sees
-      let seeMessage = case descriptions of
-            []       -> "You don't see anything of interest here."
-            [single] -> "You see: " <> single
-            multiple -> "You see: " <> Data.Text.intercalate ", " multiple
-      modifyNarration $ updateActionConsequence seeMessage
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
