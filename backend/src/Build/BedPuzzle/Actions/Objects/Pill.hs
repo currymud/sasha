@@ -1,6 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Pill where
-import           Build.Identifiers.Actions                               (notEvenPillGID,
-                                                                          whatPillGID)
+import           Build.Identifiers.Actions                               (notEvenPillGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -8,12 +7,10 @@ import           Grammar.Parser.Partitions.Adjectives                    (white)
 import           Grammar.Parser.Partitions.Misc                          (the)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pill)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Model.GameState                                         (ActionEffect,
-                                                                          ActionEffectKey,
-                                                                          ActionManagement (ActionManagement),
+import           Model.GameState                                         (ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName, _spatialRelationships),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -32,6 +29,7 @@ pillObj =
        , _description = "A small, round pill. Probably good for headaches."
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
+       , _spatialRelationships = Data.Set.empty
        }
   where
     verbMaps :: ActionManagement
