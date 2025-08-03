@@ -3,15 +3,29 @@
 module Model.Parser.Composites.Verbs where
 import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)
-import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker)
-import           Model.Parser.Atomics.Verbs        (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker,
+                                                    SourceMarker)
+import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
+                                                    DirectionalStimulusVerb,
                                                     EdibleConsumptionVerb,
                                                     ImplicitStimulusVerb,
                                                     SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (DirectionalStimulusNounPhrase,
                                                     EdibleNounPhrase,
-                                                    SomaticStimulusNounPhrase)
+                                                    ObjectPhrase,
+                                                    SomaticStimulusNounPhrase,
+                                                    SupportPhrase)
 import           Relude.String.Conversion          (ToText (toText))
+
+type AcquisitionVerbPhrase :: Type
+data AcquisitionVerbPhrase
+  = SimpleAcquisitionVerbPhrase AcquisitionVerb ObjectPhrase
+  | AcquisitionVerbPhrase
+      AcquisitionVerb
+      ObjectPhrase
+      SourceMarker
+      SupportPhrase
+  deriving stock (Show, Eq, Ord,Generic)
 
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase

@@ -36,14 +36,6 @@ type DirectionalStimulusRule :: (Type -> Type -> Type -> Type) -> Type
 newtype DirectionalStimulusRule r = DirectionalStimulusRule
   { _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus}
 
-type SomaticStimulus :: Type
-newtype SomaticStimulus = SomaticStimulus { _fromSomaticStimulus :: Lexeme }
-  deriving newtype (Show,Eq,Ord)
-  deriving newtype (Hashable,ToText)
-
-instance HasLexeme SomaticStimulus where
-  toLexeme = _fromSomaticStimulus
-
 type Edible :: Type
 newtype Edible = Edible { _fromEdible :: Lexeme }
   deriving newtype (Show,Eq,Ord)
@@ -51,6 +43,14 @@ newtype Edible = Edible { _fromEdible :: Lexeme }
 
 instance HasLexeme Edible where
   toLexeme = _fromEdible
+
+type ModToggleNoun :: Type
+newtype ModToggleNoun = ModToggleNoun { _fromModToggleNoun :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme ModToggleNoun where
+  toLexeme = _fromModToggleNoun
 
 type Objective :: Type
 newtype Objective = Objective { _fromObjective :: Lexeme }
@@ -68,6 +68,14 @@ newtype Potable = Potable { _fromPotable :: Lexeme }
 instance HasLexeme Potable where
   toLexeme = _fromPotable
 
+type SomaticStimulus :: Type
+newtype SomaticStimulus = SomaticStimulus { _fromSomaticStimulus :: Lexeme }
+  deriving newtype (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme SomaticStimulus where
+  toLexeme = _fromSomaticStimulus
+
 type Supportive :: Type
 newtype Supportive =
   Supportive { _fromSupportive :: Lexeme }
@@ -77,6 +85,13 @@ newtype Supportive =
 instance HasLexeme Supportive where
   toLexeme = _fromSupportive
 
+type Surface :: Type
+newtype Surface = Surface { _fromSurface :: Lexeme }
+  deriving newtype (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme Surface where
+  toLexeme = _fromSurface
 
 type ToggleNoun :: Type
 newtype ToggleNoun = ToggleNoun { _fromToggleNoun :: Lexeme }
@@ -85,14 +100,6 @@ newtype ToggleNoun = ToggleNoun { _fromToggleNoun :: Lexeme }
 
 instance HasLexeme ToggleNoun where
   toLexeme = _fromToggleNoun
-
-type ModToggleNoun :: Type
-newtype ModToggleNoun = ModToggleNoun { _fromModToggleNoun :: Lexeme }
-  deriving stock (Show,Eq,Ord)
-  deriving newtype (Hashable,ToText)
-
-instance HasLexeme ModToggleNoun where
-  toLexeme = _fromModToggleNoun
 
 type SimpleAccessNoun :: Type
 newtype SimpleAccessNoun = SimpleAccessNoun { _fromSimpleAccessNoun :: Lexeme }
