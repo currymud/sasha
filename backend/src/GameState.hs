@@ -29,7 +29,7 @@ import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, empty, fromList, insert,
                                                 member, null, toList)
-import           Data.Text                     (Text, intercalate, pack)
+import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (ActionEffectKey (ObjectKey),
                                                 ActionManagement (_implicitStimulusActionManagement),
@@ -41,7 +41,7 @@ import           Model.GameState               (ActionEffectKey (ObjectKey),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PlayerActions,
-                                                SpatialRelationship,
+                                                SpatialRelationship (Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap,
@@ -52,6 +52,65 @@ import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey (ObjectiveKey))
 
+
+youSeeM :: GameComputation Identity ()
+youSeeM = do
+  playerLocation <- getPlayerLocationM
+  let objectSemanticMap = _objectSemanticMap playerLocation
+
+  -- Filter for ObjectiveKey entries and get their object IDs
+  let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
+      objectiveOids = map snd objectiveEntries
+
+  -- Get all the objects and their descriptions
+  objectDescriptions <- mapM getObjectDescription objectiveOids
+
+  -- Get spatial relationships to find supported objects
+  supportedDescriptions <- mapM getSupportedObjectsDescription objectiveOids
+
+  -- Combine base descriptions with supported object descriptions
+  let allDescriptions = zipWith combineDescriptions objectDescriptions supportedDescriptions
+
+  -- Add descriptions to narration if any objects found
+  case filter (not . Data.Text.null) allDescriptions of
+    [] -> pure () -- No objectives to show
+    descriptions -> do
+      let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+      modifyNarration $ updateActionConsequence seeText
+  where
+    isObjectiveKey :: NounKey -> Bool
+    isObjectiveKey (ObjectiveKey _) = True
+    isObjectiveKey _                = False
+
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
+
+    getSupportedObjectsDescription :: GID Object -> GameComputation Identity Text
+    getSupportedObjectsDescription supporterOid = do
+      world <- gets _world
+      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+      case Data.Map.Strict.lookup supporterOid spatialMap of
+        Nothing -> pure ""
+        Just relationships -> do
+          supportedObjects <- mapM processSupportRelationship (Data.Set.toList relationships)
+          let validSupported = filter (not . Data.Text.null) supportedObjects
+          case validSupported of
+            [] -> pure ""
+            supported -> pure $ ". On it: " <> Data.Text.intercalate ", " supported
+
+    processSupportRelationship :: SpatialRelationship -> GameComputation Identity Text
+    processSupportRelationship (Supports oidSet) = do
+      descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
+      pure $ Data.Text.intercalate ", " descriptions
+    processSupportRelationship _ = pure ""
+
+    combineDescriptions :: Text -> Text -> Text
+    combineDescriptions baseDesc supportedDesc
+      | Data.Text.null supportedDesc = baseDesc
+      | otherwise = baseDesc <> supportedDesc
+        {-
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   playerLocation <- getPlayerLocationM
@@ -67,7 +126,7 @@ youSeeM = do
   -- Add descriptions to narration if any objects found
   case objectDescriptions of
     [] -> pure () -- No objectives to show
-    descriptions -> do
+ t   descriptions -> do
       let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
       modifyNarration $ updateActionConsequence seeText
   where
@@ -79,7 +138,7 @@ youSeeM = do
     getObjectDescription oid = do
       obj <- getObjectM oid
       pure $ _description obj
-
+-}
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
 updatePerceptionMapM oid = do
