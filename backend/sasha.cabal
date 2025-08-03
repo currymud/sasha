@@ -103,6 +103,10 @@ library
       Grammar.Parser.Partitions.Nouns.Surfaces
       Grammar.Parser.Partitions.Nouns.Utils
       Grammar.Parser.Partitions.Prepositions
+      Grammar.Parser.Partitions.Prepositions.ContainmentMarkers
+      Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker
+      Grammar.Parser.Partitions.Prepositions.SourceMarkers
+      Grammar.Parser.Partitions.Prepositions.SurfaceMarkers
       Grammar.Parser.Partitions.Verbs.AcquisitionVerbs
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb

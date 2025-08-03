@@ -27,6 +27,12 @@ data AcquisitionVerbPhrase
       SupportPhrase
   deriving stock (Show, Eq, Ord,Generic)
 
+instance ToText AcquisitionVerbPhrase where
+  toText (SimpleAcquisitionVerbPhrase verb nounPhrase) =
+    toText verb <> " " <> toText nounPhrase
+  toText (AcquisitionVerbPhrase verb nounPhrase marker supportPhrase) =
+    toText verb <> " " <> toText nounPhrase <> " " <> toText marker <> " " <> toText supportPhrase
+
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
@@ -47,15 +53,20 @@ instance ToText StimulusVerbPhrase where
     toText verb
   toText (DirectStimulusVerbPhrase verb marker nounPhrase) =
     toText verb <> " " <> toText marker <> " " <> toText nounPhrase
+  toText (SomaticStimulusVerbPhrase verb nounPhrase) =
+    toText verb <> " " <> toText nounPhrase
 
 type Imperative :: Type
 data Imperative
   = StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase ConsumptionVerbPhrase
+  | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText Imperative where
   toText (StimulusVerbPhrase verbPhrase) =
     toText verbPhrase
   toText (ConsumptionVerbPhrase verbPhrase) =
+    toText verbPhrase
+  toText (AcquisitionVerbPhrase' verbPhrase) =
     toText verbPhrase

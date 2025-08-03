@@ -2,37 +2,40 @@ module Grammar.Parser.Rules.Composites.Nouns (containerPhraseRules,
                                               directionalStimulusNounPhraseRules,
                                               edibleNounPhraseRules,
                                               nounPhraseRule,
+                                              objectPhraseRules,
                                               somaticStimulusNounPhraseRules,
                                               surfacePhraseRules,
                                               supportPhraseRules) where
-import           Control.Applicative                        (Alternative ((<|>)))
-import           Data.Text                                  (Text)
-import           Grammar.Parser.Partitions.Nouns.Containers (containers)
-import           Grammar.Parser.Partitions.Nouns.Surfaces   (surfaces)
-import           Grammar.Parser.Partitions.Prepositions     (containmentMarkers,
-                                                             surfaceMarkers)
-import           Grammar.Parser.Rules.Atomics.Utils         (parseRule)
-import           Model.Parser.Atomics.Adjectives            (Adjective)
-import           Model.Parser.Atomics.Misc                  (Determiner)
-import           Model.Parser.Atomics.Nouns                 (Container (Container),
-                                                             DirectionalStimulus,
-                                                             Edible, Objective,
-                                                             SomaticStimulus,
-                                                             Surface (Surface))
-import           Model.Parser.Atomics.Prepositions          (ContainmentMarker (ContainmentMarker),
-                                                             SurfaceMarker (SurfaceMarker))
-import           Model.Parser.Composites.Nouns              (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
-                                                             DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                             EdibleNounPhrase (EdibleNounPhrase),
-                                                             NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                             NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
-                                                             ObjectPhrase (ObjectPhrase),
-                                                             SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
-                                                             SupportPhrase (ContainerSupport, SurfaceSupport),
-                                                             SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
-import           Model.Parser.Lexer                         (Lexeme)
-import           Text.Earley                                (Grammar)
-import           Text.Earley.Grammar                        (Prod, rule)
+import           Control.Applicative                                   (Alternative ((<|>)))
+import           Data.Text                                             (Text)
+import           Grammar.Parser.Partitions.Nouns.Containers            (containers)
+import           Grammar.Parser.Partitions.Nouns.Surfaces              (surfaces)
+import           Grammar.Parser.Partitions.Prepositions                (containmentMarkers)
+import           Grammar.Parser.Partitions.Prepositions.SurfaceMarkers (surfaceMarkers)
+import           Grammar.Parser.Rules.Atomics.Utils                    (parseRule)
+import           Model.Parser.Atomics.Adjectives                       (Adjective)
+import           Model.Parser.Atomics.Misc                             (Determiner)
+import           Model.Parser.Atomics.Nouns                            (Container (Container),
+                                                                        DirectionalStimulus,
+                                                                        Edible,
+                                                                        Objective,
+                                                                        SomaticStimulus,
+                                                                        Surface (Surface))
+import           Model.Parser.Atomics.Prepositions                     (ContainmentMarker (ContainmentMarker),
+                                                                        SurfaceMarker (SurfaceMarker))
+import           Model.Parser.Composites.Nouns                         (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                                        DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                                        EdibleNounPhrase (EdibleNounPhrase),
+                                                                        NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                                        NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
+                                                                        ObjectPhrase (ObjectPhrase),
+                                                                        SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
+                                                                        SupportPhrase (ContainerSupport, SurfaceSupport),
+                                                                        SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
+import           Model.Parser.Lexer                                    (Lexeme)
+import           Text.Earley                                           (Grammar)
+import           Text.Earley.Grammar                                   (Prod,
+                                                                        rule)
 
 containerPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
@@ -95,7 +98,7 @@ nounPhraseRule (NounPhraseRules{..}) =
 objectPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme Objective
-                                       -> Grammar r (Prod r Text Lexeme (NounPhrase Objective))
+                                       -> Grammar r (Prod r Text Lexeme ObjectPhrase)
 objectPhraseRules determinerRule adjRule objectiveRule =
   nounPhraseRule rules >>= \nounPhrase ->
     rule $ ObjectPhrase <$> nounPhrase
@@ -106,6 +109,7 @@ objectPhraseRules determinerRule adjRule objectiveRule =
           , _adjRule = adjRule
           , _nounRule = objectiveRule
           }
+
 somaticStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme SomaticStimulus

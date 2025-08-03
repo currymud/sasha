@@ -1,5 +1,4 @@
-module Grammar.Parser.Partitions.Prepositions (containmentMarkers,
-                                               in',into) where
+module Grammar.Parser.Partitions.Prepositions.ContainmentMarkers (containmentMarkers,in',into) where
 
 import           Data.HashSet                                (HashSet, fromList)
 import           Grammar.Parser.Lexer                        (Lexeme (IN, INTO))

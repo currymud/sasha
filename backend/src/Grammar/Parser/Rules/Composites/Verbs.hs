@@ -1,5 +1,6 @@
 module Grammar.Parser.Rules.Composites.Verbs
   (stimulusVerbPhraseRules
+  , acquisitionVerbPhraseRules
   , imperativeRules
   ) where
 import           Data.Text                                               (Text)
@@ -9,7 +10,9 @@ import           Grammar.Parser.Partitions.Adjectives                    (adject
 import           Grammar.Parser.Partitions.Misc                          (determiners)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
 import           Grammar.Parser.Partitions.Nouns.Edibles                 (edibles)
+import           Grammar.Parser.Partitions.Nouns.Objectives              (objectives)
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
+import           Grammar.Parser.Partitions.Prepositions.SourceMarkers    (sourceMarkers)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (acquisitionVerbs)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs  (edibleConsumptionVerbs)
@@ -19,19 +22,23 @@ import           Grammar.Parser.Rules.Atomics.Utils                      (parseR
 import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule)
 import           Grammar.Parser.Rules.Composites.Nouns                   (directionalStimulusNounPhraseRules,
                                                                           edibleNounPhraseRules,
-                                                                          somaticStimulusNounPhraseRules)
+                                                                          objectPhraseRules,
+                                                                          somaticStimulusNounPhraseRules,
+                                                                          supportPhraseRules)
 import           Model.Parser.Atomics.Adjectives                         (Adjective (Adjective))
 import           Model.Parser.Atomics.Misc                               (Determiner (Determiner))
 import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus),
                                                                           Edible (Edible),
+                                                                          Objective (Objective),
                                                                           SomaticStimulus (SomaticStimulus))
+import           Model.Parser.Atomics.Prepositions                       (SourceMarker (SourceMarker))
 import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
                                                                           DirectionalStimulusVerb (DirectionalStimulusVerb),
                                                                           EdibleConsumptionVerb (EdibleConsumptionVerb),
                                                                           SomaticAccessVerb (SomaticAccessVerb))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase,
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (EdibleVerbPhrase),
-                                                                          Imperative (ConsumptionVerbPhrase, StimulusVerbPhrase),
+                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase, StimulusVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
@@ -57,16 +64,25 @@ stimulusVerbPhraseRules = do
            <|> SomaticStimulusVerbPhrase
              <$> somaticAccessVerb
              <*> somaticStimulusNounPhrase
-{-
+
 acquisitionVerbPhraseRules :: Grammar r (Prod r Text Lexeme AcquisitionVerbPhrase)
 acquisitionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner
   adj <- parseRule adjectives Adjective
+  sourceMarker <- parseRule sourceMarkers SourceMarker
   acquisitionVerb <- parseRule acquisitionVerbs AcquisitionVerb
-  objectPhrase <- objectPhrase
-  rule $ SomaticVerbPhrase <$> somaticAccessVerb
-           <*> somaticStimulusNounPhrase
--}
+  object <- parseRule objectives Objective
+  objectPhrase <- objectPhraseRules determiner adj object
+  supportPhrase <- supportPhraseRules determiner adj
+  rule $ SimpleAcquisitionVerbPhrase
+           <$> acquisitionVerb
+           <*> objectPhrase
+         <|> AcquisitionVerbPhrase
+           <$> acquisitionVerb
+           <*> objectPhrase
+           <*> sourceMarker
+           <*> supportPhrase
+
 consumptionVerbPhraseRules :: Grammar r (Prod r Text Lexeme ConsumptionVerbPhrase)
 consumptionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner
@@ -81,5 +97,7 @@ imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do
   stimulusVerbPhrase <- stimulusVerbPhraseRules
   consumptionVerbPhrase <- consumptionVerbPhraseRules
+  acquisitionVerbPhrase <- acquisitionVerbPhraseRules
   rule $ StimulusVerbPhrase <$> stimulusVerbPhrase
            <|> ConsumptionVerbPhrase <$> consumptionVerbPhrase
+           <|> AcquisitionVerbPhrase' <$> acquisitionVerbPhrase
