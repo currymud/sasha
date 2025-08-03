@@ -54,8 +54,31 @@ import           Model.Parser.GCase            (NounKey (ObjectiveKey))
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do
-  objectSemanticMap <- _objectSemanticMap <$> getPlayerLocationM
+  playerLocation <- getPlayerLocationM
+  let objectSemanticMap = _objectSemanticMap playerLocation
 
+  -- Filter for ObjectiveKey entries and get their object IDs
+  let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
+      objectiveOids = map snd objectiveEntries
+
+  -- Get all the objects and their descriptions
+  objectDescriptions <- mapM getObjectDescription objectiveOids
+
+  -- Add descriptions to narration if any objects found
+  case objectDescriptions of
+    [] -> pure () -- No objectives to show
+    descriptions -> do
+      let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+      modifyNarration $ updateActionConsequence seeText
+  where
+    isObjectiveKey :: NounKey -> Bool
+    isObjectiveKey (ObjectiveKey _) = True
+    isObjectiveKey _                = False
+
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
