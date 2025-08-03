@@ -9,7 +9,8 @@ import           Grammar.Parser.Partitions.Misc                          (the)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pill,
                                                                           table)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Model.GameState                                         (ActionManagement (ActionManagement),
+import           Model.GameState                                         (AcquisitionActionF,
+                                                                          ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
                                                                           Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
@@ -17,7 +18,8 @@ import           Model.GameState                                         (Action
                                                                           SpatialRelationship (Contains),
                                                                           World (_spatialRelationshipMap))
 import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
+                                                                          DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb,
                                                                           SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -36,10 +38,12 @@ chairObj =
        }
   where
     verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs
+    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
     directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatChairGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty
+    acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+    acquisitionVerbs = Data.Map.Strict.empty

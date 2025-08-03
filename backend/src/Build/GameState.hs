@@ -16,6 +16,7 @@ import           Build.Identifiers.Objects                               (chairO
                                                                           tableObjGID)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
+                                                                          empty,
                                                                           fromList)
 import qualified Data.Set
 import           Data.Text                                               (Text)
@@ -23,7 +24,8 @@ import           Evaluators.Player.General                               (eval)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
-import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey),
+import           Model.GameState                                         (AcquisitionActionF,
+                                                                          ActionEffectKey (LocationKey, ObjectKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
@@ -39,7 +41,8 @@ import           Model.GameState                                         (Action
                                                                           PlayerActions (PlayerActions),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb,
+                                                                          DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb,
                                                                           SomaticAccessVerb)
 
@@ -66,12 +69,14 @@ config = Config
   }
   where
     actionMaps :: ActionMaps
-    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap somaticAccessActionMap
+    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap somaticAccessActionMap acquisitionVerbMap
+    acquisitionVerbMap :: Map (GID AcquisitionActionF) AcquisitionActionF
+    acquisitionVerbMap = Data.Map.Strict.empty
 
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _playerActions = PlayerActions isaMap dsaMap saMap
+  , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs
   , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
   }
@@ -85,7 +90,8 @@ player = Player
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
-
+    acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+    acquisitionVerbs = Data.Map.Strict.empty
 actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap
   $ fromList

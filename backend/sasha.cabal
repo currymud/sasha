@@ -50,6 +50,7 @@ common tests
 library
   import: shared
   exposed-modules:
+      Actions.Get.Acquisition.Get
       Actions.Manipulate.SomaticAccess.Open
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Look

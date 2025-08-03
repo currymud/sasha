@@ -4,10 +4,11 @@ module Model.GameState (
   ActionEffect (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
   , ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
-  , ActionKey (ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
+  , ActionKey ( AcquisitionalActionKey, ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement)
-  , ActionMaps (ActionMaps, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
+  , ActionMaps (ActionMaps, _acquisitionActionMap, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
+  , AcquisitionActionF (AcquisitionActionF, _acquisitionAction)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
@@ -27,7 +28,7 @@ module Model.GameState (
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _actionKeyMap,  _location, _perceptables, _playerActions)
-  , PlayerActions (PlayerActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
+  , PlayerActions (PlayerActions, _acquisitionActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
@@ -56,7 +57,8 @@ import           Model.GID                     (ActionId, GID)
 import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
-import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
@@ -112,6 +114,7 @@ data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
+  , _acquisitionActionMap         :: AcquisitionVerbActionMap
   }
 
 type ImplicitStimulusActionMap :: Type
@@ -131,10 +134,16 @@ newtype DirectionalStimulusActionF = DirectionalStimulusActionF
 type SomaticStimulusActionMap :: Type
 type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
 
+type AcquisitionVerbActionMap :: Type
+type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
+
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
   { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
--- Sentence Processing Maps
+
+type AcquisitionActionF :: Type
+newtype AcquisitionActionF = AcquisitionActionF
+  { _acquisitionAction :: Set ActionEffectKey -> ActionEffectMap ->  GameComputation Identity () }
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
@@ -174,6 +183,7 @@ data ActionKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
+  | AcquisitionalActionKey (GID AcquisitionActionF)
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -181,11 +191,13 @@ data Effect
   = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
+  | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type
 data ActionEffect
   = SomaticAccessActionEffect (Map (GID SomaticAccessActionF) Effect)
+  | AcquisitionActionEffect (Map (GID AcquisitionActionF) Effect)
   | ImplicitStimulusActionEffect (Map (GID ImplicitStimulusActionF) (Map ActionEffectKey Effect))
   deriving stock (Show, Eq, Ord)
 
@@ -225,6 +237,7 @@ data ActionManagement = ActionManagement
   { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   , _somaticStimulusActionManagement :: Map SomaticAccessVerb (GID SomaticAccessActionF)
+  , _acquisitionActionManagement :: Map AcquisitionVerb (GID AcquisitionActionF)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -248,6 +261,7 @@ data PlayerActions = PlayerActions
  { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
  , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
  , _somaticStimulusActions :: Map SomaticAccessVerb (GID SomaticAccessActionF)
+ , _acquisitionActions :: Map AcquisitionVerb (GID AcquisitionActionF)
  }
   deriving stock (Show, Eq, Ord)
 
@@ -285,23 +299,17 @@ updateActionConsequence :: Text -> Narration -> Narration
 updateActionConsequence consequence narration =
   narration { _actionConsequence = consequence : _actionConsequence narration }
 
-
 type Object :: Type
 data Object = Object
  { _shortName              :: Text
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
  , _objectActionManagement :: ActionManagement
---  , _objectEffects          :: ObjectEffects
  }
 
--- | Lift GameStateM to GameComputation
-
--- | Lift GameStateM to DisplayM (this is just id, but for clarity)
 liftToDisplay :: GameStateT m a -> DisplayT m a
 liftToDisplay = DisplayT
 
--- | Convert DisplayM to GameStateM (for when you need the base layer)
 fromDisplay :: DisplayT m a -> GameStateT m a
 fromDisplay = runDisplayT
 
@@ -309,7 +317,6 @@ identityToIO :: Identity a -> IO a
 identityToIO = return . runIdentity
 
 -- | Transform GameComputation Identity to GameT IO - change base monad using hoist
--- This is much cleaner than manual unwrapping!
 transformToIO :: GameComputation Identity a -> GameT IO a
 transformToIO comp = GameT $ hoist (hoist (hoist identityToIO)) (runGameComputation comp)
 

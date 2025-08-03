@@ -16,7 +16,8 @@ import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (c
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
-import           Model.GameState                                              (ActionManagement (ActionManagement),
+import           Model.GameState                                              (AcquisitionActionF,
+                                                                               ActionManagement (ActionManagement),
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                                Location (Location, _locationActionManagement, _objectSemanticMap, _title),
@@ -25,7 +26,8 @@ import           Model.GameState                                              (A
 import           Model.GID                                                    (GID)
 import           Model.Parser.Atomics.Nouns                                   (DirectionalStimulus,
                                                                                Objective)
-import           Model.Parser.Atomics.Verbs                                   (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs                                   (AcquisitionVerb,
+                                                                               DirectionalStimulusVerb,
                                                                                ImplicitStimulusVerb,
                                                                                SomaticAccessVerb)
 import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
@@ -63,7 +65,7 @@ objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair,
                                              ]
 
 actionMap :: ActionManagement
-actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs
+actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs acquisitionVerbs
  where
    implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
    implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, pitchBlackFGID)]
@@ -71,7 +73,8 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
-
+   acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+   acquisitionVerbs = Data.Map.Strict.empty
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 
