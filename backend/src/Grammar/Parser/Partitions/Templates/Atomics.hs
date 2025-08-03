@@ -1,4 +1,7 @@
-module Grammar.Parser.Partitions.Templates.Atomics where
+module Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValue,
+                                                    makeSemanticValues,
+                                                    makeLegalSemanticValue,
+                                                    makeLegalSemanticValues) where
 import           Data.Char            (toLower)
 import           Grammar.Parser.Lexer (Lexeme)
 import           Language.Haskell.TH  (Body (NormalB), Dec (SigD, ValD),
@@ -33,5 +36,36 @@ makeSemanticValue lexeme constructorExpQ = do
 makeSemanticValues :: ExpQ -> [Lexeme] -> Q [Dec]
 makeSemanticValues constructorExpQ lexemes = do
   declarations <- mapM (`makeSemanticValue` constructorExpQ) lexemes
+  pure (concat declarations)
+
+
+makeLegalSemanticValue :: Lexeme -> ExpQ -> Q [Dec]
+makeLegalSemanticValue lexeme constructorExpQ = do
+  constructorExp <- constructorExpQ
+  case constructorExp of
+    ConE constructorName -> do
+      let -- Convert lexeme to lowercase for value name, append tick for reserved words
+          lexemeStr = show lexeme
+          baseName = map toLower lexemeStr
+          valueName = mkName (baseName ++ "'")
+
+          -- Extract constructor type name (assumes constructor is same as type)
+          constructorTypeStr = nameBase constructorName
+          constructorTypeName = mkName constructorTypeStr
+
+          -- Create type signature: valueName' :: ConstructorType
+          typeSignature = SigD valueName (ConT constructorTypeName)
+
+          -- Create value declaration: valueName' = Constructor LEXEME
+          valueDeclaration = ValD (VarP valueName)
+                                  (NormalB (AppE (ConE constructorName)
+                                                 (ConE (mkName lexemeStr))))
+                                  []
+      pure [typeSignature, valueDeclaration]
+    _ -> fail "makeLegalSemanticValue expects a constructor expression"
+
+makeLegalSemanticValues :: ExpQ -> [Lexeme] -> Q [Dec]
+makeLegalSemanticValues constructorExpQ lexemes = do
+  declarations <- mapM (`makeLegalSemanticValue` constructorExpQ) lexemes
   pure (concat declarations)
 

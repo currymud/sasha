@@ -1,27 +1,31 @@
 module Grammar.Parser.Rules.Composites.Nouns where
-import           Control.Applicative                      (Alternative ((<|>)))
-import           Data.Text                                (Text)
-import           Grammar.Parser.Partitions.Nouns.Surfaces (surfaces)
-import           Grammar.Parser.Partitions.Prepositions   (surfaceMarkers)
-import           Grammar.Parser.Rules.Atomics.Utils       (parseRule)
-import           Model.Parser.Atomics.Adjectives          (Adjective)
-import           Model.Parser.Atomics.Misc                (Determiner)
-import           Model.Parser.Atomics.Nouns               (Container,
-                                                           DirectionalStimulus,
-                                                           Edible,
-                                                           SomaticStimulus,
-                                                           Surface (Surface))
-import           Model.Parser.Atomics.Prepositions        (SurfaceMarker (SurfaceMarker))
-import           Model.Parser.Composites.Nouns            (ContainerPhrase,
-                                                           DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                           EdibleNounPhrase (EdibleNounPhrase),
-                                                           NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                           NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
-                                                           SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
-                                                           SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
-import           Model.Parser.Lexer                       (Lexeme)
-import           Text.Earley                              (Grammar)
-import           Text.Earley.Grammar                      (Prod, rule)
+import           Control.Applicative                        (Alternative ((<|>)))
+import           Data.Text                                  (Text)
+import           Grammar.Parser.Partitions.Nouns.Containers (containers)
+import           Grammar.Parser.Partitions.Nouns.Surfaces   (surfaces)
+import           Grammar.Parser.Partitions.Prepositions     (containmentMarkers,
+                                                             surfaceMarkers)
+import           Grammar.Parser.Rules.Atomics.Utils         (parseRule)
+import           Model.Parser.Atomics.Adjectives            (Adjective)
+import           Model.Parser.Atomics.Misc                  (Determiner)
+import           Model.Parser.Atomics.Nouns                 (Container (Container),
+                                                             DirectionalStimulus,
+                                                             Edible,
+                                                             SomaticStimulus,
+                                                             Surface (Surface))
+import           Model.Parser.Atomics.Prepositions          (ContainmentMarker (ContainmentMarker),
+                                                             SurfaceMarker (SurfaceMarker))
+import           Model.Parser.Composites.Nouns              (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                             DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                             EdibleNounPhrase (EdibleNounPhrase),
+                                                             NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                             NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
+                                                             SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
+                                                             SupportPhrase (ContainerSupport, SurfaceSupport),
+                                                             SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
+import           Model.Parser.Lexer                         (Lexeme)
+import           Text.Earley                                (Grammar)
+import           Text.Earley.Grammar                        (Prod, rule)
 
 nounPhraseRule :: NounPhraseRules a r
                     -> Grammar r (Prod r Text Lexeme (NounPhrase a))
@@ -38,7 +42,8 @@ containerPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme Container
                                        -> Grammar r (Prod r Text Lexeme ContainerPhrase)
-containerPhraseRules determinerRule adjRule containerRule =
+containerPhraseRules determinerRule adjRule containerRule = do
+  containmentMarker <- parseRule containmentMarkers ContainmentMarker
   nounPhraseRule rules >>= \nounPhrase ->
     rule $ SimpleContainerPhrase <$> nounPhrase
              <|> ContainerPhrase <$> containmentMarker <*> nounPhrase
@@ -49,6 +54,7 @@ containerPhraseRules determinerRule adjRule containerRule =
           , _adjRule = adjRule
           , _nounRule = containerRule
           }
+
 directionalStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme DirectionalStimulus
@@ -111,3 +117,13 @@ surfacePhraseRules determinerRule adjRule surfaceRule = do
           , _nounRule = surfaceRule
           }
 
+supportPhraseRules :: Prod r Text Lexeme Determiner
+                        -> Prod r Text Lexeme Adjective
+                        -> Grammar r (Prod r Text Lexeme SurfacePhrase)
+supportPhraseRules determinerRule adjRule = do
+  surface <- parseRule surfaces Surface
+  surfacePhrase <- surfacePhraseRules determinerRule adjRule surface
+  container <- parseRule containers Container
+  containerPhrase <- containerPhraseRules determinerRule adjRule container
+  pure $ SurfaceSupport <$> surfacePhrase
+   <|> ContainerSupport <$> containerPhrase
