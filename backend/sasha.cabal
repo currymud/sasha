@@ -100,9 +100,10 @@ library
       Grammar.Parser.Partitions.Nouns.Edibles
       Grammar.Parser.Partitions.Nouns.Objectives
       Grammar.Parser.Partitions.Nouns.SomaticStimulus
-      Grammar.Parser.Partitions.Nouns.Supportives
+      Grammar.Parser.Partitions.Nouns.Surfaces
       Grammar.Parser.Partitions.Nouns.Utils
       Grammar.Parser.Partitions.Prepositions
+      Grammar.Parser.Partitions.Verbs.AcquisitionVerbs
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs

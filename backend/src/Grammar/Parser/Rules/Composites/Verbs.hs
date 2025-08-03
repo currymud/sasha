@@ -54,7 +54,13 @@ stimulusVerbPhraseRules = do
            <|> SomaticStimulusVerbPhrase
              <$> somaticAccessVerb
              <*> somaticStimulusNounPhrase
-
+               {-
+supportPhraseRules :: Grammar r (Prod r Text Lexeme SupportPhrase)
+supportPhraseRules = do
+  determiner <- parseRule determiners Determiner
+  adj <- parseRule adjectives Adjective
+  surface
+  -}
 consumptionVerbPhraseRules :: Grammar r (Prod r Text Lexeme ConsumptionVerbPhrase)
 consumptionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner

@@ -123,7 +123,7 @@ instance ToText SurfacePhrase where
 type SurfacePhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data SurfacePhraseRules r = SurfacePhraseRules
   { _surfaceRule       :: Prod r Text Lexeme (NounPhrase Surface)
-  , _surfaceMarkerRule :: Prod r Text Lexeme (NounPhrase SurfaceMarker)
+  , _surfaceMarkerRule :: Prod r Text Lexeme SurfaceMarker
   }
 
 type SupportPhrase :: Type
