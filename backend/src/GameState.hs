@@ -52,20 +52,9 @@ import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey)
 
-youSeeM :: Set (GID Object)
-        -> GameComputation Identity ()
-youSeeM objectIDs = do
-  if Data.Set.null objectIDs
-    then modifyNarration $ updateActionConsequence "You don't see anything interesting."
-    else do
-      descriptions <- mapM getObjectDescription (Data.Set.toList objectIDs)
-      let combinedDescription = "You see: " <> Data.Text.intercalate ", " descriptions
-      modifyNarration $ updateActionConsequence combinedDescription
-  where
-    getObjectDescription :: GID Object -> GameComputation Identity Text
-    getObjectDescription oid = do
-      obj <- getObjectM oid
-      pure $ _description obj
+youSeeM :: GameComputation Identity ()
+youSeeM = do
+  objectSemanticMap <- _objectSemanticMap <$> getPlayerLocationM
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()

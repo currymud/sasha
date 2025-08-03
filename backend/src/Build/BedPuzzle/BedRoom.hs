@@ -8,8 +8,10 @@ import           Build.Identifiers.Objects                                    (c
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
                                                                                fromList)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
+import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
                                                                                pill,
+                                                                               table)
+import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
                                                                                table)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
@@ -21,10 +23,12 @@ import           Model.GameState                                              (A
                                                                                Object,
                                                                                SomaticAccessActionF)
 import           Model.GID                                                    (GID)
+import           Model.Parser.Atomics.Nouns                                   (DirectionalStimulus,
+                                                                               Objective)
 import           Model.Parser.Atomics.Verbs                                   (DirectionalStimulusVerb,
                                                                                ImplicitStimulusVerb,
                                                                                SomaticAccessVerb)
-import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey),
+import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
 
@@ -35,9 +39,28 @@ bedroomInBed = Location
   , _locationActionManagement = actionMap
   }
 
+dirChair :: DirectionalStimulus
+dirChair = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.chair
+
+dirTable :: DirectionalStimulus
+dirTable = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.table
+
+dirPill :: DirectionalStimulus
+dirPill = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pill
+
+objChair :: Objective
+objChair = Grammar.Parser.Partitions.Nouns.Objectives.chair
+
+objTable :: Objective
+objTable = Grammar.Parser.Partitions.Nouns.Objectives.table
+
 objectSemanticMap :: Map NounKey (GID Object)
-objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey chair, chairObjGID)
-                                             , (DirectionalStimulusKey table, tableObjGID)]
+objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair, chairObjGID)
+                                             , (DirectionalStimulusKey dirTable, tableObjGID)
+                                             , (DirectionalStimulusKey dirPill, pillObjGID)
+                                             , (ObjectiveKey objChair, chairObjGID)
+                                             , (ObjectiveKey objTable, tableObjGID)
+                                             ]
 
 actionMap :: ActionManagement
 actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs

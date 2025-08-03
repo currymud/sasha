@@ -11,7 +11,7 @@ lexemes = nub $
     <> supportives'
 
 objectives' :: [Lexeme]
-objectives' = [PILL,MAIL,SATCHEL,TOWEL,ROBE]
+objectives' = [TABLE,CHAIR,PILL,MAIL,SATCHEL,TOWEL,ROBE]
 
 containers' :: [Lexeme]
 containers' = [SATCHEL,ROBE]
