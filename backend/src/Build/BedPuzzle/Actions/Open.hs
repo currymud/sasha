@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use mapM_" #-}
 module Build.BedPuzzle.Actions.Open where
 import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
@@ -34,15 +36,15 @@ openEyes = SomaticAccessActionF opened
   where
     opened :: Set ActionEffectKey ->  ActionEffectMap -> GameComputation Identity ()
     opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
-      oids <- Data.Set.fromList . catMaybes <$> mapM process (Data.Set.toList actionEffectKeys)
+      mapM process (Data.Set.toList actionEffectKeys)
       youSeeM
       modifyNarration (updateActionConsequence msg)
       where
-        process :: ActionEffectKey -> GameComputation Identity (Maybe (GID Object))
+        process :: ActionEffectKey -> GameComputation Identity ()
         process actionEffectKey@(LocationKey lid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
-            Just effects -> mapM_ handleEffect effects >> pure Nothing
+            Just effects -> mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
@@ -56,7 +58,7 @@ openEyes = SomaticAccessActionF opened
         process actionEffectKey@(ObjectKey oid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
-            Just effects -> mapM_ handleEffect effects >> pure (Just oid)
+            Just effects -> mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (DirectionalStimulusEffect directionalStimulusVerb changeTo) = do
@@ -77,7 +79,7 @@ openEyes = SomaticAccessActionF opened
                       updatedSomaticMap = Data.Map.Strict.insert somaticAccessVerb changeTo somaticMap
                   in actionMgmt { _somaticStimulusActionManagement = updatedSomaticMap }
                 updatePerceptionMapM oid
-        process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented") >> pure Nothing
---          modifyNarration (updateActionConsequence msg) -- changeImplicit look aid >> modifyNarration (updateActionConsequence msg)
+        process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
+
 msg :: Text
 msg = "You open your eyes, and the world comes into focus."

@@ -1,6 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Robe where
 import           Build.Identifiers.Actions                               (whatChairGID)
-import           Build.Identifiers.Objects                               (chairObjGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -10,7 +9,7 @@ import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName, _spatialRelationships),
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (ContainedIn))
 import           Model.GID                                               (GID)
@@ -30,7 +29,6 @@ robeObj =
        , _description = "your bathrobe"
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
-       , _spatialRelationships = Data.Set.fromList [ContainedIn chairObjGID]
        }
   where
     verbMaps :: ActionManagement

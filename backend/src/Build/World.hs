@@ -2,7 +2,8 @@
 module Build.World (world) where
 
 import           Build.Identifiers.Locations (locationMap)
-import           Build.Identifiers.Objects   (chairObjGID, objectMap)
+import           Build.Identifiers.Objects   (chairObjGID, objectMap,
+                                              robeObjGID)
 import           Data.Map.Strict             (Map)
 import qualified Data.Map.Strict
 import           Data.Set                    (Set)
@@ -25,4 +26,7 @@ world = World objectMap' locationMap' mempty spatialRelationships
    spatialRelationships =  SpatialRelationshipMap srMap
    srMap :: Map (GID Object) (Set SpatialRelationship)
    srMap = Data.Map.Strict.fromList
-     [ (chairObjGID, Data.Set.fromList [Supports Data.Set.empty])]
+     [ (chairObjGID, chairHolds)]
+   chairHolds :: Set SpatialRelationship
+   chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
+     -- The robe is contained in the chair, and the chair contains the robe.

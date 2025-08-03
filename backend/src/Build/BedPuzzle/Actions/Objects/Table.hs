@@ -13,7 +13,7 @@ import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (ActionManagement (ActionManagement),
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName, _spatialRelationships),
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -32,7 +32,6 @@ tableObj =
        , _description = "It's the table next to your bed."
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
-       , _spatialRelationships = Data.Set.empty
        }
   where
     verbMaps :: ActionManagement

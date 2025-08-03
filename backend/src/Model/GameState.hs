@@ -22,7 +22,7 @@ module Model.GameState (
   , ImplicitStimulusActionMap
   , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
-  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement,_spatialRelationships)
+  , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
@@ -292,7 +292,6 @@ data Object = Object
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
  , _objectActionManagement :: ActionManagement
- , _spatialRelationships   :: Set SpatialRelationship
 --  , _objectEffects          :: ObjectEffects
  }
 
