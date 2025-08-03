@@ -1,4 +1,10 @@
-module Grammar.Parser.Rules.Composites.Nouns where
+module Grammar.Parser.Rules.Composites.Nouns (containerPhraseRules,
+                                              directionalStimulusNounPhraseRules,
+                                              edibleNounPhraseRules,
+                                              nounPhraseRule,
+                                              somaticStimulusNounPhraseRules,
+                                              surfacePhraseRules,
+                                              supportPhraseRules) where
 import           Control.Applicative                        (Alternative ((<|>)))
 import           Data.Text                                  (Text)
 import           Grammar.Parser.Partitions.Nouns.Containers (containers)
@@ -10,7 +16,7 @@ import           Model.Parser.Atomics.Adjectives            (Adjective)
 import           Model.Parser.Atomics.Misc                  (Determiner)
 import           Model.Parser.Atomics.Nouns                 (Container (Container),
                                                              DirectionalStimulus,
-                                                             Edible,
+                                                             Edible, Objective,
                                                              SomaticStimulus,
                                                              Surface (Surface))
 import           Model.Parser.Atomics.Prepositions          (ContainmentMarker (ContainmentMarker),
@@ -20,23 +26,13 @@ import           Model.Parser.Composites.Nouns              (ContainerPhrase (Co
                                                              EdibleNounPhrase (EdibleNounPhrase),
                                                              NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                              NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
+                                                             ObjectPhrase (ObjectPhrase),
                                                              SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
                                                              SupportPhrase (ContainerSupport, SurfaceSupport),
                                                              SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
 import           Model.Parser.Lexer                         (Lexeme)
 import           Text.Earley                                (Grammar)
 import           Text.Earley.Grammar                        (Prod, rule)
-
-nounPhraseRule :: NounPhraseRules a r
-                    -> Grammar r (Prod r Text Lexeme (NounPhrase a))
-nounPhraseRule (NounPhraseRules{..}) =
-  rule $ SimpleNounPhrase <$> _nounRule
-           <|> NounPhrase <$> _determinerRule <*> _nounRule
-           <|> DescriptiveNounPhrase <$> _adjRule <*> _nounRule
-           <|> DescriptiveNounPhraseDet
-                 <$> _determinerRule
-                 <*> _adjRule
-                 <*> _nounRule
 
 containerPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
@@ -85,6 +81,31 @@ edibleNounPhraseRules determinerRule adjRule directionalStimulusRule =
           , _nounRule = directionalStimulusRule
           }
 
+nounPhraseRule :: NounPhraseRules a r
+                    -> Grammar r (Prod r Text Lexeme (NounPhrase a))
+nounPhraseRule (NounPhraseRules{..}) =
+  rule $ SimpleNounPhrase <$> _nounRule
+           <|> NounPhrase <$> _determinerRule <*> _nounRule
+           <|> DescriptiveNounPhrase <$> _adjRule <*> _nounRule
+           <|> DescriptiveNounPhraseDet
+                 <$> _determinerRule
+                 <*> _adjRule
+                 <*> _nounRule
+
+objectPhraseRules :: Prod r Text Lexeme Determiner
+                                       -> Prod r Text Lexeme Adjective
+                                       -> Prod r Text Lexeme Objective
+                                       -> Grammar r (Prod r Text Lexeme (NounPhrase Objective))
+objectPhraseRules determinerRule adjRule objectiveRule =
+  nounPhraseRule rules >>= \nounPhrase ->
+    rule $ ObjectPhrase <$> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = determinerRule
+          , _adjRule = adjRule
+          , _nounRule = objectiveRule
+          }
 somaticStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme SomaticStimulus
@@ -119,7 +140,7 @@ surfacePhraseRules determinerRule adjRule surfaceRule = do
 
 supportPhraseRules :: Prod r Text Lexeme Determiner
                         -> Prod r Text Lexeme Adjective
-                        -> Grammar r (Prod r Text Lexeme SurfacePhrase)
+                        -> Grammar r (Prod r Text Lexeme SupportPhrase)
 supportPhraseRules determinerRule adjRule = do
   surface <- parseRule surfaces Surface
   surfacePhrase <- surfacePhraseRules determinerRule adjRule surface

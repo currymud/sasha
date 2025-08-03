@@ -10,6 +10,7 @@ import           Grammar.Parser.Partitions.Misc                          (determ
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
 import           Grammar.Parser.Partitions.Nouns.Edibles                 (edibles)
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (acquisitionVerbs)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs  (edibleConsumptionVerbs)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
@@ -24,10 +25,12 @@ import           Model.Parser.Atomics.Misc                               (Determ
 import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus),
                                                                           Edible (Edible),
                                                                           SomaticStimulus (SomaticStimulus))
-import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb (DirectionalStimulusVerb),
+import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
+                                                                          DirectionalStimulusVerb (DirectionalStimulusVerb),
                                                                           EdibleConsumptionVerb (EdibleConsumptionVerb),
                                                                           SomaticAccessVerb (SomaticAccessVerb))
-import           Model.Parser.Composites.Verbs                           (ConsumptionVerbPhrase (EdibleVerbPhrase),
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase,
+                                                                          ConsumptionVerbPhrase (EdibleVerbPhrase),
                                                                           Imperative (ConsumptionVerbPhrase, StimulusVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
@@ -54,13 +57,16 @@ stimulusVerbPhraseRules = do
            <|> SomaticStimulusVerbPhrase
              <$> somaticAccessVerb
              <*> somaticStimulusNounPhrase
-               {-
-supportPhraseRules :: Grammar r (Prod r Text Lexeme SupportPhrase)
-supportPhraseRules = do
+{-
+acquisitionVerbPhraseRules :: Grammar r (Prod r Text Lexeme AcquisitionVerbPhrase)
+acquisitionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner
   adj <- parseRule adjectives Adjective
-  surface
-  -}
+  acquisitionVerb <- parseRule acquisitionVerbs AcquisitionVerb
+  objectPhrase <- objectPhrase
+  rule $ SomaticVerbPhrase <$> somaticAccessVerb
+           <*> somaticStimulusNounPhrase
+-}
 consumptionVerbPhraseRules :: Grammar r (Prod r Text Lexeme ConsumptionVerbPhrase)
 consumptionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner
