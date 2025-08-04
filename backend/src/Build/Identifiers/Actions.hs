@@ -5,6 +5,7 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           dsvActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAt)
+import qualified Build.BedPuzzle.Actions.Get
 import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
@@ -16,7 +17,9 @@ import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTab
                                                                           whatTable)
 import           Build.BedPuzzle.Actions.Open                            (openEyes,
                                                                           openEyesDenied)
-import           Build.Templates.Identification                          (makeDirectionalStimulusActionGIDsAndMap,
+
+import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
+                                                                          makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
                                                                           makeSomaticAccessActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
@@ -37,6 +40,15 @@ locGet :: AcquisitionActionF
 locGet = Build.BedPuzzle.Actions.Locations.Bedroom.Get.get
 -- implicitStimulusActionMap
 
+playerGet :: AcquisitionActionF
+playerGet = Build.BedPuzzle.Actions.Get.get
+
+dizzyGet :: AcquisitionActionF
+dizzyGet = Build.BedPuzzle.Actions.Get.getDenied
+
+getDenied :: AcquisitionActionF
+getDenied = Build.BedPuzzle.Actions.Locations.Bedroom.Get.getDenied
+
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
 
 -- directionalStimulusActionMap
@@ -51,3 +63,6 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| seeChair|]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
+
+makeAcquisitionActionGIDsAndMap [[| locGet |], [| getDenied |], [| dizzyGet |], [| playerGet|]]
+

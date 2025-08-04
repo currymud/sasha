@@ -4,25 +4,21 @@ import qualified Data.Map.Strict
 import           Language.Haskell.TH        (reify)
 import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
 import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
-                                             Exp (AppE, ConE, ListE, LitE, TupE, UnboundVarE, VarE),
+                                             Exp (AppE, ConE, ListE, LitE, TupE, VarE),
                                              Info (VarI), Lit (IntegerL), Name,
                                              Pat (VarP), Q,
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
-import           Model.GameState            (DirectionalStimulusActionF,
+import           Model.GameState            (AcquisitionActionF,
+                                             DirectionalStimulusActionF,
                                              ImplicitStimulusActionF, Location,
                                              Object,
-                                             PlayerProcessImplicitVerbMap,
                                              ProcessImplicitStimulusVerb,
-                                             ProcessImplicitVerbMaps,
                                              SomaticAccessActionF)
 import           Model.GID                  (GID (GID))
 import           Model.Label                (Label (Label))
-import           Model.Mappings             (GIDToDataMap (GIDToDataMap))
-import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb,
-                                             ImplicitStimulusVerb)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
 import           Model.Parser.Lexer         (Lexeme)
-import           Prelude                    hiding (exp)
 
 makeLabels :: [(ExpQ, Lexeme)] -> Q [Dec]
 makeLabels expLexemePairs = do
@@ -66,6 +62,25 @@ makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 
 -- Updated for new action system
 
+makeAcquisitionActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeAcquisitionActionGIDsAndMap = makeGIDsAndMapForType ''AcquisitionActionF "acquisitionActionMap"
+
+-- Also add this helper function for consistency with the pattern:
+makeAcquisitionActionGID :: Exp -> Int -> Q [Dec]
+makeAcquisitionActionGID exp gidValue = do
+  case exp of
+    VarE functionName -> do
+      let originalNameStr = nameBase functionName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''AcquisitionActionF)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail "makeAcquisitionActionGID expects a simple variable name"
+
 makeImplicitStimulusActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeImplicitStimulusActionGIDsAndMap = makeGIDsAndMapForType ''ImplicitStimulusActionF "implicitStimulusActionMap"
 
@@ -99,7 +114,6 @@ makeGIDForType _ _ = fail "Expected variable"
 makeMapForType :: Name -> String -> [(Exp, Int)] -> Q Dec
 makeMapForType typeName mapName pairs = do
   let mapNameQ = mkName mapName
-      mapType = AppT (ConT typeName) (ConT typeName)  -- This line looks wrong
 
       tuples = [TupE [Just (VarE (mkName (nameBase name ++ "GID"))), Just (VarE name)]
                | (VarE name, _) <- pairs]

@@ -26,7 +26,7 @@ getDenied = AcquisitionActionF (const (const (const denied)))
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    msg = "not possibe"
 
 get :: AcquisitionActionF
 get = AcquisitionActionF getit
