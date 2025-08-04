@@ -40,6 +40,6 @@ manageAcquisitionProcess avp = do
             Just actionEffectMap -> do
               loc <- getPlayerLocationM
               actionFunc loc actionEffectMap avp
-
+        Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
 actionKey :: GID AcquisitionActionF -> ActionKey
 actionKey = AcquisitionalActionKey

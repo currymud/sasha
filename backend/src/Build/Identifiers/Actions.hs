@@ -5,6 +5,7 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           dsvActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAt)
+import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
@@ -20,9 +21,9 @@ import           Build.Templates.Identification                          (makeDi
                                                                           makeSomaticAccessActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
-import           Model.GameState                                         (DirectionalStimulusActionF,
+import           Model.GameState                                         (AcquisitionActionF,
+                                                                          DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF)
-
 
 isaEnabledLook :: ImplicitStimulusActionF
 isaEnabledLook =
@@ -32,6 +33,8 @@ dsvEnabledLook :: DirectionalStimulusActionF
 dsvEnabledLook =
   dsvActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
+locGet :: AcquisitionActionF
+locGet = Build.BedPuzzle.Actions.Locations.Bedroom.Get.get
 -- implicitStimulusActionMap
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
@@ -45,6 +48,6 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| whatTable |]
                                           , [| seeTable |]
                                           , [| whatChair |]
-                                          , [| seeChair|] ]
+                                          , [| seeChair|]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]

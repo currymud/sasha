@@ -12,6 +12,7 @@ import           Data.Text                       (Text)
 import           GameState                       (getLocationM, modifyLocationM,
                                                   modifyNarration,
                                                   modifyObjectActionManagementM,
+                                                  parseAcquisitionPhrase,
                                                   updatePerceptionMapM, youSeeM)
 import           Model.GameState                 (AcquisitionActionF (AcquisitionActionF),
                                                   ActionEffectKey (LocationKey, ObjectKey),
@@ -62,17 +63,6 @@ get = AcquisitionActionF getit
         Nothing -> error $ "get: object not found: check player inv " <> show obj
       pure ()
       -}
-
-parseAcquisitionPhrase :: AcquisitionVerbPhrase -> (ObjectPhrase,NounKey)
-parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of
-  SimpleAcquisitionVerbPhrase _ ophrase ->
-    let obj = case ophrase of
-               (ObjectPhrase (SimpleNounPhrase obj'))             -> obj'
-               (ObjectPhrase (NounPhrase _ obj'))                 -> obj'
-               (ObjectPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
-               (ObjectPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
-    in (ophrase, obj)
-  _ -> error "get: unsupported AcquisitionVerbPhrase"
 
 get :: AcquisitionActionF
 get = AcquisitionActionF getit

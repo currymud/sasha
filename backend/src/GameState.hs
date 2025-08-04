@@ -22,9 +22,11 @@ module GameState ( changeImplicit, clearNarration
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
                  , modifyPerceptionMapM
+                 , parseAcquisitionPhrase
                  , updatePerceptionMapM,youSeeM) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
+import qualified Data.Bifunctor
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, delete, empty, fromList,
@@ -49,9 +51,23 @@ import           Model.GameState               (ActionEffectKey (ObjectKey),
 import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+                                                NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
 import           Model.Parser.GCase            (NounKey (ObjectiveKey))
 
+
+parseAcquisitionPhrase :: AcquisitionVerbPhrase -> (ObjectPhrase,NounKey)
+parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of
+  SimpleAcquisitionVerbPhrase _ ophrase ->
+    let obj = case ophrase of
+               (ObjectPhrase (SimpleNounPhrase obj'))             -> obj'
+               (ObjectPhrase (NounPhrase _ obj'))                 -> obj'
+               (ObjectPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
+               (ObjectPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
+    in (ophrase, obj)
+  _ -> error "get: unsupported AcquisitionVerbPhrase"
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do
