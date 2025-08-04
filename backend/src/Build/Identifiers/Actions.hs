@@ -10,6 +10,8 @@ import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
+import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPill,
+                                                                          getPillDenied)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
                                                                           whatPill)
@@ -64,5 +66,10 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
-makeAcquisitionActionGIDsAndMap [[| locGet |], [| getDenied |], [| dizzyGet |], [| playerGet|]]
+makeAcquisitionActionGIDsAndMap [[| locGet |],
+                                 [| getDenied |],
+                                 [| dizzyGet |],
+                                 [| playerGet|],
+                                 [| getPillDenied |],
+                                 [| getPill|]  ]
 

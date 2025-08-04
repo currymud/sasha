@@ -148,7 +148,7 @@ type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ())
  | RemovedFromF (Location -> NounKey -> GameComputation Identity ())
- | AcquiredFromF (Object -> AcquisitionVerbPhrase ->  GameComputation Identity ())
+ | AcquiredFromF (Location -> AcquisitionVerbPhrase ->  GameComputation Identity ())
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
