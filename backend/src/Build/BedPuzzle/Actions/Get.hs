@@ -26,6 +26,7 @@ import           Model.Parser.Atomics.Nouns    (Objective (Objective))
 import           Model.Parser.Composites.Nouns (NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                 ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
+import           Model.Parser.GCase            (NounKey (ObjectiveKey))
 
 
 getDenied :: AcquisitionActionF
@@ -42,14 +43,15 @@ get = AcquisitionActionF getit
 -- Data.Bifunctor.second ObjectKey
     getit :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
     getit loc (ActionEffectMap actionEffectMap) avp = do
-      let (adj,obj) = case avp of
+      let (adj,obj :: NounKey) = Data.Bifunctor.second ObjectiveKey $ case avp of
                         SimpleAcquisitionVerbPhrase _ ophrase ->
                           case ophrase of
                             (ObjectPhrase (SimpleNounPhrase obj')) -> (Nothing,obj')
                             (ObjectPhrase (NounPhrase _ obj')) -> (Nothing,obj')
                             (ObjectPhrase (DescriptiveNounPhrase adj' obj')) -> (Just adj',obj')
-                            (ObjectPhrase (DescriptiveNounPhraseDet _ adj' obj')) -> (Just adj',obj)
+                            (ObjectPhrase (DescriptiveNounPhraseDet _ adj' obj')) -> (Just adj',obj')
                         _ -> error "get: unsupported AcquisitionVerbPhrase"
+
       -- we're not doing disambiguation yet
       oid <- case Data.Map.Strict.lookup obj loc._objectSemanticMap of
         Just o  ->  if Data.Set.null o
