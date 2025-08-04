@@ -27,8 +27,8 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, delete, empty, fromList,
-                                                insert, null, toList)
+import           Data.Set                      (Set, empty, fromList, insert,
+                                                member, null, toList)
 import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (ActionEffectKey (ObjectKey),
@@ -50,7 +50,7 @@ import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
-import           Model.Parser.GCase            (NounKey (ObjectiveKey))
+import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey, ObjectiveKey))
 
 
 youSeeM :: GameComputation Identity ()
@@ -58,10 +58,9 @@ youSeeM = do
   playerLocation <- getPlayerLocationM
   let objectSemanticMap = _objectSemanticMap playerLocation
 
-  -- Filter for ObjectiveKey entries and get their object ID sets
+  -- Filter for ObjectiveKey entries and get their object IDs
   let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
-      objectiveOidSets = map snd objectiveEntries
-      objectiveOids = concatMap Data.Set.toList objectiveOidSets
+      objectiveOids = map snd objectiveEntries
 
   -- Get all the objects and their descriptions
   objectDescriptions <- mapM getObjectDescription objectiveOids
@@ -80,8 +79,8 @@ youSeeM = do
       modifyNarration $ updateActionConsequence seeText
   where
     isObjectiveKey :: NounKey -> Bool
-    isObjectiveKey (ObjectiveKey _) = True
-    isObjectiveKey _                = False
+    isObjectiveKey (DirectionalStimulusKey _) = True
+    isObjectiveKey _                          = False
 
     getObjectDescription :: GID Object -> GameComputation Identity Text
     getObjectDescription oid = do
@@ -130,9 +129,8 @@ getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEff
 getLocationObjectIDsM lid = do
   location <- getLocationM lid
   let objectSemanticMap = _objectSemanticMap location
-      objectGIDSets = Data.Map.Strict.elems objectSemanticMap
-      allObjectGIDs = concatMap Data.Set.toList objectGIDSets
-  pure $ Data.Set.fromList (map ObjectKey allObjectGIDs)
+      objectGIDs = Data.Map.Strict.elems objectSemanticMap
+  pure $ Data.Set.fromList (map ObjectKey objectGIDs)
 
 changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
 changeImplicit verb newActionGID = do
@@ -143,7 +141,6 @@ changeImplicit verb newActionGID = do
         updatedImplicitMap = Data.Map.Strict.insert verb newActionGID implicitMap
         updatedActionMgmt = actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
     in loc { _locationActionManagement = updatedActionMgmt }
-
 -- There is some cruft forming
 getPlayerLocationGID :: GameComputation Identity (GID Location)
 getPlayerLocationGID =
@@ -307,26 +304,15 @@ addObjectToLocationSemanticMapM :: GID Location
                                 -> GameComputation Identity ()
 addObjectToLocationSemanticMapM lid nounKey oid =
   modifyLocationM lid $ \loc ->
-    let currentMap = _objectSemanticMap loc
-        currentSet = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentMap
-        updatedSet = Data.Set.insert oid currentSet
-        updatedMap = Data.Map.Strict.insert nounKey updatedSet currentMap
-    in loc { _objectSemanticMap = updatedMap }
+    loc { _objectSemanticMap = Data.Map.Strict.insert nounKey oid (_objectSemanticMap loc) }
 
 -- Remove an object from a location's semantic map
 removeObjectFromLocationSemanticMapM :: GID Location
                                      -> NounKey
-                                     -> GID Object
                                      -> GameComputation Identity ()
-removeObjectFromLocationSemanticMapM lid nounKey oid =
+removeObjectFromLocationSemanticMapM lid nounKey =
   modifyLocationM lid $ \loc ->
-    let currentMap = _objectSemanticMap loc
-        currentSet = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentMap
-        updatedSet = Data.Set.delete oid currentSet
-        updatedMap = if Data.Set.null updatedSet
-                    then Data.Map.Strict.delete nounKey currentMap
-                    else Data.Map.Strict.insert nounKey updatedSet currentMap
-    in loc { _objectSemanticMap = updatedMap }
+    loc { _objectSemanticMap = Data.Map.Strict.delete nounKey (_objectSemanticMap loc) }
 
 -- Update object action management
 modifyObjectActionManagementM :: GID Object
@@ -335,7 +321,6 @@ modifyObjectActionManagementM :: GID Object
 modifyObjectActionManagementM oid actionF =
   modifyObjectM oid $ \obj ->
     obj { _objectActionManagement = actionF (_objectActionManagement obj) }
-
 clearNarration :: GameComputation Identity ()
 clearNarration = modifyNarration (const emptyNarration)
   where

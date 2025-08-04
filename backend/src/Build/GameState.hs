@@ -83,7 +83,7 @@ player = Player
   , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs
   , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
-  , _inventory = initialInventoryGID
+  , _inventory = Data.Map.Strict.empty
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)

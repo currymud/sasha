@@ -5,12 +5,12 @@ import           Control.Monad.Identity                                  (Identi
 import           Control.Monad.Reader.Class                              (asks)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
+import qualified Data.Set
 import           Data.Text                                               (Text)
 import           GameState                                               (getActionManagementM,
                                                                           getObjectM,
                                                                           getPlayerActionsM,
                                                                           modifyNarration)
-import           GHC.RTS.Flags                                           (ProfFlags (doHeapProfile))
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getPlayerLocationM)
 import           Model.GameState                                         (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
@@ -25,7 +25,6 @@ import           Model.GameState                                         (Action
                                                                           PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus))
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -64,7 +63,7 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
     actionEnabled loc = do
       let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
       case Data.Map.Strict.lookup isv actionMap of
-        Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
+        Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
         Just (actionGID :: GID ImplicitStimulusActionF) -> do
           actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
@@ -110,12 +109,17 @@ manageDirectionalStimulusProcess dsv dsnp = do
           location <- getPlayerLocationM
           lookable actionFunc dsnp location
   where
-    lookable (DirectionalStimulusActionF actionF) dsnp@(DirectionalStimulusNounPhrase np)  loc =
+    lookable (DirectionalStimulusActionF actionF) dsnp@(DirectionalStimulusNounPhrase np) loc =
       case Data.Map.Strict.lookup nounKey (_objectSemanticMap loc) of
         Nothing -> do
           modifyNarration $ updateActionConsequence "That's not here. Try something else."
-        Just objGID -> do
-          actionF dsnp objGID
+        Just objGIDSet -> do
+          -- Handle the case where we have a set of object GIDs
+          -- For now, we'll just take the first object from the set
+          -- In a more sophisticated implementation, you might want to handle ambiguity
+          case Data.Set.toList objGIDSet of
+            [] -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
+            (firstObjGID:_) -> actionF dsnp firstObjGID
       where
         nounKey = DirectionalStimulusKey dsn'
         dsn' = case np of
@@ -123,4 +127,3 @@ manageDirectionalStimulusProcess dsv dsnp = do
                NounPhrase _ dsn                 -> dsn
                DescriptiveNounPhrase  _ dsn     -> dsn
                DescriptiveNounPhraseDet _ _ dsn -> dsn
-

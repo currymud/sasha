@@ -53,6 +53,7 @@ import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
+import           Language.Haskell.TH           (location)
 import           Model.GID                     (ActionId, GID)
 import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
@@ -61,7 +62,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+                                                ObjectPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 import           Model.Parser.GCase            (NounKey, VerbKey)
 
@@ -144,7 +146,7 @@ newtype SomaticAccessActionF = SomaticAccessActionF
 
 type AcquisitionActionF :: Type
 newtype AcquisitionActionF = AcquisitionActionF
-  { _acquisitionAction :: Set ActionEffectKey -> ActionEffectMap ->  GameComputation Identity () }
+  { _acquisitionAction :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity () }
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
@@ -228,7 +230,7 @@ data GameState = GameState
 type Location :: Type
 data Location = Location {
     _title                    :: Text
-  , _objectSemanticMap        :: Map NounKey (GID Object)
+  , _objectSemanticMap        :: Map NounKey (Set (GID Object))
   , _locationActionManagement :: ActionManagement
 --  , _locationEffects          :: LocationEffects
 }
@@ -254,16 +256,20 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
   , _perceptables  :: Perceptables
-  , _inventory     :: GID Object
+  , _inventory     :: Map ObjectPhrase (Set (GID Object))
   , _actionKeyMap  :: ActionKeyMap
   }
 
+-- object phrase can have multiple same object "the white pill" which cannot exist
+-- and must be checked for
+-- however, we use a Set to allow for sensible ambiguity "the white pill" and "the red pill"
+-- can both be encoded as "the pill" in the same location
 type PlayerActions :: Type
 data PlayerActions = PlayerActions
  { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
  , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
  , _somaticStimulusActions :: Map SomaticAccessVerb (GID SomaticAccessActionF)
- , _acquisitionActions :: Map AcquisitionVerb (GID AcquisitionActionF)
+ , _acquisitionActions :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
  }
   deriving stock (Show, Eq, Ord)
 

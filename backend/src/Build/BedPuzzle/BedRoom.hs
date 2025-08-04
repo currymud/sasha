@@ -8,6 +8,8 @@ import           Build.Identifiers.Objects                                    (c
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
                                                                                fromList)
+import           Data.Set                                                     (Set)
+import qualified Data.Set
 import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
                                                                                pill,
                                                                                table)
@@ -57,12 +59,12 @@ objChair = Grammar.Parser.Partitions.Nouns.Objectives.chair
 objTable :: Objective
 objTable = Grammar.Parser.Partitions.Nouns.Objectives.table
 
-objectSemanticMap :: Map NounKey (GID Object)
-objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair, chairObjGID)
-                                             , (DirectionalStimulusKey dirTable, tableObjGID)
-                                             , (DirectionalStimulusKey dirPill, pillObjGID)
-                                             , (ObjectiveKey objChair, chairObjGID)
-                                             , (ObjectiveKey objTable, tableObjGID)
+objectSemanticMap :: Map NounKey (Set (GID Object))
+objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
+                                             , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
+                                             , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
+                                             , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
+                                             , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
                                              ]
 
 actionMap :: ActionManagement
