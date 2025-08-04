@@ -30,3 +30,9 @@ seePill = DirectionalStimulusActionF (const (const seePill'))
     seePill' = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "Your salvation in pill form! Cure your headache and get out of bed!"
+
+getPill :: AcqusitionActionF 
+getPill = AcquiredFromF $ getPill'
+  where
+    getPill' :: Object -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    getPill' obj avp =
