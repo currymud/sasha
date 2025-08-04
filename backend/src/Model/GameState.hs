@@ -8,7 +8,7 @@ module Model.GameState (
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement)
   , ActionMaps (ActionMaps, _acquisitionActionMap, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap)
-  , AcquisitionActionF (AcquisitionActionF, _acquisitionAction)
+  , AcquisitionActionF (AcquisitionActionF, RemovedFromF, AcquiredFromF)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
@@ -145,8 +145,10 @@ newtype SomaticAccessActionF = SomaticAccessActionF
   { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
 
 type AcquisitionActionF :: Type
-newtype AcquisitionActionF = AcquisitionActionF
-  { _acquisitionAction :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity () }
+data AcquisitionActionF
+ = AcquisitionActionF (Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ())
+ | RemovedFromF (Location -> NounKey -> GameComputation Identity ())
+ | AcquiredFromF (Object -> AcquisitionVerbPhrase ->  GameComputation Identity ())
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)

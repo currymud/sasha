@@ -14,6 +14,7 @@ import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (c
                                                                                pill,
                                                                                table)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
+                                                                               pill,
                                                                                table)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
@@ -59,12 +60,16 @@ objChair = Grammar.Parser.Partitions.Nouns.Objectives.chair
 objTable :: Objective
 objTable = Grammar.Parser.Partitions.Nouns.Objectives.table
 
+objPill :: Objective
+objPill = Grammar.Parser.Partitions.Nouns.Objectives.pill
+
 objectSemanticMap :: Map NounKey (Set (GID Object))
 objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
                                              , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
                                              , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
                                              , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
                                              , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
+                                             , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
                                              ]
 
 actionMap :: ActionManagement

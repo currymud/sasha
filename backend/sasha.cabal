@@ -56,7 +56,9 @@ library
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
+      Build.BedPuzzle.Actions.Locations.Bedroom.Get
       Build.BedPuzzle.Actions.Objects.Pill
+      Build.BedPuzzle.Actions.Objects.Pill.Get
       Build.BedPuzzle.Actions.Objects.Pill.Look
       Build.BedPuzzle.Actions.Objects.Chair
       Build.BedPuzzle.Actions.Objects.Chair.Look
