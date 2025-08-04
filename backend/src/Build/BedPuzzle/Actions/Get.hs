@@ -3,9 +3,11 @@
 module Build.BedPuzzle.Actions.Get (get,getDenied) where
 import           Control.Monad.Error.Class     (throwError)
 import           Control.Monad.Identity        (Identity)
+import qualified Data.Bifunctor
 import qualified Data.Map.Strict
 import           Data.Maybe                    (catMaybes)
-import           Data.Set                      (Set, fromList, toList)
+import           Data.Set                      (Set, elemAt, fromList, null,
+                                                toList)
 import           Data.Text                     (Text)
 import           GameState                     (getLocationM, modifyLocationM,
                                                 modifyNarration,
@@ -17,11 +19,11 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
                                                 Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
                                                 GameComputation,
-                                                Location (_locationActionManagement),
+                                                Location (_locationActionManagement, _objectSemanticMap),
                                                 Object, updateActionConsequence)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Objective (Objective))
-import           Model.Parser.Composites.Nouns (NounPhrase (SimpleNounPhrase),
+import           Model.Parser.Composites.Nouns (NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                 ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
 
@@ -37,13 +39,21 @@ getDenied = AcquisitionActionF (const (const (const denied)))
 get :: AcquisitionActionF
 get = AcquisitionActionF getit
   where
+-- Data.Bifunctor.second ObjectKey
     getit :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
     getit loc (ActionEffectMap actionEffectMap) avp = do
-      obj <- case avp of
-               SimpleAcquisitionVerbPhrase _ ophrase ->
-                 case ophrase of
-                   (ObjectPhrase (SimpleNounPhrase obj)) -> pure ()
-
-                   _ -> throwError "get: SimpleNounPhrase expected"
-               _ -> throwError "get: SimpleAcquisitionVerbPhrase expected"
+      let (adj,obj) = case avp of
+                        SimpleAcquisitionVerbPhrase _ ophrase ->
+                          case ophrase of
+                            (ObjectPhrase (SimpleNounPhrase obj')) -> (Nothing,obj')
+                            (ObjectPhrase (NounPhrase _ obj')) -> (Nothing,obj')
+                            (ObjectPhrase (DescriptiveNounPhrase adj' obj')) -> (Just adj',obj')
+                            (ObjectPhrase (DescriptiveNounPhraseDet _ adj' obj')) -> (Just adj',obj)
+                        _ -> error "get: unsupported AcquisitionVerbPhrase"
+      -- we're not doing disambiguation yet
+      oid <- case Data.Map.Strict.lookup obj loc._objectSemanticMap of
+        Just o  ->  if Data.Set.null o
+                    then error $ "check player inventory not implemented: " <> show obj
+                    else pure $ Data.Set.elemAt 0 o
+        Nothing -> error $ "get: object not found: check player inv " <> show obj
       pure ()
