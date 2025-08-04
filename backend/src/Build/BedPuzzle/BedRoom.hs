@@ -30,6 +30,7 @@ import           Model.Parser.Atomics.Verbs                                   (A
                                                                                DirectionalStimulusVerb,
                                                                                ImplicitStimulusVerb,
                                                                                SomaticAccessVerb)
+import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
@@ -73,8 +74,9 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
-   acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+   acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
    acquisitionVerbs = Data.Map.Strict.empty
+
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 

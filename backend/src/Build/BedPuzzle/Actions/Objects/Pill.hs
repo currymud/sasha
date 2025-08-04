@@ -20,6 +20,7 @@ import           Model.Parser.Atomics.Verbs                              (Acquis
                                                                           SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase)
 
 pillObj :: Object
 pillObj =
@@ -41,7 +42,7 @@ pillObj =
     directionalStimulusVerbs = Data.Map.Strict.fromList [(look, notEvenPillGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
     acquisitionVerbs = Data.Map.Strict.empty
   {-
 When faced with the possibility Location and Object had different verb case management functions,

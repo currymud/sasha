@@ -13,7 +13,7 @@ module Model.GameState (
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  , Effect (ImplicitStimulusEffect, DirectionalStimulusEffect, SomaticAccessEffect)
+  , Effect ( AcquisitionEffect, ImplicitStimulusEffect, DirectionalStimulusEffect, SomaticAccessEffect)
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation)
@@ -27,7 +27,7 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _actionKeyMap,  _location, _perceptables, _playerActions)
+  , Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions)
   , PlayerActions (PlayerActions, _acquisitionActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
@@ -62,6 +62,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 import           Model.Parser.GCase            (NounKey, VerbKey)
 
 -- Game Transformers
@@ -175,7 +176,7 @@ type ActionEffectKey :: Type
 data ActionEffectKey
   = LocationKey (GID Location)
   | ObjectKey (GID Object)
-  | PlayerKey (GID Player)
+  | PlayerKey (GID Location) (GID Object)
   deriving stock (Show, Eq, Ord)
 
 type ActionKey :: Type
@@ -237,7 +238,7 @@ data ActionManagement = ActionManagement
   { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   , _somaticStimulusActionManagement :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-  , _acquisitionActionManagement :: Map AcquisitionVerb (GID AcquisitionActionF)
+  , _acquisitionActionManagement :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -253,6 +254,7 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
   , _perceptables  :: Perceptables
+  , _inventory     :: GID Object
   , _actionKeyMap  :: ActionKeyMap
   }
 

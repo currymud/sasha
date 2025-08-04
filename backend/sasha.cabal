@@ -55,6 +55,7 @@ library
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
+      Build.BedPuzzle.Actions.Get
       Build.BedPuzzle.Actions.Objects.Pill
       Build.BedPuzzle.Actions.Objects.Pill.Look
       Build.BedPuzzle.Actions.Objects.Chair
@@ -64,6 +65,7 @@ library
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.BedRoom
       Build.GameState
+      Build.Inventory
       Build.Identifiers.Actions
       Build.Identifiers.Locations
       Build.Identifiers.Objects

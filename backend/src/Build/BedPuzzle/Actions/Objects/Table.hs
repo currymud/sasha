@@ -23,6 +23,7 @@ import           Model.Parser.Atomics.Verbs                              (Acquis
                                                                           SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase)
 
 tableObj :: Object
 tableObj =
@@ -44,5 +45,5 @@ tableObj =
     directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatTableGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerb (GID AcquisitionActionF)
+    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
     acquisitionVerbs = Data.Map.Strict.empty
