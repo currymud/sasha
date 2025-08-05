@@ -147,8 +147,8 @@ newtype SomaticAccessActionF = SomaticAccessActionF
 type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | RemovedFromF (Location -> NounKey -> GameComputation Identity ())
- | AcquiredFromF (Location -> AcquisitionVerbPhrase ->  GameComputation Identity ())
+ | RemovedFromF (Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
+ | AcquiredFromF (Location -> AcquisitionVerbPhrase ->GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)

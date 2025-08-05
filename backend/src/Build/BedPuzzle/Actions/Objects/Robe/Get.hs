@@ -9,7 +9,7 @@ import           Data.Text                     (Text)
 import           GameState                     (getObjectM, modifyNarration,
                                                 parseAcquisitionPhrase)
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF),
-                                                GameComputation,
+                                                GameComputation (GameComputation),
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 Object (_description),
@@ -19,7 +19,7 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 import           Model.Parser.GCase            (NounKey)
 
 alreadyHaveRobe :: AcquisitionActionF
-alreadyHaveRobe = AcquiredFromF (const (const havePill))
+alreadyHaveRobe = AcquisitionActionF (const (const (const havePill)))
   where
     havePill :: GameComputation Identity ()
     havePill = modifyNarration $ updateActionConsequence msg
@@ -37,7 +37,7 @@ getRobeDenied = AcquisitionActionF (const (const (const denied)))
 getRobe :: AcquisitionActionF
 getRobe = AcquiredFromF getit
   where
-    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ()) )
     getit loc avp = do
       let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
 
@@ -56,6 +56,6 @@ getRobe = AcquiredFromF getit
 
           -- Add success message
           obj <- getObjectM oid
-          modifyNarration $ updateActionConsequence ("You take the " <> _description obj <> " and put it in your inventory.")
+          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> _description obj <> " and put it in your inventory.")
 
-        _ -> modifyNarration $ updateActionConsequence "You don't see that here."
+        _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."

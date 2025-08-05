@@ -19,7 +19,7 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 import           Model.Parser.GCase            (NounKey)
 
 alreadyHavePill :: AcquisitionActionF
-alreadyHavePill = AcquiredFromF (const (const havePill))
+alreadyHavePill = AcquisitionActionF (const (const (const havePill)))
   where
     havePill :: GameComputation Identity ()
     havePill = modifyNarration $ updateActionConsequence msg
@@ -37,7 +37,7 @@ getPillDenied = AcquisitionActionF (const (const (const denied)))
 getPill :: AcquisitionActionF
 getPill = AcquiredFromF getit
   where
-    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity (Either (GameComputation Identity ()) (GameComputation Identity ()))
     getit loc avp = do
       let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
 
@@ -56,6 +56,6 @@ getPill = AcquiredFromF getit
 
           -- Add success message
           obj <- getObjectM oid
-          modifyNarration $ updateActionConsequence ("You take the " <> _description obj <> " and put it in your inventory.")
+          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> _description obj <> " and put it in your inventory.")
 
-        _ -> modifyNarration $ updateActionConsequence "You don't see that here."
+        _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."

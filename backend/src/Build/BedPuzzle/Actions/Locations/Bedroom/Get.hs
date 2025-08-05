@@ -10,7 +10,7 @@ import           GameState                     (getObjectM,
                                                 modifyLocationM,
                                                 modifyNarration,
                                                 parseAcquisitionPhrase)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, RemovedFromF),
                                                 ActionEffectMap,
                                                 GameComputation,
                                                 Location (_locationActionManagement, _objectSemanticMap),
@@ -29,10 +29,13 @@ getDenied = AcquisitionActionF (const (const (const denied)))
     msg = "not possibe"
 
 get :: AcquisitionActionF
-get = AcquisitionActionF getit
+get = RemovedFromF getit
   where
-    getit :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit loc actionEffectMap avp = do
+-- (Location -> NounKey -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
+    getit :: Location
+               -> AcquisitionVerbPhrase
+               -> GameComputation Identity (Either (GameComputation Identity ()) (GameComputation Identity ()))
+    getit loc avp = do
       let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
 
       -- Find the object in the current location
@@ -53,6 +56,6 @@ get = AcquisitionActionF getit
 
           -- Add success message
           obj <- getObjectM oid
-          modifyNarration $ updateActionConsequence ("You take the " <> _description obj)
+          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> _description obj)
 
-        _ -> modifyNarration $ updateActionConsequence "You don't see that here."
+        _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."
