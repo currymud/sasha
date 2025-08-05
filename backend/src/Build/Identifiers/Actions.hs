@@ -15,6 +15,12 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPil
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
                                                                           whatPill)
+import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alreadyHaveRobe,
+                                                                          getRobe,
+                                                                          getRobeDenied)
+import           Build.BedPuzzle.Actions.Objects.Robe.Look               (notEvenRobe,
+                                                                          seeRobeChair,
+                                                                          whatRobe)
 import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTable,
                                                                           whatTable)
 import           Build.BedPuzzle.Actions.Open                            (openEyes,
@@ -62,7 +68,10 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| whatTable |]
                                           , [| seeTable |]
                                           , [| whatChair |]
-                                          , [| seeChair|]]
+                                          , [| seeChair|]
+                                          , [| whatRobe|]
+                                            , [| notEvenRobe|]
+                                          , [| seeRobeChair |]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
@@ -71,5 +80,8 @@ makeAcquisitionActionGIDsAndMap [[| locGet |],
                                  [| dizzyGet |],
                                  [| playerGet|],
                                  [| getPillDenied |],
-                                 [| getPill|]  ]
+                                 [| getPill|],
+                                 [| alreadyHaveRobe |],
+                                 [| getRobeDenied |],
+                                 [| getRobe|]]
 

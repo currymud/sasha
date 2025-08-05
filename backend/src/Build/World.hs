@@ -10,7 +10,7 @@ import           Data.Set                    (Set)
 import qualified Data.Set
 import           Model.GameState             (Location (Location),
                                               Object (Object),
-                                              SpatialRelationship (Supports),
+                                              SpatialRelationship (SupportedBy, Supports),
                                               SpatialRelationshipMap (SpatialRelationshipMap),
                                               World (World))
 import           Model.GID                   (GID)
@@ -26,7 +26,10 @@ world = World objectMap' locationMap' mempty spatialRelationships
    spatialRelationships =  SpatialRelationshipMap srMap
    srMap :: Map (GID Object) (Set SpatialRelationship)
    srMap = Data.Map.Strict.fromList
-     [ (chairObjGID, chairHolds)]
+     [ (chairObjGID, chairHolds)
+     , (robeObjGID, Data.Set.singleton robeHeld)
+     ]
    chairHolds :: Set SpatialRelationship
    chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
-     -- The robe is contained in the chair, and the chair contains the robe.
+   robeHeld :: SpatialRelationship
+   robeHeld = SupportedBy chairObjGID

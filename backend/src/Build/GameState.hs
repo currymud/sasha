@@ -1,18 +1,18 @@
 module Build.GameState where
-import           Build.Identifiers.Actions                               (agentCanSeeGID,
+import           Build.Identifiers.Actions                               (acquisitionActionMap,
+                                                                          agentCanSeeGID,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
+                                                                          playerGetGID,
                                                                           seeChairGID,
-                                                                          seePillGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
-                                                                          initialInventoryGID,
                                                                           pillObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
@@ -20,9 +20,10 @@ import           Data.Map.Strict                                         (Map,
                                                                           empty,
                                                                           fromList)
 import qualified Data.Set
-import           Data.Text                                               (Text,
-                                                                          empty)
+import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
+import           Grammar.Parser.Partitions.Nouns.Objectives              (pill)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
@@ -38,17 +39,18 @@ import           Model.GameState                                         (Acquis
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
                                                                           Perceptables (Perceptables),
                                                                           Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb,
-                                                                          DirectionalStimulusVerb,
+import qualified Model.Parser.Atomics.Nouns
+import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb,
                                                                           SomaticAccessVerb)
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
+                                                                          ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
 
 initNarration :: Narration
 initNarration = Narration
@@ -73,9 +75,11 @@ config = Config
   }
   where
     actionMaps :: ActionMaps
-    actionMaps = ActionMaps implicitStimulusActionMap directionalStimulusActionMap somaticAccessActionMap acquisitionVerbMap
-    acquisitionVerbMap :: Map (GID AcquisitionActionF) AcquisitionActionF
-    acquisitionVerbMap = Data.Map.Strict.empty
+    actionMaps = ActionMaps
+                   implicitStimulusActionMap
+                   directionalStimulusActionMap
+                   somaticAccessActionMap
+                   acquisitionActionMap
 
 player :: Player
 player = Player
@@ -96,7 +100,13 @@ player = Player
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.empty
+    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)]
+
+pillObjective :: Model.Parser.Atomics.Nouns.Objective
+pillObjective = pill
+
+simplePillOP :: ObjectPhrase
+simplePillOP = (ObjectPhrase . SimpleNounPhrase) pillObjective
 
 actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap

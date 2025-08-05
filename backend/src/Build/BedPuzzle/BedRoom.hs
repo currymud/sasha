@@ -1,9 +1,11 @@
 module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
+                                                                               getRobeGID,
                                                                                lookAtGID,
                                                                                pitchBlackFGID)
 import           Build.Identifiers.Objects                                    (chairObjGID,
                                                                                pillObjGID,
+                                                                               robeObjGID,
                                                                                tableObjGID)
 import           Data.Map.Strict                                              (Map,
                                                                                empty,
@@ -12,10 +14,14 @@ import           Data.Set                                                     (S
 import qualified Data.Set
 import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
                                                                                pill,
+                                                                               robe,
                                                                                table)
+import           Grammar.Parser.Partitions.Nouns.Objectives                   (robe)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
                                                                                pill,
+                                                                               robe,
                                                                                table)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs             (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
@@ -33,7 +39,9 @@ import           Model.Parser.Atomics.Verbs                                   (A
                                                                                DirectionalStimulusVerb,
                                                                                ImplicitStimulusVerb,
                                                                                SomaticAccessVerb)
-import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Nouns                                (NounPhrase (SimpleNounPhrase),
+                                                                               ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
 import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
@@ -54,6 +62,9 @@ dirTable = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.table
 dirPill :: DirectionalStimulus
 dirPill = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pill
 
+dirRobe :: DirectionalStimulus
+dirRobe = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.robe
+
 objChair :: Objective
 objChair = Grammar.Parser.Partitions.Nouns.Objectives.chair
 
@@ -63,14 +74,22 @@ objTable = Grammar.Parser.Partitions.Nouns.Objectives.table
 objPill :: Objective
 objPill = Grammar.Parser.Partitions.Nouns.Objectives.pill
 
+objRobe :: Objective
+objRobe = Grammar.Parser.Partitions.Nouns.Objectives.robe
+
 objectSemanticMap :: Map NounKey (Set (GID Object))
-objectSemanticMap = Data.Map.Strict.fromList [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
-                                             , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
-                                             , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
-                                             , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
-                                             , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
-                                             , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
-                                             ]
+objectSemanticMap = Data.Map.Strict.fromList sList
+  where
+    sList =
+      [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
+      , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
+      , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
+      , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
+      , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
+      , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
+      , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
+      , (ObjectiveKey objRobe, Data.Set.singleton robeObjGID)
+      ]
 
 actionMap :: ActionManagement
 actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs acquisitionVerbs
@@ -82,8 +101,16 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-   acquisitionVerbs = Data.Map.Strict.empty
+   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID)]
 
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective
+
+robeObjective :: ObjectPhrase
+robeObjective = ObjectPhrase robeNP
+
+robeNP :: NounPhrase Objective
+robeNP = SimpleNounPhrase robe
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 

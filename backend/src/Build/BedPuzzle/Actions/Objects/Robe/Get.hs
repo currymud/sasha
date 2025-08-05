@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Objects.Pill.Get (getPill,getPillDenied,alreadyHavePill) where
+module Build.BedPuzzle.Actions.Objects.Robe.Get (getRobe,getRobeDenied,alreadyHaveRobe) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (modify')
 import qualified Data.Map.Strict
@@ -18,24 +18,24 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 import           Model.Parser.GCase            (NounKey)
 
-alreadyHavePill :: AcquisitionActionF
-alreadyHavePill = AcquiredFromF (const (const havePill))
+alreadyHaveRobe :: AcquisitionActionF
+alreadyHaveRobe = AcquiredFromF (const (const havePill))
   where
     havePill :: GameComputation Identity ()
     havePill = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You already have the pill in your inventory."
 
-getPillDenied :: AcquisitionActionF
-getPillDenied = AcquisitionActionF (const (const (const denied)))
+getRobeDenied :: AcquisitionActionF
+getRobeDenied = AcquisitionActionF (const (const (const denied)))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    msg = "You can't see it. You're dizzy with a hangover from the night before. Open your eyes."
 
-getPill :: AcquisitionActionF
-getPill = AcquiredFromF getit
+getRobe :: AcquisitionActionF
+getRobe = AcquiredFromF getit
   where
     getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ()
     getit loc avp = do
