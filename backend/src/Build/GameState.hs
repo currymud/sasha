@@ -8,12 +8,14 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           openEyesGID,
                                                                           playerGetGID,
                                                                           seeChairGID,
+                                                                          seeRobeChairGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
                                                                           pillObjGID,
+                                                                          robeObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
@@ -124,6 +126,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
@@ -139,6 +142,8 @@ impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
+robeEffect :: Effect
+robeEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
 pillEffect :: Effect
 pillEffect = DirectionalStimulusEffect dirLook whatPillGID
 tableEffect :: Effect
