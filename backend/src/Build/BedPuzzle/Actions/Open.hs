@@ -79,6 +79,7 @@ openEyes = SomaticAccessActionF opened
                       updatedSomaticMap = Data.Map.Strict.insert somaticAccessVerb changeTo somaticMap
                   in actionMgmt { _somaticStimulusActionManagement = updatedSomaticMap }
                 updatePerceptionMapM oid
+              handleEffect _ = modifyNarration (updateActionConsequence "handleEffect unimplemented")
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 
 msg :: Text
