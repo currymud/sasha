@@ -24,7 +24,8 @@ import           Data.Map.Strict                                         (Map,
 import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
-import           Grammar.Parser.Partitions.Nouns.Objectives              (pill)
+import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
+                                                                          robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
@@ -32,7 +33,7 @@ import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           ActionEffectKey (LocationKey, ObjectKey),
                                                                           ActionEffectMap (ActionEffectMap),
-                                                                          ActionKey (SomaticAccessActionKey),
+                                                                          ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
@@ -102,7 +103,8 @@ player = Player
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)]
+    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)
+                                                , (SimpleAcquisitionVerbPhrase get simpleRobeOP, playerGetGID)]
 
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
@@ -110,11 +112,27 @@ pillObjective = pill
 simplePillOP :: ObjectPhrase
 simplePillOP = (ObjectPhrase . SimpleNounPhrase) pillObjective
 
+robeObjective :: Model.Parser.Atomics.Nouns.Objective
+robeObjective = robe
+
+simpleRobeOP :: ObjectPhrase
+simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
+
 actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap
   $ fromList
       [ (openEyesKey,openEyesEffectMap)
+      , (getKey, getKeyMap)
       ]
+
+getKeyMap :: ActionEffectMap
+getKeyMap = ActionEffectMap
+  $ fromList
+      [ (ObjectKey robeObjGID, Data.Set.empty)
+      ]
+
+getKey :: ActionKey
+getKey = AcquisitionalActionKey playerGetGID
 
 openEyesKey :: ActionKey
 openEyesKey  = SomaticAccessActionKey openEyesGID
