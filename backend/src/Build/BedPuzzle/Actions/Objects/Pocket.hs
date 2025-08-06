@@ -1,5 +1,5 @@
-module Build.BedPuzzle.Actions.Objects.Robe where
-import           Build.Identifiers.Actions                               (whatRobeGID)
+module Build.BedPuzzle.Actions.Objects.Pocket where
+import           Build.Identifiers.Actions                               (notEvenPocketGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -22,14 +22,14 @@ import           Model.Parser.Composites.Nouns                           (Direct
                                                                           NounPhrase (NounPhrase, SimpleNounPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase)
 
-robeObj :: Object
-robeObj =
+pocketObj :: Object
+pocketObj =
   let
   longDescription = DirectionalStimulusNounPhrase (NounPhrase the table)
   shortDescription = DirectionalStimulusNounPhrase (SimpleNounPhrase table)
   in Object
-       { _shortName = "a robe"
-       , _description = "your bathrobe"
+       { _shortName = "It's a pocket, your robe has a pocket."
+       , _description = "It's a ridiculuous pocket that defies physics."
        , _descriptives = Data.Set.fromList [longDescription,shortDescription]
        , _objectActionManagement = verbMaps
        }
@@ -39,7 +39,7 @@ robeObj =
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatRobeGID :: GID DirectionalStimulusActionF)]
+    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, notEvenPocketGID :: GID DirectionalStimulusActionF)]
     somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     somaticAccessVerbs = Data.Map.Strict.empty
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)

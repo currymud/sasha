@@ -3,6 +3,7 @@ module Build.World (world) where
 
 import           Build.Identifiers.Locations (locationMap)
 import           Build.Identifiers.Objects   (chairObjGID, objectMap,
+                                              pillObjGID, pocketObjGID,
                                               robeObjGID)
 import           Data.Map.Strict             (Map)
 import qualified Data.Map.Strict
@@ -27,9 +28,16 @@ world = World objectMap' locationMap' mempty spatialRelationships
    srMap :: Map (GID Object) (Set SpatialRelationship)
    srMap = Data.Map.Strict.fromList
      [ (chairObjGID, chairHolds)
-     , (robeObjGID, Data.Set.singleton robeHeld)
+     , (robeObjGID, Data.Set.fromList [robeHeld,robeHolds])
+     , (pocketObjGID, Data.Set.fromList [pocketHeld,pocketHolds])
      ]
    chairHolds :: Set SpatialRelationship
    chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
    robeHeld :: SpatialRelationship
    robeHeld = SupportedBy chairObjGID
+   robeHolds :: SpatialRelationship
+   robeHolds = Supports $ Data.Set.fromList [pocketObjGID]
+   pocketHeld :: SpatialRelationship
+   pocketHeld = SupportedBy robeObjGID
+   pocketHolds :: SpatialRelationship
+   pocketHolds = Supports $ Data.Set.fromList [pillObjGID]

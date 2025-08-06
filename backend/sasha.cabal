@@ -61,6 +61,8 @@ library
       Build.BedPuzzle.Actions.Objects.Pill
       Build.BedPuzzle.Actions.Objects.Pill.Get
       Build.BedPuzzle.Actions.Objects.Pill.Look
+      Build.BedPuzzle.Actions.Objects.Pocket
+      Build.BedPuzzle.Actions.Objects.Pocket.Look
       Build.BedPuzzle.Actions.Objects.Chair
       Build.BedPuzzle.Actions.Objects.Chair.Look
       Build.BedPuzzle.Actions.Objects.Robe
