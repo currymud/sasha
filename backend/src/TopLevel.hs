@@ -22,32 +22,33 @@ initComp :: GameComputation Identity ()
 initComp = do
   pure ()
 
-topLevel :: GameT IO ()
-topLevel = (runGame initComp)
+-- topLevel :: GameT IO ()
+-- topLevel = (runGame initComp)
 
-runGame :: GameComputation Identity () -> GameT IO ()
-runGame  comp' = do
+runGame :: GameSettings -> GameComputation Identity () -> GameT IO ()
+runGame (GameSettings {..}) comp' = do
   transformToIO comp'
   liftDisplay displayResult
   transformToIO clearNarration
-  attSentence <- trySentence <$> liftIO getInput
+  attSentence <- _getInput
   case attSentence of
-    Left err       -> runGame  $ errorHandler err
-    Right sentence -> runGame   $ toGameComputation sentence
+    Left err       -> _errorHandler err
+    Right sentence -> _finalStep sentence
 
 type GameSettings :: Type
 data GameSettings = GameSettings
-  { _howRun       :: GameT IO ()
+  { _finalStep    :: Sentence -> GameT IO ()
   , _errorHandler :: Text -> GameT IO ()
   , _getInput     :: GameT IO (Either Text Sentence)
   }
 
-defaultRun :: GameSettings
-defaultRun = GameSettings
-  { _howRun   = topLevel
+defaultGameSettings :: GameSettings
+defaultGameSettings = GameSettings
+  { _finalStep   = runGame defaultGameSettings . toGameComputation
   , _getInput = trySentence <$> liftIO getInput
-  , _errorHandler = runGame . errorHandler
-  }
+  , _errorHandler = runGame defaultGameSettings . errorHandler
+ }
+
 
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
