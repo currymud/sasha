@@ -27,7 +27,7 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions)
+  , Player (Player, _actionKeyMap, _inventory, _location, _playerActions)
   , PlayerActions (PlayerActions,
                    _acquisitionActions,
                    _implicitStimulusActions,
@@ -270,7 +270,6 @@ type Player :: Type
 data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
-  , _perceptables  :: Perceptables
   , _inventory     :: Map ObjectPhrase (Set (GID Object))
   , _actionKeyMap  :: ActionKeyMap
   }

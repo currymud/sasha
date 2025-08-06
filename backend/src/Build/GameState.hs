@@ -52,7 +52,7 @@ import           Model.GameState                                         (Acquis
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions),
+                                                                          Player (Player, _actionKeyMap, _inventory, _location, _playerActions),
                                                                           PlayerActions (PlayerActions),
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF)
@@ -98,7 +98,6 @@ player :: Player
 player = Player
   { _location = bedroomInBedGID
   , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs
-  , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
   , _inventory = Data.Map.Strict.empty
   }
