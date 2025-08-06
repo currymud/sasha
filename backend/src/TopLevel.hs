@@ -2,6 +2,7 @@ module TopLevel where
 import           Control.Monad.Identity    (Identity (Identity))
 import           Control.Monad.IO.Class    (MonadIO (liftIO))
 import           Control.Monad.State.Class (gets)
+import           Data.Kind                 (Type)
 import           Data.Text                 (Text, pack)
 import           GameState                 (clearNarration, modifyNarration)
 import           Grammar.Parser            (parseTokens)
@@ -22,17 +23,31 @@ initComp = do
   pure ()
 
 topLevel :: GameT IO ()
-topLevel = runGame initComp
-  where
-    runGame :: GameComputation Identity () -> GameT IO ()
-    runGame comp' = do
-      transformToIO comp'
-      liftDisplay displayResult
-      transformToIO clearNarration
-      attSentence <- trySentence <$> liftIO getInput
-      case attSentence of
-        Left err       -> runGame $ errorHandler err
-        Right sentence -> runGame $ toGameComputation sentence
+topLevel = (runGame initComp)
+
+runGame :: GameComputation Identity () -> GameT IO ()
+runGame  comp' = do
+  transformToIO comp'
+  liftDisplay displayResult
+  transformToIO clearNarration
+  attSentence <- trySentence <$> liftIO getInput
+  case attSentence of
+    Left err       -> runGame  $ errorHandler err
+    Right sentence -> runGame   $ toGameComputation sentence
+
+type GameSettings :: Type
+data GameSettings = GameSettings
+  { _howRun       :: GameT IO ()
+  , _errorHandler :: Text -> GameT IO ()
+  , _getInput     :: GameT IO (Either Text Sentence)
+  }
+
+defaultRun :: GameSettings
+defaultRun = GameSettings
+  { _howRun   = topLevel
+  , _getInput = trySentence <$> liftIO getInput
+  , _errorHandler = runGame . errorHandler
+  }
 
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
