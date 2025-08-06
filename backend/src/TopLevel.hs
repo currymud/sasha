@@ -3,7 +3,7 @@ import           Control.Monad.Identity    (Identity (Identity))
 import           Control.Monad.IO.Class    (MonadIO (liftIO))
 import           Control.Monad.State.Class (gets)
 import           Data.Kind                 (Type)
-import           Data.Text                 (Text, pack)
+import           Data.Text                 (Text, empty, pack)
 import           GameState                 (clearNarration, modifyNarration)
 import           Grammar.Parser            (parseTokens)
 import           Grammar.Parser.Lexer      (Lexeme, lexify, tokens)
@@ -18,36 +18,32 @@ import           Relude.String.Conversion  (ToText (toText))
 import           System.Console.Haskeline  (InputT, defaultSettings,
                                             getInputLine, runInputT)
 
+
+batchProcess :: [Text] -> GameComputation Identity ()
+batchProcess inputs = do
+  case mapM trySentence inputs of
+    Left err        -> errorHandler err
+    Right sentences -> mapM_ toGameComputation sentences
+
+testOpenEyesGetRobe :: GameT IO ()
+testOpenEyesGetRobe = transformToIO (batchProcess ["open eyes", "get robe"])
+
 initComp :: GameComputation Identity ()
-initComp = do
-  pure ()
+initComp = pure ()
 
--- topLevel :: GameT IO ()
--- topLevel = (runGame initComp)
+topLevel :: GameT IO ()
+topLevel = runGame initComp
 
-runGame :: GameSettings -> GameComputation Identity () -> GameT IO ()
-runGame (GameSettings {..}) comp' = do
+runGame :: GameComputation Identity () -> GameT IO ()
+runGame comp' = do
   transformToIO comp'
   liftDisplay displayResult
   transformToIO clearNarration
-  attSentence <- _getInput
+  attSentence <- trySentence <$> liftIO getInput
   case attSentence of
-    Left err       -> _errorHandler err
-    Right sentence -> _finalStep sentence
+    Left err       -> runGame $ errorHandler err
+    Right sentence ->runGame $ toGameComputation sentence
 
-type GameSettings :: Type
-data GameSettings = GameSettings
-  { _finalStep    :: Sentence -> GameT IO ()
-  , _errorHandler :: Text -> GameT IO ()
-  , _getInput     :: GameT IO (Either Text Sentence)
-  }
-
-defaultGameSettings :: GameSettings
-defaultGameSettings = GameSettings
-  { _finalStep   = runGame defaultGameSettings . toGameComputation
-  , _getInput = trySentence <$> liftIO getInput
-  , _errorHandler = runGame defaultGameSettings . errorHandler
- }
 
 
 toGameComputation :: Sentence -> GameComputation Identity ()
@@ -62,12 +58,11 @@ displayResult = do
   liftIO $ mapM_ print (_actionConsequence narration)
 
 trySentence :: Text -> Either Text Sentence
-trySentence input = do
-  case lexify tokens input of
-    Left err      -> Left ("Lexeme fubar " <> err)
-    Right lexemes -> case trySentence' lexemes of
-      Left err       -> Left ("Parser fubar " <> err)
-      Right sentence -> Right sentence
+trySentence input = case lexify tokens input of
+  Left err      -> Left ("Lexeme fubar " <> err)
+  Right lexemes -> case trySentence' lexemes of
+    Left err       -> Left ("Parser fubar " <> err)
+    Right sentence -> Right sentence
   where
     trySentence' :: [Lexeme] -> Either Text Sentence
     trySentence' lexemes = case parseTokens lexemes of
@@ -75,8 +70,7 @@ trySentence input = do
       Right sentence -> Right sentence
 
 getInput :: IO Text
-getInput = do
-  runInputT defaultSettings go
+getInput = runInputT defaultSettings go
   where
     go :: InputT IO Text
     go = do
