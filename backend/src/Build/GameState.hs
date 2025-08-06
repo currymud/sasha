@@ -14,6 +14,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           openEyesGID,
                                                                           playerGetGID,
                                                                           seeChairGID,
+                                                                          seePocketChairGID,
                                                                           seeRobeChairGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
@@ -21,6 +22,7 @@ import           Build.Identifiers.Actions                               (acquis
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
                                                                           pillObjGID,
+                                                                          pocketObjGID,
                                                                           robeObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
@@ -115,6 +117,7 @@ player = Player
     acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, getPillDeniedGID)
                                                 , (SimpleAcquisitionVerbPhrase get simpleRobeOP, getRobeDeniedGID)]
 
+
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
 
@@ -190,11 +193,14 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
       , (ObjectKey pillObjGID, Data.Set.fromList [pillEffect, enablePillAcquisitionEffect])
+      , (ObjectKey pocketObjGID, Data.Set.singleton pocketEffect)
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
 bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
+pocketEffect :: Effect
+pocketEffect = DirectionalStimulusEffect dirLook seePocketChairGID
 
 openEyesEffect :: Effect
 openEyesEffect = ImplicitStimulusEffect impLook agentCanSeeGID
