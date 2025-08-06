@@ -5,6 +5,7 @@ import           Build.Identifiers.Actions                                    (a
                                                                                pitchBlackFGID)
 import           Build.Identifiers.Objects                                    (chairObjGID,
                                                                                pillObjGID,
+                                                                               pocketObjGID,
                                                                                robeObjGID,
                                                                                tableObjGID)
 import           Data.Map.Strict                                              (Map,
@@ -14,11 +15,13 @@ import           Data.Set                                                     (S
 import qualified Data.Set
 import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
                                                                                pill,
+                                                                               pocket,
                                                                                robe,
                                                                                table)
 import           Grammar.Parser.Partitions.Nouns.Objectives                   (robe)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
                                                                                pill,
+                                                                               pocket,
                                                                                robe,
                                                                                table)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs             (get)
@@ -65,6 +68,9 @@ dirPill = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pill
 dirRobe :: DirectionalStimulus
 dirRobe = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.robe
 
+dirPocket :: DirectionalStimulus
+dirPocket = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pocket
+
 objChair :: Objective
 objChair = Grammar.Parser.Partitions.Nouns.Objectives.chair
 
@@ -73,6 +79,9 @@ objTable = Grammar.Parser.Partitions.Nouns.Objectives.table
 
 objPill :: Objective
 objPill = Grammar.Parser.Partitions.Nouns.Objectives.pill
+
+objPocket :: Objective
+objPocket = Grammar.Parser.Partitions.Nouns.Objectives.pocket
 
 objRobe :: Objective
 objRobe = Grammar.Parser.Partitions.Nouns.Objectives.robe
@@ -85,10 +94,12 @@ objectSemanticMap = Data.Map.Strict.fromList sList
       , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
       , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
       , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
+      , (DirectionalStimulusKey dirPocket, Data.Set.singleton pocketObjGID)
       , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
       , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
       , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
       , (ObjectiveKey objRobe, Data.Set.singleton robeObjGID)
+      , (ObjectiveKey objPocket, Data.Set.singleton pocketObjGID)
       ]
 
 actionMap :: ActionManagement
@@ -111,6 +122,7 @@ robeObjective = ObjectPhrase robeNP
 
 robeNP :: NounPhrase Objective
 robeNP = SimpleNounPhrase robe
+
 implicitStimulusLook :: ImplicitStimulusVerb
 implicitStimulusLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 
