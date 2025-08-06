@@ -19,12 +19,12 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 import           Model.Parser.GCase            (NounKey)
 
 alreadyHaveRobe :: AcquisitionActionF
-alreadyHaveRobe = AcquisitionActionF (const (const (const havePill)))
+alreadyHaveRobe = AcquisitionActionF (const (const (const haveRobe)))
   where
-    havePill :: GameComputation Identity ()
-    havePill = modifyNarration $ updateActionConsequence msg
+    haveRobe :: GameComputation Identity ()
+    haveRobe = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You already have the pill in your inventory."
+    msg = "You are already wearing the robe."
 
 getRobeDenied :: AcquisitionActionF
 getRobeDenied = AcquisitionActionF (const (const (const denied)))
