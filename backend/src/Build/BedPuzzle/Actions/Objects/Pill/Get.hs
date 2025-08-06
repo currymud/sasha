@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Objects.Pill.Get (getPill,getPillDenied,alreadyHavePill) where
+module Build.BedPuzzle.Actions.Objects.Pill.Get (getPill,getPillDenied,alreadyHavePill,getPillBathrobe) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (modify')
 import qualified Data.Map.Strict
@@ -33,6 +33,14 @@ getPillDenied = AcquisitionActionF (const (const (const denied)))
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You have a fuzzy recollection of some aspirin in your bathrobe pocket, but you haven't even opened your eyes yet. It's a slow start ot the day."
+
+getPillBathrobe :: AcquisitionActionF
+getPillBathrobe = AcquisitionActionF (const (const (const bathrobe)))
+  where
+    bathrobe :: GameComputation Identity ()
+    bathrobe = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "Why don't you grab your robe first?"
 
 getPill :: AcquisitionActionF
 getPill = AcquiredFromF getit

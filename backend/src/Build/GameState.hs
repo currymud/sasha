@@ -126,6 +126,20 @@ robeObjective = robe
 simpleRobeOP :: ObjectPhrase
 simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
 
+-- Missing action keys for pill
+getPillDeniedKey :: ActionKey
+getPillDeniedKey = AcquisitionalActionKey getPillDeniedGID
+
+getPillDeniedEffectMap :: ActionEffectMap
+getPillDeniedEffectMap = ActionEffectMap Data.Map.Strict.empty
+
+-- Missing action keys for robe (initially denied)
+getRobeDeniedKey :: ActionKey
+getRobeDeniedKey = AcquisitionalActionKey getRobeDeniedGID
+
+getRobeDeniedEffectMap :: ActionEffectMap
+getRobeDeniedEffectMap = ActionEffectMap Data.Map.Strict.empty
+
 actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap
   $ fromList
@@ -133,6 +147,8 @@ actionKeyMap = ActionKeyMap
       , (getKey, getKeyMap)
       , (getRobeKey, getRobeEffectMap)
       , (alreadyHaveRobeKey, alreadyHaveRobeEffectMap)
+      , (getPillDeniedKey, getPillDeniedEffectMap)  -- Add this for pill
+      , (getRobeDeniedKey, getRobeDeniedEffectMap)
       ]
 
 alreadyHaveRobeKey :: ActionKey

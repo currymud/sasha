@@ -12,6 +12,7 @@ import           Build.BedPuzzle.Actions.Look                            (pitchB
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
 import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPill,
+                                                                          getPillBathrobe,
                                                                           getPillDenied)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
@@ -83,6 +84,7 @@ makeAcquisitionActionGIDsAndMap [[| locGet |],
                                  [| dizzyGet |],
                                  [| playerGet|],
                                  [| getPillDenied |],
+                                 [| getPillBathrobe |],
                                  [| getPill|],
                                  [| alreadyHaveRobe |],
                                  [| getRobeDenied |],
