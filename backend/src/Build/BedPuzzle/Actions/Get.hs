@@ -3,19 +3,26 @@
 module Build.BedPuzzle.Actions.Get (get,getDenied) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
+import           Control.Monad.State           (gets, modify')
 import qualified Data.Map.Strict
-import           Data.Set                      (elemAt, null)
+import           Data.Set                      (elemAt, null, toList)
 import           Data.Text                     (Text)
 import           GameState                     (getObjectM, modifyNarration,
                                                 parseAcquisitionPhrase)
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
-                                                ActionEffectMap (ActionEffectMap),
+                                                ActionEffectKey (ObjectKey),
+                                                ActionEffectMap (ActionEffectMap, _actionEffectMap),
+                                                ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                                 ActionManagement (_acquisitionActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
+                                                Effect (AcquisitionEffect),
                                                 GameComputation,
+                                                GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 Object (_objectActionManagement),
+                                                Player (_actionKeyMap, _playerActions),
+                                                PlayerActions (_acquisitionActions),
                                                 updateActionConsequence)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 
@@ -41,6 +48,41 @@ get = AcquisitionActionF getit
             Right objectSuccess -> do
               locationSuccess
               objectSuccess
+              -- PROCESS EFFECTS AFTER SUCCESSFUL ACQUISITION
+              processAcquisitionEffects loc actionEffectMap avp
+
+    processAcquisitionEffects :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    processAcquisitionEffects loc actionEffectMap avp = do
+      let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
+
+      -- Find the object that was acquired
+      case Data.Map.Strict.lookup nounKey loc._objectSemanticMap of
+        Just objSet | not (Data.Set.null objSet) -> do
+          let oid = Data.Set.elemAt 0 objSet
+
+          -- Get the player's action key map
+          player <- gets _player
+          let ActionKeyMap actionKeyMap = _actionKeyMap player
+              objectEffectKey = ObjectKey oid
+
+          -- Look for acquisition effects for this object
+          case Data.Map.Strict.lookup objectEffectKey (_actionEffectMap actionEffectMap) of
+            Just effects -> mapM_ (processEffect avp) (Data.Set.toList effects)
+            Nothing      -> pure ()
+        _ -> pure ()
+
+    processEffect :: AcquisitionVerbPhrase -> Effect -> GameComputation Identity ()
+    processEffect avp (AcquisitionEffect _ newActionGID) = do
+      -- Update the player's acquisition actions to use the new action for this phrase
+      modify' $ \gs ->
+        let player = gs._player
+            playerActions = _playerActions player
+            acquisitionActions = _acquisitionActions playerActions
+            updatedAcquisitionActions = Data.Map.Strict.insert avp newActionGID acquisitionActions
+            updatedPlayerActions = playerActions { _acquisitionActions = updatedAcquisitionActions }
+            updatedPlayer = player { _playerActions = updatedPlayerActions }
+        in gs { _player = updatedPlayer }
+    processEffect _ _ = pure () -- Ignore other effects
 
 executeLocationGet :: Location
                         -> AcquisitionVerbPhrase

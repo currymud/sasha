@@ -1,9 +1,11 @@
 module Build.GameState where
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
+                                                                          alreadyHaveRobeGID,
                                                                           checkInventoryGID,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
+                                                                          getRobeGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
@@ -33,20 +35,21 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionEffectKey (LocationKey, ObjectKey),
+                                                                          ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           DirectionalStimulusActionF,
-                                                                          Effect (DirectionalStimulusEffect, ImplicitStimulusEffect),
+                                                                          Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
                                                                           Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
+                                                                          PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
 import qualified Model.Parser.Atomics.Nouns
@@ -126,6 +129,7 @@ actionKeyMap = ActionKeyMap
   $ fromList
       [ (openEyesKey,openEyesEffectMap)
       , (getKey, getKeyMap)
+      , (getRobeKey, getRobeEffectMap)
       ]
 
 getKeyMap :: ActionEffectMap
@@ -162,6 +166,17 @@ impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 
 dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
+
+getRobeEffect :: Effect
+getRobeEffect = AcquisitionEffect get alreadyHaveRobeGID
+
+getRobeKey :: ActionKey
+getRobeKey = AcquisitionalActionKey getRobeGID
+
+getRobeEffectMap :: ActionEffectMap
+getRobeEffectMap = ActionEffectMap
+  $ fromList
+      [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect) ]
 
 robeEffect :: Effect
 robeEffect = DirectionalStimulusEffect dirLook seeRobeChairGID

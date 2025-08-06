@@ -24,6 +24,7 @@ module GameState ( changeImplicit, clearNarration
                  , removeObjectFromLocationSemanticMapM
                  , modifyPerceptionMapM
                  , parseAcquisitionPhrase
+                 , processAcquisitionEffect
                  , updatePerceptionMapM,youSeeM) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
@@ -34,7 +35,8 @@ import           Data.Set                      (Set, delete, empty, fromList,
                                                 insert, null, toList)
 import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
-import           Model.GameState               (ActionEffectKey (ObjectKey),
+import           Model.GameState               (AcquisitionActionF,
+                                                ActionEffectKey (ObjectKey),
                                                 ActionManagement (_implicitStimulusActionManagement),
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
@@ -43,7 +45,7 @@ import           Model.GameState               (ActionEffectKey (ObjectKey),
                                                 Narration (Narration),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
-                                                PlayerActions,
+                                                PlayerActions (_acquisitionActions),
                                                 SpatialRelationship (Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
@@ -73,6 +75,20 @@ parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of
                (ObjectPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
     in (ophrase, obj)
   _ -> error "get: unsupported AcquisitionVerbPhrase"
+
+processAcquisitionEffect :: AcquisitionVerbPhrase
+                         -> GID AcquisitionActionF
+                         -> GameComputation Identity ()
+processAcquisitionEffect avp newActionGID = do
+  modify' $ \gs ->
+    let player = gs._player
+        playerActions = _playerActions player
+        acquisitionActions = _acquisitionActions playerActions
+        updatedAcquisitionActions = Data.Map.Strict.insert avp newActionGID acquisitionActions
+        updatedPlayerActions = playerActions { _acquisitionActions = updatedAcquisitionActions }
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do

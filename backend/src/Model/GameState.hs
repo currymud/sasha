@@ -28,7 +28,12 @@ module Model.GameState (
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions)
-  , PlayerActions (PlayerActions, _acquisitionActions, _implicitStimulusActions,_directionalStimulusActions, _somaticStimulusActions)
+  , PlayerActions (PlayerActions,
+                   _acquisitionActions,
+                   _implicitStimulusActions,
+                   _directionalStimulusActions,
+                   _somaticStimulusActions)
+  , PlayerKey (PlayerKeyLocation, PlayerKeyObject)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
@@ -182,7 +187,13 @@ type ActionEffectKey :: Type
 data ActionEffectKey
   = LocationKey (GID Location)
   | ObjectKey (GID Object)
-  | PlayerKey (GID Location) (GID Object)
+  | PlayerKey PlayerKey
+  deriving stock (Show, Eq, Ord)
+
+type PlayerKey :: Type
+data PlayerKey
+  = PlayerKeyLocation (GID Location)
+  | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
 type ActionKey :: Type
