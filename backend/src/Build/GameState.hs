@@ -5,6 +5,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           checkInventoryGID,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
+                                                                          getPillBathrobeGID,
                                                                           getPillDeniedGID,
                                                                           getRobeDeniedGID,
                                                                           getRobeGID,
@@ -130,6 +131,16 @@ simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
 getPillDeniedKey :: ActionKey
 getPillDeniedKey = AcquisitionalActionKey getPillDeniedGID
 
+enablePillAcquisitionEffect :: Effect
+enablePillAcquisitionEffect = AcquisitionEffect get getPillBathrobeGID
+
+-- You'll also need an action key mapping for getPillBathrobeGID:
+getPillBathrobeKey :: ActionKey
+getPillBathrobeKey = AcquisitionalActionKey getPillBathrobeGID
+
+getPillBathrobeEffectMap :: ActionEffectMap
+getPillBathrobeEffectMap = ActionEffectMap Data.Map.Strict.empty
+
 getPillDeniedEffectMap :: ActionEffectMap
 getPillDeniedEffectMap = ActionEffectMap Data.Map.Strict.empty
 
@@ -149,6 +160,7 @@ actionKeyMap = ActionKeyMap
       , (alreadyHaveRobeKey, alreadyHaveRobeEffectMap)
       , (getPillDeniedKey, getPillDeniedEffectMap)  -- Add this for pill
       , (getRobeDeniedKey, getRobeDeniedEffectMap)
+      , (getPillBathrobeKey, getPillBathrobeEffectMap)
       ]
 
 alreadyHaveRobeKey :: ActionKey
@@ -177,6 +189,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
+      , (ObjectKey pillObjGID, Data.Set.fromList [pillEffect, enablePillAcquisitionEffect])
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
