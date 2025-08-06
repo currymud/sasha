@@ -32,7 +32,7 @@ getPillDenied = AcquisitionActionF (const (const (const denied)))
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    msg = "You have a fuzzy recollection of some aspirin in your bathrobe pocket, but you haven't even opened your eyes yet. It's a slow start ot the day."
 
 getPill :: AcquisitionActionF
 getPill = AcquiredFromF getit

@@ -5,6 +5,8 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           checkInventoryGID,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
+                                                                          getPillDeniedGID,
+                                                                          getRobeDeniedGID,
                                                                           getRobeGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
@@ -109,8 +111,8 @@ player = Player
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
     saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)
-                                                , (SimpleAcquisitionVerbPhrase get simpleRobeOP, playerGetGID)]
+    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, getPillDeniedGID)
+                                                , (SimpleAcquisitionVerbPhrase get simpleRobeOP, getRobeDeniedGID)]
 
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
@@ -130,12 +132,19 @@ actionKeyMap = ActionKeyMap
       [ (openEyesKey,openEyesEffectMap)
       , (getKey, getKeyMap)
       , (getRobeKey, getRobeEffectMap)
+      , (alreadyHaveRobeKey, alreadyHaveRobeEffectMap)
       ]
+
+alreadyHaveRobeKey :: ActionKey
+alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
+
+alreadyHaveRobeEffectMap :: ActionEffectMap
+alreadyHaveRobeEffectMap = ActionEffectMap Data.Map.Strict.empty
 
 getKeyMap :: ActionEffectMap
 getKeyMap = ActionEffectMap
   $ fromList
-      [ (ObjectKey robeObjGID, Data.Set.empty)
+      [ (ObjectKey robeObjGID, Data.Set.singleton getRobeEffect)
       ]
 
 getKey :: ActionKey
