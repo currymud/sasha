@@ -53,6 +53,7 @@ library
       Actions.Get.Acquisition.Get
       Actions.Manipulate.SomaticAccess.Open
       Actions.Percieve.Look
+      Build.BedPuzzle.Actions.Inventory
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
@@ -69,7 +70,6 @@ library
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.BedRoom
       Build.GameState
-      Build.Inventory
       Build.Identifiers.Actions
       Build.Identifiers.Locations
       Build.Identifiers.Objects

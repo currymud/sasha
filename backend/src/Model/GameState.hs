@@ -124,8 +124,10 @@ type ImplicitStimulusActionMap :: Type
 type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF
 
 type ImplicitStimulusActionF :: Type
-newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: Location -> GameComputation Identity () }
+newtype ImplicitStimulusActionF
+  = ImplicitStimulusActionF  { _implicitStimulusAction :: Player
+                                                            -> Location
+                                                            -> GameComputation Identity () }
 
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF

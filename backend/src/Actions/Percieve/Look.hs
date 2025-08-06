@@ -10,9 +10,11 @@ import           Data.Text                                               (Text)
 import           GameState                                               (getActionManagementM,
                                                                           getObjectM,
                                                                           getPlayerActionsM,
+                                                                          getPlayerM,
                                                                           modifyNarration)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Location                                                (getPlayerLocationM)
+import           Location                                                (getLocationM,
+                                                                          getPlayerLocationM)
 import           Model.GameState                                         (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
                                                                           ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
                                                                           Config (_actionMaps),
@@ -22,6 +24,7 @@ import           Model.GameState                                         (Action
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
                                                                           Object (_objectActionManagement),
+                                                                          Player (_location),
                                                                           PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
@@ -33,12 +36,12 @@ import           Model.Parser.GCase                                      (NounKe
 import           Relude.String.Conversion                                (ToText (toText))
 
 agentCanSee :: ImplicitStimulusActionF
-agentCanSee = ImplicitStimulusActionF (\loc -> do
+agentCanSee = ImplicitStimulusActionF $ const (\loc -> do
    modifyNarration $ updateActionConsequence ("You see: " <> toText (_title loc)))
 
 agentCannotSee :: Text -> ImplicitStimulusActionF
-agentCannotSee nosee = ImplicitStimulusActionF (\_ -> do
-  modifyNarration $ updateActionConsequence nosee)
+agentCannotSee nosee = ImplicitStimulusActionF
+  $ const (const (modifyNarration $ updateActionConsequence nosee))
 
 lookAt :: DirectionalStimulusActionF
 lookAt = DirectionalStimulusActionF lookAt'
@@ -60,7 +63,7 @@ lookAt = DirectionalStimulusActionF lookAt'
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
   where
-    actionEnabled loc = do
+    actionEnabled player loc = do
       let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
       case Data.Map.Strict.lookup isv actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
@@ -68,7 +71,7 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
           actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error $ "Programmer Error: No implicit stimulus action found for verb: "
-            Just (ImplicitStimulusActionF actionFunc) -> actionFunc loc
+            Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
 
 dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
 dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
@@ -93,8 +96,10 @@ manageImplicitStimulusProcess isv = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No implicit stimulus action found for GID: "
         Just (ImplicitStimulusActionF actionFunc) -> do
-          location <- getPlayerLocationM
-          actionFunc location
+          player <- getPlayerM
+          let lid = player._location
+          loc <- getLocationM lid
+          actionFunc player loc
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do

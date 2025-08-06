@@ -1,6 +1,7 @@
 module Build.GameState where
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
+                                                                          checkInventoryGID,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
                                                                           implicitStimulusActionMap,
@@ -28,6 +29,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
                                                                           robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (AcquisitionActionF,
@@ -97,7 +99,8 @@ player = Player
     dsaMap = Data.Map.Strict.fromList [(dsaLook, dsvEnabledLookGID)]
     dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
     isaMap :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)]
+    isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)
+                                      ,(inventory,checkInventoryGID)]
     isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
     saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)

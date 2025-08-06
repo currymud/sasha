@@ -1,6 +1,7 @@
 module GameState ( changeImplicit, clearNarration
                  , getObjectM
                  , getActionManagementM
+                 , getDescriptionM
                  , getLocationActionMapsM
                  , getLocationM
                  , getLocationObjectIDsM
@@ -57,6 +58,10 @@ import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
 import           Model.Parser.GCase            (NounKey (ObjectiveKey))
 
+
+getDescriptionM :: GID Object -> GameComputation Identity Text
+getDescriptionM oid = do
+  _description <$> getObjectM oid
 
 parseAcquisitionPhrase :: AcquisitionVerbPhrase -> (ObjectPhrase,NounKey)
 parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of

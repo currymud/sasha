@@ -6,6 +6,7 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           isvActionEnabled,
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
+import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
 import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
@@ -25,7 +26,6 @@ import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTab
                                                                           whatTable)
 import           Build.BedPuzzle.Actions.Open                            (openEyes,
                                                                           openEyesDenied)
-
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
@@ -57,7 +57,10 @@ dizzyGet = Build.BedPuzzle.Actions.Get.getDenied
 getDenied :: AcquisitionActionF
 getDenied = Build.BedPuzzle.Actions.Locations.Bedroom.Get.getDenied
 
-makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |], [| pitchBlackF |], [| isaEnabledLook |]]
+makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
+                                      [| pitchBlackF |],
+                                      [| isaEnabledLook |],
+                                      [| checkInventory |]]
 
 -- directionalStimulusActionMap
 makeDirectionalStimulusActionGIDsAndMap [[| seePill |]

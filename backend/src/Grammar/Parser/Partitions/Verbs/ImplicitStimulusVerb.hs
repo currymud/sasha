@@ -10,5 +10,5 @@ import           Model.Parser.Lexer                          (Lexeme (INVENTORY,
 makeSemanticValues [| ImplicitStimulusVerb |] [LOOK, SMELL, TASTE,LISTEN, TOUCH,INVENTORY]
 implicitStimulusVerbs :: HashSet ImplicitStimulusVerb
 implicitStimulusVerbs =
-  fromList [look,smell,taste,listen,touch]
+  fromList [inventory,look,smell,taste,listen,touch]
 
