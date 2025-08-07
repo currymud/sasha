@@ -26,6 +26,7 @@ import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alread
                                                                           getRobeDenied)
 import           Build.BedPuzzle.Actions.Objects.Robe.Look               (notEvenRobe,
                                                                           seeRobeChair,
+                                                                          seeRobeWorn,
                                                                           whatRobe)
 import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTable,
                                                                           whatTable)
@@ -84,7 +85,8 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| seePocketChair |]
                                           , [| seePocketRobeWorn |]
                                           , [| emptyPocket |]
-                                          , [| seeRobeChair |]]
+                                          , [| seeRobeChair |]
+                                          , [| seeRobeWorn  |]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 

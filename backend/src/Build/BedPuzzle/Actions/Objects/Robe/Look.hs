@@ -37,4 +37,4 @@ seeRobeWorn = DirectionalStimulusActionF (const (const seeRobeWorn'))
     seeRobeWorn' :: GameComputation Identity ()
     seeRobeWorn' = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You're wearing your ratty bathrobe. It's got a pocket you can put a ridiulous amount of stuff in"
+    msg = "You're wearing your ratty bathrobe. It's got a pocket you can put a ridiulous amount of stuff in. There's something in it."

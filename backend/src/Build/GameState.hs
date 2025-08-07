@@ -12,6 +12,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           playerGetGID,
                                                                           seeChairGID,
                                                                           seeRobeChairGID,
+                                                                          seeRobeWornGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
                                                                           whatPillGID)
@@ -176,7 +177,12 @@ getRobeKey = AcquisitionalActionKey getRobeGID
 getRobeEffectMap :: ActionEffectMap
 getRobeEffectMap = ActionEffectMap
   $ fromList
-      [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect) ]
+      [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
+      ]
+
+robeWornEffect :: Effect
+robeWornEffect = DirectionalStimulusEffect dirLook seeRobeWornGID
 
 robeEffect :: Effect
 robeEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
