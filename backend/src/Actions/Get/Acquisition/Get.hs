@@ -27,26 +27,7 @@ import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
 import           Model.Parser.Composites.Nouns (ObjectPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
-  {-
-manageAcquisitionProcess :: AcquisitionVerbPhrase
-                                -> GameComputation Identity ()
-manageAcquisitionProcess avp = do
-  availableActions <- _acquisitionActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup avp availableActions of
-    Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-    Just (actionGID :: GID AcquisitionActionF) -> do
-      actionMap <- asks (_acquisitionActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (AcquisitionActionF actionFunc) -> do
-          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
-          case Data.Map.Strict.lookup (actionKey actionGID) actionKeyMap of
-            Nothing -> error $ "Programmer Error: No action key found for GID: "
-            Just actionEffectMap -> do
-              loc <- getPlayerLocationM
-              actionFunc loc actionEffectMap avp
-        Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
--}
+
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _acquisitionActions <$> getPlayerActionsM

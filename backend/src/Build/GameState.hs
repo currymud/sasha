@@ -129,7 +129,7 @@ actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap
   $ fromList
       [ (openEyesKey,openEyesEffectMap)
-      , (getKey, getKeyMap)
+      , (getKey, playerGetEffectMap)
       , (getRobeKey, getRobeEffectMap)
       ]
 
@@ -153,6 +153,17 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
+      ]
+
+playerGetEffectMap :: ActionEffectMap
+playerGetEffectMap = ActionEffectMap
+  $ fromList
+      [ -- Robe acquisition effects (player zone responsibility)
+        (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
+        -- Pill acquisition effects would go here too
+      , (ObjectKey pillObjGID, Data.Set.fromList []) -- Add pill effects as needed
+        -- Other acquisition effects...
       ]
 
 bedroomOpenEyesKey :: ActionEffectKey
