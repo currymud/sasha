@@ -16,6 +16,11 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPil
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
                                                                           whatPill)
+import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (emptyPocket,
+                                                                          notEvenPocket,
+                                                                          seePocketChair,
+                                                                          seePocketRobeWorn,
+                                                                          whatPocket)
 import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alreadyHaveRobe,
                                                                           getRobe,
                                                                           getRobeDenied)
@@ -73,7 +78,12 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| whatChair |]
                                           , [| seeChair|]
                                           , [| whatRobe|]
-                                            , [| notEvenRobe|]
+                                          , [| notEvenRobe|]
+                                          , [| whatPocket |]
+                                          , [| notEvenPocket |]
+                                          , [| seePocketChair |]
+                                          , [| seePocketRobeWorn |]
+                                          , [| emptyPocket |]
                                           , [| seeRobeChair |]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]

@@ -49,7 +49,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PlayerActions (_acquisitionActions),
-                                                SpatialRelationship (SupportedBy, Supports),
+                                                SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap,
@@ -92,7 +92,6 @@ processAcquisitionEffect avp newActionGID = do
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
-
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   playerLocation <- getPlayerLocationM
@@ -128,24 +127,26 @@ youSeeM = do
       case Data.Map.Strict.lookup oid spatialMap of
         Nothing -> pure True -- No spatial relationships = surface level
         Just relationships -> do
-          -- Check if this object is supported by any other object
-          let supportedByRelationships = filter isSupportedBy (Data.Set.toList relationships)
-          if Data.List.null supportedByRelationships
+          -- Check if this object is supported by or contained in any other object
+          let dependentRelationships = filter isDependentRelationship (Data.Set.toList relationships)
+          if Data.List.null dependentRelationships
             then pure True  -- Not supported by anything = surface level
             else do
-              -- Check if the supporting object is also in this location
-              supportingOids <- mapM getSupportingOid supportedByRelationships
+              -- Check if the supporting/containing object is also in this location
+              supportingOids <- mapM getSupportingOid dependentRelationships
               playerLocation <- getPlayerLocationM
               let locationObjectOids = concatMap Data.Set.toList $ Data.Map.Strict.elems (_objectSemanticMap playerLocation)
               -- If the supporting object is in this location, then this object is NOT surface level
               pure $ not $ any (`elem` locationObjectOids) (catMaybes supportingOids)
 
-    isSupportedBy :: SpatialRelationship -> Bool
-    isSupportedBy (SupportedBy _) = True
-    isSupportedBy _               = False
+    isDependentRelationship :: SpatialRelationship -> Bool
+    isDependentRelationship (SupportedBy _) = True
+    isDependentRelationship (ContainedIn _) = True
+    isDependentRelationship _               = False
 
     getSupportingOid :: SpatialRelationship -> GameComputation Identity (Maybe (GID Object))
     getSupportingOid (SupportedBy oid) = pure (Just oid)
+    getSupportingOid (ContainedIn oid) = pure (Just oid)
     getSupportingOid _                 = pure Nothing
 
     getSurfaceObjectDescription :: GID Object -> GameComputation Identity Text
@@ -164,11 +165,14 @@ youSeeM = do
       case Data.Map.Strict.lookup supporterOid spatialMap of
         Nothing -> pure ""
         Just relationships -> do
+          -- Only show supported objects (things "on" the surface)
+          -- Don't show contained objects (things "in" containers) at this level
           supportedObjects <- mapM processSupportRelationship (Data.Set.toList relationships)
           let validSupported = filter (not . Data.Text.null) supportedObjects
-          case validSupported of
-            [] -> pure ""
-            supported -> pure $ ". On it: " <> Data.Text.intercalate ", " supported
+              supportedText = case validSupported of
+                []        -> ""
+                supported -> ". On it: " <> Data.Text.intercalate ", " supported
+          pure supportedText
 
     processSupportRelationship :: SpatialRelationship -> GameComputation Identity Text
     processSupportRelationship (Supports oidSet) = do

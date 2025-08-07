@@ -3,6 +3,7 @@ module Build.World (world) where
 
 import           Build.Identifiers.Locations (locationMap)
 import           Build.Identifiers.Objects   (chairObjGID, objectMap,
+                                              pillObjGID, pocketObjGID,
                                               robeObjGID)
 import           Data.Map.Strict             (Map)
 import qualified Data.Map.Strict
@@ -10,7 +11,7 @@ import           Data.Set                    (Set)
 import qualified Data.Set
 import           Model.GameState             (Location (Location),
                                               Object (Object),
-                                              SpatialRelationship (SupportedBy, Supports),
+                                              SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                               SpatialRelationshipMap (SpatialRelationshipMap),
                                               World (World))
 import           Model.GID                   (GID)
@@ -27,9 +28,24 @@ world = World objectMap' locationMap' mempty spatialRelationships
    srMap :: Map (GID Object) (Set SpatialRelationship)
    srMap = Data.Map.Strict.fromList
      [ (chairObjGID, chairHolds)
-     , (robeObjGID, Data.Set.singleton robeHeld)
+     , (robeObjGID, Data.Set.fromList [robeHeld, robeContains])
+     , (pocketObjGID, Data.Set.fromList [pocketContained, pocketContains])  -- Pocket contained in robe AND contains pill
+     , (pillObjGID, Data.Set.singleton pillContained)  -- Pill is contained in pocket
      ]
    chairHolds :: Set SpatialRelationship
    chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
+
+   robeContains :: SpatialRelationship
+   robeContains = Contains $ Data.Set.fromList [pocketObjGID]
+
+   -- Pocket is contained in robe and contains pill
+   pocketContained :: SpatialRelationship
+   pocketContained = ContainedIn robeObjGID
+   pocketContains :: SpatialRelationship
+   pocketContains = Contains $ Data.Set.fromList [pillObjGID]
+
+   -- Pill is contained in pocket
+   pillContained :: SpatialRelationship
+   pillContained = ContainedIn pocketObjGID
    robeHeld :: SpatialRelationship
    robeHeld = SupportedBy chairObjGID
