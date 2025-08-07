@@ -26,11 +26,14 @@ module GameState ( changeImplicit, clearNarration
                  , parseAcquisitionPhrase
                  , processAcquisitionEffect
                  , updatePerceptionMapM,youSeeM) where
+import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
+import qualified Data.List
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
+import           Data.Maybe                    (catMaybes)
 import           Data.Set                      (Set, delete, empty, fromList,
                                                 insert, null, toList)
 import           Data.Text                     (Text, intercalate, null, pack)
@@ -46,7 +49,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PlayerActions (_acquisitionActions),
-                                                SpatialRelationship (Supports),
+                                                SpatialRelationship (SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap,
@@ -100,17 +103,14 @@ youSeeM = do
       objectiveOidSets = map snd objectiveEntries
       objectiveOids = concatMap Data.Set.toList objectiveOidSets
 
-  -- Get all the objects and their descriptions
-  objectDescriptions <- mapM getObjectDescription objectiveOids
+  -- Filter to only show surface-level objects (not supported by other objects in this location)
+  surfaceLevelOids <- filterM isSurfaceLevel objectiveOids
 
-  -- Get spatial relationships to find supported objects
-  supportedDescriptions <- mapM getSupportedObjectsDescription objectiveOids
-
-  -- Combine base descriptions with supported object descriptions
-  let allDescriptions = zipWith combineDescriptions objectDescriptions supportedDescriptions
+  -- Get descriptions for surface-level objects and what they support
+  surfaceDescriptions <- mapM getSurfaceObjectDescription surfaceLevelOids
 
   -- Add descriptions to narration if any objects found
-  case filter (not . Data.Text.null) allDescriptions of
+  case filter (not . Data.Text.null) surfaceDescriptions of
     [] -> pure () -- No objectives to show
     descriptions -> do
       let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
@@ -120,10 +120,42 @@ youSeeM = do
     isObjectiveKey (ObjectiveKey _) = True
     isObjectiveKey _                = False
 
-    getObjectDescription :: GID Object -> GameComputation Identity Text
-    getObjectDescription oid = do
+    -- Check if an object is surface-level (not supported by another object in this location)
+    isSurfaceLevel :: GID Object -> GameComputation Identity Bool
+    isSurfaceLevel oid = do
+      world <- gets _world
+      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+      case Data.Map.Strict.lookup oid spatialMap of
+        Nothing -> pure True -- No spatial relationships = surface level
+        Just relationships -> do
+          -- Check if this object is supported by any other object
+          let supportedByRelationships = filter isSupportedBy (Data.Set.toList relationships)
+          if Data.List.null supportedByRelationships
+            then pure True  -- Not supported by anything = surface level
+            else do
+              -- Check if the supporting object is also in this location
+              supportingOids <- mapM getSupportingOid supportedByRelationships
+              playerLocation <- getPlayerLocationM
+              let locationObjectOids = concatMap Data.Set.toList $ Data.Map.Strict.elems (_objectSemanticMap playerLocation)
+              -- If the supporting object is in this location, then this object is NOT surface level
+              pure $ not $ any (`elem` locationObjectOids) (catMaybes supportingOids)
+
+    isSupportedBy :: SpatialRelationship -> Bool
+    isSupportedBy (SupportedBy _) = True
+    isSupportedBy _               = False
+
+    getSupportingOid :: SpatialRelationship -> GameComputation Identity (Maybe (GID Object))
+    getSupportingOid (SupportedBy oid) = pure (Just oid)
+    getSupportingOid _                 = pure Nothing
+
+    getSurfaceObjectDescription :: GID Object -> GameComputation Identity Text
+    getSurfaceObjectDescription oid = do
       obj <- getObjectM oid
-      pure $ _description obj
+      supportedDesc <- getSupportedObjectsDescription oid
+      let baseDesc = _description obj
+      pure $ if Data.Text.null supportedDesc
+             then baseDesc
+             else baseDesc <> supportedDesc
 
     getSupportedObjectsDescription :: GID Object -> GameComputation Identity Text
     getSupportedObjectsDescription supporterOid = do
@@ -144,10 +176,10 @@ youSeeM = do
       pure $ Data.Text.intercalate ", " descriptions
     processSupportRelationship _ = pure ""
 
-    combineDescriptions :: Text -> Text -> Text
-    combineDescriptions baseDesc supportedDesc
-      | Data.Text.null supportedDesc = baseDesc
-      | otherwise = baseDesc <> supportedDesc
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
