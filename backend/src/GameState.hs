@@ -91,7 +91,7 @@ processAcquisitionEffect avp newActionGID = do
         updatedPlayerActions = playerActions { _acquisitionActions = updatedAcquisitionActions }
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
-
+      {-
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   playerLocation <- getPlayerLocationM
@@ -127,17 +127,9 @@ youSeeM = do
       case Data.Map.Strict.lookup oid spatialMap of
         Nothing -> pure True -- No spatial relationships = surface level
         Just relationships -> do
-          -- Check if this object is supported by or contained in any other object
-          let dependentRelationships = filter isDependentRelationship (Data.Set.toList relationships)
-          if Data.List.null dependentRelationships
-            then pure True  -- Not supported by anything = surface level
-            else do
-              -- Check if the supporting/containing object is also in this location
-              supportingOids <- mapM getSupportingOid dependentRelationships
-              playerLocation <- getPlayerLocationM
-              let locationObjectOids = concatMap Data.Set.toList $ Data.Map.Strict.elems (_objectSemanticMap playerLocation)
-              -- If the supporting object is in this location, then this object is NOT surface level
-              pure $ not $ any (`elem` locationObjectOids) (catMaybes supportingOids)
+          -- Check containment depth
+          depth <- getContainmentDepth oid spatialMap 0
+          pure (depth <= 1)
 
     isDependentRelationship :: SpatialRelationship -> Bool
     isDependentRelationship (SupportedBy _) = True
@@ -179,6 +171,113 @@ youSeeM = do
       descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
       pure $ Data.Text.intercalate ", " descriptions
     processSupportRelationship _ = pure ""
+
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
+-}
+
+youSeeM :: GameComputation Identity ()
+youSeeM = do
+  playerLocation <- getPlayerLocationM
+  let objectSemanticMap = _objectSemanticMap playerLocation
+
+  -- Filter for ObjectiveKey entries and get their object ID sets
+  let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
+      objectiveOidSets = map snd objectiveEntries
+      objectiveOids = concatMap Data.Set.toList objectiveOidSets
+
+  -- Filter to only show surface-level objects (not supported by other objects in this location)
+  surfaceLevelOids <- filterM isSurfaceLevel objectiveOids
+
+  -- Get descriptions for surface-level objects and what they support
+  surfaceDescriptions <- mapM getSurfaceObjectDescription surfaceLevelOids
+
+  -- Add descriptions to narration if any objects found
+  case filter (not . Data.Text.null) surfaceDescriptions of
+    [] -> pure () -- No objectives to show
+    descriptions -> do
+      let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+      modifyNarration $ updateActionConsequence seeText
+  where
+    isObjectiveKey :: NounKey -> Bool
+    isObjectiveKey (ObjectiveKey _) = True
+    isObjectiveKey _                = False
+
+    -- Check if an object is surface-level (not nested more than 1 level deep)
+    isSurfaceLevel :: GID Object -> GameComputation Identity Bool
+    isSurfaceLevel oid = do
+      world <- gets _world
+      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+      case Data.Map.Strict.lookup oid spatialMap of
+        Nothing -> pure True -- No spatial relationships = surface level
+        Just relationships -> do
+          -- Check containment depth
+          depth <- getContainmentDepth oid spatialMap 0
+          pure (depth <= 1)  -- Only show objects at depth 0 (surface) or 1 (on surface objects)
+
+    -- Calculate containment depth (how many levels deep an object is nested)
+    getContainmentDepth :: GID Object -> Map (GID Object) (Set SpatialRelationship) -> Int -> GameComputation Identity Int
+    getContainmentDepth oid spatialMap currentDepth = do
+      case Data.Map.Strict.lookup oid spatialMap of
+        Nothing -> pure currentDepth
+        Just relationships -> do
+          let containedInRelationships = filter isContainedIn (Data.Set.toList relationships)
+              supportedByRelationships = filter isSupportedBy (Data.Set.toList relationships)
+          case (containedInRelationships, supportedByRelationships) of
+            (ContainedIn parentOid : _, _) ->
+              -- If contained, recurse with increased depth
+              getContainmentDepth parentOid spatialMap (currentDepth + 1)
+            ([], SupportedBy parentOid : _) ->
+              -- If only supported, recurse with same depth (supporting doesn't increase nesting)
+              getContainmentDepth parentOid spatialMap currentDepth
+            _ -> pure currentDepth
+
+    isContainedIn :: SpatialRelationship -> Bool
+    isContainedIn (ContainedIn _) = True
+    isContainedIn _               = False
+
+    isSupportedBy :: SpatialRelationship -> Bool
+    isSupportedBy (SupportedBy _) = True
+    isSupportedBy _               = False
+
+    getSurfaceObjectDescription :: GID Object -> GameComputation Identity Text
+    getSurfaceObjectDescription oid = do
+      obj <- getObjectM oid
+      supportedDesc <- getSupportedObjectsDescription oid
+      let baseDesc = _description obj
+      pure $ if Data.Text.null supportedDesc
+             then baseDesc
+             else baseDesc <> supportedDesc
+
+    getSupportedObjectsDescription :: GID Object -> GameComputation Identity Text
+    getSupportedObjectsDescription supporterOid = do
+      world <- gets _world
+      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+      case Data.Map.Strict.lookup supporterOid spatialMap of
+        Nothing -> pure ""
+        Just relationships -> do
+          -- Only show supported objects (things "on" the surface)
+          -- Don't show contained objects (things "in" containers) at this level
+          supportedObjects <- mapM processSupportRelationship (Data.Set.toList relationships)
+          let validSupported = filter (not . Data.Text.null) supportedObjects
+              supportedText = case validSupported of
+                []        -> ""
+                supported -> ". On it: " <> Data.Text.intercalate ", " supported
+          pure supportedText
+
+    processSupportRelationship :: SpatialRelationship -> GameComputation Identity Text
+    processSupportRelationship (Supports oidSet) = do
+      descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
+      pure $ Data.Text.intercalate ", " descriptions
+    processSupportRelationship _ = pure ""
+
+    processContainmentRelationship :: SpatialRelationship -> GameComputation Identity Text
+    processContainmentRelationship (Contains oidSet) = do
+      descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
+      pure $ Data.Text.intercalate ", " descriptions
+    processContainmentRelationship _ = pure ""
 
     getObjectDescription :: GID Object -> GameComputation Identity Text
     getObjectDescription oid = do

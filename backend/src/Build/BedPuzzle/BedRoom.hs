@@ -1,5 +1,6 @@
 module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
+                                                                               getPillDeniedGID,
                                                                                getRobeGID,
                                                                                lookAtGID,
                                                                                pitchBlackFGID)
@@ -16,7 +17,8 @@ import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (c
                                                                                pill,
                                                                                robe,
                                                                                table)
-import           Grammar.Parser.Partitions.Nouns.Objectives                   (robe)
+import           Grammar.Parser.Partitions.Nouns.Objectives                   (pill,
+                                                                               robe)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
                                                                                pill,
                                                                                robe,
@@ -83,12 +85,12 @@ objectSemanticMap = Data.Map.Strict.fromList sList
     sList =
       [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
       , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
-      , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
       , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
+      , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
       , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
       , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
-      , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
       , (ObjectiveKey objRobe, Data.Set.singleton robeObjGID)
+      , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
       ]
 
 actionMap :: ActionManagement
@@ -101,10 +103,19 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID)]
+   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID), (getPillAVP,getPillDeniedGID)]
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective
+
+getPillAVP :: AcquisitionVerbPhrase
+getPillAVP = SimpleAcquisitionVerbPhrase get pillObjective
+
+pillObjective :: ObjectPhrase
+pillObjective = ObjectPhrase pillNP
+
+pillNP :: NounPhrase Objective
+pillNP = SimpleNounPhrase pill
 
 robeObjective :: ObjectPhrase
 robeObjective = ObjectPhrase robeNP
