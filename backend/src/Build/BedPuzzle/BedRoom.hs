@@ -2,6 +2,7 @@ module Build.BedPuzzle.BedRoom where
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
                                                                                getPillDeniedGID,
                                                                                getRobeGID,
+                                                                               locGetGID,
                                                                                lookAtGID,
                                                                                pitchBlackFGID)
 import           Build.Identifiers.Objects                                    (chairObjGID,
@@ -103,7 +104,7 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
    somaticAccessVerbs = Data.Map.Strict.empty
    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID), (getPillAVP,getPillDeniedGID)]
+   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, locGetGID), (getPillAVP,getPillDeniedGID)]
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective
