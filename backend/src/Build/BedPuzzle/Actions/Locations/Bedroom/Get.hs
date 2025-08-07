@@ -53,9 +53,6 @@ get = RemovedFromF getit
           -- Update the location in the game state
           playerLocationGID <- getPlayerLocationGID
           modifyLocationM playerLocationGID $ \loc' -> loc' { _objectSemanticMap = finalObjectSemanticMap }
-
-          -- Add success message
-          obj <- getObjectM oid
-          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> _description obj)
+          pure $ Right $ pure ()
 
         _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."
