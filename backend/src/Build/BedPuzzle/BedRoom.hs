@@ -92,14 +92,8 @@ objectSemanticMap = Data.Map.Strict.fromList sList
     sList =
       [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
       , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
-      , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
-      , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
-      , (DirectionalStimulusKey dirPocket, Data.Set.singleton pocketObjGID)
       , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
       , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
-      , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
-      , (ObjectiveKey objRobe, Data.Set.singleton robeObjGID)
-      , (ObjectiveKey objPocket, Data.Set.singleton pocketObjGID)
       ]
 
 actionMap :: ActionManagement

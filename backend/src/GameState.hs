@@ -89,7 +89,58 @@ processAcquisitionEffect avp newActionGID = do
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
+youSeeM :: GameComputation Identity ()
+youSeeM = do
+  playerLocation <- getPlayerLocationM
+  world <- gets _world
+  let objectSemanticMap = _objectSemanticMap playerLocation
+      SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
 
+  -- Get furniture from location's semantic map
+  let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
+      objectiveOidSets = map snd objectiveEntries
+      furnitureOids = concatMap Data.Set.toList objectiveOidSets
+
+  -- Show furniture + what's directly on each piece
+  furnitureDescriptions <- mapM (getFurnitureWithContents spatialMap) furnitureOids
+
+  case filter (not . Data.Text.null) furnitureDescriptions of
+    [] -> pure ()
+    descriptions -> do
+      let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+      modifyNarration $ updateActionConsequence seeText
+  where
+    isObjectiveKey :: NounKey -> Bool
+    isObjectiveKey (ObjectiveKey _) = True
+    isObjectiveKey _                = False
+
+    getFurnitureWithContents :: Map (GID Object) (Set SpatialRelationship) -> GID Object -> GameComputation Identity Text
+    getFurnitureWithContents spatialMap furnitureOid = do
+      furnitureObj <- getObjectM furnitureOid
+      let furnitureDesc = _description furnitureObj
+
+      -- Get what's directly on this furniture (one level only)
+      let directContents = case Data.Map.Strict.lookup furnitureOid spatialMap of
+            Nothing -> []
+            Just relationships -> concatMap extractSupported (Data.Set.toList relationships)
+
+      case directContents of
+        [] -> pure furnitureDesc
+        contents -> do
+          contentDescriptions <- mapM getObjectDescription contents
+          let contentsText = Data.Text.intercalate ", " contentDescriptions
+          pure $ furnitureDesc <> ". On it: " <> contentsText
+      where
+        extractSupported :: SpatialRelationship -> [GID Object]
+        extractSupported (Supports oidSet) = Data.Set.toList oidSet
+        extractSupported _                 = []
+
+    getObjectDescription :: GID Object -> GameComputation Identity Text
+    getObjectDescription oid = do
+      obj <- getObjectM oid
+      pure $ _description obj
+
+  {-
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   playerLocation <- getPlayerLocationM
@@ -148,7 +199,7 @@ youSeeM = do
     combineDescriptions baseDesc supportedDesc
       | Data.Text.null supportedDesc = baseDesc
       | otherwise = baseDesc <> supportedDesc
-
+-}
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
 updatePerceptionMapM oid = do
