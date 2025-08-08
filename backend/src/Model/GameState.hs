@@ -6,10 +6,22 @@ module Model.GameState (
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionKey ( AcquisitionalActionKey, ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement,_acquisitionActionManagement)
-  , ActionMaps (ActionMaps, _acquisitionActionMap, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap,_acquisitionActionMap)
+  , ActionManagement (ActionManagement
+                       , _directionalStimulusActionManagement
+                       , _implicitStimulusActionManagement
+                       , _somaticStimulusActionManagement
+                       , _acquisitionActionManagement
+                       , _consumptionActionManagement)
+  , ActionMaps (ActionMaps
+                 , _acquisitionActionMap
+                 , _implicitStimulusActionMap
+                 , _directionalStimulusActionMap
+                 ,_somaticStimulusActionMap
+                 ,_acquisitionActionMap
+                 , _consumptionActionMap)
   , AcquisitionActionF (AcquisitionActionF, RemovedFromF, AcquiredFromF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
+  , ConsumptionActionMap
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
@@ -31,6 +43,7 @@ module Model.GameState (
   , Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions)
   , PlayerActions (PlayerActions,
                    _acquisitionActions,
+                   _consumptionActions,
                    _implicitStimulusActions,
                    _directionalStimulusActions,
                    _somaticStimulusActions)
@@ -63,8 +76,8 @@ import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                ConsumptionVerb,
                                                 DirectionalStimulusVerb,
-                                                EdibleConsumptionVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
@@ -124,6 +137,7 @@ data ActionMaps = ActionMaps
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
+  , _consumptionActionMap         :: ConsumptionActionMap
   }
 
 type ImplicitStimulusActionMap :: Type
@@ -148,6 +162,9 @@ type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActi
 type AcquisitionVerbActionMap :: Type
 type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
 
+type ConsumptionActionMap :: Type
+type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
+
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
   { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
@@ -161,12 +178,12 @@ data AcquisitionActionF
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
   { _consumptionAction :: Location -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity () }
+
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 
 type ProcessImplicitVerbMaps :: Type
 type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
-
 
 type PlayerProcessImplicitVerbMap :: Type
 type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
@@ -185,7 +202,6 @@ newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
 type Evaluator :: Type
 type Evaluator
   = (Sentence -> GameComputation Identity ())
-
 
 type ActionEffectKey :: Type
 data ActionEffectKey
@@ -215,7 +231,7 @@ data Effect
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
   | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
-  | ConsumptionEffect EdibleConsumptionVerb (GID ConsumptionActionF)
+  | ConsumptionEffect ConsumptionVerb (GID ConsumptionActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type

@@ -3,8 +3,8 @@ module Model.Parser.Composites.Nouns (ContainerPhrase (SimpleContainerPhrase, Co
                                       ContainerPhraseRules (ContainerPhraseRules, _containerRule, _containerMarkerRule),
                                       DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                       DirectionalStimulusNounRules (DirectionalStimulusNounRules, _directionalStimulusRule),
-                                      EdibleNounPhrase (EdibleNounPhrase),
-                                      EdibleNounPhraseRules (EdibleNounPhraseRules, _edibleNounPhraseRule),
+                                      ConsumableNounPhrase (ConsumableNounPhrase),
+                                      ConsumableNounPhraseRules (ConsumableNounPhraseRules, _consumableNounPhraseRule),
                                       NounPhrase (SimpleNounPhrase,
                                                   NounPhrase,
                                                   DescriptiveNounPhrase,
@@ -23,8 +23,8 @@ import           Data.Text                         (Text, unwords)
 import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Adjectives   (Adjective)
 import           Model.Parser.Atomics.Misc         (Determiner)
-import           Model.Parser.Atomics.Nouns        (Container,
-                                                    DirectionalStimulus, Edible,
+import           Model.Parser.Atomics.Nouns        (Consumable, Container,
+                                                    DirectionalStimulus,
                                                     Objective, SomaticStimulus,
                                                     Surface)
 import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
@@ -60,14 +60,14 @@ type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
 newtype DirectionalStimulusNounRules r = DirectionalStimulusNounRules
   { _directionalStimulusRule :: Prod r Text Lexeme (NounPhrase DirectionalStimulus)}
 
-type EdibleNounPhrase :: Type
-newtype EdibleNounPhrase = EdibleNounPhrase (NounPhrase Edible)
+type ConsumableNounPhrase :: Type
+newtype ConsumableNounPhrase = ConsumableNounPhrase (NounPhrase Consumable)
   deriving stock (Show, Eq, Ord,Generic)
   deriving newtype (ToText)
 
-type EdibleNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
-newtype EdibleNounPhraseRules r = EdibleNounPhraseRules
-  { _edibleNounPhraseRule :: Prod r Text Lexeme (NounPhrase Edible) }
+type ConsumableNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+newtype ConsumableNounPhraseRules r = ConsumableNounPhraseRules
+  { _consumableNounPhraseRule :: Prod r Text Lexeme (NounPhrase Consumable) }
 
 type NounPhrase :: Type -> Type
 data NounPhrase a

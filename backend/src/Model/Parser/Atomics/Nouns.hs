@@ -36,14 +36,6 @@ type DirectionalStimulusRule :: (Type -> Type -> Type -> Type) -> Type
 newtype DirectionalStimulusRule r = DirectionalStimulusRule
   { _directionalStimulusRule :: Prod r Text Lexeme DirectionalStimulus}
 
-type Edible :: Type
-newtype Edible = Edible { _fromEdible :: Lexeme }
-  deriving newtype (Show,Eq,Ord)
-  deriving newtype (Hashable,ToText)
-
-instance HasLexeme Edible where
-  toLexeme = _fromEdible
-
 type ModToggleNoun :: Type
 newtype ModToggleNoun = ModToggleNoun { _fromModToggleNoun :: Lexeme }
   deriving stock (Show,Eq,Ord)

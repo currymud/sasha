@@ -27,6 +27,7 @@ import           Build.World                                             (world)
 import           Data.Map.Strict                                         (Map,
                                                                           empty,
                                                                           fromList)
+import qualified Data.Map.Strict                                         as Data.MapStrict
 import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
@@ -93,6 +94,7 @@ config = Config
                    directionalStimulusActionMap
                    somaticAccessActionMap
                    acquisitionActionMap
+                   Data.MapStrict.empty
 
 player :: Player
 player = Player

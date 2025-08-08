@@ -1,6 +1,6 @@
 module Grammar.Parser.Rules.Composites.Nouns (containerPhraseRules,
                                               directionalStimulusNounPhraseRules,
-                                              edibleNounPhraseRules,
+                                              consumableNounPhraseRules,
                                               nounPhraseRule,
                                               objectPhraseRules,
                                               somaticStimulusNounPhraseRules,
@@ -15,17 +15,17 @@ import           Grammar.Parser.Partitions.Prepositions.SurfaceMarkers (surfaceM
 import           Grammar.Parser.Rules.Atomics.Utils                    (parseRule)
 import           Model.Parser.Atomics.Adjectives                       (Adjective)
 import           Model.Parser.Atomics.Misc                             (Determiner)
-import           Model.Parser.Atomics.Nouns                            (Container (Container),
+import           Model.Parser.Atomics.Nouns                            (Consumable (Consumable),
+                                                                        Container (Container),
                                                                         DirectionalStimulus,
-                                                                        Edible,
                                                                         Objective,
                                                                         SomaticStimulus,
                                                                         Surface (Surface))
 import           Model.Parser.Atomics.Prepositions                     (ContainmentMarker (ContainmentMarker),
                                                                         SurfaceMarker (SurfaceMarker))
-import           Model.Parser.Composites.Nouns                         (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+import           Model.Parser.Composites.Nouns                         (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                        ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
                                                                         DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                                        EdibleNounPhrase (EdibleNounPhrase),
                                                                         NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                                         NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
                                                                         ObjectPhrase (ObjectPhrase),
@@ -69,13 +69,13 @@ directionalStimulusNounPhraseRules determinerRule adjRule directionalStimulusRul
           , _nounRule = directionalStimulusRule
           }
 
-edibleNounPhraseRules :: Prod r Text Lexeme Determiner
+consumableNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
-                                       -> Prod r Text Lexeme Edible
-                                       -> Grammar r (Prod r Text Lexeme EdibleNounPhrase)
-edibleNounPhraseRules determinerRule adjRule directionalStimulusRule =
+                                       -> Prod r Text Lexeme Consumable
+                                       -> Grammar r (Prod r Text Lexeme ConsumableNounPhrase)
+consumableNounPhraseRules determinerRule adjRule directionalStimulusRule =
   nounPhraseRule rules >>= \nounPhrase ->
-    rule $ EdibleNounPhrase <$> nounPhrase
+    rule $ ConsumableNounPhrase <$> nounPhrase
   where
    rules
       = NounPhraseRules

@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs
-         (eat,take,edibleConsumptionVerbs) where
+module Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
+         (eat,take,consumptionVerbs) where
 
 
 import           Data.HashSet                                (HashSet, fromList)
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
-import           Model.Parser.Atomics.Verbs                  (EdibleConsumptionVerb (EdibleConsumptionVerb))
+import           Model.Parser.Atomics.Verbs                  (ConsumptionVerb (ConsumptionVerb))
 import           Model.Parser.Lexer                          (Lexeme (EAT, TAKE))
 import           Prelude                                     hiding (take)
 #ifdef TESTING
@@ -17,14 +17,14 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeSemanticValues [| EdibleConsumptionVerb |] [EAT,TAKE]
+makeSemanticValues [| ConsumptionVerb |] [EAT,TAKE]
 
-edibleConsumptionVerbs :: HashSet EdibleConsumptionVerb
-edibleConsumptionVerbs = Data.HashSet.fromList [eat, take]
+consumptionVerbs :: HashSet ConsumptionVerb
+consumptionVerbs = Data.HashSet.fromList [eat, take]
 
 #ifdef TESTING
 
-instance Arbitrary EdibleConsumptionVerb where
-  arbitrary = elements edibleConsumptionVerbs
+instance Arbitrary ConsumptionVerb where
+  arbitrary = elements consumptionVerbs
 
 #endif

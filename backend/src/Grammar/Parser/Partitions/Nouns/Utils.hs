@@ -1,4 +1,4 @@
-module Grammar.Parser.Partitions.Nouns.Utils (lexemes,objectives', containers', edibles',supportives',surfaces') where
+module Grammar.Parser.Partitions.Nouns.Utils (lexemes,objectives', containers', consumables',supportives',surfaces') where
 
 import           Data.List            (nub)
 import           Grammar.Parser.Lexer (Lexeme (CHAIR, MAIL, PILL, POCKET, ROBE, SATCHEL, TABLE, TOWEL))
@@ -7,7 +7,7 @@ lexemes :: [Lexeme]
 lexemes = nub $
   objectives'
     <> containers'
-    <> edibles'
+    <> consumables'
     <> supportives'
     <> surfaces'
 
@@ -23,5 +23,5 @@ supportives' = [CHAIR,TABLE,SATCHEL]
 surfaces' :: [Lexeme]
 surfaces' = [CHAIR,TABLE,SATCHEL]
 
-edibles' :: [Lexeme]
-edibles' = [PILL]
+consumables' :: [Lexeme]
+consumables' = [PILL]

@@ -5,12 +5,13 @@ module Model.Parser.GCase where
 import           Data.Kind                     (Type)
 import           GHC.Generics                  (Generic)
 import           Model.Parser                  (Sentence (Imperative))
-import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus,
-                                                Objective, SimpleAccessNoun,
-                                                Supportive, ToggleNoun)
+import           Model.Parser.Atomics.Nouns    (Consumable, Container,
+                                                DirectionalStimulus, Objective,
+                                                SimpleAccessNoun, Supportive,
+                                                ToggleNoun)
 import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
+                                                ConsumptionVerb,
                                                 DirectionalStimulusVerb,
-                                                EdibleConsumptionVerb,
                                                 ImplicitBoundaryVerb,
                                                 ImplicitRegionalStimulusVerb,
                                                 ImplicitStimulusVerb,
@@ -22,7 +23,7 @@ type VerbKey :: Type
 data VerbKey
   = CardinalMovementKey         CardinalMovementVerb
   | DirectionalStimulusVerbKey  DirectionalStimulusVerb
-  | EdibleConsumptionKey        EdibleConsumptionVerb
+  | ConsumptionKey              ConsumptionVerb
   | ImplicitBoundaryKey         ImplicitBoundaryVerb
   | ImplicitStimulusKey         ImplicitStimulusVerb
   | SimpleAccessVerbKey         SimpleAccessVerb
@@ -32,7 +33,6 @@ data VerbKey
 mkVerbKey :: Sentence -> VerbKey
 mkVerbKey (Imperative imperative) = case imperative of
   (StimulusVerbPhrase vphrase) -> fromStimulusVerbPhrase vphrase
-
 
 fromStimulusVerbPhrase :: StimulusVerbPhrase -> VerbKey
 fromStimulusVerbPhrase (ImplicitStimulusVerb v) = ImplicitStimulusKey v
@@ -46,4 +46,5 @@ data NounKey
   | ToggleNounKey ToggleNoun
   | ModToggleNounKey ToggleNoun
   | SimpleAccessNounKey SimpleAccessNoun
+  | ConsumableNounKey Consumable
   deriving stock (Show, Eq, Ord, Generic)

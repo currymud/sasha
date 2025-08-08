@@ -24,7 +24,9 @@ module GameState ( changeImplicit, clearNarration
                  , removeObjectFromLocationSemanticMapM
                  , modifyPerceptionMapM
                  , parseAcquisitionPhrase
+                 , parseConsumptionPhrase
                  , processAcquisitionEffect
+                 , processConsumptionEffect
                  , updatePerceptionMapM,youSeeM) where
 import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
@@ -41,6 +43,7 @@ import           Error                         (throwMaybeM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (ObjectKey),
                                                 ActionManagement (_implicitStimulusActionManagement),
+                                                ConsumptionActionF (_consumptionAction),
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
                                                 ImplicitStimulusActionF,
@@ -48,7 +51,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Narration (Narration),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
-                                                PlayerActions (_acquisitionActions),
+                                                PlayerActions (_acquisitionActions, _consumptionActions),
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
@@ -57,11 +60,13 @@ import           Model.GameState               (AcquisitionActionF,
 import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                DirectionalStimulusNounPhrase,
                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                 ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
-import           Model.Parser.GCase            (NounKey (ObjectiveKey))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ObjectiveKey))
 
 
 getDescriptionM :: GID Object -> GameComputation Identity Text
@@ -79,6 +84,16 @@ parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of
     in (ophrase, obj)
   _ -> error "get: unsupported AcquisitionVerbPhrase"
 
+parseConsumptionPhrase :: ConsumptionVerbPhrase -> (ConsumableNounPhrase,NounKey)
+parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp of
+  ConsumptionVerbPhrase _ ophrase ->
+    let obj = case ophrase of
+               (ConsumableNounPhrase (SimpleNounPhrase obj'))             -> obj'
+               (ConsumableNounPhrase (NounPhrase _ obj'))                 -> obj'
+               (ConsumableNounPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
+               (ConsumableNounPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
+    in (ophrase, obj)
+
 processAcquisitionEffect :: AcquisitionVerbPhrase
                          -> GID AcquisitionActionF
                          -> GameComputation Identity ()
@@ -91,92 +106,19 @@ processAcquisitionEffect avp newActionGID = do
         updatedPlayerActions = playerActions { _acquisitionActions = updatedAcquisitionActions }
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
-      {-
-youSeeM :: GameComputation Identity ()
-youSeeM = do
-  playerLocation <- getPlayerLocationM
-  let objectSemanticMap = _objectSemanticMap playerLocation
 
-  -- Filter for ObjectiveKey entries and get their object ID sets
-  let objectiveEntries = Data.Map.Strict.toList $ Data.Map.Strict.filterWithKey (\k _ -> isObjectiveKey k) objectSemanticMap
-      objectiveOidSets = map snd objectiveEntries
-      objectiveOids = concatMap Data.Set.toList objectiveOidSets
-
-  -- Filter to only show surface-level objects (not supported by other objects in this location)
-  surfaceLevelOids <- filterM isSurfaceLevel objectiveOids
-
-  -- Get descriptions for surface-level objects and what they support
-  surfaceDescriptions <- mapM getSurfaceObjectDescription surfaceLevelOids
-
-  -- Add descriptions to narration if any objects found
-  case filter (not . Data.Text.null) surfaceDescriptions of
-    [] -> pure () -- No objectives to show
-    descriptions -> do
-      let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
-      modifyNarration $ updateActionConsequence seeText
-  where
-    isObjectiveKey :: NounKey -> Bool
-    isObjectiveKey (ObjectiveKey _) = True
-    isObjectiveKey _                = False
-
-    -- Check if an object is surface-level (not supported by another object in this location)
-    isSurfaceLevel :: GID Object -> GameComputation Identity Bool
-    isSurfaceLevel oid = do
-      world <- gets _world
-      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-      case Data.Map.Strict.lookup oid spatialMap of
-        Nothing -> pure True -- No spatial relationships = surface level
-        Just relationships -> do
-          -- Check containment depth
-          depth <- getContainmentDepth oid spatialMap 0
-          pure (depth <= 1)
-
-    isDependentRelationship :: SpatialRelationship -> Bool
-    isDependentRelationship (SupportedBy _) = True
-    isDependentRelationship (ContainedIn _) = True
-    isDependentRelationship _               = False
-
-    getSupportingOid :: SpatialRelationship -> GameComputation Identity (Maybe (GID Object))
-    getSupportingOid (SupportedBy oid) = pure (Just oid)
-    getSupportingOid (ContainedIn oid) = pure (Just oid)
-    getSupportingOid _                 = pure Nothing
-
-    getSurfaceObjectDescription :: GID Object -> GameComputation Identity Text
-    getSurfaceObjectDescription oid = do
-      obj <- getObjectM oid
-      supportedDesc <- getSupportedObjectsDescription oid
-      let baseDesc = _description obj
-      pure $ if Data.Text.null supportedDesc
-             then baseDesc
-             else baseDesc <> supportedDesc
-
-    getSupportedObjectsDescription :: GID Object -> GameComputation Identity Text
-    getSupportedObjectsDescription supporterOid = do
-      world <- gets _world
-      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-      case Data.Map.Strict.lookup supporterOid spatialMap of
-        Nothing -> pure ""
-        Just relationships -> do
-          -- Only show supported objects (things "on" the surface)
-          -- Don't show contained objects (things "in" containers) at this level
-          supportedObjects <- mapM processSupportRelationship (Data.Set.toList relationships)
-          let validSupported = filter (not . Data.Text.null) supportedObjects
-              supportedText = case validSupported of
-                []        -> ""
-                supported -> ". On it: " <> Data.Text.intercalate ", " supported
-          pure supportedText
-
-    processSupportRelationship :: SpatialRelationship -> GameComputation Identity Text
-    processSupportRelationship (Supports oidSet) = do
-      descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
-      pure $ Data.Text.intercalate ", " descriptions
-    processSupportRelationship _ = pure ""
-
-    getObjectDescription :: GID Object -> GameComputation Identity Text
-    getObjectDescription oid = do
-      obj <- getObjectM oid
-      pure $ _description obj
--}
+processConsumptionEffect :: ConsumptionVerbPhrase
+                         -> GID ConsumptionActionF
+                         -> GameComputation Identity ()
+processConsumptionEffect cvp newActionGID = do
+  modify' $ \gs ->
+    let player = gs._player
+        playerActions = _playerActions player
+        consumptionActions = _consumptionActions playerActions
+        updatedConsumptionActions = Data.Map.Strict.insert cvp newActionGID consumptionActions
+        updatedPlayerActions = playerActions { _consumptionActions = updatedConsumptionActions }
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do

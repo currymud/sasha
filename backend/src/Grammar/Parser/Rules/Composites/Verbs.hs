@@ -8,37 +8,37 @@ import           GHC.Base                                                (Altern
 import           Grammar.Parser.Lexer                                    (Lexeme)
 import           Grammar.Parser.Partitions.Adjectives                    (adjectives)
 import           Grammar.Parser.Partitions.Misc                          (determiners)
+import           Grammar.Parser.Partitions.Nouns.Consumables             (consumables)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
-import           Grammar.Parser.Partitions.Nouns.Edibles                 (edibles)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (objectives)
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
 import           Grammar.Parser.Partitions.Prepositions.SourceMarkers    (sourceMarkers)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (acquisitionVerbs)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (consumptionVerbs)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
-import           Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs  (edibleConsumptionVerbs)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
 import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule)
 import           Grammar.Parser.Rules.Atomics.Utils                      (parseRule)
 import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule)
-import           Grammar.Parser.Rules.Composites.Nouns                   (directionalStimulusNounPhraseRules,
-                                                                          edibleNounPhraseRules,
+import           Grammar.Parser.Rules.Composites.Nouns                   (consumableNounPhraseRules,
+                                                                          directionalStimulusNounPhraseRules,
                                                                           objectPhraseRules,
                                                                           somaticStimulusNounPhraseRules,
                                                                           supportPhraseRules)
 import           Model.Parser.Atomics.Adjectives                         (Adjective (Adjective))
 import           Model.Parser.Atomics.Misc                               (Determiner (Determiner))
-import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus (DirectionalStimulus),
-                                                                          Edible (Edible),
+import           Model.Parser.Atomics.Nouns                              (Consumable (Consumable),
+                                                                          DirectionalStimulus (DirectionalStimulus),
                                                                           Objective (Objective),
                                                                           SomaticStimulus (SomaticStimulus))
 import           Model.Parser.Atomics.Prepositions                       (SourceMarker (SourceMarker))
 import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
+                                                                          ConsumptionVerb (ConsumptionVerb),
                                                                           DirectionalStimulusVerb (DirectionalStimulusVerb),
-                                                                          EdibleConsumptionVerb (EdibleConsumptionVerb),
                                                                           SomaticAccessVerb (SomaticAccessVerb))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                                          ConsumptionVerbPhrase (EdibleVerbPhrase),
-                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase, StimulusVerbPhrase),
+                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', StimulusVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
@@ -87,11 +87,11 @@ consumptionVerbPhraseRules :: Grammar r (Prod r Text Lexeme ConsumptionVerbPhras
 consumptionVerbPhraseRules = do
   determiner <- parseRule determiners Determiner
   adj <- parseRule adjectives Adjective
-  edible <- parseRule edibles Edible
-  edibleNounPhrase <- edibleNounPhraseRules determiner adj edible
-  edibleConsumptionVerb <- parseRule edibleConsumptionVerbs EdibleConsumptionVerb
-  rule $ EdibleVerbPhrase <$> edibleConsumptionVerb
-           <*> edibleNounPhrase
+  consumable <- parseRule consumables Consumable
+  consumableNounPhrase <- consumableNounPhraseRules determiner adj consumable
+  consumptionVerb <- parseRule consumptionVerbs ConsumptionVerb
+  rule $ ConsumptionVerbPhrase <$> consumptionVerb
+           <*> consumableNounPhrase
 
 imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do
@@ -99,5 +99,5 @@ imperativeRules = do
   consumptionVerbPhrase <- consumptionVerbPhraseRules
   acquisitionVerbPhrase <- acquisitionVerbPhraseRules
   rule $ StimulusVerbPhrase <$> stimulusVerbPhrase
-           <|> ConsumptionVerbPhrase <$> consumptionVerbPhrase
+           <|> ConsumptionVerbPhrase' <$> consumptionVerbPhrase
            <|> AcquisitionVerbPhrase' <$> acquisitionVerbPhrase

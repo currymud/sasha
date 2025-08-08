@@ -1,37 +1,33 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
-module Actions.Consume (manageConsumptionProcess) where
+module Actions.Consume () where
 
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (getLocationObjectIDsM,
-                                                getPlayerActionsM,
-                                                getPlayerLocationGID,
+import           GameState                     (getPlayerActionsM,
                                                 getPlayerLocationM, getPlayerM,
                                                 modifyObjectActionManagementM)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
-                                                ActionEffectKey (LocationKey, ObjectKey),
+                                                ActionEffectKey (ObjectKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
+                                                ConsumptionActionF,
                                                 Effect (DirectionalStimulusEffect),
                                                 GameComputation,
                                                 Player (_actionKeyMap, _location),
-                                                PlayerActions (_acquisitionActions),
                                                 _directionalStimulusActionManagement)
 import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
-import           Model.Parser.Composites.Nouns (ObjectPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
-
-manageConsumptionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
-manageConsumptionProcess avp = do
-  availableActions <- _acquisitionActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup avp availableActions of
+import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
+  {-
+manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
+manageConsumptionProcess cvp = do
+  availableActions <- _consumptionActions <$> getPlayerActionsM
+  case Data.Map.Strict.lookup cvp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for verb phrase"
     Just (actionGID :: GID AcquisitionActionF) -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
@@ -49,11 +45,13 @@ manageConsumptionProcess avp = do
         Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
 
 -- Add helper function to process effects
-processAcquisitionEffects :: GID AcquisitionActionF -> AcquisitionVerbPhrase -> GameComputation Identity ()
-processAcquisitionEffects actionGID avp = do
+processConsumptionEffects :: GID ConsumptionActionF
+                               -> ConsumptionVerbPhrase
+                               -> GameComputation Identity ()
+processConsumptionEffects actionGID cvp = do
   player <- getPlayerM
   let ActionKeyMap actionKeyMap = _actionKeyMap player
-      acquisitionKey = AcquisitionalActionKey actionGID
+      sitionKey = ConsumptionActionKey actionGID
 
   case Data.Map.Strict.lookup acquisitionKey actionKeyMap of
     Just (ActionEffectMap effectMap) -> do
@@ -79,3 +77,4 @@ processEffect _ _ _ = pure () -- Handle other effect types as needed
 
 actionKey :: GID AcquisitionActionF -> ActionKey
 actionKey = AcquisitionalActionKey
+-}

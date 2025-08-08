@@ -58,6 +58,7 @@ library
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
+      Build.BedPuzzle.Actions.Take
       Build.BedPuzzle.Actions.Locations.Bedroom.Get
       Build.BedPuzzle.Actions.Objects.Pill
       Build.BedPuzzle.Actions.Objects.Pill.Get
@@ -108,7 +109,7 @@ library
       Grammar.Parser.Partitions.Misc
       Grammar.Parser.Partitions.Nouns.Containers
       Grammar.Parser.Partitions.Nouns.DirectionalStimulus
-      Grammar.Parser.Partitions.Nouns.Edibles
+      Grammar.Parser.Partitions.Nouns.Consumables
       Grammar.Parser.Partitions.Nouns.Objectives
       Grammar.Parser.Partitions.Nouns.SomaticStimulus
       Grammar.Parser.Partitions.Nouns.Surfaces
@@ -121,7 +122,7 @@ library
       Grammar.Parser.Partitions.Verbs.AcquisitionVerbs
       Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
       Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
-      Grammar.Parser.Partitions.Verbs.EdibleConsumptionVerbs
+      Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
       Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
       Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb

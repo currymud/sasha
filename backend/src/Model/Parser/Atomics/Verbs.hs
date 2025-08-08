@@ -1,7 +1,7 @@
 module Model.Parser.Atomics.Verbs (AcquisitionVerb (AcquisitionVerb, _fromAcquisitionVerb)
                                   , CardinalMovementVerb (CardinalMovementVerb, _fromCardinalMovementVerb )
                                   , DirectionalStimulusVerb (DirectionalStimulusVerb, _fromDirectionalStimulusVerb)
-                                  , EdibleConsumptionVerb (EdibleConsumptionVerb, _fromEdibleConsumptionVerb)
+                                  , ConsumptionVerb (ConsumptionVerb, _fromConsumptionVerb)
                                   , ImplicitBoundaryVerb (ImplicitBoundaryVerb, _fromImplicitBoundaryVerb)
                                   , ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb, _fromImplicitRegionalStimulusVerb)
                                   , ImplicitStimulusVerb (ImplicitStimulusVerb, _fromImplicitStimulusVerb)
@@ -41,14 +41,14 @@ newtype DirectionalStimulusVerb = DirectionalStimulusVerb { _fromDirectionalStim
 instance HasLexeme DirectionalStimulusVerb where
   toLexeme = _fromDirectionalStimulusVerb
 
-type EdibleConsumptionVerb :: Type
-newtype EdibleConsumptionVerb =
-  EdibleConsumptionVerb { _fromEdibleConsumptionVerb :: Lexeme }
+type ConsumptionVerb :: Type
+newtype ConsumptionVerb =
+  ConsumptionVerb { _fromConsumptionVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)
   deriving newtype (Hashable,ToText)
 
-instance HasLexeme EdibleConsumptionVerb where
-  toLexeme = _fromEdibleConsumptionVerb
+instance HasLexeme ConsumptionVerb where
+  toLexeme = _fromConsumptionVerb
 
 type ImplicitBoundaryVerb :: Type
 newtype ImplicitBoundaryVerb =

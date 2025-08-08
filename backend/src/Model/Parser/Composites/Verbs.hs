@@ -6,12 +6,12 @@ import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker,
                                                     SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
+                                                    ConsumptionVerb,
                                                     DirectionalStimulusVerb,
-                                                    EdibleConsumptionVerb,
                                                     ImplicitStimulusVerb,
                                                     SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns     (DirectionalStimulusNounPhrase,
-                                                    EdibleNounPhrase,
+import           Model.Parser.Composites.Nouns     (ConsumableNounPhrase,
+                                                    DirectionalStimulusNounPhrase,
                                                     ObjectPhrase,
                                                     SomaticStimulusNounPhrase,
                                                     SupportPhrase)
@@ -42,10 +42,10 @@ data StimulusVerbPhrase
 
 type ConsumptionVerbPhrase :: Type
 data ConsumptionVerbPhrase
-  = EdibleVerbPhrase EdibleConsumptionVerb EdibleNounPhrase
+  = ConsumptionVerbPhrase ConsumptionVerb ConsumableNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 instance ToText ConsumptionVerbPhrase where
-  toText (EdibleVerbPhrase verb nounPhrase) =
+  toText (ConsumptionVerbPhrase verb nounPhrase) =
     toText verb <> " " <> toText nounPhrase
 
 instance ToText StimulusVerbPhrase where
@@ -59,14 +59,14 @@ instance ToText StimulusVerbPhrase where
 type Imperative :: Type
 data Imperative
   = StimulusVerbPhrase StimulusVerbPhrase
-  | ConsumptionVerbPhrase ConsumptionVerbPhrase
+  | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText Imperative where
   toText (StimulusVerbPhrase verbPhrase) =
     toText verbPhrase
-  toText (ConsumptionVerbPhrase verbPhrase) =
+  toText (ConsumptionVerbPhrase' verbPhrase) =
     toText verbPhrase
   toText (AcquisitionVerbPhrase' verbPhrase) =
     toText verbPhrase
