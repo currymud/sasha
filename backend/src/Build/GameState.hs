@@ -11,6 +11,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           openEyesGID,
                                                                           playerGetGID,
                                                                           seeChairGID,
+                                                                          seePocketRobeWornGID,
                                                                           seeRobeChairGID,
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
@@ -19,6 +20,7 @@ import           Build.Identifiers.Actions                               (acquis
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
                                                                           pillObjGID,
+                                                                          pocketObjGID,
                                                                           robeObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
@@ -167,6 +169,7 @@ playerGetEffectMap = ActionEffectMap
       [ -- Robe acquisition effects (player zone responsibility)
         (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
+      , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
         -- Pill acquisition effects would go here too
       , (ObjectKey pillObjGID, Data.Set.fromList []) -- Add pill effects as needed
         -- Other acquisition effects...
@@ -175,6 +178,8 @@ playerGetEffectMap = ActionEffectMap
 bedroomOpenEyesKey :: ActionEffectKey
 bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
+pocketWornEffect :: Effect
+pocketWornEffect = DirectionalStimulusEffect dirLook seePocketRobeWornGID
 
 openEyesEffect :: Effect
 openEyesEffect = ImplicitStimulusEffect impLook agentCanSeeGID

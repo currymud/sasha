@@ -99,6 +99,7 @@ library
       Model.Parser.GCase
       Model.Parser.Lexer
       GameState
+      GameState.Spatial
       Grammar.Parser
       Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adjectives
