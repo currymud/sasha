@@ -4,7 +4,8 @@ import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Misc                          (the)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (table)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pocket,
+                                                                          table)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           ActionManagement (ActionManagement),
@@ -25,8 +26,8 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 pocketObj :: Object
 pocketObj =
   let
-  longDescription = DirectionalStimulusNounPhrase (NounPhrase the table)
-  shortDescription = DirectionalStimulusNounPhrase (SimpleNounPhrase table)
+  longDescription = DirectionalStimulusNounPhrase (NounPhrase the pocket)
+  shortDescription = DirectionalStimulusNounPhrase (SimpleNounPhrase pocket)
   in Object
        { _shortName = "It's a pocket, your robe has a pocket."
        , _description = "It's a ridiculuous pocket that defies physics."
