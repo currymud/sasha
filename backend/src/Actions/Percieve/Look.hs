@@ -21,7 +21,7 @@ import           GameState                                               (getAct
                                                                           getPlayerActionsM,
                                                                           getPlayerM,
                                                                           modifyNarration)
-import qualified GameState.Spatial                                       as Grammar.Spatial
+import qualified GameState.Spatial                                       as Spatial
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
                                                                           getPlayerLocationM)
@@ -30,14 +30,16 @@ import           Model.GameState                                         (Action
                                                                           Config (_actionMaps),
                                                                           DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                           GameComputation,
+                                                                          GameState (_world),
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
                                                                           Object (_descriptives, _objectActionManagement),
-                                                                          Player (_location),
+                                                                          Player (_inventory, _location),
                                                                           PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           SpatialRelationship (Contains, Supports),
                                                                           SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                          World (_spatialRelationshipMap),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -143,7 +145,7 @@ lookableWithSpatialAwareness (DirectionalStimulusActionF actionF) dsnp@(Directio
       actionF dsnp firstObjGID
     _ -> do
       -- NEW: If not found in location, search spatially
-      Grammar.Spatial.findObjectInInventoryContainers nounKey >>= \case
+      Spatial.findObjectInInventoryContainers nounKey >>= \case
         Just objGID -> actionF dsnp objGID
         Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
 
