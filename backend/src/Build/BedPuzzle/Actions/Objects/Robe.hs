@@ -11,6 +11,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           ActionManagement (ActionManagement),
+                                                                          ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
                                                                           Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
@@ -23,7 +24,8 @@ import           Model.Parser.Atomics.Verbs                              (Direct
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (NounPhrase, SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase)
 
 robeObj :: Object
 robeObj =
@@ -38,7 +40,7 @@ robeObj =
        }
   where
     verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs
+    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -47,6 +49,8 @@ robeObj =
     somaticAccessVerbs = Data.Map.Strict.empty
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
     acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID)]
+    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
+    consumptionVerbs = Data.Map.Strict.empty
 
 
 -- Add helper definitions

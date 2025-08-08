@@ -9,6 +9,7 @@ module Model.GameState (
   , ActionManagement (ActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement,_acquisitionActionManagement)
   , ActionMaps (ActionMaps, _acquisitionActionMap, _implicitStimulusActionMap, _directionalStimulusActionMap,_somaticStimulusActionMap,_acquisitionActionMap)
   , AcquisitionActionF (AcquisitionActionF, RemovedFromF, AcquiredFromF)
+  , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , Config (Config, _actionMaps)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
@@ -58,19 +59,19 @@ import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
-import           Language.Haskell.TH           (location)
-import           Model.GID                     (ActionId, GID)
+import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
-import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
+                                                EdibleConsumptionVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
                                                 ObjectPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
-import           Model.Parser.GCase            (NounKey, VerbKey)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ConsumptionVerbPhrase)
+import           Model.Parser.GCase            (NounKey)
 
 -- Game Transformers
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -157,6 +158,9 @@ data AcquisitionActionF
  | RemovedFromF (Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
  | AcquiredFromF (Location -> AcquisitionVerbPhrase ->GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
 
+type ConsumptionActionF :: Type
+newtype ConsumptionActionF = ConsumptionActionF
+  { _consumptionAction :: Location -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity () }
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
 
@@ -202,6 +206,7 @@ data ActionKey
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
+  | ConsumptionActionKey (GID ConsumptionActionF)
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -210,6 +215,7 @@ data Effect
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
   | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
+  | ConsumptionEffect EdibleConsumptionVerb (GID ConsumptionActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type
@@ -217,6 +223,7 @@ data ActionEffect
   = SomaticAccessActionEffect (Map (GID SomaticAccessActionF) Effect)
   | AcquisitionActionEffect (Map (GID AcquisitionActionF) Effect)
   | ImplicitStimulusActionEffect (Map (GID ImplicitStimulusActionF) (Map ActionEffectKey Effect))
+  | EdibleConsumptionActionEffect (Map (GID ConsumptionActionF) Effect)
   deriving stock (Show, Eq, Ord)
 
 type ActionEffectMap :: Type
@@ -256,6 +263,7 @@ data ActionManagement = ActionManagement
   , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   , _somaticStimulusActionManagement :: Map SomaticAccessVerb (GID SomaticAccessActionF)
   , _acquisitionActionManagement :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
+  , _consumptionActionManagement :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
   }
   deriving stock (Show, Eq, Ord)
 
@@ -285,7 +293,8 @@ data PlayerActions = PlayerActions
  , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
  , _somaticStimulusActions :: Map SomaticAccessVerb (GID SomaticAccessActionF)
  , _acquisitionActions :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
- }
+ , _consumptionActions :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
+  }
   deriving stock (Show, Eq, Ord)
 
 type SpatialRelationshipMap :: Type

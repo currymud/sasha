@@ -44,6 +44,7 @@ import           Model.GameState                                         (Acquis
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
+                                                                          ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
@@ -61,7 +62,8 @@ import           Model.Parser.Atomics.Verbs                              (Direct
                                                                           SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase)
 
 initNarration :: Narration
 initNarration = Narration
@@ -95,7 +97,7 @@ config = Config
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs
+  , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs consumptionVerbs
   , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
   , _inventory = Data.Map.Strict.empty
@@ -114,7 +116,8 @@ player = Player
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
     acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)
                                                 , (SimpleAcquisitionVerbPhrase get simpleRobeOP, playerGetGID)]
-
+    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
+    consumptionVerbs = Data.Map.Strict.empty
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
 

@@ -30,6 +30,7 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (w
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
 import           Model.GameState                                              (AcquisitionActionF,
                                                                                ActionManagement (ActionManagement),
+                                                                               ConsumptionActionF,
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                                Location (Location, _locationActionManagement, _objectSemanticMap, _title),
@@ -44,7 +45,8 @@ import           Model.Parser.Atomics.Verbs                                   (A
                                                                                SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                                (NounPhrase (SimpleNounPhrase),
                                                                                ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                               ConsumptionVerbPhrase)
 import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
@@ -95,7 +97,7 @@ objectSemanticMap = Data.Map.Strict.fromList sList
       ]
 
 actionMap :: ActionManagement
-actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs acquisitionVerbs
+actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs acquisitionVerbs consumptionVerbs
  where
    implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
    implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, pitchBlackFGID)]
@@ -105,6 +107,8 @@ actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessV
    somaticAccessVerbs = Data.Map.Strict.empty
    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
    acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, locGetGID), (getPillAVP,getPillDeniedGID)]
+   consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
+   consumptionVerbs = Data.Map.Strict.empty
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective

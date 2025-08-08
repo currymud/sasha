@@ -11,6 +11,7 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pill,
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           ActionManagement (ActionManagement),
+                                                                          ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
                                                                           Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
@@ -24,7 +25,8 @@ import           Model.Parser.Atomics.Verbs                              (Acquis
                                                                           SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase,
+                                                                          ConsumptionVerbPhrase)
 
 chairObj :: Object
 chairObj =
@@ -39,7 +41,7 @@ chairObj =
        }
   where
     verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs
+    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
     implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
     implicitStimulusVerbs = Data.Map.Strict.empty
     directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -48,3 +50,5 @@ chairObj =
     somaticAccessVerbs = Data.Map.Strict.empty
     acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
     acquisitionVerbs = Data.Map.Strict.empty
+    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
+    consumptionVerbs = Data.Map.Strict.empty

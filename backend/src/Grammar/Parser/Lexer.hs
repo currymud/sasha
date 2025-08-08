@@ -39,6 +39,7 @@ sc = Lexer $ L.space (void spaceChar) lineCmnt blockCmnt
 term :: Lexer Lexeme
 term =
   PORTAL <$ symbol "PORTAL"
+    <|> TAKE <$ symbol "TAKE"
     <|> EYES <$ symbol "EYES"
     <|> BLEARY <$ symbol "BLEARY"
     <|> EAT <$ symbol "EAT"
@@ -247,7 +248,7 @@ floor' =
   FLOOR <$ symbol "FLOOR" <|> FLOOR <$ symbol "GROUND"
 
 get :: Lexer Lexeme
-get = GET <$ symbol "GET" <|> GET <$ symbol "TAKE"
+get = GET <$ symbol "GET"
 
 close :: Lexer Lexeme
 close = CLOSE <$ symbol "CLOSE" <|> CLOSE <$ symbol "SHUT"

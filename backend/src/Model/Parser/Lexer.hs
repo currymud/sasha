@@ -19,6 +19,7 @@ newtype Lexer a = Lexer {runLexer :: Parsec Void Text a}
 type Lexeme :: Type
 data Lexeme
   = FROM
+  | TAKE
   | EYES
   | BLEARY
   | EAT
