@@ -130,8 +130,14 @@ actionKeyMap = ActionKeyMap
   $ fromList
       [ (openEyesKey,openEyesEffectMap)
       , (getKey, playerGetEffectMap)
-      , (getRobeKey, getRobeEffectMap)
+      , (alreadyHaveRobeKey, emptyEffectMap)
       ]
+
+alreadyHaveRobeKey :: ActionKey
+alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
+
+emptyEffectMap :: ActionEffectMap
+emptyEffectMap = ActionEffectMap mempty
 
 getKeyMap :: ActionEffectMap
 getKeyMap = ActionEffectMap
