@@ -12,6 +12,7 @@ module Model.GameState (
                        , _somaticStimulusActionManagement
                        , _acquisitionActionManagement
                        , _consumptionActionManagement)
+  , ActionManagementKey (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey)
   , ActionMaps (ActionMaps
                  , _acquisitionActionMap
                  , _implicitStimulusActionMap
@@ -272,6 +273,15 @@ data Location = Location {
   , _locationActionManagement :: ActionManagement
 --  , _locationEffects          :: LocationEffects
 }
+
+type ActionManagementKey :: Type
+data ActionManagementKey
+  = DSAManagementKey DirectionalStimulusVerb
+  | ISAManagementKey ImplicitStimulusVerb
+  | SSAManagementKey SomaticAccessVerb
+  | AAManagementKey AcquisitionVerbPhrase
+  | CAManagementKey ConsumptionVerbPhrase
+  deriving stock (Show, Eq, Ord)
 
 type ActionManagement :: Type
 data ActionManagement = ActionManagement
