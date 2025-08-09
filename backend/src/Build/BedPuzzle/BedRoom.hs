@@ -24,7 +24,8 @@ import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (c
                                                                                pill,
                                                                                robe,
                                                                                table)
-import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs             (get)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs             (acquisitionVerbs,
+                                                                               get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
@@ -96,19 +97,15 @@ objectSemanticMap = Data.Map.Strict.fromList sList
       , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
       ]
 
-actionMap :: ActionManagement
-actionMap = ActionManagement directionalStimulus implicitStimulus somaticAccessVerbs acquisitionVerbs consumptionVerbs
- where
-   implicitStimulus :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-   implicitStimulus = Data.Map.Strict.fromList [(implicitStimulusLook, pitchBlackFGID)]
-   directionalStimulus :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-   directionalStimulus = Data.Map.Strict.fromList [(directionalStimulusLook, lookAtGID)]
-   somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-   somaticAccessVerbs = Data.Map.Strict.empty
-   acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-   acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, locGetGID), (getPillAVP,getPillDeniedGID)]
-   consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-   consumptionVerbs = Data.Map.Strict.empty
+actionMap :: ActionManagementFunctions
+actionMap = ActionManagementFunctions $ Data.Set.fromList [directionalStimulus, implicitStimulus] <> acquisitionVerbs
+  where
+   implicitStimulus :: Actionmanagement
+   implicitStimulus = ISAManagementKey implicitStimulusLook pitchBlackFGID
+   directionalStimulus :: ActionManegement
+   directionalStimulus = DSAManagementKey directionalStimulusLook lookAtGID
+   acquisitionVerbs :: ActionManagementFunctions
+   acquisitionVerbs = ActionManagementFunctions $ Data.Set.fromList [ AAManagementKey getRobeAVP locGetGID, AAManagementKey getPillAVP getPillDeniedGID]
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective

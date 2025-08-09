@@ -6,13 +6,8 @@ module Model.GameState (
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionKey ( AcquisitionalActionKey, ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (ActionManagement
-                       , _directionalStimulusActionManagement
-                       , _implicitStimulusActionManagement
-                       , _somaticStimulusActionManagement
-                       , _acquisitionActionManagement
-                       , _consumptionActionManagement)
-  , ActionManagementKey (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey)
+  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey)
+  , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
                  , _acquisitionActionMap
                  , _implicitStimulusActionMap
@@ -274,23 +269,18 @@ data Location = Location {
 --  , _locationEffects          :: LocationEffects
 }
 
-type ActionManagementKey :: Type
-data ActionManagementKey
-  = DSAManagementKey DirectionalStimulusVerb
-  | ISAManagementKey ImplicitStimulusVerb
-  | SSAManagementKey SomaticAccessVerb
-  | AAManagementKey AcquisitionVerbPhrase
-  | CAManagementKey ConsumptionVerbPhrase
+type ActionManagement :: Type
+data ActionManagement
+  = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+  | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
+  | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
+  | CAManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
   deriving stock (Show, Eq, Ord)
 
-type ActionManagement :: Type
-data ActionManagement = ActionManagement
-  { _directionalStimulusActionManagement :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  , _implicitStimulusActionManagement :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-  , _somaticStimulusActionManagement :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-  , _acquisitionActionManagement :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-  , _consumptionActionManagement :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-  }
+type ActionManagementFunctions :: Type
+newtype ActionManagementFunctions = ActionManagementFunctions
+  { _actionManagementFunctions :: Set ActionManagement }
   deriving stock (Show, Eq, Ord)
 
 type Narration :: Type
@@ -303,24 +293,10 @@ data Narration = Narration
 type Player :: Type
 data Player = Player
   { _location      :: GID Location
-  , _playerActions :: PlayerActions
+  , _playerActions :: ActionManagement
   , _perceptables  :: Perceptables
   , _actionKeyMap  :: ActionKeyMap
   }
-
--- object phrase can have multiple same object "the white pill" which cannot exist
--- and must be checked for
--- however, we use a Set to allow for sensible ambiguity "the white pill" and "the red pill"
--- can both be encoded as "the pill" in the same location
-type PlayerActions :: Type
-data PlayerActions = PlayerActions
- { _implicitStimulusActions :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
- , _directionalStimulusActions :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
- , _somaticStimulusActions :: Map SomaticAccessVerb (GID SomaticAccessActionF)
- , _acquisitionActions :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
- , _consumptionActions :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-  }
-  deriving stock (Show, Eq, Ord)
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap

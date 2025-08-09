@@ -104,6 +104,12 @@ player = Player
   , _actionKeyMap = actionKeyMap
   }
   where
+    playerActions = Data.Set.fromList [isaMap
+                                      . dsaMap
+                                      , saMap
+                                      , acquisitionVerbs
+                                      , consumptionVerbs]
+
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
     dsaMap = Data.Map.Strict.fromList [(dsaLook, dsvEnabledLookGID)]
     dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
