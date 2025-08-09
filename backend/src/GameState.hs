@@ -1,7 +1,10 @@
-module GameState ( changeImplicit, clearNarration
+module GameState ( addToInventoryM
+                 , changeImplicit
+                 , clearNarration
                  , getObjectM
                  , getActionManagementM
                  , getDescriptionM
+                 , getInventoryObjectsM
                  , getLocationActionMapsM
                  , getLocationM
                  , getLocationObjectIDsM
@@ -27,17 +30,16 @@ module GameState ( changeImplicit, clearNarration
                  , parseConsumptionPhrase
                  , processAcquisitionEffect
                  , processConsumptionEffect
+                 , removeFromInventoryM
                  , updatePerceptionMapM,youSeeM) where
 import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
-import qualified Data.List
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Maybe                    (catMaybes)
 import           Data.Set                      (Set, delete, empty, fromList,
-                                                insert, null, toList)
+                                                insert, member, null, toList)
 import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (AcquisitionActionF,
@@ -52,7 +54,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PlayerActions (_acquisitionActions, _consumptionActions),
-                                                SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
+                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap,
@@ -215,16 +217,23 @@ youSeeM = do
       pure $ Data.Text.intercalate ", " descriptions
     processSupportRelationship _ = pure ""
 
-    processContainmentRelationship :: SpatialRelationship -> GameComputation Identity Text
-    processContainmentRelationship (Contains oidSet) = do
-      descriptions <- mapM getObjectDescription (Data.Set.toList oidSet)
-      pure $ Data.Text.intercalate ", " descriptions
-    processContainmentRelationship _ = pure ""
-
     getObjectDescription :: GID Object -> GameComputation Identity Text
     getObjectDescription oid = do
       obj <- getObjectM oid
       pure $ _description obj
+
+-- General function to get objects by spatial relationship
+getObjectsBySpatialRelationship :: SpatialRelationship -> GameComputation Identity [GID Object]
+getObjectsBySpatialRelationship targetRelationship = do
+  world <- gets _world
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+      matchingOids = [oid | (oid, relationships) <- Data.Map.Strict.toList spatialMap,
+                           targetRelationship `Data.Set.member` relationships]
+  pure matchingOids
+
+-- Inventory-specific convenience functions
+getInventoryObjectsM :: GameComputation Identity [GID Object]
+getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
 
 updatePerceptionMapM :: GID Object
                        -> GameComputation Identity ()
@@ -455,3 +464,14 @@ clearNarration = modifyNarration (const emptyNarration)
   where
     emptyNarration :: Narration
     emptyNarration = Narration mempty mempty
+
+
+-- Add object to inventory (replaces current inventory insertion)
+addToInventoryM :: GID Object -> GameComputation Identity ()
+addToInventoryM oid = do
+  modifySpatialRelationshipsForObjectM oid (Data.Set.insert Inventory)
+
+-- Remove object from inventory
+removeFromInventoryM :: GID Object -> GameComputation Identity ()
+removeFromInventoryM oid = do
+  modifySpatialRelationshipsForObjectM oid (Data.Set.delete Inventory)

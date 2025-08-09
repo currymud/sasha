@@ -40,7 +40,7 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions)
+  , Player (Player, _actionKeyMap, _location, _perceptables, _playerActions)
   , PlayerActions (PlayerActions,
                    _acquisitionActions,
                    _consumptionActions,
@@ -55,7 +55,7 @@ module Model.GameState (
   , ProcessImplicitVerbMaps
   , SomaticAccessActionF (SomaticAccessActionF, _somaticAccessAction)
   , SomaticStimulusActionMap
-  , SpatialRelationship (ContainedIn, Contains, Supports, SupportedBy)
+  , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
@@ -295,7 +295,6 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: PlayerActions
   , _perceptables  :: Perceptables
-  , _inventory     :: Map ObjectPhrase (Set (GID Object))
   , _actionKeyMap  :: ActionKeyMap
   }
 
@@ -324,6 +323,7 @@ data SpatialRelationship
   | Contains (Set (GID Object))
   | Supports (Set (GID Object))
   | SupportedBy (GID Object)
+  | Inventory
   deriving stock (Show, Eq, Ord)
 
 type Perceptables :: Type

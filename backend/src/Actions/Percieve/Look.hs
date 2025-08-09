@@ -35,7 +35,7 @@ import           Model.GameState                                         (Action
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
                                                                           Object (_descriptives, _objectActionManagement),
-                                                                          Player (_inventory, _location),
+                                                                          Player (_location),
                                                                           PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
                                                                           SpatialRelationship (Contains, Supports),
                                                                           SpatialRelationshipMap (SpatialRelationshipMap),
@@ -148,75 +148,3 @@ lookableWithSpatialAwareness (DirectionalStimulusActionF actionF) dsnp@(Directio
       Spatial.findObjectInInventoryContainers nounKey >>= \case
         Just objGID -> actionF dsnp objGID
         Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
-
-
-
--- NEW: Spatial object finder
-findObjectSpatially :: NounKey -> GameComputation Identity (Maybe (GID Object))
-findObjectSpatially nounKey = do
-  player <- getPlayerM
-  world <- gets _world
-  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-
-  -- Get all objects in player's inventory
-  let inventoryObjects = concatMap Data.Set.toList $ Data.Map.Strict.elems (_inventory player)
-
-  -- For each inventory object, check what it contains/supports
-  findInContainers nounKey inventoryObjects spatialMap
-
--- NEW: Search within containers/supporters in inventory
-findInContainers :: NounKey
-                 -> [GID Object]
-                 -> Map (GID Object) (Set SpatialRelationship)
-                 -> GameComputation Identity (Maybe (GID Object))
-findInContainers nounKey inventoryObjects spatialMap = do
-  -- For each object in inventory, get what it contains/supports
-  containedObjects <- mapM (getContainedObjects spatialMap) inventoryObjects
-  let allContained = concat containedObjects
-
-  -- Check if any contained object matches our search
-  findMatchingObject nounKey allContained
-
--- NEW: Get objects contained/supported by a given object
-getContainedObjects :: Map (GID Object) (Set SpatialRelationship)
-                    -> GID Object
-                    -> GameComputation Identity [GID Object]
-getContainedObjects spatialMap containerOID = case Data.Map.Strict.lookup containerOID spatialMap of
-  Nothing -> pure []
-  Just relationships -> do
-    let containedGIDs = concatMap extractContained (Data.Set.toList relationships)
-    pure containedGIDs
-  where
-    extractContained :: SpatialRelationship -> [GID Object]
-    extractContained (Contains oidSet) = Data.Set.toList oidSet
-    extractContained (Supports oidSet) = Data.Set.toList oidSet
-    extractContained _                 = []
-
--- NEW: Check if any object matches the noun key
-findMatchingObject :: NounKey -> [GID Object] -> GameComputation Identity (Maybe (GID Object))
-findMatchingObject nounKey objectGIDs = do
-  -- For each object, check if it matches the noun key by examining its descriptives
-  matchingObjects <- filterM (objectMatchesNounKey nounKey) objectGIDs
-  case matchingObjects of
-    (firstMatch:_) -> pure (Just firstMatch)
-    []             -> pure Nothing
-
--- NEW: Check if an object matches a noun key
-objectMatchesNounKey :: NounKey -> GID Object -> GameComputation Identity Bool
-objectMatchesNounKey nounKey oid = do
-  obj <- getObjectM oid
-  let descriptives = _descriptives obj
-
-  -- Check if any of the object's descriptives match the noun key
-  pure $ any (descriptiveMatchesNounKey nounKey) (Data.Set.toList descriptives)
-
--- NEW: Check if a descriptive phrase matches a noun key
-descriptiveMatchesNounKey :: NounKey -> DirectionalStimulusNounPhrase -> Bool
-descriptiveMatchesNounKey (DirectionalStimulusKey targetNoun) (DirectionalStimulusNounPhrase np) =
-  let nounFromPhrase = case np of
-        SimpleNounPhrase dsn             -> dsn
-        NounPhrase _ dsn                 -> dsn
-        DescriptiveNounPhrase _ dsn      -> dsn
-        DescriptiveNounPhraseDet _ _ dsn -> dsn
-  in targetNoun == nounFromPhrase
-descriptiveMatchesNounKey _ _ = False

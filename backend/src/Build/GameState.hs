@@ -52,7 +52,7 @@ import           Model.GameState                                         (Acquis
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _actionKeyMap, _inventory, _location, _perceptables, _playerActions),
+                                                                          Player (Player, _actionKeyMap, _location, _perceptables, _playerActions),
                                                                           PlayerActions (PlayerActions),
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF)
@@ -102,7 +102,6 @@ player = Player
   , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs consumptionVerbs
   , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
-  , _inventory = Data.Map.Strict.empty
   }
   where
     dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)

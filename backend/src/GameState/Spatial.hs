@@ -2,7 +2,6 @@ module GameState.Spatial (findObjectInInventoryContainers
                          , getContainedObjects
                          , getSupportedObjects
                          , getAllAccessibleObjects
-                         , isObjectAccessible
                          , getContainmentChain) where
 
 import           Control.Monad                 (filterM)
@@ -12,11 +11,11 @@ import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (getObjectM, getPlayerM)
+import           GameState                     (getInventoryObjectsM,
+                                                getObjectM, getPlayerM)
 import           Model.GameState               (GameComputation,
                                                 GameState (_world),
                                                 Object (_descriptives),
-                                                Player (_inventory),
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap))
@@ -27,17 +26,13 @@ import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (D
 import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
 
 -- | Find an object matching a noun key in any containers/supporters in player's inventory
+
 findObjectInInventoryContainers :: NounKey -> GameComputation Identity (Maybe (GID Object))
 findObjectInInventoryContainers nounKey = do
-  player <- getPlayerM
+  inventoryObjects <- getInventoryObjectsM
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-      inventoryObjects = concatMap Data.Set.toList $ Data.Map.Strict.elems (_inventory player)
-
-  -- Get all accessible objects (contained/supported by inventory items)
   accessibleObjects <- getAllAccessibleObjects inventoryObjects spatialMap
-
-  -- Find matching object
   findMatchingObject nounKey accessibleObjects
 
 -- | Get all objects contained by a given object
@@ -102,22 +97,6 @@ getAllAccessibleObjects startingObjects spatialMap = do
     extractRelatives (Contains oidSet) = Data.Set.toList oidSet
     extractRelatives (Supports oidSet) = Data.Set.toList oidSet
     extractRelatives _                 = []
-
--- | Check if an object is accessible to the player (in inventory or contained/supported by inventory)
-isObjectAccessible :: GID Object -> GameComputation Identity Bool
-isObjectAccessible targetOID = do
-  player <- getPlayerM
-  world <- gets _world
-  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-      inventoryObjects = concatMap Data.Set.toList $ Data.Map.Strict.elems (_inventory player)
-
-  -- Check if target is directly in inventory
-  if targetOID `elem` inventoryObjects
-    then pure True
-    else do
-      -- Check if target is accessible through containment/support chains
-      accessibleObjects <- getAllAccessibleObjects inventoryObjects spatialMap
-      pure (targetOID `elem` accessibleObjects)
 
 -- | Get the containment chain for an object (what contains what, up to the root)
 getContainmentChain :: GID Object -> GameComputation Identity [GID Object]
