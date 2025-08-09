@@ -10,7 +10,8 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionManagement (ActionManagement),
+                                                                          ActionManagement (AAManagementKey, DSAManagementKey),
+                                                                          ActionManagementFunctions (ActionManagementFunctions),
                                                                           ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
@@ -39,19 +40,11 @@ robeObj =
        , _objectActionManagement = verbMaps
        }
   where
-    verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
-    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    implicitStimulusVerbs = Data.Map.Strict.empty
-    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatRobeGID :: GID DirectionalStimulusActionF)]
-    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.fromList [(getRobeAVP, getRobeGID)]
-    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-    consumptionVerbs = Data.Map.Strict.empty
-
+    verbMaps :: ActionManagementFunctions
+    verbMaps = ActionManagementFunctions $ Data.Set.fromList
+      [ DSAManagementKey look whatRobeGID
+      , AAManagementKey getRobeAVP getRobeGID
+      ]
 
 -- Add helper definitions
 getRobeAVP :: AcquisitionVerbPhrase

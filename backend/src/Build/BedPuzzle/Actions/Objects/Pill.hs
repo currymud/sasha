@@ -8,7 +8,8 @@ import           Grammar.Parser.Partitions.Misc                          (the)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pill)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionManagement (ActionManagement),
+                                                                          ActionManagement (DSAManagementKey),
+                                                                          ActionManagementFunctions (ActionManagementFunctions),
                                                                           ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
@@ -36,18 +37,10 @@ pillObj =
        , _objectActionManagement = verbMaps
        }
   where
-    verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
-    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    implicitStimulusVerbs = Data.Map.Strict.empty
-    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs = Data.Map.Strict.fromList [(look, notEvenPillGID :: GID DirectionalStimulusActionF)]
-    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.empty
-    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-    consumptionVerbs = Data.Map.Strict.empty
+    verbMaps :: ActionManagementFunctions
+    verbMaps = directionalStimulusVerbs
+    directionalStimulusVerbs :: ActionManagementFunctions
+    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look notEvenPillGID)
   {-
 When faced with the possibility Location and Object had different verb case management functions,
 I'm opting to keep it the same to manage clarification

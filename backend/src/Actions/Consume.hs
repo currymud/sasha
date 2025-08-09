@@ -6,8 +6,7 @@ import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (getPlayerActionsM,
-                                                getPlayerLocationM, getPlayerM,
+import           GameState                     (getPlayerLocationM, getPlayerM,
                                                 modifyObjectActionManagementM)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
                                                 ActionEffectKey (ObjectKey),
@@ -19,8 +18,8 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 ConsumptionActionF,
                                                 Effect (DirectionalStimulusEffect),
                                                 GameComputation,
-                                                Player (_actionKeyMap, _location),
-                                                _directionalStimulusActionManagement)
+                                                Player (_actionKeyMap, _location))
+
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
   {-

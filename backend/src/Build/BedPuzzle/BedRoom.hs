@@ -30,7 +30,8 @@ import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb      (l
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb         (look)
 import           Model.GameState                                              (AcquisitionActionF,
-                                                                               ActionManagement (ActionManagement),
+                                                                               ActionManagement (AAManagementKey, DSAManagementKey, ISAManagementKey),
+                                                                               ActionManagementFunctions (ActionManagementFunctions),
                                                                                ConsumptionActionF,
                                                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
@@ -98,14 +99,13 @@ objectSemanticMap = Data.Map.Strict.fromList sList
       ]
 
 actionMap :: ActionManagementFunctions
-actionMap = ActionManagementFunctions $ Data.Set.fromList [directionalStimulus, implicitStimulus] <> acquisitionVerbs
+actionMap = ActionManagementFunctions $ Data.Set.fromList [directionalStimulus, implicitStimulus] <> acquisitionVerbs'
   where
-   implicitStimulus :: Actionmanagement
+   implicitStimulus :: ActionManagement
    implicitStimulus = ISAManagementKey implicitStimulusLook pitchBlackFGID
-   directionalStimulus :: ActionManegement
+   directionalStimulus :: ActionManagement
    directionalStimulus = DSAManagementKey directionalStimulusLook lookAtGID
-   acquisitionVerbs :: ActionManagementFunctions
-   acquisitionVerbs = ActionManagementFunctions $ Data.Set.fromList [ AAManagementKey getRobeAVP locGetGID, AAManagementKey getPillAVP getPillDeniedGID]
+   acquisitionVerbs' = Data.Set.fromList [ AAManagementKey getRobeAVP locGetGID, AAManagementKey getPillAVP getPillDeniedGID]
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective

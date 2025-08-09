@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Take () where
+module Build.BedPuzzle.Actions.Take (takeDenied) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import           Control.Monad.State           (modify')
@@ -14,7 +14,6 @@ import           GameState                     (getObjectM, modifyNarration,
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
-                                                ActionManagement (_acquisitionActionManagement, _consumptionActionManagement, _directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF, _consumptionAction),
@@ -24,14 +23,13 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 Object (_objectActionManagement),
                                                 Player (_actionKeyMap, _playerActions),
-                                                PlayerActions (_acquisitionActions),
                                                 PlayerKey (PlayerKeyObject),
                                                 updateActionConsequence)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                 Imperative (ConsumptionVerbPhrase'))
 import           Prelude                       hiding (take)
-  {-
+
 takeDenied :: ConsumptionActionF
 takeDenied = ConsumptionActionF (const (const (const denied)))
   where
@@ -39,7 +37,7 @@ takeDenied = ConsumptionActionF (const (const (const denied)))
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
-
+      {-
 take :: ConsumptionActionF
 take = ConsumptionActionF getit
   where

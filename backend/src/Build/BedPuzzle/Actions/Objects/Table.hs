@@ -1,31 +1,15 @@
 module Build.BedPuzzle.Actions.Objects.Table where
-import           Build.Identifiers.Actions                               (whatPillGID,
-                                                                          whatTableGID)
-import           Data.Map.Strict                                         (Map)
-import qualified Data.Map.Strict
+import           Build.Identifiers.Actions                               (whatTableGID)
 import qualified Data.Set
-import           Grammar.Parser.Partitions.Adjectives                    (small,
-                                                                          white)
+import           Grammar.Parser.Partitions.Adjectives                    (small)
 import           Grammar.Parser.Partitions.Misc                          (the)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pill,
-                                                                          table)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (table)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionManagement (ActionManagement),
-                                                                          ConsumptionActionF,
-                                                                          DirectionalStimulusActionF,
-                                                                          ImplicitStimulusActionF,
-                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
-                                                                          SomaticAccessActionF)
-import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb,
-                                                                          DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb,
-                                                                          SomaticAccessVerb)
+import           Model.GameState                                         (ActionManagement (DSAManagementKey),
+                                                                          ActionManagementFunctions (ActionManagementFunctions),
+                                                                          Object (Object, _description, _descriptives, _objectActionManagement, _shortName))
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase,
-                                                                          ConsumptionVerbPhrase)
 
 tableObj :: Object
 tableObj =
@@ -39,16 +23,8 @@ tableObj =
        , _objectActionManagement = verbMaps
        }
   where
-    verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
+    verbMaps :: ActionManagementFunctions
+    verbMaps = directionalStimulusVerbs
 
-    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    implicitStimulusVerbs = Data.Map.Strict.empty
-    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, whatTableGID :: GID DirectionalStimulusActionF)]
-    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.empty
-    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-    consumptionVerbs = Data.Map.Strict.empty
+    directionalStimulusVerbs :: ActionManagementFunctions
+    directionalStimulusVerbs =  ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look whatTableGID)

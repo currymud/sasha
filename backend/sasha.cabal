@@ -83,24 +83,8 @@ library
       Build.World
       Error
       Evaluators.Player.General
-      Location
-      Model.Action.LocationAction
-      Model.GameState
-      Model.GID
-      Model.Label
-      Model.Mappings
-      Model.Parser
-      Model.Parser.Atomics.Adjectives
-      Model.Parser.Atomics.Adverbs
-      Model.Parser.Atomics.Nouns
-      Model.Parser.Atomics.Misc
-      Model.Parser.Atomics.Prepositions
-      Model.Parser.Atomics.Verbs
-      Model.Parser.Composites.Nouns
-      Model.Parser.Composites.Verbs
-      Model.Parser.GCase
-      Model.Parser.Lexer
       GameState
+      GameState.ActionManagement
       GameState.Spatial
       Grammar.Parser
       Grammar.Parser.Lexer
@@ -137,6 +121,24 @@ library
       Grammar.Parser.Rules.Atomics.Utils
       Grammar.Parser.Rules.Composites.Nouns
       Grammar.Parser.Rules.Composites.Verbs
+      Location
+      Model.Action.LocationAction
+      Model.GameState
+      Model.GID
+      Model.Label
+      Model.Mappings
+      Model.Parser
+      Model.Parser.Atomics.Adjectives
+      Model.Parser.Atomics.Adverbs
+      Model.Parser.Atomics.Nouns
+      Model.Parser.Atomics.Misc
+      Model.Parser.Atomics.Prepositions
+      Model.Parser.Atomics.Verbs
+      Model.Parser.Composites.Nouns
+      Model.Parser.Composites.Verbs
+      Model.Parser.GCase
+      Model.Parser.Lexer
+
       TopLevel
   hs-source-dirs:
       src

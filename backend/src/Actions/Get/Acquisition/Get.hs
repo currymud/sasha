@@ -3,26 +3,30 @@ module Actions.Get.Acquisition.Get (manageAcquisitionProcess) where
 
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
+import           Control.Monad.State           (modify')
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
-                                                getPlayerActionsM,
                                                 getPlayerLocationGID,
                                                 getPlayerLocationM, getPlayerM,
-                                                modifyObjectActionManagementM)
+                                                modifyObjectActionManagementM,
+                                                updatePerceptionMapM)
+import           GameState.ActionManagement    (lookupAcquisition)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
-                                                ActionEffectKey (LocationKey, ObjectKey),
+                                                ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
+                                                ActionManagement (AAManagementKey, DSAManagementKey),
+                                                ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
-                                                Effect (DirectionalStimulusEffect),
+                                                Effect (AcquisitionEffect, DirectionalStimulusEffect),
                                                 GameComputation,
-                                                Player (_actionKeyMap, _location),
-                                                PlayerActions (_acquisitionActions),
-                                                _directionalStimulusActionManagement)
+                                                Player (_actionKeyMap, _location, _playerActions),
+                                                PlayerKey (PlayerKeyObject),
+                                                _player)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
 import           Model.Parser.Composites.Nouns (ObjectPhrase)
@@ -30,10 +34,10 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
-  availableActions <- _acquisitionActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup avp availableActions of
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupAcquisition avp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for verb phrase"
-    Just (actionGID :: GID AcquisitionActionF) -> do
+    Just actionGID -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No acquisition action found for GID"
@@ -44,7 +48,6 @@ manageAcquisitionProcess avp = do
             Just actionEffectMap -> do
               loc <- getPlayerLocationM
               actionFunc loc actionEffectMap avp
-              -- *** ADD EFFECT PROCESSING HERE ***
               processAcquisitionEffects actionGID avp
         Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
 
@@ -71,11 +74,40 @@ processEffect avp effectKey (DirectionalStimulusEffect verb newActionGID) = do
     ObjectKey oid -> do
       -- Update the object's directional stimulus action
       modifyObjectActionManagementM oid $ \actionMgmt ->
-        let directionalMap = _directionalStimulusActionManagement actionMgmt
-            updatedMap = Data.Map.Strict.insert verb newActionGID directionalMap
-        in actionMgmt { _directionalStimulusActionManagement = updatedMap }
+        let ActionManagementFunctions actionSet = actionMgmt
+            -- Remove old directional stimulus actions for this verb
+            filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
+            -- Add new action
+            updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
+        in ActionManagementFunctions updatedActions
     _ -> pure ()
 processEffect _ _ _ = pure () -- Handle other effect types as needed
+
+processEffectWithKey :: AcquisitionVerbPhrase -> ActionEffectKey -> Effect -> GameComputation Identity ()
+processEffectWithKey avp (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect _ newActionGID) = do
+  -- Update the player's acquisition actions to use the new action for this phrase
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing acquisition action for this phrase
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
+processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
+  -- Update the object's directional stimulus action
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+  updatePerceptionMapM oid
+
+processEffectWithKey _ _ _ = pure () -- Handle other effect types as needed
+
 
 actionKey :: GID AcquisitionActionF -> ActionKey
 actionKey = AcquisitionalActionKey

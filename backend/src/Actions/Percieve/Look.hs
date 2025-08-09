@@ -7,39 +7,30 @@ module Actions.Percieve.Look ( lookAt
                              , manageImplicitStimulusProcess
                              , manageDirectionalStimulusProcess) where
 
-import           Control.Monad                                           (filterM)
 import           Control.Monad.Identity                                  (Identity)
 import           Control.Monad.Reader.Class                              (asks)
-import           Control.Monad.State                                     (gets)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
-import           Data.Set                                                (Set)
 import qualified Data.Set
 import           Data.Text                                               (Text)
-import           GameState                                               (getActionManagementM,
-                                                                          getObjectM,
-                                                                          getPlayerActionsM,
+import           GameState                                               (getObjectM,
                                                                           getPlayerM,
                                                                           modifyNarration)
+import           GameState.ActionManagement                              (lookupDirectionalStimulus,
+                                                                          lookupImplicitStimulus)
 import qualified GameState.Spatial                                       as Spatial
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
                                                                           getPlayerLocationM)
-import           Model.GameState                                         (ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement),
-                                                                          ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
+import           Model.GameState                                         (ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
                                                                           Config (_actionMaps),
                                                                           DirectionalStimulusActionF (DirectionalStimulusActionF),
                                                                           GameComputation,
-                                                                          GameState (_world),
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                           ImplicitStimulusActionMap,
                                                                           Location (_locationActionManagement, _objectSemanticMap, _title),
                                                                           Object (_descriptives, _objectActionManagement),
-                                                                          Player (_location),
-                                                                          PlayerActions (_directionalStimulusActions, _implicitStimulusActions),
-                                                                          SpatialRelationship (Contains, Supports),
-                                                                          SpatialRelationshipMap (SpatialRelationshipMap),
-                                                                          World (_spatialRelationshipMap),
+                                                                          Player (_location, _playerActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
@@ -56,29 +47,16 @@ agentCannotSee :: Text -> ImplicitStimulusActionF
 agentCannotSee nosee = ImplicitStimulusActionF
   $ const (const (modifyNarration $ updateActionConsequence nosee))
 
-lookAt :: DirectionalStimulusActionF
-lookAt = DirectionalStimulusActionF lookAt'
-  where
-    lookAt' :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity ()
-    lookAt' dsnp oid = do
-          dsActionMap <- _directionalStimulusActionManagement <$> getActionManagementM oid
-          case Data.Map.Strict.lookup look dsActionMap of
-            Nothing -> modifyNarration $ updateActionConsequence "Programmer made a thing you can't look at"
-            Just dsaGID -> do
-              dsActionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
-              case Data.Map.Strict.lookup dsaGID dsActionMap' of
-                Nothing -> modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
-                Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
   where
     actionEnabled player loc = do
-      let actionMap = _implicitStimulusActionManagement $ _locationActionManagement loc
-      case Data.Map.Strict.lookup isv actionMap of
+      let actionMgmt = _locationActionManagement loc
+      case lookupImplicitStimulus isv actionMgmt of
         Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
-        Just (actionGID :: GID ImplicitStimulusActionF) -> do
-          actionMap' ::  Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
+        Just actionGID -> do
+          actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
             Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
@@ -87,21 +65,35 @@ dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
 dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
   where
     actionEnabled dsnp oid = do
-      actionMap <- _directionalStimulusActionManagement .  _objectActionManagement <$> getObjectM oid
-      case Data.Map.Strict.lookup dsv actionMap of
+      actionMgmt <- _objectActionManagement <$> getObjectM oid
+      case lookupDirectionalStimulus dsv actionMgmt of
         Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-        Just (actionGID :: GID DirectionalStimulusActionF) -> do
+        Just actionGID -> do
           actionMap' :: Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF <- asks (_directionalStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
             Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
 
+lookAt :: DirectionalStimulusActionF
+lookAt = DirectionalStimulusActionF lookAt'
+  where
+    lookAt' :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity ()
+    lookAt' dsnp oid = do
+          actionMgmt <- _objectActionManagement <$> getObjectM oid
+          case lookupDirectionalStimulus look actionMgmt of
+            Nothing -> modifyNarration $ updateActionConsequence "Programmer made a thing you can't look at"
+            Just dsaGID -> do
+              dsActionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
+              case Data.Map.Strict.lookup dsaGID dsActionMap' of
+                Nothing -> modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
+                Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
+
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
-  availableActions <- _implicitStimulusActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup isv availableActions of
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupImplicitStimulus isv availableActions of
     Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
-    Just (actionGID :: GID ImplicitStimulusActionF) -> do
+    Just actionGID -> do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
@@ -111,19 +103,19 @@ manageImplicitStimulusProcess isv = do
           loc <- getLocationM lid
           actionFunc player loc
 
+
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do
-  availableActions <- _directionalStimulusActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup dsv availableActions of
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupDirectionalStimulus dsv availableActions of
     Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-    Just (actionGID :: GID DirectionalStimulusActionF) -> do
+    Just actionGID -> do
       actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
         Just actionFunc -> do
           location <- getPlayerLocationM
           lookableWithSpatialAwareness actionFunc dsnp location
-
 
 -- NEW: Enhanced lookable function with spatial awareness
 lookableWithSpatialAwareness :: DirectionalStimulusActionF

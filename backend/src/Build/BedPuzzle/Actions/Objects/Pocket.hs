@@ -8,7 +8,8 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (pocket
                                                                           table)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionManagement (ActionManagement),
+                                                                          ActionManagement (DSAManagementKey),
+                                                                          ActionManagementFunctions (ActionManagementFunctions),
                                                                           ConsumptionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ImplicitStimulusActionF,
@@ -37,15 +38,7 @@ pocketObj =
        , _objectActionManagement = verbMaps
        }
   where
-    verbMaps :: ActionManagement
-    verbMaps = ActionManagement directionalStimulusVerbs implicitStimulusVerbs somaticAccessVerbs acquisitionVerbs consumptionVerbs
-    implicitStimulusVerbs :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    implicitStimulusVerbs = Data.Map.Strict.empty
-    directionalStimulusVerbs :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    directionalStimulusVerbs =  Data.Map.Strict.fromList [(look, notEvenPocketGID :: GID DirectionalStimulusActionF)]
-    somaticAccessVerbs :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    somaticAccessVerbs = Data.Map.Strict.empty
-    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.empty
-    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-    consumptionVerbs = Data.Map.Strict.empty
+    verbMaps :: ActionManagementFunctions
+    verbMaps = directionalStimulusVerbs
+    directionalStimulusVerbs :: ActionManagementFunctions
+    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look notEvenPocketGID)

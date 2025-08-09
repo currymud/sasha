@@ -43,6 +43,8 @@ import           Model.GameState                                         (Acquis
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
+                                                                          ActionManagement (AAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                          ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           ConsumptionActionF,
@@ -53,7 +55,6 @@ import           Model.GameState                                         (Acquis
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
                                                                           Player (Player, _actionKeyMap, _location, _perceptables, _playerActions),
-                                                                          PlayerActions (PlayerActions),
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
@@ -99,32 +100,24 @@ config = Config
 player :: Player
 player = Player
   { _location = bedroomInBedGID
-  , _playerActions = PlayerActions isaMap dsaMap saMap acquisitionVerbs consumptionVerbs
+  , _playerActions = playerActionMgmt
   , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
   }
   where
-    playerActions = Data.Set.fromList [isaMap
-                                      . dsaMap
-                                      , saMap
-                                      , acquisitionVerbs
-                                      , consumptionVerbs]
-
-    dsaMap :: Map DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-    dsaMap = Data.Map.Strict.fromList [(dsaLook, dsvEnabledLookGID)]
     dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
-    isaMap :: Map ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-    isaMap = Data.Map.Strict.fromList [(isaLook, isaEnabledLookGID)
-                                      ,(inventory,checkInventoryGID)]
     isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
     saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
-    saMap :: Map SomaticAccessVerb (GID SomaticAccessActionF)
-    saMap = Data.Map.Strict.fromList [(saOpen, openEyesGID)]
-    acquisitionVerbs :: Map AcquisitionVerbPhrase (GID AcquisitionActionF)
-    acquisitionVerbs = Data.Map.Strict.fromList [(SimpleAcquisitionVerbPhrase get simplePillOP, playerGetGID)
-                                                , (SimpleAcquisitionVerbPhrase get simpleRobeOP, playerGetGID)]
-    consumptionVerbs :: Map ConsumptionVerbPhrase (GID ConsumptionActionF)
-    consumptionVerbs = Data.Map.Strict.empty
+    playerActionMgmt :: ActionManagementFunctions
+    playerActionMgmt = ActionManagementFunctions $ Data.Set.fromList
+      [ ISAManagementKey isaLook isaEnabledLookGID
+      , ISAManagementKey inventory checkInventoryGID
+      , DSAManagementKey dsaLook dsvEnabledLookGID
+      , SSAManagementKey saOpen openEyesGID
+      , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
+      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
+      ]
+
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
 

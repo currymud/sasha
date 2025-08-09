@@ -9,7 +9,6 @@ module GameState ( addToInventoryM
                  , getLocationM
                  , getLocationObjectIDsM
                  , getPlayerM
-                 , getPlayerActionsM
                  , getPlayerLocationM
                  , getPlayerLocationGID
                  , modifyLocationMapM
@@ -40,11 +39,14 @@ import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, delete, empty, fromList,
                                                 insert, member, null, toList)
+import qualified Data.Set                      (filter, foldl', insert,
+                                                singleton)
 import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (ObjectKey),
-                                                ActionManagement (_implicitStimulusActionManagement),
+                                                ActionManagement (AAManagementKey, CAManagementKey, ISAManagementKey),
+                                                ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF (_consumptionAction),
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
@@ -53,7 +55,6 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Narration (Narration),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
-                                                PlayerActions (_acquisitionActions, _consumptionActions),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
@@ -95,6 +96,7 @@ parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp 
                (ConsumableNounPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
                (ConsumableNounPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
     in (ophrase, obj)
+-- GameState.hs - Updated effect processing functions
 
 processAcquisitionEffect :: AcquisitionVerbPhrase
                          -> GID AcquisitionActionF
@@ -102,10 +104,12 @@ processAcquisitionEffect :: AcquisitionVerbPhrase
 processAcquisitionEffect avp newActionGID = do
   modify' $ \gs ->
     let player = gs._player
-        playerActions = _playerActions player
-        acquisitionActions = _acquisitionActions playerActions
-        updatedAcquisitionActions = Data.Map.Strict.insert avp newActionGID acquisitionActions
-        updatedPlayerActions = playerActions { _acquisitionActions = updatedAcquisitionActions }
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing acquisition action for this phrase
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
@@ -115,13 +119,14 @@ processConsumptionEffect :: ConsumptionVerbPhrase
 processConsumptionEffect cvp newActionGID = do
   modify' $ \gs ->
     let player = gs._player
-        playerActions = _playerActions player
-        consumptionActions = _consumptionActions playerActions
-        updatedConsumptionActions = Data.Map.Strict.insert cvp newActionGID consumptionActions
-        updatedPlayerActions = playerActions { _consumptionActions = updatedConsumptionActions }
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing consumption action for this phrase
+        filteredActions = Data.Set.filter (\case CAManagementKey p _ -> p /= cvp; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (CAManagementKey cvp newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
-
 youSeeM :: GameComputation Identity ()
 youSeeM = do
   playerLocation <- getPlayerLocationM
@@ -261,11 +266,12 @@ changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameCom
 changeImplicit verb newActionGID = do
   playerLocationGID <- getPlayerLocationGID
   modifyLocationM playerLocationGID $ \loc ->
-    let actionMgmt = _locationActionManagement loc
-        implicitMap = _implicitStimulusActionManagement actionMgmt
-        updatedImplicitMap = Data.Map.Strict.insert verb newActionGID implicitMap
-        updatedActionMgmt = actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
-    in loc { _locationActionManagement = updatedActionMgmt }
+    let currentActions = _locationActionManagement loc
+        -- Remove old action for this verb and add new one
+        ActionManagementFunctions actionSet = currentActions
+        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
+    in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
 
 -- There is some cruft forming
 getPlayerLocationGID :: GameComputation Identity (GID Location)
@@ -278,9 +284,6 @@ getLocationM lid = do
   throwMaybeM ("Location not found in location map" <> pack (show lid))
     $ Data.Map.Strict.lookup lid locationMap
 
-getPlayerActionsM :: GameComputation Identity  PlayerActions
-getPlayerActionsM =  _playerActions <$> getPlayerM
-
 getPlayerM :: GameComputation Identity Player
 getPlayerM = gets _player
 
@@ -289,7 +292,7 @@ getObjectM oid = do
   objMap <- gets (_getGIDToDataMap . _objectMap . _world)
   throwMaybeM ("Object not found in object map" <> pack (show oid)) $ Data.Map.Strict.lookup oid objMap
 
-getActionManagementM :: GID Object -> GameComputation Identity ActionManagement
+getActionManagementM :: GID Object -> GameComputation Identity ActionManagementFunctions
 getActionManagementM oid = _objectActionManagement <$> getObjectM oid
 
 getPlayerLocationM :: GameComputation Identity Location
@@ -298,15 +301,14 @@ getPlayerLocationM = do
   locationMap <- gets (_getGIDToDataMap . _locationMap . _world)
   throwMaybeM "Player location not found" $ Data.Map.Strict.lookup location locationMap
 
-getLocationActionMapsM :: GID Location
-                        -> GameComputation Identity ActionManagement
+getLocationActionMapsM :: GID Location -> GameComputation Identity ActionManagementFunctions
 getLocationActionMapsM lid = do
   world <- gets _world
   let locationMap = _getGIDToDataMap $ _locationMap world
   location <- throwMaybeM "location not found" $ Data.Map.Strict.lookup lid locationMap
   return $ _locationActionManagement location
 
-modifyLocationActionMapsM :: (ActionManagement -> ActionManagement)
+modifyLocationActionMapsM :: (ActionManagementFunctions -> ActionManagementFunctions)
                         -> GID Location
                         -> GameComputation Identity ()
 modifyLocationActionMapsM actionF lid = do
@@ -451,9 +453,8 @@ removeObjectFromLocationSemanticMapM lid nounKey oid =
                     else Data.Map.Strict.insert nounKey updatedSet currentMap
     in loc { _objectSemanticMap = updatedMap }
 
--- Update object action management
 modifyObjectActionManagementM :: GID Object
-                              -> (ActionManagement -> ActionManagement)
+                              -> (ActionManagementFunctions -> ActionManagementFunctions)
                               -> GameComputation Identity ()
 modifyObjectActionManagementM oid actionF =
   modifyObjectM oid $ \obj ->
@@ -464,7 +465,6 @@ clearNarration = modifyNarration (const emptyNarration)
   where
     emptyNarration :: Narration
     emptyNarration = Narration mempty mempty
-
 
 -- Add object to inventory (replaces current inventory insertion)
 addToInventoryM :: GID Object -> GameComputation Identity ()

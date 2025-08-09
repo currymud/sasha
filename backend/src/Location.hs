@@ -5,7 +5,8 @@ import           Data.Functor               ((<&>))
 import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionManagement, GameComputation,
+import           Model.GameState            (ActionManagementFunctions,
+                                             GameComputation,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
@@ -20,7 +21,7 @@ updateLocationIdM newLocID = do
   player <- get <&> _player
   modify' (\gs -> gs {_player = player {_location = newLocID}})
 
-getLocationActionMapM :: GameComputation Identity ActionManagement
+getLocationActionMapM :: GameComputation Identity ActionManagementFunctions
 getLocationActionMapM = _locationActionManagement
                           <$> getPlayerLocationM
 

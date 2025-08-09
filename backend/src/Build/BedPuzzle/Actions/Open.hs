@@ -5,7 +5,8 @@ import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
 import           Data.Maybe                (catMaybes)
-import           Data.Set                  (Set, fromList, toList)
+import           Data.Set                  (Set, filter, fromList, insert,
+                                            toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration,
@@ -13,7 +14,8 @@ import           GameState                 (getLocationM, modifyLocationM,
                                             updatePerceptionMapM, youSeeM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
-                                            ActionManagement (_directionalStimulusActionManagement, _implicitStimulusActionManagement, _somaticStimulusActionManagement),
+                                            ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                            ActionManagementFunctions (ActionManagementFunctions),
                                             Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
@@ -30,6 +32,8 @@ openEyesDenied = SomaticAccessActionF (const (const denied))
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "They're already open, relax."
+
+-- Build/BedPuzzle/Actions/Open.hs updates
 
 openEyes :: SomaticAccessActionF
 openEyes = SomaticAccessActionF opened
@@ -49,11 +53,12 @@ openEyes = SomaticAccessActionF opened
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
                 modifyLocationM lid $ \loc ->
-                  let actionMgmt = _locationActionManagement loc
-                      implicitMap = _implicitStimulusActionManagement actionMgmt
-                      updatedImplicitMap = Data.Map.Strict.insert implicitStimulusVerb changeTo implicitMap
-                      updatedActionMgmt = actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
-                  in loc { _locationActionManagement = updatedActionMgmt }
+                  let ActionManagementFunctions actionSet = _locationActionManagement loc
+                      -- Remove old implicit stimulus actions for this verb
+                      filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= implicitStimulusVerb; _ -> True) actionSet
+                      -- Add new action
+                      updatedActions = Data.Set.insert (ISAManagementKey implicitStimulusVerb changeTo) filteredActions
+                  in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
               handleEffect _ = throwError "UndefinedEffect"
         process actionEffectKey@(ObjectKey oid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
@@ -63,21 +68,24 @@ openEyes = SomaticAccessActionF opened
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (DirectionalStimulusEffect directionalStimulusVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
-                  let directionalMap = _directionalStimulusActionManagement actionMgmt
-                      updatedDirectionalMap = Data.Map.Strict.insert directionalStimulusVerb changeTo directionalMap
-                  in actionMgmt { _directionalStimulusActionManagement = updatedDirectionalMap }
+                  let ActionManagementFunctions actionSet = actionMgmt
+                      filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= directionalStimulusVerb; _ -> True) actionSet
+                      updatedActions = Data.Set.insert (DSAManagementKey directionalStimulusVerb changeTo) filteredActions
+                  in ActionManagementFunctions updatedActions
                 updatePerceptionMapM oid
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
-                  let implicitMap = _implicitStimulusActionManagement actionMgmt
-                      updatedImplicitMap = Data.Map.Strict.insert implicitStimulusVerb changeTo implicitMap
-                  in actionMgmt { _implicitStimulusActionManagement = updatedImplicitMap }
+                  let ActionManagementFunctions actionSet = actionMgmt
+                      filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= implicitStimulusVerb; _ -> True) actionSet
+                      updatedActions = Data.Set.insert (ISAManagementKey implicitStimulusVerb changeTo) filteredActions
+                  in ActionManagementFunctions updatedActions
                 updatePerceptionMapM oid
               handleEffect (SomaticAccessEffect somaticAccessVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
-                  let somaticMap = _somaticStimulusActionManagement actionMgmt
-                      updatedSomaticMap = Data.Map.Strict.insert somaticAccessVerb changeTo somaticMap
-                  in actionMgmt { _somaticStimulusActionManagement = updatedSomaticMap }
+                  let ActionManagementFunctions actionSet = actionMgmt
+                      filteredActions = Data.Set.filter (\case SSAManagementKey v _ -> v /= somaticAccessVerb; _ -> True) actionSet
+                      updatedActions = Data.Set.insert (SSAManagementKey somaticAccessVerb changeTo) filteredActions
+                  in ActionManagementFunctions updatedActions
                 updatePerceptionMapM oid
               handleEffect _ = modifyNarration (updateActionConsequence "handleEffect unimplemented")
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")

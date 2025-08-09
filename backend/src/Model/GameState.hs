@@ -37,12 +37,6 @@ module Model.GameState (
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
   , Player (Player, _actionKeyMap, _location, _perceptables, _playerActions)
-  , PlayerActions (PlayerActions,
-                   _acquisitionActions,
-                   _consumptionActions,
-                   _implicitStimulusActions,
-                   _directionalStimulusActions,
-                   _somaticStimulusActions)
   , PlayerKey (PlayerKeyLocation, PlayerKeyObject)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
@@ -265,7 +259,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectSemanticMap        :: Map NounKey (Set (GID Object))
-  , _locationActionManagement :: ActionManagement
+  , _locationActionManagement :: ActionManagementFunctions
 --  , _locationEffects          :: LocationEffects
 }
 
@@ -293,7 +287,7 @@ data Narration = Narration
 type Player :: Type
 data Player = Player
   { _location      :: GID Location
-  , _playerActions :: ActionManagement
+  , _playerActions :: ActionManagementFunctions
   , _perceptables  :: Perceptables
   , _actionKeyMap  :: ActionKeyMap
   }
@@ -338,7 +332,7 @@ data Object = Object
  { _shortName              :: Text
  , _description            :: Text
  , _descriptives           :: Set DirectionalStimulusNounPhrase
- , _objectActionManagement :: ActionManagement
+ , _objectActionManagement :: ActionManagementFunctions
  }
 
 liftToDisplay :: GameStateT m a -> DisplayT m a
