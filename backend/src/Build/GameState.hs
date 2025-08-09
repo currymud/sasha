@@ -54,7 +54,7 @@ import           Model.GameState                                         (Acquis
                                                                           ImplicitStimulusActionF,
                                                                           Narration (..),
                                                                           Perceptables (Perceptables),
-                                                                          Player (Player, _actionKeyMap, _location, _perceptables, _playerActions),
+                                                                          Player (Player, _actionKeyMap, _location, _playerActions),
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF)
 import           Model.GID                                               (GID)
@@ -101,7 +101,6 @@ player :: Player
 player = Player
   { _location = bedroomInBedGID
   , _playerActions = playerActionMgmt
-  , _perceptables = Perceptables mempty
   , _actionKeyMap = actionKeyMap
   }
   where

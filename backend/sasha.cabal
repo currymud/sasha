@@ -85,6 +85,7 @@ library
       Evaluators.Player.General
       GameState
       GameState.ActionManagement
+      GameState.Perception
       GameState.Spatial
       Grammar.Parser
       Grammar.Parser.Lexer

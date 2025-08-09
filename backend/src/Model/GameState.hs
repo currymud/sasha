@@ -36,7 +36,7 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _actionKeyMap, _location, _perceptables, _playerActions)
+  , Player (Player, _actionKeyMap, _location, _playerActions)
   , PlayerKey (PlayerKeyLocation, PlayerKeyObject)
   , PlayerProcessImplicitVerbMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
@@ -288,7 +288,6 @@ type Player :: Type
 data Player = Player
   { _location      :: GID Location
   , _playerActions :: ActionManagementFunctions
-  , _perceptables  :: Perceptables
   , _actionKeyMap  :: ActionKeyMap
   }
 
