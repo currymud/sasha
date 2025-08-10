@@ -4,7 +4,7 @@ module Build.World (world) where
 import           Build.Identifiers.Locations (locationMap)
 import           Build.Identifiers.Objects   (chairObjGID, objectMap,
                                               pillObjGID, pocketObjGID,
-                                              robeObjGID)
+                                              robeObjGID, tableObjGID)
 import           Data.Map.Strict             (Map)
 import qualified Data.Map.Strict
 import           Data.Set                    (Set)
@@ -31,6 +31,7 @@ world = World objectMap' locationMap' mempty spatialRelationships
      , (robeObjGID, Data.Set.fromList [robeHeld, robeContains])
      , (pocketObjGID, Data.Set.fromList [pocketContained, pocketContains])  -- Pocket contained in robe AND contains pill
      , (pillObjGID, Data.Set.singleton pillContained)  -- Pill is contained in pocket
+     , (tableObjGID, Data.Set.singleton tableHolds) -- Table holds nothing
      ]
    chairHolds :: Set SpatialRelationship
    chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
@@ -38,6 +39,9 @@ world = World objectMap' locationMap' mempty spatialRelationships
    robeContains :: SpatialRelationship
    robeContains = Contains $ Data.Set.fromList [pocketObjGID]
 
+
+   tableHolds :: SpatialRelationship
+   tableHolds = Supports Data.Set.empty
    -- Pocket is contained in robe and contains pill
    pocketContained :: SpatialRelationship
    pocketContained = ContainedIn robeObjGID
