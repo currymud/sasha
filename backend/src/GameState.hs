@@ -24,13 +24,13 @@ module GameState ( addToInventoryM
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
-                 , modifyPerceptionMapM
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processAcquisitionEffect
                  , processConsumptionEffect
                  , removeFromInventoryM
-                 , updatePerceptionMapM,youSeeM) where
+                 , youSeeM
+                 ) where
 import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
@@ -240,20 +240,6 @@ getObjectsBySpatialRelationship targetRelationship = do
 getInventoryObjectsM :: GameComputation Identity [GID Object]
 getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
 
-updatePerceptionMapM :: GID Object
-                       -> GameComputation Identity ()
-updatePerceptionMapM oid = do
-  obj <- getObjectM oid
-  let descriptivesList = Data.Set.toList $ _descriptives obj
-  mapM_ addDescriptiveToPerceptionMap descriptivesList
-  where
-    addDescriptiveToPerceptionMap :: DirectionalStimulusNounPhrase -> GameComputation Identity ()
-    addDescriptiveToPerceptionMap dsnp = do
-      modifyPerceptionMapM $ \perceptionMap ->
-        let currentSet = Data.Map.Strict.findWithDefault Data.Set.empty dsnp perceptionMap
-            updatedSet = Data.Set.insert oid currentSet
-        in Data.Map.Strict.insert dsnp updatedSet perceptionMap
-
 getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEffectKey)
 getLocationObjectIDsM lid = do
   location <- getLocationM lid
@@ -383,15 +369,6 @@ modifyObjectM oid objectF = do
   let updatedObject = objectF object
       updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
-  modify' (\gs -> gs { _world = updatedWorld })
-
-modifyPerceptionMapM :: (Map DirectionalStimulusNounPhrase (Set (GID Object)) -> Map DirectionalStimulusNounPhrase (Set (GID Object)))
-                     -> GameComputation Identity ()
-modifyPerceptionMapM perceptionMapF = do
-  world <- gets _world
-  let currentPerceptionMap = _perceptionMap world
-      updatedPerceptionMap = perceptionMapF currentPerceptionMap
-      updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
 
 modifySpatialRelationshipMapM :: (SpatialRelationshipMap -> SpatialRelationshipMap)

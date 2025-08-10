@@ -1,76 +1,195 @@
-module GameState.Perception (computePerceptionMapFromSpatial, rebuildPerceptionMapFromSpatial) where
+module GameState.Perception (updatePerceptionMapM) where
 
+import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (gets)
+import           Control.Monad.State           (gets, modify')
+import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict               as Map
+import           Data.Set                      (Set)
 import qualified Data.Set                      as Set
-import           GameState                     (getObjectM,
-                                                modifyPerceptionMapM)
+import           GameState                     (getObjectM)
 import           Model.GameState               (GameComputation,
                                                 GameState (_world),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_spatialRelationshipMap))
+                                                World (_perceptionMap, _spatialRelationshipMap))
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 
--- | Compute perception map from spatial relationships
--- Objects are perceivable if they are:
--- 1. In inventory
--- 2. Surface-level (not contained/supported by others)
--- 3. Supported by perceivable objects
-computePerceptionMapFromSpatial :: SpatialRelationshipMap
-                                -> GameComputation Identity (Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object)))
-computePerceptionMapFromSpatial (SpatialRelationshipMap spatialMap) = do
-  let perceivableGIDs = findPerceivableGIDs spatialMap
-  buildPerceptionMapFromGIDs perceivableGIDs
 
--- | Find perceivable object GIDs from spatial relationships
-findPerceivableGIDs :: Map.Map (GID Object) (Set.Set SpatialRelationship) -> [GID Object]
-findPerceivableGIDs spatialMap =
-  let inventoryGIDs = [oid | (oid, rels) <- Map.toList spatialMap, Inventory `Set.member` rels]
-      surfaceGIDs = [oid | (oid, rels) <- Map.toList spatialMap,
-                          not (any isContainedOrSupported (Set.toList rels))]
-      supportedGIDs = getSupportedGIDs spatialMap (inventoryGIDs ++ surfaceGIDs)
-  in inventoryGIDs ++ surfaceGIDs ++ supportedGIDs
+-- | Perception Map Contract Definition
+-- The perception map is the single source of truth for object perception
+
+-- | Contract: Query the perception map for objects matching a phrase
+queryPerceptionMap :: DirectionalStimulusNounPhrase
+                   -> GameComputation Identity (Set.Set (GID Object))
+queryPerceptionMap phrase = do
+  perceptionMap <- gets (_perceptionMap . _world)
+  pure $ Map.findWithDefault Set.empty phrase perceptionMap
+
+-- | Contract: Check if an object is currently perceivable
+isObjectPerceivable :: GID Object -> GameComputation Identity Bool
+isObjectPerceivable oid = do
+  obj <- getObjectM oid
+  let descriptives = Set.toList (_descriptives obj)
+  -- Object is perceivable if it appears under any of its descriptive phrases
+  anyPerceivable <- mapM queryPerceptionMap descriptives
+  pure $ any (Set.member oid) anyPerceivable
+
+-- | Contract: Get all currently perceivable objects
+getAllPerceivableObjects :: GameComputation Identity (Set.Set (GID Object))
+getAllPerceivableObjects = do
+  perceptionMap <- gets (_perceptionMap . _world)
+  pure $ Set.unions (Map.elems perceptionMap)
+
+-- | Compute which objects should be perceivable based on spatial relationships
+computePerceivableObjects :: GameComputation Identity (Set.Set (GID Object))
+computePerceivableObjects = do
+  spatialMap <- gets (_spatialRelationshipMap . _world)
+  let SpatialRelationshipMap smap = spatialMap
+
+  -- Objects in inventory
+  let inventoryObjects = Set.fromList [oid | (oid, rels) <- Map.toList smap,
+                                            Inventory `Set.member` rels]
+
+  -- Surface-level objects (not contained or supported by others)
+  let surfaceObjects = Set.fromList [oid | (oid, rels) <- Map.toList smap,
+                                          not (any isContainedOrSupported (Set.toList rels))]
+
+  -- Objects supported by perceivable objects (recursive)
+  supportedObjects <- getSupportedObjects (Set.union inventoryObjects surfaceObjects) smap
+
+  pure $ Set.unions [inventoryObjects, surfaceObjects, supportedObjects]
   where
     isContainedOrSupported (ContainedIn _) = True
     isContainedOrSupported (SupportedBy _) = True
     isContainedOrSupported _               = False
 
--- | Get GIDs of objects supported by perceivable objects
-getSupportedGIDs :: Map.Map (GID Object) (Set.Set SpatialRelationship) -> [GID Object] -> [GID Object]
-getSupportedGIDs spatialMap perceivableGIDs =
-  let directSupported = concatMap (getDirectlySupported spatialMap) perceivableGIDs
-      newGIDs = filter (`notElem` perceivableGIDs) directSupported
-  in if null newGIDs
-     then []
-     else directSupported ++ getSupportedGIDs spatialMap (perceivableGIDs ++ newGIDs)
+-- | Get objects supported by perceivable objects (recursive)
+getSupportedObjects :: Set.Set (GID Object)
+                    -> Map.Map (GID Object) (Set.Set SpatialRelationship)
+                    -> GameComputation Identity (Set.Set (GID Object))
+getSupportedObjects perceivableObjects spatialMap = do
+  let directSupported = Set.unions [getSupported oid | oid <- Set.toList perceivableObjects]
+      newObjects = Set.difference directSupported perceivableObjects
+
+  if Set.null newObjects
+    then pure directSupported
+    else do
+      moreSupported <- getSupportedObjects (Set.union perceivableObjects newObjects) spatialMap
+      pure moreSupported
   where
-    getDirectlySupported smap oid =
-      case Map.lookup oid smap of
-        Nothing   -> []
-        Just rels -> concatMap extractSupported (Set.toList rels)
+    getSupported oid =
+      case Map.lookup oid spatialMap of
+        Nothing   -> Set.empty
+        Just rels -> Set.unions [objSet | Supports objSet <- Set.toList rels]
 
-    extractSupported (Supports gidSet) = Set.toList gidSet
-    extractSupported _                 = []
+-- | Validation errors for perception map contract
+data PerceptionMapError
+  = DanglingObjectReference (GID Object) DirectionalStimulusNounPhrase
+  | MissingPerceivableObject (GID Object)
+  | InconsistentDescriptives (GID Object) DirectionalStimulusNounPhrase
+  deriving (Show, Eq)
 
--- | Build perception map from GIDs by looking up their descriptives
-buildPerceptionMapFromGIDs :: [GID Object]
-                           -> GameComputation Identity (Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object)))
-buildPerceptionMapFromGIDs gids = do
-  perceptionEntries <- mapM addGIDToPerception gids
+-- | Validate that the perception map satisfies all contract guarantees
+validatePerceptionMapContract :: GameComputation Identity [PerceptionMapError]
+validatePerceptionMapContract = do
+  perceptionMap <- gets (_perceptionMap . _world)
+
+  -- Check completeness - all perceivable objects are in the map
+  shouldBePerceivable <- computePerceivableObjects
+  let actuallyPerceivable = Set.unions (Map.elems perceptionMap)
+      missing = Set.difference shouldBePerceivable actuallyPerceivable
+
+  -- Check descriptive consistency
+  descriptiveErrors <- validateDescriptiveConsistency perceptionMap
+
+  let completenessErrors = [MissingPerceivableObject oid | oid <- Set.toList missing]
+
+  pure $ completenessErrors ++ descriptiveErrors
+
+-- | Validate that objects appear under all their descriptive phrases
+validateDescriptiveConsistency :: Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object))
+                               -> GameComputation Identity [PerceptionMapError]
+validateDescriptiveConsistency perceptionMap = do
+  let allObjects = Set.unions (Map.elems perceptionMap)
+  inconsistencies <- mapM checkObjectDescriptives (Set.toList allObjects)
+  pure $ concat inconsistencies
+  where
+    checkObjectDescriptives oid = do
+      obj <- getObjectM oid
+      let descriptives = Set.toList (_descriptives obj)
+      missingDescriptives <- filterM (fmap not . objectInPhrase oid) descriptives
+      pure [InconsistentDescriptives oid phrase | phrase <- missingDescriptives]
+
+    objectInPhrase oid phrase = do
+      objects <- queryPerceptionMap phrase
+      pure $ Set.member oid objects
+
+-- | Add an object to the perception map under all its descriptive phrases
+addObjectToPerceptionMap :: GID Object -> GameComputation Identity ()
+addObjectToPerceptionMap oid = do
+  obj <- getObjectM oid
+  let descriptives = Set.toList (_descriptives obj)
+  mapM_ (addObjectUnderPhrase oid) descriptives
+  where
+    addObjectUnderPhrase oid phrase =
+      modifyPerceptionMapM $ \perceptionMap ->
+        let currentObjects = Map.findWithDefault Set.empty phrase perceptionMap
+            updatedObjects = Set.insert oid currentObjects
+        in Map.insert phrase updatedObjects perceptionMap
+
+-- | Remove an object from the perception map under all its descriptive phrases
+removeObjectFromPerceptionMap :: GID Object -> GameComputation Identity ()
+removeObjectFromPerceptionMap oid = do
+  obj <- getObjectM oid
+  let descriptives = Set.toList (_descriptives obj)
+  mapM_ (removeObjectUnderPhrase oid) descriptives
+  where
+    removeObjectUnderPhrase oid phrase =
+      modifyPerceptionMapM $ \perceptionMap ->
+        let currentObjects = Map.findWithDefault Set.empty phrase perceptionMap
+            updatedObjects = Set.delete oid currentObjects
+        in if Set.null updatedObjects
+           then Map.delete phrase perceptionMap
+           else Map.insert phrase updatedObjects perceptionMap
+
+-- | Update perception map when spatial relationships change
+updatePerceptionMapFromSpatialChange :: GID Object -> GameComputation Identity ()
+updatePerceptionMapFromSpatialChange oid = do
+  shouldBePerceivable <- isObjectCurrentlyPerceivable oid
+  if shouldBePerceivable
+    then addObjectToPerceptionMap oid
+    else removeObjectFromPerceptionMap oid
+
+
+-- | Rebuild the entire perception map from current spatial relationships
+updatePerceptionMap :: GameComputation Identity ()
+updatePerceptionMap = do
+  perceivableObjects <- computePerceivableObjects
+  newPerceptionMap <- buildPerceptionMapFromObjects (Set.toList perceivableObjects)
+  modifyPerceptionMapM (\_ -> newPerceptionMap)
+
+-- | Build perception map from a list of object GIDs
+buildPerceptionMapFromObjects :: [GID Object]
+                              -> GameComputation Identity (Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object)))
+buildPerceptionMapFromObjects objectGIDs = do
+  perceptionEntries <- mapM getObjectPerceptionEntries objectGIDs
   pure $ Map.fromListWith Set.union (concat perceptionEntries)
   where
-    addGIDToPerception gid = do
-      obj <- getObjectM gid
+    getObjectPerceptionEntries oid = do
+      obj <- getObjectM oid
       let descriptives = Set.toList (_descriptives obj)
-      pure [(desc, Set.singleton gid) | desc <- descriptives]
+      pure [(desc, Set.singleton oid) | desc <- descriptives]
 
--- | Rebuild perception map in game state
-rebuildPerceptionMapFromSpatial :: GameComputation Identity ()
-rebuildPerceptionMapFromSpatial = do
-  spatialMap <- gets (_spatialRelationshipMap . _world)
-  newPerceptionMap <- computePerceptionMapFromSpatial spatialMap
-  modifyPerceptionMapM (const newPerceptionMap)
+-- | Update perception map following your existing pattern (like modifyNarration)
+modifyPerceptionMapM :: (Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object))
+                      -> Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object)))
+                     -> GameComputation Identity ()
+modifyPerceptionMapM perceptionMapF = do
+  world <- gets _world
+  let currentPerceptionMap = _perceptionMap world
+      updatedPerceptionMap = perceptionMapF currentPerceptionMap
+      updatedWorld = world { _perceptionMap = updatedPerceptionMap }
+  modify' (\gs -> gs { _world = updatedWorld })

@@ -9,8 +9,7 @@ import           Data.Set                      (Set, elemAt, null, toList)
 import           Data.Text                     (Text)
 import           GameState                     (getObjectM, modifyNarration,
                                                 modifyObjectActionManagementM,
-                                                parseAcquisitionPhrase,
-                                                updatePerceptionMapM)
+                                                parseAcquisitionPhrase)
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),

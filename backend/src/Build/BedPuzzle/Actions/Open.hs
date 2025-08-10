@@ -4,14 +4,12 @@ module Build.BedPuzzle.Actions.Open where
 import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
-import           Data.Maybe                (catMaybes)
-import           Data.Set                  (Set, filter, fromList, insert,
-                                            toList)
+import           Data.Set                  (Set, filter, insert, toList)
 import           Data.Text                 (Text)
 import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration,
                                             modifyObjectActionManagementM,
-                                            updatePerceptionMapM, youSeeM)
+                                            youSeeM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
@@ -19,10 +17,8 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
-                                            Object,
                                             SomaticAccessActionF (SomaticAccessActionF),
                                             updateActionConsequence)
-import           Model.GID                 (GID)
 
 
 openEyesDenied :: SomaticAccessActionF
