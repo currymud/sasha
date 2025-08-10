@@ -20,7 +20,6 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             SomaticAccessActionF (SomaticAccessActionF),
                                             updateActionConsequence)
 
-
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = SomaticAccessActionF (const (const denied))
   where

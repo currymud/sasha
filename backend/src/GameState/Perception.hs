@@ -1,11 +1,9 @@
-module GameState.Perception (updatePerceptionMapM) where
+module GameState.Perception  where
 
 import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
-import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict               as Map
-import           Data.Set                      (Set)
 import qualified Data.Set                      as Set
 import           GameState                     (getObjectM)
 import           Model.GameState               (GameComputation,
@@ -76,9 +74,7 @@ getSupportedObjects perceivableObjects spatialMap = do
 
   if Set.null newObjects
     then pure directSupported
-    else do
-      moreSupported <- getSupportedObjects (Set.union perceivableObjects newObjects) spatialMap
-      pure moreSupported
+    else getSupportedObjects (Set.union perceivableObjects newObjects) spatialMap
   where
     getSupported oid =
       case Map.lookup oid spatialMap of
@@ -155,21 +151,6 @@ removeObjectFromPerceptionMap oid = do
            then Map.delete phrase perceptionMap
            else Map.insert phrase updatedObjects perceptionMap
 
--- | Update perception map when spatial relationships change
-updatePerceptionMapFromSpatialChange :: GID Object -> GameComputation Identity ()
-updatePerceptionMapFromSpatialChange oid = do
-  shouldBePerceivable <- isObjectCurrentlyPerceivable oid
-  if shouldBePerceivable
-    then addObjectToPerceptionMap oid
-    else removeObjectFromPerceptionMap oid
-
-
--- | Rebuild the entire perception map from current spatial relationships
-updatePerceptionMap :: GameComputation Identity ()
-updatePerceptionMap = do
-  perceivableObjects <- computePerceivableObjects
-  newPerceptionMap <- buildPerceptionMapFromObjects (Set.toList perceivableObjects)
-  modifyPerceptionMapM (\_ -> newPerceptionMap)
 
 -- | Build perception map from a list of object GIDs
 buildPerceptionMapFromObjects :: [GID Object]
@@ -183,7 +164,6 @@ buildPerceptionMapFromObjects objectGIDs = do
       let descriptives = Set.toList (_descriptives obj)
       pure [(desc, Set.singleton oid) | desc <- descriptives]
 
--- | Update perception map following your existing pattern (like modifyNarration)
 modifyPerceptionMapM :: (Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object))
                       -> Map.Map DirectionalStimulusNounPhrase (Set.Set (GID Object)))
                      -> GameComputation Identity ()
