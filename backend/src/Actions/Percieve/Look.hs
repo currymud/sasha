@@ -19,7 +19,8 @@ import           GameState                                               (getObj
                                                                           modifyNarration)
 import           GameState.ActionManagement                              (lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
-import           GameState.Perception                                    (queryPerceptionMap)
+import           GameState.Perception                                    (findAccessibleObject,
+                                                                          queryPerceptionMap)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
                                                                           getPlayerLocationM)
@@ -34,6 +35,7 @@ import           Model.GameState                                         (Action
                                                                           Player (_location, _playerActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
+import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -119,13 +121,25 @@ manageDirectionalStimulusProcess dsv dsnp = do
 
 
 lookable :: DirectionalStimulusActionF
-                          -> DirectionalStimulusNounPhrase
-                          -> Location
-                          -> GameComputation Identity ()
+         -> DirectionalStimulusNounPhrase
+         -> Location
+         -> GameComputation Identity ()
 lookable (DirectionalStimulusActionF actionF) dsnp _loc = do
-  -- Single lookup via perception map - the authoritative source for what's perceivable
+  -- Try direct perception map first
   queryPerceptionMap dsnp >>= \case
     objGIDSet | not (Data.Set.null objGIDSet) -> do
       let firstObjGID = Data.Set.elemAt 0 objGIDSet
       actionF dsnp firstObjGID
-    _ -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
+    _ -> do
+      -- Try accessible objects (containers, surfaces, etc.)
+      let noun = extractNoun dsnp
+      findAccessibleObject (DirectionalStimulusKey noun) >>= \case
+        Just objGID -> actionF dsnp objGID
+        Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
+
+extractNoun :: DirectionalStimulusNounPhrase -> DirectionalStimulus
+extractNoun (DirectionalStimulusNounPhrase np) = case np of
+  SimpleNounPhrase noun             -> noun
+  NounPhrase _ noun                 -> noun
+  DescriptiveNounPhrase _ noun      -> noun
+  DescriptiveNounPhraseDet _ _ noun -> noun

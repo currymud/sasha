@@ -4,14 +4,19 @@ import           Control.Monad                 (filterM, unless, when)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import           Data.Kind                     (Type)
+import qualified Data.Map.Strict
 import qualified Data.Map.Strict               as Map
 import qualified Data.Set
 import qualified Data.Set                      as Set
 import qualified Data.Text
 import           GameState                     (getDescriptionM, getObjectM,
+                                                getPlayerLocationGID,
                                                 modifyNarration)
+import           GameState.Spatial             (findObjectInInventoryContainers)
+import           Location                      (getLocationM)
 import           Model.GameState               (GameComputation,
                                                 GameState (_world),
+                                                Location (_objectSemanticMap),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
@@ -19,7 +24,22 @@ import           Model.GameState               (GameComputation,
                                                 updateActionConsequence)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
+import           Model.Parser.GCase            (NounKey)
 
+findAccessibleObject :: NounKey -> GameComputation Identity (Maybe (GID Object))
+findAccessibleObject nounKey = do
+  -- Try inventory containers first (your existing function)
+  findObjectInInventoryContainers nounKey >>= \case
+    Just oid -> pure (Just oid)
+    Nothing -> do
+      -- Try location objects (things on surfaces, in open containers, etc.)
+      playerLocationGID <- getPlayerLocationGID
+      location <- getLocationM playerLocationGID
+      let objectSemanticMap = _objectSemanticMap location
+      case Data.Map.Strict.lookup nounKey objectSemanticMap of
+        Just objSet | not (Data.Set.null objSet) ->
+          pure $ Just (Data.Set.elemAt 0 objSet)
+        _ -> pure Nothing
 
 -- | Perception Map Contract Definition
 -- The perception map is the single source of truth for object perception

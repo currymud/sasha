@@ -5,7 +5,7 @@ import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
 import           Data.Set                  (Set, filter, insert, toList)
-import           Data.Text                 (Text)
+import           Data.Text                 (Text, pack)
 import           GameState                 (modifyLocationM, modifyNarration,
                                             modifyObjectActionManagementM)
 import           GameState.Perception      (buildPerceptionMapFromObjects,
@@ -15,7 +15,7 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                             ActionManagementFunctions (ActionManagementFunctions),
-                                            Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, SomaticAccessEffect),
+                                            Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
                                             SomaticAccessActionF (SomaticAccessActionF),
@@ -55,7 +55,13 @@ openEyes = SomaticAccessActionF opened
                       -- Add new action
                       updatedActions = Data.Set.insert (ISAManagementKey implicitStimulusVerb changeTo) filteredActions
                   in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
-              handleEffect _ = throwError "UndefinedEffect"
+              handleEffect (AcquisitionEffect acquisitionVerb changeTo) = do
+                modifyNarration (updateActionConsequence "AcquisitionEffect handled")
+              handleEffect PerceptionEffect = do
+                perceivableObjects <- computePerceivableObjects
+                newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
+                modifyPerceptionMapM (const newPerceptionMap)
+              handleEffect err = throwError ( Data.Text.pack $ " OUCH" <> show err)
         process actionEffectKey@(ObjectKey oid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
@@ -87,6 +93,9 @@ openEyes = SomaticAccessActionF opened
                 newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
   -- Replace the entire perception map with the computed one
                 modifyPerceptionMapM (const newPerceptionMap)
+              handleEffect (AcquisitionEffect acquisitionVerb changeTo) = do
+  -- Handle acquisition effect logic here
+                modifyNarration (updateActionConsequence "AcquisitionEffect handled")
               handleEffect _ = modifyNarration (updateActionConsequence "handleEffect unimplemented")
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 
