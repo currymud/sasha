@@ -18,6 +18,7 @@ import           GameState                                               (getObj
                                                                           modifyNarration)
 import           GameState.ActionManagement                              (lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
+import           GameState.Perception                                    (queryPerceptionMap)
 import qualified GameState.Spatial                                       as Spatial
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
@@ -115,28 +116,17 @@ manageDirectionalStimulusProcess dsv dsnp = do
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
         Just actionFunc -> do
           location <- getPlayerLocationM
-          lookableWithSpatialAwareness actionFunc dsnp location
+          lookable actionFunc dsnp location
 
--- NEW: Enhanced lookable function with spatial awareness
-lookableWithSpatialAwareness :: DirectionalStimulusActionF
-                             -> DirectionalStimulusNounPhrase
-                             -> Location
-                             -> GameComputation Identity ()
-lookableWithSpatialAwareness (DirectionalStimulusActionF actionF) dsnp@(DirectionalStimulusNounPhrase np) loc = do
-  let nounKey = DirectionalStimulusKey dsn'
-      dsn' = case np of
-             SimpleNounPhrase dsn             -> dsn
-             NounPhrase _ dsn                 -> dsn
-             DescriptiveNounPhrase  _ dsn     -> dsn
-             DescriptiveNounPhraseDet _ _ dsn -> dsn
 
-  -- First try direct location lookup (existing behavior)
-  case Data.Map.Strict.lookup nounKey (_objectSemanticMap loc) of
-    Just objGIDSet | not (Data.Set.null objGIDSet) -> do
+lookable :: DirectionalStimulusActionF
+                          -> DirectionalStimulusNounPhrase
+                          -> Location
+                          -> GameComputation Identity ()
+lookable (DirectionalStimulusActionF actionF) dsnp _loc = do
+  -- Single lookup via perception map - the authoritative source for what's perceivable
+  queryPerceptionMap dsnp >>= \case
+    objGIDSet | not (Data.Set.null objGIDSet) -> do
       let firstObjGID = Data.Set.elemAt 0 objGIDSet
       actionF dsnp firstObjGID
-    _ -> do
-      -- NEW: If not found in location, search spatially
-      Spatial.findObjectInInventoryContainers nounKey >>= \case
-        Just objGID -> actionF dsnp objGID
-        Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
+    _ -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
