@@ -174,7 +174,7 @@ pocketWornEffect :: Effect
 pocketWornEffect = DirectionalStimulusEffect dirLook seePocketRobeWornGID
 
 openEyesEffect :: Set Effect
-openEyesEffect = Data.Set.fromList [PerceptionEffect, ImplicitStimulusEffect impLook agentCanSeeGID]
+openEyesEffect = Data.Set.fromList [ImplicitStimulusEffect impLook agentCanSeeGID, PerceptionEffect]
 
 impLook :: ImplicitStimulusVerb
 impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look

@@ -19,11 +19,7 @@ import           GameState                                               (getObj
                                                                           modifyNarration)
 import           GameState.ActionManagement                              (lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
-import           GameState.Perception                                    (buildPerceptionMapFromObjects,
-                                                                          computePerceivableObjects,
-                                                                          modifyPerceptionMapM,
-                                                                          queryPerceptionMap)
-import qualified GameState.Spatial                                       as Spatial
+import           GameState.Perception                                    (queryPerceptionMap)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
                                                                           getPlayerLocationM)
