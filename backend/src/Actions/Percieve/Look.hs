@@ -5,7 +5,8 @@ module Actions.Percieve.Look ( lookAt
                              , agentCanSee
                              , agentCannotSee
                              , manageImplicitStimulusProcess
-                             , manageDirectionalStimulusProcess) where
+                             , manageDirectionalStimulusProcess
+                             ) where
 
 import           Control.Monad.Identity                                  (Identity)
 import           Control.Monad.Reader.Class                              (asks)
@@ -18,7 +19,10 @@ import           GameState                                               (getObj
                                                                           modifyNarration)
 import           GameState.ActionManagement                              (lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
-import           GameState.Perception                                    (queryPerceptionMap)
+import           GameState.Perception                                    (buildPerceptionMapFromObjects,
+                                                                          computePerceivableObjects,
+                                                                          modifyPerceptionMapM,
+                                                                          queryPerceptionMap)
 import qualified GameState.Spatial                                       as Spatial
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
@@ -47,7 +51,6 @@ agentCanSee = ImplicitStimulusActionF $ const (\loc -> modifyNarration $ updateA
 agentCannotSee :: Text -> ImplicitStimulusActionF
 agentCannotSee nosee = ImplicitStimulusActionF
   $ const (const (modifyNarration $ updateActionConsequence nosee))
-
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled

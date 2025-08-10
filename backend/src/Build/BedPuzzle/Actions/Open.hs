@@ -6,16 +6,16 @@ import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
 import           Data.Set                  (Set, filter, insert, toList)
 import           Data.Text                 (Text)
-import           GameState                 (getLocationM, modifyLocationM,
-                                            modifyNarration,
-                                            modifyObjectActionManagementM,
-                                            youSeeM)
-import           GameState.Perception      (updatePerceptionMapM)
+import           GameState                 (modifyLocationM, modifyNarration,
+                                            modifyObjectActionManagementM)
+import           GameState.Perception      (buildPerceptionMapFromObjects,
+                                            computePerceivableObjects,
+                                            modifyPerceptionMapM, youSeeM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                             ActionManagementFunctions (ActionManagementFunctions),
-                                            Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, SomaticAccessEffect),
+                                            Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
                                             SomaticAccessActionF (SomaticAccessActionF),
@@ -68,21 +68,25 @@ openEyes = SomaticAccessActionF opened
                       filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= directionalStimulusVerb; _ -> True) actionSet
                       updatedActions = Data.Set.insert (DSAManagementKey directionalStimulusVerb changeTo) filteredActions
                   in ActionManagementFunctions updatedActions
-                updatePerceptionMapM oid
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
                   let ActionManagementFunctions actionSet = actionMgmt
                       filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= implicitStimulusVerb; _ -> True) actionSet
                       updatedActions = Data.Set.insert (ISAManagementKey implicitStimulusVerb changeTo) filteredActions
                   in ActionManagementFunctions updatedActions
-                updatePerceptionMapM oid
               handleEffect (SomaticAccessEffect somaticAccessVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
                   let ActionManagementFunctions actionSet = actionMgmt
                       filteredActions = Data.Set.filter (\case SSAManagementKey v _ -> v /= somaticAccessVerb; _ -> True) actionSet
                       updatedActions = Data.Set.insert (SSAManagementKey somaticAccessVerb changeTo) filteredActions
                   in ActionManagementFunctions updatedActions
-                updatePerceptionMapM oid
+              handleEffect PerceptionEffect = do
+              -- Compute what should be perceivable based on current spatial relationships
+                perceivableObjects <- computePerceivableObjects
+  -- Build the new perception map from those objects
+                newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
+  -- Replace the entire perception map with the computed one
+                modifyPerceptionMapM (const newPerceptionMap)
               handleEffect _ = modifyNarration (updateActionConsequence "handleEffect unimplemented")
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
 

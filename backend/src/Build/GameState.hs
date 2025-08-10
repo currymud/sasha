@@ -24,10 +24,9 @@ import           Build.Identifiers.Objects                               (chairO
                                                                           robeObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
-import           Data.Map.Strict                                         (Map,
-                                                                          empty,
-                                                                          fromList)
+import           Data.Map.Strict                                         (fromList)
 import qualified Data.Map.Strict                                         as Data.MapStrict
+import           Data.Set                                                (Set)
 import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
@@ -38,8 +37,7 @@ import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
-import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
@@ -47,25 +45,17 @@ import           Model.GameState                                         (Acquis
                                                                           ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
-                                                                          ConsumptionActionF,
-                                                                          DirectionalStimulusActionF,
-                                                                          Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect),
+                                                                          Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
-                                                                          ImplicitStimulusActionF,
                                                                           Narration (..),
-                                                                          Perceptables (Perceptables),
                                                                           Player (Player, _actionKeyMap, _location, _playerActions),
-                                                                          PlayerKey (PlayerKeyObject),
-                                                                          SomaticAccessActionF)
-import           Model.GID                                               (GID)
+                                                                          PlayerKey (PlayerKeyObject))
 import qualified Model.Parser.Atomics.Nouns
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb,
-                                                                          SomaticAccessVerb)
+                                                                          ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                                          ConsumptionVerbPhrase)
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
 
 initNarration :: Narration
 initNarration = Narration
@@ -158,7 +148,7 @@ openEyesKey  = SomaticAccessActionKey openEyesGID
 openEyesEffectMap :: ActionEffectMap
 openEyesEffectMap = ActionEffectMap
   $ fromList
-      [ (bedroomOpenEyesKey, Data.Set.singleton openEyesEffect)
+      [ (bedroomOpenEyesKey, openEyesEffect)
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
@@ -183,8 +173,8 @@ bedroomOpenEyesKey = LocationKey bedroomInBedGID
 pocketWornEffect :: Effect
 pocketWornEffect = DirectionalStimulusEffect dirLook seePocketRobeWornGID
 
-openEyesEffect :: Effect
-openEyesEffect = ImplicitStimulusEffect impLook agentCanSeeGID
+openEyesEffect :: Set Effect
+openEyesEffect = Data.Set.fromList [PerceptionEffect, ImplicitStimulusEffect impLook agentCanSeeGID]
 
 impLook :: ImplicitStimulusVerb
 impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look

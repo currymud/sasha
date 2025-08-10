@@ -22,7 +22,11 @@ module Model.GameState (
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  , Effect ( AcquisitionEffect, ImplicitStimulusEffect, DirectionalStimulusEffect, SomaticAccessEffect)
+  , Effect ( AcquisitionEffect
+               , ImplicitStimulusEffect
+               , DirectionalStimulusEffect
+               , PerceptionEffect
+               , SomaticAccessEffect)
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation)
@@ -222,6 +226,7 @@ data Effect
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
   | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
   | ConsumptionEffect ConsumptionVerb (GID ConsumptionActionF)
+  | PerceptionEffect
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type

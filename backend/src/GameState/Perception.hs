@@ -1,17 +1,22 @@
 module GameState.Perception  where
 
-import           Control.Monad                 (filterM, when)
+import           Control.Monad                 (filterM, unless, when)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
+import           Data.Kind                     (Type)
 import qualified Data.Map.Strict               as Map
+import qualified Data.Set
 import qualified Data.Set                      as Set
-import           GameState                     (getObjectM)
+import qualified Data.Text
+import           GameState                     (getDescriptionM, getObjectM,
+                                                modifyNarration)
 import           Model.GameState               (GameComputation,
                                                 GameState (_world),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_perceptionMap, _spatialRelationshipMap))
+                                                World (_perceptionMap, _spatialRelationshipMap),
+                                                updateActionConsequence)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 
@@ -81,12 +86,12 @@ getSupportedObjects perceivableObjects spatialMap = do
         Nothing   -> Set.empty
         Just rels -> Set.unions [objSet | Supports objSet <- Set.toList rels]
 
--- | Validation errors for perception map contract
+type PerceptionMapError :: Type
 data PerceptionMapError
   = DanglingObjectReference (GID Object) DirectionalStimulusNounPhrase
   | MissingPerceivableObject (GID Object)
   | InconsistentDescriptives (GID Object) DirectionalStimulusNounPhrase
-  deriving (Show, Eq)
+  deriving stock (Show, Eq)
 
 -- | Validate that the perception map satisfies all contract guarantees
 validatePerceptionMapContract :: GameComputation Identity [PerceptionMapError]
@@ -173,6 +178,17 @@ modifyPerceptionMapM perceptionMapF = do
       updatedPerceptionMap = perceptionMapF currentPerceptionMap
       updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
+
+youSeeM :: GameComputation Identity ()
+youSeeM = do
+  -- Get all currently perceivable objects from the perception map
+  perceivableObjects <- GameState.Perception.getAllPerceivableObjects
+
+  -- Get descriptions and display if any objects exist
+  descriptions <- mapM getDescriptionM (Data.Set.toList perceivableObjects)
+  unless (null descriptions) $ do
+    let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+    modifyNarration $ updateActionConsequence seeText
 
 updatePerceptionMapM :: GID Object -> GameComputation Identity ()
 updatePerceptionMapM oid =
