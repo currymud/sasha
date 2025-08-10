@@ -10,9 +10,9 @@ import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
                                                 getPlayerLocationGID,
                                                 getPlayerLocationM, getPlayerM,
-                                                modifyObjectActionManagementM,
-                                                updatePerceptionMapM)
+                                                modifyObjectActionManagementM)
 import           GameState.ActionManagement    (lookupAcquisition)
+import           GameState.Perception          (updatePerceptionMapM)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),

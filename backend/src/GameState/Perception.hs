@@ -1,6 +1,6 @@
 module GameState.Perception  where
 
-import           Control.Monad                 (filterM)
+import           Control.Monad                 (filterM, when)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Map.Strict               as Map
@@ -173,3 +173,8 @@ modifyPerceptionMapM perceptionMapF = do
       updatedPerceptionMap = perceptionMapF currentPerceptionMap
       updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
+
+updatePerceptionMapM :: GID Object -> GameComputation Identity ()
+updatePerceptionMapM oid =
+  isObjectPerceivable oid
+    >>= flip when (addObjectToPerceptionMap oid)

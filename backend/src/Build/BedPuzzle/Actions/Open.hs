@@ -10,6 +10,7 @@ import           GameState                 (getLocationM, modifyLocationM,
                                             modifyNarration,
                                             modifyObjectActionManagementM,
                                             youSeeM)
+import           GameState.Perception      (updatePerceptionMapM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
