@@ -10,7 +10,8 @@ module Model.GameState (
                 DirectionalStimulusActionKey,
                 SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey)
+  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey,
+                     PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
                  , _acquisitionActionMap
@@ -48,6 +49,8 @@ module Model.GameState (
   , Player (Player, _actionKeyMap, _location, _playerActions)
   , PlayerKey (PlayerKeyLocation, PlayerKeyObject)
   , PlayerProcessImplicitVerbMap
+  , PosturalActionF (PosturalActionF)
+  , PosturalActionMap
   , ProcessDirectionalStimulusVerb (ProcessDirectionalStimulusVerb, _unProcessDirectionalStimlusVerb)
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
@@ -78,6 +81,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ConsumptionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
+                                                NegativePosturalVerb,
+                                                PositivePosturalVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
                                                 ObjectPhrase)
@@ -137,6 +142,7 @@ data ActionMaps = ActionMaps
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
+  , _posturalActionMap            :: PosturalActionMap
   }
 
 type ImplicitStimulusActionMap :: Type
@@ -164,9 +170,16 @@ type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
+type PosturalActionMap :: Type
+type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
+
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
   { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
+
+type PosturalActionF :: Type
+newtype PosturalActionF = PosturalActionF
+  { _positivePosturalAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
 
 type AcquisitionActionF :: Type
 data AcquisitionActionF
@@ -222,6 +235,7 @@ data ActionKey
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
+  | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -231,6 +245,8 @@ data Effect
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
   | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
   | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
+  | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
+  | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)
   | PerceptionEffect
   deriving stock (Show, Eq, Ord)
 
@@ -280,6 +296,8 @@ data ActionManagement
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
   | CAManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
+  | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
+  | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionManagementFunctions :: Type

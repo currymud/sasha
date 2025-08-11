@@ -29,7 +29,8 @@ import           Build.Identifiers.Objects                               (chairO
                                                                           robeObjGID,
                                                                           tableObjGID)
 import           Build.World                                             (world)
-import           Data.Map.Strict                                         (fromList)
+import           Data.Map.Strict                                         (empty,
+                                                                          fromList)
 import qualified Data.Map.Strict                                         as Data.MapStrict
 import           Data.Set                                                (Set)
 import qualified Data.Set
@@ -95,7 +96,7 @@ config = Config
                    somaticAccessActionMap
                    acquisitionActionMap
                    consumptionActionMap
-
+                   Data.Map.Strict.empty
 player :: Player
 player = Player
   { _location = bedroomInBedGID

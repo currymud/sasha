@@ -2,23 +2,21 @@ module GameState.ActionManagement where
 import           Data.Maybe                    (listToMaybe)
 import qualified Data.Set
 import           Model.GameState               (AcquisitionActionF,
-                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF,
+                                                PosturalActionF,
                                                 SomaticAccessActionF)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
-                                                ConsumptionVerbPhrase)
+                                                ConsumptionVerbPhrase,
+                                                PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
 
-
--- Helper functions for working with ActionManagementFunctions
-
--- Lookup functions that search through the Set
 lookupDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
 lookupDirectionalStimulus verb (ActionManagementFunctions actions) =
   listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actions, v == verb]
@@ -39,6 +37,12 @@ lookupConsumption :: ConsumptionVerbPhrase -> ActionManagementFunctions -> Maybe
 lookupConsumption phrase (ActionManagementFunctions actions) =
   listToMaybe [gid | CAManagementKey p gid <- Data.Set.toList actions, p == phrase]
 
+lookupPostural :: PosturalVerbPhrase -> ActionManagementFunctions -> Maybe (GID PosturalActionF)
+lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
+  PositivePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actions, v == verb]
+  NegativePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actions, v == verb]
 -- Convenience builders
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
