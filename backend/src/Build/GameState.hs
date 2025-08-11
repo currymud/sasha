@@ -20,6 +20,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
+                                                                          standDeniedGID,
                                                                           takePillFGID,
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
@@ -43,12 +44,13 @@ import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
+import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
-                                                                          ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                          ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, PPManagementKey, SSAManagementKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
@@ -116,6 +118,7 @@ player = Player
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
+      , PPManagementKey stand standDeniedGID
       ]
 
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
