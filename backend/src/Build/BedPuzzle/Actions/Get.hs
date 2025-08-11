@@ -98,8 +98,8 @@ processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActi
     in ActionManagementFunctions updatedActions
   updatePerceptionMapM oid
 
-processEffectWithKey avp (ObjectKey oid) (ConsumptionEffect verb targetOid newActionGID) = do
-  modifyObjectActionManagementM targetOid $ \actionMgmt ->
+processEffectWithKey avp (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         -- Remove old consumption actions for this verb
         filteredActions = Data.Set.filter filterAction actionSet
