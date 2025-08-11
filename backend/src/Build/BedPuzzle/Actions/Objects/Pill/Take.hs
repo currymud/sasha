@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Objects.Pill.Take (takePillF, takePillDeniedF) where
+module Build.BedPuzzle.Actions.Objects.Pill.Take (alreadyTookPillF, pillTooFarF, takePillF, takePillDeniedF) where
 
 import           Control.Monad.Identity        (Identity)
 import qualified Data.Set
@@ -20,6 +20,23 @@ takePillDeniedF = ConsumptionActionF (const (const (const denied)))
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You can't take the pill right now."
+
+
+alreadyTookPillF :: ConsumptionActionF
+alreadyTookPillF = ConsumptionActionF (const (const (const denied)))
+  where
+    denied :: GameComputation Identity ()
+    denied = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "You already took the pill."
+
+pillTooFarF :: ConsumptionActionF
+pillTooFarF = ConsumptionActionF (const (const (const denied)))
+  where
+    denied :: GameComputation Identity ()
+    denied = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "You grab at it but it's hard to get to. try grabbing the robe first."
 
 takePillF :: ConsumptionActionF
 takePillF = ConsumptionActionF takeIt

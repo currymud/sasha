@@ -23,6 +23,7 @@ module Model.GameState (
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
   , Effect ( AcquisitionEffect
+               , ConsumptionEffect
                , ImplicitStimulusEffect
                , DirectionalStimulusEffect
                , PerceptionEffect
@@ -225,7 +226,7 @@ data Effect
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
   | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
-  | ConsumptionEffect ConsumptionVerb (GID ConsumptionActionF)
+  | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | PerceptionEffect
   deriving stock (Show, Eq, Ord)
 

@@ -1,25 +1,27 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
 module Build.BedPuzzle.Actions.Open where
-import           Control.Monad.Error.Class (throwError)
-import           Control.Monad.Identity    (Identity)
+import           Control.Monad.Error.Class     (throwError)
+import           Control.Monad.Identity        (Identity)
 import qualified Data.Map.Strict
-import           Data.Set                  (Set, filter, insert, toList)
-import           Data.Text                 (Text, pack)
-import           GameState                 (modifyLocationM, modifyNarration,
-                                            modifyObjectActionManagementM)
-import           GameState.Perception      (buildPerceptionMapFromObjects,
-                                            computePerceivableObjects,
-                                            modifyPerceptionMapM, youSeeM)
-import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
-                                            ActionEffectMap (ActionEffectMap),
-                                            ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
-                                            ActionManagementFunctions (ActionManagementFunctions),
-                                            Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, SomaticAccessEffect),
-                                            GameComputation,
-                                            Location (_locationActionManagement),
-                                            SomaticAccessActionF (SomaticAccessActionF),
-                                            updateActionConsequence)
+import           Data.Set                      (Set, filter, insert, toList)
+import           Data.Text                     (Text, pack)
+import           GameState                     (modifyLocationM,
+                                                modifyNarration,
+                                                modifyObjectActionManagementM)
+import           GameState.Perception          (buildPerceptionMapFromObjects,
+                                                computePerceivableObjects,
+                                                modifyPerceptionMapM, youSeeM)
+import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey),
+                                                ActionEffectMap (ActionEffectMap),
+                                                ActionManagement (CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                ActionManagementFunctions (ActionManagementFunctions),
+                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, SomaticAccessEffect),
+                                                GameComputation,
+                                                Location (_locationActionManagement),
+                                                SomaticAccessActionF (SomaticAccessActionF),
+                                                updateActionConsequence)
+import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = SomaticAccessActionF (const (const denied))
@@ -68,6 +70,21 @@ openEyes = SomaticAccessActionF opened
             Just effects -> mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
+              handleEffect (ConsumptionEffect consumptionVerb targetOid changeTo) = do
+                modifyObjectActionManagementM targetOid $ \actionMgmt ->
+                  let ActionManagementFunctions actionSet = actionMgmt
+        -- Remove old consumption actions for this verb
+                      filteredActions = Data.Set.filter filterAction actionSet
+        -- Find existing consumption verb phrase to preserve
+                      existingCVP = case [cvp | CAManagementKey cvp@(ConsumptionVerbPhrase verb _) _ <- Data.Set.toList actionSet, verb == consumptionVerb] of
+                        (foundCvp:_) -> foundCvp
+                        []           -> error "No existing consumption verb phrase found for effect"
+        -- Add new action with existing phrase
+                      updatedActions = Data.Set.insert (CAManagementKey existingCVP changeTo) filteredActions
+                  in ActionManagementFunctions updatedActions
+                where
+                  filterAction (CAManagementKey (ConsumptionVerbPhrase verb _) _) = verb /= consumptionVerb
+                  filterAction _ = True
               handleEffect (DirectionalStimulusEffect directionalStimulusVerb changeTo) = do
                 modifyObjectActionManagementM oid $ \actionMgmt ->
                   let ActionManagementFunctions actionSet = actionMgmt

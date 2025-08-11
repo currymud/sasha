@@ -16,6 +16,10 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPil
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
                                                                           whatPill)
+import           Build.BedPuzzle.Actions.Objects.Pill.Take               (alreadyTookPillF,
+                                                                          pillTooFarF,
+                                                                          takePillDeniedF,
+                                                                          takePillF)
 import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (emptyPocket,
                                                                           notEvenPocket,
                                                                           seePocketChair,
@@ -33,6 +37,7 @@ import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTab
 import           Build.BedPuzzle.Actions.Open                            (openEyes,
                                                                           openEyesDenied)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
+                                                                          makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
                                                                           makeSomaticAccessActionGIDsAndMap)
@@ -100,3 +105,7 @@ makeAcquisitionActionGIDsAndMap [[| locGet |],
                                  [| getRobeDenied |],
                                  [| getRobe|]]
 
+makeConsumptionActionGIDsAndMap [ [|alreadyTookPillF |],
+                                  [| pillTooFarF |],
+                                  [| takePillF |],
+                                 [| takePillDeniedF |]]

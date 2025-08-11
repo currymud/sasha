@@ -10,6 +10,7 @@ import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
                                              Type (AppT, ArrowT, ConT, ForallT),
                                              mkName, nameBase)
 import           Model.GameState            (AcquisitionActionF,
+                                             ConsumptionActionF,
                                              DirectionalStimulusActionF,
                                              ImplicitStimulusActionF, Location,
                                              Object,
@@ -62,13 +63,33 @@ makeObjectGIDsAndMap = makeGIDsAndMapForType ''Object "objectMap"
 
 -- Updated for new action system
 
+makeConsumptionActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makeConsumptionActionGIDsAndMap = makeGIDsAndMapForType ''ConsumptionActionF "consumptionActionMap"
+
+-- Also add this helper function for consistency with the pattern:
+makeConsumptionActionGID :: Exp -> Int -> Q [Dec]
+makeConsumptionActionGID exp gidValue = do
+  case exp of
+    VarE functionName -> do
+      let originalNameStr = nameBase functionName
+          gidNameStr = originalNameStr ++ "GID"
+          gidName = mkName gidNameStr
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''ConsumptionActionF)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail "makeConsumptionActionGID expects a simple variable name"
+
+
 makeAcquisitionActionGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeAcquisitionActionGIDsAndMap = makeGIDsAndMapForType ''AcquisitionActionF "acquisitionActionMap"
 
 -- Also add this helper function for consistency with the pattern:
 makeAcquisitionActionGID :: Exp -> Int -> Q [Dec]
-makeAcquisitionActionGID exp gidValue = do
-  case exp of
+makeAcquisitionActionGID exp' gidValue = do
+  case exp' of
     VarE functionName -> do
       let originalNameStr = nameBase functionName
           gidNameStr = originalNameStr ++ "GID"
