@@ -171,7 +171,7 @@ data AcquisitionActionF
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
-  { _consumptionAction :: Location -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity () }
+  { _consumptionAction :: GID Object -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity () }
 
 type ProcessImplicitVerbMap :: Type
 type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
