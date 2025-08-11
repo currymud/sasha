@@ -2,6 +2,7 @@ module Evaluators.Player.General where
 import           Actions.Consume                       (manageConsumptionProcess)
 import           Actions.Get.Acquisition.Get           (manageAcquisitionProcess)
 import           Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess)
+import           Actions.Movement.Postural.Stand       (managePosturalProcess)
 import           Actions.Percieve.Look                 (manageDirectionalStimulusProcess,
                                                         manageImplicitStimulusProcess)
 import           Build.Identifiers.Actions             (agentCanSeeGID)
@@ -9,9 +10,9 @@ import           Control.Monad.Identity                (Identity)
 import           Model.GameState                       (GameComputation)
 import           Model.Parser                          (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs         (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
-                                                        Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', StimulusVerbPhrase),
+                                                        Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                        PosturalVerbPhrase,
                                                         StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
-
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 
@@ -22,6 +23,7 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
 evalImperative (AcquisitionVerbPhrase' acquisitionVerbPhrase) =
   evalAcquisitionVerbPhrase acquisitionVerbPhrase
+evalImperative (PosturalVerbPhrase postureVerbPhrase) = evalPosturalVerbPhrase postureVerbPhrase -- Posture verbs are not implemented yet
 
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
@@ -30,3 +32,6 @@ evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessPr
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()
 evalAcquisitionVerbPhrase = manageAcquisitionProcess
+
+evalPosturalVerbPhrase :: PosturalVerbPhrase -> GameComputation Identity ()
+evalPosturalVerbPhrase = managePosturalProcess

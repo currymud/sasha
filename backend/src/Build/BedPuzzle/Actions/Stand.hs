@@ -39,7 +39,9 @@ standUp = PosturalActionF stood
         process actionEffectKey@(LocationKey lid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
             Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
-            Just effects -> mapM_ handleEffect effects
+            Just effects -> do
+                              modifyNarration (updateActionConsequence "you stand up")
+                              mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
