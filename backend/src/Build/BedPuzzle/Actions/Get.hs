@@ -17,11 +17,11 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
-                                                ActionManagement (AAManagementKey, DSAManagementKey),
+                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
-                                                Effect (AcquisitionEffect, DirectionalStimulusEffect),
+                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect),
                                                 GameComputation,
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
@@ -29,7 +29,8 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 Player (_actionKeyMap, _playerActions),
                                                 PlayerKey (PlayerKeyObject),
                                                 updateActionConsequence)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
+                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
 getDenied :: AcquisitionActionF
 getDenied = AcquisitionActionF (const (const (const denied)))
@@ -96,6 +97,22 @@ processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActi
         updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
   updatePerceptionMapM oid
+
+processEffectWithKey avp (ObjectKey oid) (ConsumptionEffect verb targetOid newActionGID) = do
+  modifyObjectActionManagementM targetOid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        -- Remove old consumption actions for this verb
+        filteredActions = Data.Set.filter filterAction actionSet
+        -- Find existing consumption verb phrase to preserve
+        existingCVP = case [cvp | CAManagementKey cvp@(ConsumptionVerbPhrase v _) _ <- Data.Set.toList actionSet, v == verb] of
+          (foundCvp:_) -> foundCvp
+          []           -> error "No existing consumption verb phrase found for effect"
+        -- Add new action with existing phrase
+        updatedActions = Data.Set.insert (CAManagementKey existingCVP newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+  where
+    filterAction (CAManagementKey (ConsumptionVerbPhrase v _) _) = v /= verb
+    filterAction _                                               = True
 
 processEffectWithKey _ _ _ = pure () -- Handle other effect types as needed
 executeLocationGet :: Location -> AcquisitionVerbPhrase -> GameComputation Identity (Either (GameComputation Identity ()) (GameComputation Identity ()))
