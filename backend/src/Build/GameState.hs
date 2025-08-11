@@ -173,7 +173,7 @@ playerGetEffectMap = ActionEffectMap
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
       , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
         -- Pill acquisition effects would go here too
-      , (ObjectKey pillObjGID, Data.Set.singleton pillReachableEffect)  -- NEW: Make pill reachable
+      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillReachableEffect)
         -- Other acquisition effects...
       ]
 pillReachableEffect :: Effect
