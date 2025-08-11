@@ -53,6 +53,7 @@ library
       Actions.Consume
       Actions.Get.Acquisition.Get
       Actions.Manipulate.SomaticAccess.Open
+      Actions.Movement.Postural.Stand
       Actions.Percieve.Look
       Build.BedPuzzle.Actions.Inventory
       Build.BedPuzzle.Actions.Look

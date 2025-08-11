@@ -8,6 +8,7 @@ module Model.GameState (
                 ConsumptionActionKey,
                 ImplicitStimulusActionKey,
                 DirectionalStimulusActionKey,
+                PosturalActionKey,
                 SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey,
@@ -17,6 +18,7 @@ module Model.GameState (
                  , _acquisitionActionMap
                  , _implicitStimulusActionMap
                  , _directionalStimulusActionMap
+                 , _posturalActionMap
                  ,_somaticStimulusActionMap
                  ,_acquisitionActionMap
                  , _consumptionActionMap)

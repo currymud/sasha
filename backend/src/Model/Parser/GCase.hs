@@ -29,28 +29,24 @@ data VerbKey
   | ConsumptionKey              ConsumptionVerb
   | ImplicitBoundaryKey         ImplicitBoundaryVerb
   | ImplicitStimulusKey         ImplicitStimulusVerb
-  | PosturalVerbKey             PosturalVerbKey
   | SimpleAccessVerbKey         SimpleAccessVerb
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
+  | PositivePosturalVerbKey     PositivePosturalVerb
+  | NegativePosturalVerbKey     NegativePosturalVerb
   deriving stock (Show, Eq, Ord, Generic)
 
 mkVerbKey :: Sentence -> VerbKey
 mkVerbKey (Imperative imperative) = case imperative of
   (StimulusVerbPhrase vphrase) -> fromStimulusVerbPhrase vphrase
-  (PosturalVerbPhrase vphrase) -> PosturalVerbKey (fromPosturalVerbPhrase vphrase)
+  (PosturalVerbPhrase vphrase) -> fromPosturalVerbPhrase vphrase
 
 fromStimulusVerbPhrase :: StimulusVerbPhrase -> VerbKey
 fromStimulusVerbPhrase (ImplicitStimulusVerb v) = ImplicitStimulusKey v
 
-fromPosturalVerbPhrase :: PosturalVerbPhrase -> PosturalVerbKey
+fromPosturalVerbPhrase :: PosturalVerbPhrase -> VerbKey
 fromPosturalVerbPhrase (PositivePosturalVerbPhrase verb _) = PositivePosturalVerbKey verb
 fromPosturalVerbPhrase (NegativePosturalVerbPhrase verb _) = NegativePosturalVerbKey verb
 
-type PosturalVerbKey :: Type
-data PosturalVerbKey
-  = PositivePosturalVerbKey PositivePosturalVerb
-  | NegativePosturalVerbKey NegativePosturalVerb
-  deriving stock (Show, Eq, Ord, Generic)
 
 type NounKey :: Type
 data NounKey
