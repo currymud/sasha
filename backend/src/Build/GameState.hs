@@ -14,6 +14,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           openEyesGID,
                                                                           pillTooFarFGID,
                                                                           playerGetGID,
+                                                                          posturalActionMap,
                                                                           seeChairGID,
                                                                           seePocketRobeWornGID,
                                                                           seeRobeChairGID,
@@ -98,7 +99,7 @@ config = Config
                    somaticAccessActionMap
                    acquisitionActionMap
                    consumptionActionMap
-                   Data.Map.Strict.empty
+                   posturalActionMap
 player :: Player
 player = Player
   { _location = bedroomInBedGID
