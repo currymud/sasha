@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Stand where
+module Build.BedPuzzle.Actions.Stand (standDenied, standUp) where
 import           Control.Monad.Error.Class (throwError)
 import           Control.Monad.Identity    (Identity)
 import qualified Data.Map.Strict
@@ -18,6 +18,14 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             Location (_locationActionManagement),
                                             PosturalActionF (PosturalActionF),
                                             updateActionConsequence)
+
+standDenied :: PosturalActionF
+standDenied = PosturalActionF (const (const denied))
+  where
+    denied :: GameComputation Identity ()
+    denied = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "You try to stand but the room starts spinning and you lay back down. There's some aspirin in your robe pocket."
 
 standUp :: PosturalActionF
 standUp = PosturalActionF stood

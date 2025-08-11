@@ -6,6 +6,7 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           isvActionEnabled,
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
+
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
 import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
@@ -36,10 +37,13 @@ import           Build.BedPuzzle.Actions.Objects.Table.Look              (seeTab
                                                                           whatTable)
 import           Build.BedPuzzle.Actions.Open                            (openEyes,
                                                                           openEyesDenied)
+import           Build.BedPuzzle.Actions.Stand                           (standDenied,
+                                                                          standUp)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
+                                                                          makePosturalActionGIDsAndMap,
                                                                           makeSomaticAccessActionGIDsAndMap)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
@@ -109,3 +113,6 @@ makeConsumptionActionGIDsAndMap [ [|alreadyTookPillF |],
                                   [| pillTooFarF |],
                                   [| takePillF |],
                                  [| takePillDeniedF |]]
+
+makePosturalActionGIDsAndMap [[| standDenied |], [| standUp |]]
+

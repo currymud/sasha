@@ -13,7 +13,7 @@ import           Model.GameState            (AcquisitionActionF,
                                              ConsumptionActionF,
                                              DirectionalStimulusActionF,
                                              ImplicitStimulusActionF, Location,
-                                             Object,
+                                             Object, PosturalActionF,
                                              ProcessImplicitStimulusVerb,
                                              SomaticAccessActionF)
 import           Model.GID                  (GID (GID))
@@ -54,6 +54,9 @@ simplifyType (ForallT _ _ t)               = simplifyType t           -- Remove 
 simplifyType (AppT (AppT ArrowT _) result) = result     -- a -> Location becomes Location
 simplifyType (ConT name)                   = ConT name                    -- Location stays Location
 simplifyType t                             = t                                      -- Everything else unchanged
+
+makePosturalActionGIDsAndMap :: [ExpQ] -> Q [Dec]
+makePosturalActionGIDsAndMap = makeGIDsAndMapForType ''PosturalActionF "posturalActionMap"
 
 makeLocationGIDsAndMap :: [ExpQ] -> Q [Dec]
 makeLocationGIDsAndMap = makeGIDsAndMapForType ''Location "locationMap"
