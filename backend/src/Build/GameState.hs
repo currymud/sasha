@@ -22,6 +22,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
                                                                           standDeniedGID,
+                                                                          standUpGID,
                                                                           takePillFGID,
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
@@ -49,17 +50,18 @@ import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
-                                                                          ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
+                                                                          ActionKey (AcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, PPManagementKey, SSAManagementKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
-                                                                          Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect),
+                                                                          Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           Narration (..),
                                                                           Player (Player, _actionKeyMap, _location, _playerActions),
                                                                           PlayerKey (PlayerKeyObject))
+import           Model.Parser.Atomics.Adverbs                            (PositivePosturalDirection (PositivePosturalDirection))
 import qualified Model.Parser.Atomics.Nouns
 import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
                                                                           DirectionalStimulusVerb,
@@ -134,12 +136,16 @@ robeObjective = robe
 simpleRobeOP :: ObjectPhrase
 simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
 
+standKey :: ActionKey
+standKey = PosturalActionKey standDeniedGID
+
 actionKeyMap :: ActionKeyMap
 actionKeyMap = ActionKeyMap
   $ fromList
       [ (openEyesKey,openEyesEffectMap)
       , (getKey, playerGetEffectMap)
       , (alreadyHaveRobeKey, emptyEffectMap)
+      , (standKey, emptyEffectMap)
       ]
 
 alreadyHaveRobeKey :: ActionKey
@@ -178,7 +184,7 @@ playerGetEffectMap = ActionEffectMap
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
       , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
         -- Pill acquisition effects would go here too
-      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect])
+      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect, pillCuresHeadacheEffect])
         -- Other acquisition effects...
       ]
 pillReachableEffect :: Effect
@@ -186,6 +192,9 @@ pillReachableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
 
 pillTakeableEffect :: Effect
 pillTakeableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
+
+pillCuresHeadacheEffect :: Effect
+pillCuresHeadacheEffect = PositivePosturalEffect stand standUpGID  -- Changes stand action to successful version
 
 takeCV :: ConsumptionVerb
 takeCV = take
