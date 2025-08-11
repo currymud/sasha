@@ -15,8 +15,11 @@ import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
                                                 ImplicitBoundaryVerb,
                                                 ImplicitRegionalStimulusVerb,
                                                 ImplicitStimulusVerb,
+                                                NegativePosturalVerb,
+                                                PositivePosturalVerb,
                                                 SimpleAccessVerb)
-import           Model.Parser.Composites.Verbs (Imperative (StimulusVerbPhrase),
+import           Model.Parser.Composites.Verbs (Imperative (PosturalVerbPhrase, StimulusVerbPhrase),
+                                                PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
                                                 StimulusVerbPhrase (..))
 
 type VerbKey :: Type
@@ -26,6 +29,7 @@ data VerbKey
   | ConsumptionKey              ConsumptionVerb
   | ImplicitBoundaryKey         ImplicitBoundaryVerb
   | ImplicitStimulusKey         ImplicitStimulusVerb
+  | PosturalVerbKey             PosturalVerbKey
   | SimpleAccessVerbKey         SimpleAccessVerb
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
   deriving stock (Show, Eq, Ord, Generic)
@@ -33,9 +37,20 @@ data VerbKey
 mkVerbKey :: Sentence -> VerbKey
 mkVerbKey (Imperative imperative) = case imperative of
   (StimulusVerbPhrase vphrase) -> fromStimulusVerbPhrase vphrase
+  (PosturalVerbPhrase vphrase) -> PosturalVerbKey (fromPosturalVerbPhrase vphrase)
 
 fromStimulusVerbPhrase :: StimulusVerbPhrase -> VerbKey
 fromStimulusVerbPhrase (ImplicitStimulusVerb v) = ImplicitStimulusKey v
+
+fromPosturalVerbPhrase :: PosturalVerbPhrase -> PosturalVerbKey
+fromPosturalVerbPhrase (PositivePosturalVerbPhrase verb _) = PositivePosturalVerbKey verb
+fromPosturalVerbPhrase (NegativePosturalVerbPhrase verb _) = NegativePosturalVerbKey verb
+
+type PosturalVerbKey :: Type
+data PosturalVerbKey
+  = PositivePosturalVerbKey PositivePosturalVerb
+  | NegativePosturalVerbKey NegativePosturalVerb
+  deriving stock (Show, Eq, Ord, Generic)
 
 type NounKey :: Type
 data NounKey
