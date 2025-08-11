@@ -34,6 +34,8 @@ module Model.GameState (
                , ImplicitStimulusEffect
                , DirectionalStimulusEffect
                , PerceptionEffect
+               , PositivePosturalEffect
+               , NegativePosturalEffect
                , SomaticAccessEffect)
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)

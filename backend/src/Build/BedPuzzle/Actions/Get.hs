@@ -19,11 +19,11 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
-                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey),
+                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, NPManagementKey, PPManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
-                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect),
+                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
                                                 GameComputation,
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
@@ -91,6 +91,32 @@ processEffectWithKey avp (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect _ 
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
+processEffectWithKey avp (PlayerKey (PlayerKeyObject oid)) (PositivePosturalEffect verb newActionGID) = do
+  -- Update the player's positive postural actions
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing positive postural action for this verb
+        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
+processEffectWithKey avp (PlayerKey (PlayerKeyObject oid)) (NegativePosturalEffect verb newActionGID) = do
+  -- Update the player's negative postural actions
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing negative postural action for this verb
+        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
 processEffectWithKey _ (PlayerKey (PlayerKeyObject oid)) (ConsumptionEffect verb _targetOid newActionGID) = do
   -- Update the player's consumption actions to use the new action for this verb
   modify' $ \gs ->
@@ -110,6 +136,20 @@ processEffectWithKey _ (PlayerKey (PlayerKeyObject oid)) (ConsumptionEffect verb
   where
     filterAction (CAManagementKey (ConsumptionVerbPhrase v _) _) = v /= verb
     filterAction _                                               = True
+
+processEffectWithKey _ (ObjectKey oid) (PositivePosturalEffect verb newActionGID) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffectWithKey _ (ObjectKey oid) (NegativePosturalEffect verb newActionGID) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
 
 processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
   -- Update the object's directional stimulus action

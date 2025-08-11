@@ -28,6 +28,7 @@ module GameState ( addToInventoryM
                  , parseConsumptionPhrase
                  , processAcquisitionEffect
                  , processConsumptionEffect
+                 , processPosturalEffect
                  , removeFromInventoryM
                  ) where
 import           Control.Monad                 (filterM)
@@ -44,7 +45,7 @@ import           Data.Text                     (Text, intercalate, null, pack)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (ObjectKey),
-                                                ActionManagement (AAManagementKey, CAManagementKey, ISAManagementKey),
+                                                ActionManagement (AAManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF (_consumptionAction),
                                                 GameComputation,
@@ -54,6 +55,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Narration (Narration),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
+                                                PosturalActionF,
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
@@ -67,7 +69,8 @@ import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (Consumable
                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                 ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
 import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ObjectiveKey))
 
 
@@ -126,6 +129,30 @@ processConsumptionEffect cvp newActionGID = do
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
+
+processPosturalEffect :: PosturalVerbPhrase
+                      -> GID PosturalActionF
+                      -> GameComputation Identity ()
+processPosturalEffect posturalPhrase newActionGID = do
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing postural action for this phrase's verb
+        filteredActions = Data.Set.filter (filterPosturalAction posturalPhrase) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (createPosturalManagementKey posturalPhrase newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+  where
+    filterPosturalAction phrase action = case (phrase, action) of
+      (PositivePosturalVerbPhrase verb _, PPManagementKey v _) -> v /= verb
+      (NegativePosturalVerbPhrase verb _, NPManagementKey v _) -> v /= verb
+      _                                                        -> True
+
+    createPosturalManagementKey phrase gid = case phrase of
+      PositivePosturalVerbPhrase verb _ -> PPManagementKey verb gid
+      NegativePosturalVerbPhrase verb _ -> NPManagementKey verb gid
 
 -- General function to get objects by spatial relationship
 getObjectsBySpatialRelationship :: SpatialRelationship -> GameComputation Identity [GID Object]
