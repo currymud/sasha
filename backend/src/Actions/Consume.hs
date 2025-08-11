@@ -1,79 +1,42 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
-module Actions.Consume () where
+module Actions.Consume (manageConsumptionProcess) where
 
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (getPlayerLocationM, getPlayerM,
-                                                modifyObjectActionManagementM)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
-                                                ActionEffectKey (ObjectKey),
-                                                ActionEffectMap (ActionEffectMap),
-                                                ActionKey (AcquisitionalActionKey),
-                                                ActionKeyMap (ActionKeyMap, _unActionKeyMap),
-                                                ActionMaps (_acquisitionActionMap),
+                                                parseConsumptionPhrase)
+import           Model.GameState               (ActionEffectMap (ActionEffectMap),
+                                                ActionKey (ConsumptionActionKey),
+                                                ActionKeyMap (_unActionKeyMap),
+                                                ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
-                                                ConsumptionActionF,
-                                                Effect (DirectionalStimulusEffect),
+                                                ConsumptionActionF (ConsumptionActionF),
                                                 GameComputation,
-                                                Player (_actionKeyMap, _location))
+                                                Location (_objectSemanticMap),
+                                                Player (_actionKeyMap, _playerActions))
 
-import           Model.GID                     (GID)
+import           Error                         (throwMaybeM)
+import           GameState.ActionManagement    (lookupConsumption)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
-  {-
+
 manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
 manageConsumptionProcess cvp = do
-  availableActions <- _consumptionActions <$> getPlayerActionsM
-  case Data.Map.Strict.lookup cvp availableActions of
-    Nothing -> error "Programmer Error: No acquisition action found for verb phrase"
-    Just (actionGID :: GID AcquisitionActionF) -> do
-      actionMap <- asks (_acquisitionActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No acquisition action found for GID"
-        Just (AcquisitionActionF actionFunc) -> do
-          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
-          case Data.Map.Strict.lookup (actionKey actionGID) actionKeyMap of
-            Nothing -> error $ "Programmer Error: No action key found for GID"
-            Just actionEffectMap -> do
-              loc <- getPlayerLocationM
-              actionFunc loc actionEffectMap avp
-              -- *** ADD EFFECT PROCESSING HERE ***
-              processAcquisitionEffects actionGID avp
-        Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
+  availableActions <- _playerActions <$> getPlayerM
+  actionMap <- asks (_consumptionActionMap . _actionMaps)
+  location <- getPlayerLocationM
+  actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
+  let (_consumablePhrase, nounKey) = parseConsumptionPhrase cvp
 
--- Add helper function to process effects
-processConsumptionEffects :: GID ConsumptionActionF
-                               -> ConsumptionVerbPhrase
-                               -> GameComputation Identity ()
-processConsumptionEffects actionGID cvp = do
-  player <- getPlayerM
-  let ActionKeyMap actionKeyMap = _actionKeyMap player
-      sitionKey = ConsumptionActionKey actionGID
+      resolveConsumption = do
+        actionGID <- lookupConsumption cvp availableActions
+        ConsumptionActionF actionFunc <- Data.Map.Strict.lookup actionGID actionMap
+        objSet <- Data.Map.Strict.lookup nounKey (_objectSemanticMap location)
+        if Data.Set.null objSet
+          then Nothing
+          else Just (actionFunc, actionGID, Data.Set.elemAt 0 objSet)
 
-  case Data.Map.Strict.lookup acquisitionKey actionKeyMap of
-    Just (ActionEffectMap effectMap) -> do
-      -- Process all effects in the effect map
-      mapM_ (processEffectEntry avp) (Data.Map.Strict.toList effectMap)
-    Nothing -> pure () -- No effects defined
-
-processEffectEntry :: AcquisitionVerbPhrase -> (ActionEffectKey, Set Effect) -> GameComputation Identity ()
-processEffectEntry avp (effectKey, effects) = do
-  mapM_ (processEffect avp effectKey) (Data.Set.toList effects)
-
-processEffect :: AcquisitionVerbPhrase -> ActionEffectKey -> Effect -> GameComputation Identity ()
-processEffect avp effectKey (DirectionalStimulusEffect verb newActionGID) = do
-  case effectKey of
-    ObjectKey oid -> do
-      -- Update the object's directional stimulus action
-      modifyObjectActionManagementM oid $ \actionMgmt ->
-        let directionalMap = _directionalStimulusActionManagement actionMgmt
-            updatedMap = Data.Map.Strict.insert verb newActionGID directionalMap
-        in actionMgmt { _directionalStimulusActionManagement = updatedMap }
-    _ -> pure ()
-processEffect _ _ _ = pure () -- Handle other effect types as needed
-
-actionKey :: GID AcquisitionActionF -> ActionKey
-actionKey = AcquisitionalActionKey
--}
+  (actionFunc, actionGID, targetObjectGID) <- throwMaybeM "Consumption processing failed: missing action, object, or location data" resolveConsumption
+  let effectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) (ConsumptionActionKey actionGID) actionKeyMap
+  actionFunc targetObjectGID effectMap cvp

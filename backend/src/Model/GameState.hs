@@ -4,7 +4,11 @@ module Model.GameState (
   ActionEffect (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
   , ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
-  , ActionKey ( AcquisitionalActionKey, ImplicitStimulusActionKey, DirectionalStimulusActionKey, SomaticAccessActionKey)
+  , ActionKey ( AcquisitionalActionKey,
+                ConsumptionActionKey,
+                ImplicitStimulusActionKey,
+                DirectionalStimulusActionKey,
+                SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)

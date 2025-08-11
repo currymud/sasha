@@ -1,4 +1,6 @@
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 module Build.GameState where
+import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
                                                                           alreadyHaveRobeGID,
@@ -9,6 +11,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
+                                                                          pillTooFarFGID,
                                                                           playerGetGID,
                                                                           seeChairGID,
                                                                           seePocketRobeWornGID,
@@ -16,6 +19,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
                                                                           somaticAccessActionMap,
+                                                                          takePillFGID,
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
@@ -33,6 +37,7 @@ import           Evaluators.Player.General                               (eval)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
                                                                           robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
@@ -41,22 +46,25 @@ import           Model.GameState                                         (Action
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
-                                                                          ActionManagement (AAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                          ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
-                                                                          Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect),
+                                                                          Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           Narration (..),
                                                                           Player (Player, _actionKeyMap, _location, _playerActions),
                                                                           PlayerKey (PlayerKeyObject))
 import qualified Model.Parser.Atomics.Nouns
-import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
+                                                                          DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
-
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase)
+import           Prelude                                                 hiding
+                                                                         (take)
 initNarration :: Narration
 initNarration = Narration
   { _playerAction  = [initialAction]
@@ -101,6 +109,7 @@ player = Player
     playerActionMgmt = ActionManagementFunctions $ Data.Set.fromList
       [ ISAManagementKey isaLook isaEnabledLookGID
       , ISAManagementKey inventory checkInventoryGID
+      , CAManagementKey takePillCVP pillTooFarFGID
       , DSAManagementKey dsaLook dsvEnabledLookGID
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
@@ -163,9 +172,14 @@ playerGetEffectMap = ActionEffectMap
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
       , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
         -- Pill acquisition effects would go here too
-      , (ObjectKey pillObjGID, Data.Set.fromList []) -- Add pill effects as needed
+      , (ObjectKey pillObjGID, Data.Set.singleton pillReachableEffect)  -- NEW: Make pill reachable
         -- Other acquisition effects...
       ]
+pillReachableEffect :: Effect
+pillReachableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
+
+takeCV :: ConsumptionVerb
+takeCV = take
 
 bedroomOpenEyesKey :: ActionEffectKey
 bedroomOpenEyesKey = LocationKey bedroomInBedGID

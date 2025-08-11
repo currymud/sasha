@@ -1,4 +1,5 @@
 module Evaluators.Player.General where
+import           Actions.Consume                       (manageConsumptionProcess)
 import           Actions.Get.Acquisition.Get           (manageAcquisitionProcess)
 import           Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess)
 import           Actions.Percieve.Look                 (manageDirectionalStimulusProcess,
@@ -8,13 +9,15 @@ import           Control.Monad.Identity                (Identity)
 import           Model.GameState                       (GameComputation)
 import           Model.Parser                          (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs         (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
-                                                        Imperative (AcquisitionVerbPhrase', StimulusVerbPhrase),
+                                                        Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', StimulusVerbPhrase),
                                                         StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 
 evalImperative :: Imperative -> GameComputation Identity ()
+evalImperative (ConsumptionVerbPhrase' consumptionVerbPhrase) =  -- NEW
+  manageConsumptionProcess consumptionVerbPhrase
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
   evalStimulusVerbPhrase stimulusVerbPhrase
 evalImperative (AcquisitionVerbPhrase' acquisitionVerbPhrase) =
