@@ -5,6 +5,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           agentCanSeeGID,
                                                                           alreadyHaveRobeGID,
                                                                           checkInventoryGID,
+                                                                          consumptionActionMap,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
                                                                           getRobeGID,
@@ -93,7 +94,7 @@ config = Config
                    directionalStimulusActionMap
                    somaticAccessActionMap
                    acquisitionActionMap
-                   Data.MapStrict.empty
+                   consumptionActionMap
 
 player :: Player
 player = Player
