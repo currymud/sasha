@@ -14,6 +14,7 @@ import           Data.Map.Strict                                              (M
                                                                                fromList)
 import           Data.Set                                                     (Set)
 import qualified Data.Set
+import qualified Grammar.Parser.Partitions.Nouns.Consumables                  (pill)
 import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
                                                                                pill,
                                                                                robe,
@@ -39,7 +40,8 @@ import           Model.GameState                                              (A
                                                                                Object,
                                                                                SomaticAccessActionF)
 import           Model.GID                                                    (GID)
-import           Model.Parser.Atomics.Nouns                                   (DirectionalStimulus,
+import           Model.Parser.Atomics.Nouns                                   (Consumable,
+                                                                               DirectionalStimulus,
                                                                                Objective)
 import           Model.Parser.Atomics.Verbs                                   (AcquisitionVerb,
                                                                                DirectionalStimulusVerb,
@@ -49,7 +51,7 @@ import           Model.Parser.Composites.Nouns                                (N
                                                                                ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                                (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                                ConsumptionVerbPhrase)
-import           Model.Parser.GCase                                           (NounKey (DirectionalStimulusKey, ObjectiveKey),
+import           Model.Parser.GCase                                           (NounKey (ConsumableNounKey, DirectionalStimulusKey, ObjectiveKey),
                                                                                VerbKey (ImplicitStimulusKey))
 
 
@@ -84,11 +86,15 @@ objPill = Grammar.Parser.Partitions.Nouns.Objectives.pill
 objRobe :: Objective
 objRobe = Grammar.Parser.Partitions.Nouns.Objectives.robe
 
+comPill :: Consumable
+comPill = Grammar.Parser.Partitions.Nouns.Consumables.pill
+
 objectSemanticMap :: Map NounKey (Set (GID Object))
 objectSemanticMap = Data.Map.Strict.fromList sList
   where
     sList =
-      [ (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
+      [(ConsumableNounKey comPill, Data.Set.singleton pillObjGID)
+      , (DirectionalStimulusKey dirChair, Data.Set.singleton chairObjGID)
       , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
       , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
       , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
