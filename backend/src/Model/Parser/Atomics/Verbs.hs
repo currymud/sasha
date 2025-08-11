@@ -6,6 +6,8 @@ module Model.Parser.Atomics.Verbs (AcquisitionVerb (AcquisitionVerb, _fromAcquis
                                   , ImplicitRegionalStimulusVerb (ImplicitRegionalStimulusVerb, _fromImplicitRegionalStimulusVerb)
                                   , ImplicitStimulusVerb (ImplicitStimulusVerb, _fromImplicitStimulusVerb)
                                   , InstrumentActionVerb (InstrumentActionVerb, _fromInstrumentActionVerb)
+                                  , NegativePosturalVerb (NegativePosturalVerb, _fromNegativePosturalVerb)
+                                  , PositivePosturalVerb (PositivePosturalVerb, _fromPositivePosturalVerb)
                                   , SimpleAccessVerb (SimpleAccessVerb, _fromSimpleAccessVerb)
                                   , SomaticAccessVerb (SomaticAccessVerb, _fromSomaticAccessVerb)
                                   , ) where
@@ -85,6 +87,23 @@ newtype InstrumentActionVerb =
 
 instance HasLexeme InstrumentActionVerb where
   toLexeme = _fromInstrumentActionVerb
+
+
+type NegativePosturalVerb :: Type
+newtype NegativePosturalVerb = NegativePosturalVerb { _fromNegativePosturalVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme NegativePosturalVerb where
+  toLexeme = _fromNegativePosturalVerb
+
+type PositivePosturalVerb :: Type
+newtype PositivePosturalVerb = PositivePosturalVerb { _fromPositivePosturalVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme PositivePosturalVerb where
+  toLexeme = _fromPositivePosturalVerb
 
 type SimpleAccessVerb :: Type
 newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }

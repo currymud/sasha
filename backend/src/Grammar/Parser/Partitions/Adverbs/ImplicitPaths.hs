@@ -1,12 +1,12 @@
-module Grammar.Parser.Partitions.Adverbs (  implicitPaths
-                                         ,  north
-                                         ,  east
-                                         ,  south
-                                         ,  west
-                                         ,  up
-                                         ,  down
-                                         ,  left
-                                         ,  right) where
+module Grammar.Parser.Partitions.Adverbs.ImplicitPaths ( implicitPaths
+                                                       ,  north
+                                                       ,  east
+                                                       ,  south
+                                                       ,  west
+                                                       ,  up
+                                                       ,  down
+                                                       ,  left
+                                                       ,  right) where
 import           Data.HashSet                                (HashSet, fromList)
 import           Grammar.Parser.Lexer                        (Lexeme (DOWN, EAST, LEFT, NORTH, RIGHT, SOUTH, UP, WEST))
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)

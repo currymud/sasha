@@ -3,12 +3,16 @@
 module Model.Parser.Composites.Verbs where
 import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)
+import           Model.Parser.Atomics.Adverbs      (NegativePosturalDirection,
+                                                    PositivePosturalDirection)
 import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker,
                                                     SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     ConsumptionVerb,
                                                     DirectionalStimulusVerb,
                                                     ImplicitStimulusVerb,
+                                                    NegativePosturalVerb,
+                                                    PositivePosturalVerb,
                                                     SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (ConsumableNounPhrase,
                                                     DirectionalStimulusNounPhrase,
@@ -48,6 +52,18 @@ instance ToText ConsumptionVerbPhrase where
   toText (ConsumptionVerbPhrase verb nounPhrase) =
     toText verb <> " " <> toText nounPhrase
 
+type PosturalVerbPhrase :: Type
+data PosturalVerbPhrase
+  = PositivePosturalVerbPhrase PositivePosturalVerb PositivePosturalDirection      -- "stand up"
+  | NegativePosturalVerbPhrase NegativePosturalVerb NegativePosturalDirection -- "sit down"
+  deriving stock (Show, Eq, Ord, Generic)
+
+instance ToText PosturalVerbPhrase where
+  toText (PositivePosturalVerbPhrase verb direction) =
+    toText verb <> " " <> toText direction
+  toText (NegativePosturalVerbPhrase verb direction) =
+    toText verb <> " " <> toText direction
+
 instance ToText StimulusVerbPhrase where
   toText (ImplicitStimulusVerb verb) =
     toText verb
@@ -61,6 +77,7 @@ data Imperative
   = StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
+  | PosturalVerbPhrase PosturalVerbPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText Imperative where
@@ -69,4 +86,6 @@ instance ToText Imperative where
   toText (ConsumptionVerbPhrase' verbPhrase) =
     toText verbPhrase
   toText (AcquisitionVerbPhrase' verbPhrase) =
+    toText verbPhrase
+  toText (PosturalVerbPhrase verbPhrase) =
     toText verbPhrase

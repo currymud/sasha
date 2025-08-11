@@ -1,12 +1,19 @@
-module Grammar.Parser.Rules.Atomics.Verbs (acquisitionVerbRule, implicitStimulusVerbRule) where
+module Grammar.Parser.Rules.Atomics.Verbs (acquisitionVerbRule,
+                                           implicitStimulusVerbRule,
+                                           positivePosturalVerbRule,
+                                           negativePosturalVerbRule) where
 import           Data.Text                                            (Text)
 import           Grammar.Parser.Lexer                                 (Lexeme)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs     (acquisitionVerbs)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (implicitStimulusVerbs)
 
+import           Grammar.Parser.Partitions.Verbs.PosturalVerbs        (negativePosturalVerbs,
+                                                                       positivePosturalVerbs)
 import           Grammar.Parser.Rules.Atomics.Utils                   (parseRule)
 import           Model.Parser.Atomics.Verbs                           (AcquisitionVerb (AcquisitionVerb),
-                                                                       ImplicitStimulusVerb (ImplicitStimulusVerb))
+                                                                       ImplicitStimulusVerb (ImplicitStimulusVerb),
+                                                                       NegativePosturalVerb (NegativePosturalVerb),
+                                                                       PositivePosturalVerb (PositivePosturalVerb))
 import           Text.Earley.Grammar                                  (Grammar,
                                                                        Prod)
 
@@ -15,3 +22,9 @@ implicitStimulusVerbRule = parseRule implicitStimulusVerbs ImplicitStimulusVerb
 
 acquisitionVerbRule :: Grammar r (Prod r Text Lexeme AcquisitionVerb)
 acquisitionVerbRule = parseRule acquisitionVerbs AcquisitionVerb
+
+positivePosturalVerbRule :: Grammar r (Prod r Text Lexeme PositivePosturalVerb)
+positivePosturalVerbRule = parseRule positivePosturalVerbs PositivePosturalVerb
+
+negativePosturalVerbRule :: Grammar r (Prod r Text Lexeme NegativePosturalVerb)
+negativePosturalVerbRule = parseRule negativePosturalVerbs NegativePosturalVerb

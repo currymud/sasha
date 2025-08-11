@@ -2,6 +2,8 @@ module Grammar.Parser.Rules.Composites.Verbs
   (stimulusVerbPhraseRules
   , acquisitionVerbPhraseRules
   , imperativeRules
+  , consumptionVerbPhraseRules
+  , posturalVerbPhraseRules
   ) where
 import           Data.Text                                               (Text)
 import           GHC.Base                                                (Alternative ((<|>)))
@@ -17,9 +19,13 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (acquis
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (consumptionVerbs)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
+import           Grammar.Parser.Rules.Atomics.Adverbs                    (negativePosturalDirectionRule,
+                                                                          positivePosturalDirectionRule)
 import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule)
 import           Grammar.Parser.Rules.Atomics.Utils                      (parseRule)
-import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule)
+import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule,
+                                                                          negativePosturalVerbRule,
+                                                                          positivePosturalVerbRule)
 import           Grammar.Parser.Rules.Composites.Nouns                   (consumableNounPhraseRules,
                                                                           directionalStimulusNounPhraseRules,
                                                                           objectPhraseRules,
@@ -38,7 +44,8 @@ import           Model.Parser.Atomics.Verbs                              (Acquis
                                                                           SomaticAccessVerb (SomaticAccessVerb))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', StimulusVerbPhrase),
+                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                                          PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
@@ -93,11 +100,22 @@ consumptionVerbPhraseRules = do
   rule $ ConsumptionVerbPhrase <$> consumptionVerb
            <*> consumableNounPhrase
 
+posturalVerbPhraseRules :: Grammar r (Prod r Text Lexeme PosturalVerbPhrase)
+posturalVerbPhraseRules = do
+  positivePosturalVerb <- positivePosturalVerbRule
+  negativePosturalVerb <- negativePosturalVerbRule
+  positivePosturalDirection <- positivePosturalDirectionRule
+  negativePosturalDirection <- negativePosturalDirectionRule
+  rule $ PositivePosturalVerbPhrase <$> positivePosturalVerb <*> positivePosturalDirection
+      <|> NegativePosturalVerbPhrase <$> negativePosturalVerb <*> negativePosturalDirection
+
 imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do
   stimulusVerbPhrase <- stimulusVerbPhraseRules
   consumptionVerbPhrase <- consumptionVerbPhraseRules
   acquisitionVerbPhrase <- acquisitionVerbPhraseRules
+  posturalVerbPhrase <- posturalVerbPhraseRules
   rule $ StimulusVerbPhrase <$> stimulusVerbPhrase
            <|> ConsumptionVerbPhrase' <$> consumptionVerbPhrase
            <|> AcquisitionVerbPhrase' <$> acquisitionVerbPhrase
+           <|> PosturalVerbPhrase <$> posturalVerbPhrase

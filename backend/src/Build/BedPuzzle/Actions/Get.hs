@@ -8,7 +8,8 @@ import qualified Data.Map.Strict
 import           Data.Set                      (Set, elemAt, filter, insert,
                                                 null, toList)
 import           Data.Text                     (Text)
-import           GameState                     (getObjectM, modifyNarration,
+import           GameState                     (getObjectM, getPlayerM,
+                                                modifyNarration,
                                                 modifyObjectActionManagementM,
                                                 parseAcquisitionPhrase)
 import           GameState.ActionManagement    (lookupAcquisition)
@@ -16,6 +17,7 @@ import           GameState.Perception          (updatePerceptionMapM)
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
+                                                ActionKey (AcquisitionalActionKey),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                                 ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
@@ -89,6 +91,26 @@ processEffectWithKey avp (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect _ 
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
+processEffectWithKey _ (PlayerKey (PlayerKeyObject oid)) (ConsumptionEffect verb _targetOid newActionGID) = do
+  -- Update the player's consumption actions to use the new action for this verb
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Find existing consumption verb phrase for this verb BEFORE filtering
+        existingCVP = case [cvp | CAManagementKey cvp@(ConsumptionVerbPhrase v _) _ <- Data.Set.toList playerActionSet, v == verb] of
+          (foundCvp:_) -> foundCvp
+          []           -> error "No existing consumption verb phrase found for player effect"
+        -- Remove old consumption actions for this verb
+        filteredActions = Data.Set.filter filterAction playerActionSet
+        -- Add new action with existing phrase
+        updatedActions = Data.Set.insert (CAManagementKey existingCVP newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+  where
+    filterAction (CAManagementKey (ConsumptionVerbPhrase v _) _) = v /= verb
+    filterAction _                                               = True
+
 processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
   -- Update the object's directional stimulus action
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -98,15 +120,15 @@ processEffectWithKey avp (ObjectKey oid) (DirectionalStimulusEffect verb newActi
     in ActionManagementFunctions updatedActions
   updatePerceptionMapM oid
 
-processEffectWithKey avp (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
+processEffectWithKey _ (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
-        -- Remove old consumption actions for this verb
-        filteredActions = Data.Set.filter filterAction actionSet
-        -- Find existing consumption verb phrase to preserve
+        -- Find existing consumption verb phrase BEFORE filtering
         existingCVP = case [cvp | CAManagementKey cvp@(ConsumptionVerbPhrase v _) _ <- Data.Set.toList actionSet, v == verb] of
           (foundCvp:_) -> foundCvp
           []           -> error "No existing consumption verb phrase found for effect"
+        -- Remove old consumption actions for this verb
+        filteredActions = Data.Set.filter filterAction actionSet
         -- Add new action with existing phrase
         updatedActions = Data.Set.insert (CAManagementKey existingCVP newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
@@ -115,6 +137,7 @@ processEffectWithKey avp (ObjectKey oid) (ConsumptionEffect verb _targetOid newA
     filterAction _                                               = True
 
 processEffectWithKey _ _ _ = pure () -- Handle other effect types as needed
+
 executeLocationGet :: Location -> AcquisitionVerbPhrase -> GameComputation Identity (Either (GameComputation Identity ()) (GameComputation Identity ()))
 executeLocationGet loc avp = do
   let locationActionMgmt = _locationActionManagement loc

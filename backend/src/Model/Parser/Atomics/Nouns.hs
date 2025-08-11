@@ -52,6 +52,14 @@ newtype Objective = Objective { _fromObjective :: Lexeme }
 instance HasLexeme Objective where
   toLexeme = _fromObjective
 
+type PosturalVerb :: Type
+newtype PosturalVerb = PosturalVerb { _fromPosturalVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme PosturalVerb where
+  toLexeme = _fromPosturalVerb
+
 type Potable :: Type
 newtype Potable = Potable { _fromPotable :: Lexeme }
   deriving newtype (Show,Eq,Ord)

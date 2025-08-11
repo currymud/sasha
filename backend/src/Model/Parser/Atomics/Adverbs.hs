@@ -1,4 +1,6 @@
-module Model.Parser.Atomics.Adverbs where
+module Model.Parser.Atomics.Adverbs (ImplicitPath (ImplicitPath, _fromImplicitPath),
+                                      NegativePosturalDirection (NegativePosturalDirection, _fromNegativePosturalDirection),
+                                      PositivePosturalDirection (PositivePosturalDirection, _fromPositivePosturalDirection)) where
 
 import           Data.Hashable            (Hashable)
 import           Data.Kind                (Type)
@@ -13,3 +15,20 @@ newtype ImplicitPath = ImplicitPath { _fromImplicitPath :: Lexeme }
 
 instance HasLexeme ImplicitPath where
   toLexeme = _fromImplicitPath
+
+type NegativePosturalDirection :: Type
+newtype NegativePosturalDirection = NegativePosturalDirection { _fromNegativePosturalDirection :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme NegativePosturalDirection where
+  toLexeme = _fromNegativePosturalDirection
+
+type PositivePosturalDirection :: Type
+newtype PositivePosturalDirection = PositivePosturalDirection { _fromPositivePosturalDirection :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme PositivePosturalDirection where
+  toLexeme = _fromPositivePosturalDirection
+

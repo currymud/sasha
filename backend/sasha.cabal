@@ -91,7 +91,8 @@ library
       Grammar.Parser
       Grammar.Parser.Lexer
       Grammar.Parser.Partitions.Adjectives
-      Grammar.Parser.Partitions.Adverbs
+      Grammar.Parser.Partitions.Adverbs.ImplicitPaths
+      Grammar.Parser.Partitions.Adverbs.PosturalDirections
       Grammar.Parser.Partitions.Misc
       Grammar.Parser.Partitions.Nouns.Containers
       Grammar.Parser.Partitions.Nouns.DirectionalStimulus
@@ -113,6 +114,7 @@ library
       Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
       Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
       Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
+      Grammar.Parser.Partitions.Verbs.PosturalVerbs
       Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs
       Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs
       Grammar.Parser.Partitions.Templates.Atomics
