@@ -7,7 +7,8 @@ import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
                                                 getPlayerM)
 import           GameState.ActionManagement    (lookupPostural)
-import           Model.GameState               (ActionEffectKey (LocationKey),
+import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
+                                                ActionEffectMap (ActionEffectMap),
                                                 ActionKey (PosturalActionKey),
                                                 ActionKeyMap (_unActionKeyMap),
                                                 ActionMaps (_posturalActionMap),
@@ -31,10 +32,14 @@ managePosturalProcess posturalPhrase = do
          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
          case Data.Map.Strict.lookup actionKey actionKeyMap of
            Nothing -> error $ "Programmer Error: No action key found for GID: "
-           Just actionEffectMap -> do
+           Just actionEffectMap@(ActionEffectMap effectMap) -> do
              lid <- _location <$> getPlayerM
              objectActionKeys <- getLocationObjectIDsM lid
-             actionFunc (Data.Set.insert (LocationKey lid) objectActionKeys) actionEffectMap
+             -- Add PlayerKey entries from the effect map to actionEffectKeys
+             let locationKeys = Data.Set.insert (LocationKey lid) objectActionKeys
+                 playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+                 allActionKeys = Data.Set.union locationKeys playerKeys
+             actionFunc allActionKeys actionEffectMap
          where
            actionKey :: ActionKey
            actionKey = PosturalActionKey actionGID
