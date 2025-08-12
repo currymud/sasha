@@ -127,7 +127,7 @@ player = Player
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
-      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
+      , AAManagementKey getMailAVP playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
 
