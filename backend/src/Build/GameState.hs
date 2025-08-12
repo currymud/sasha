@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 module Build.GameState where
+import           Build.BedPuzzle.Actions.Objects.Mail                    (getMailAVP)
 import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
@@ -8,6 +9,8 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           consumptionActionMap,
                                                                           directionalStimulusActionMap,
                                                                           dsvEnabledLookGID,
+                                                                          getMailDeniedGID,
+                                                                          getMailGID,
                                                                           getRobeGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
@@ -123,6 +126,7 @@ player = Player
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
+      , AAManagementKey getMailAVP getMailDeniedGID
       , PPManagementKey stand standDeniedGID
       ]
 
@@ -149,8 +153,17 @@ actionKeyMap = ActionKeyMap
       , (alreadyHaveRobeKey, emptyEffectMap)
       , (standKey, emptyEffectMap)
       , (takePillKey, takePillEffectMap)
-      , (standUpKey, emptyEffectMap)
+      , (getMailKey, emptyEffectMap)
+      , (getMailDeniedKey, emptyEffectMap)
+      , (standUpKey, standUpEffectMap)
       ]
+
+
+getMailKey :: ActionKey
+getMailKey = AcquisitionalActionKey getMailGID
+
+getMailDeniedKey :: ActionKey
+getMailDeniedKey = AcquisitionalActionKey getMailDeniedGID
 
 standUpKey :: ActionKey
 standUpKey = PosturalActionKey standUpGID
@@ -164,6 +177,15 @@ takePillEffectMap = ActionEffectMap
   $ fromList
       [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
+
+standUpEffectMap :: ActionEffectMap
+standUpEffectMap = ActionEffectMap
+  $ fromList
+      [ (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
+      ]
+
+enableMailGetEffect :: Effect
+enableMailGetEffect = AcquisitionEffect get getMailGID
 
 alreadyHaveRobeKey :: ActionKey
 alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
