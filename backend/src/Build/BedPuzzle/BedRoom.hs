@@ -6,6 +6,7 @@ import           Build.Identifiers.Actions                                    (a
                                                                                lookAtGID,
                                                                                pitchBlackFGID)
 import           Build.Identifiers.Objects                                    (chairObjGID,
+                                                                               mailObjGID,
                                                                                pillObjGID,
                                                                                robeObjGID,
                                                                                tableObjGID)
@@ -16,12 +17,14 @@ import           Data.Set                                                     (S
 import qualified Data.Set
 import qualified Grammar.Parser.Partitions.Nouns.Consumables                  (pill)
 import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus          (chair,
+                                                                               mail,
                                                                                pill,
                                                                                robe,
                                                                                table)
 import           Grammar.Parser.Partitions.Nouns.Objectives                   (pill,
                                                                                robe)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives                   (chair,
+                                                                               mail,
                                                                                pill,
                                                                                robe,
                                                                                table)
@@ -62,6 +65,10 @@ bedroomInBed = Location
   , _locationActionManagement = actionMap
   }
 
+
+dirMail :: DirectionalStimulus
+dirMail = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.mail
+
 dirChair :: DirectionalStimulus
 dirChair = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.chair
 
@@ -86,6 +93,9 @@ objPill = Grammar.Parser.Partitions.Nouns.Objectives.pill
 objRobe :: Objective
 objRobe = Grammar.Parser.Partitions.Nouns.Objectives.robe
 
+objMail :: Objective
+objMail = Grammar.Parser.Partitions.Nouns.Objectives.mail
+
 comPill :: Consumable
 comPill = Grammar.Parser.Partitions.Nouns.Consumables.pill
 
@@ -98,10 +108,12 @@ objectSemanticMap = Data.Map.Strict.fromList sList
       , (DirectionalStimulusKey dirTable, Data.Set.singleton tableObjGID)
       , (DirectionalStimulusKey dirRobe, Data.Set.singleton robeObjGID)
       , (DirectionalStimulusKey dirPill, Data.Set.singleton pillObjGID)
+      , (DirectionalStimulusKey dirMail, Data.Set.singleton mailObjGID)
       , (ObjectiveKey objChair, Data.Set.singleton chairObjGID)
       , (ObjectiveKey objTable, Data.Set.singleton tableObjGID)
       , (ObjectiveKey objRobe, Data.Set.singleton robeObjGID)
       , (ObjectiveKey objPill, Data.Set.singleton pillObjGID)
+      , (ObjectiveKey objMail, Data.Set.singleton mailObjGID)
       ]
 
 actionMap :: ActionManagementFunctions

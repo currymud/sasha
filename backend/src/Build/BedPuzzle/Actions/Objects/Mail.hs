@@ -1,5 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Mail where
-import           Build.Identifiers.Actions                               (whatMailGID)
+import           Build.Identifiers.Actions                               (notEvenMailGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Misc                          (the)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (mail)
@@ -26,4 +26,5 @@ mailObj =
     verbMaps = directionalStimulusVerbs
 
     directionalStimulusVerbs :: ActionManagementFunctions
-    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look whatMailGID)
+    directionalStimulusVerbs = ActionManagementFunctions
+                                 $ Data.Set.singleton (DSAManagementKey look notEvenMailGID)

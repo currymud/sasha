@@ -61,6 +61,7 @@ library
       Build.BedPuzzle.Actions.Get
       Build.BedPuzzle.Actions.Take
       Build.BedPuzzle.Actions.Locations.Bedroom.Get
+      Build.BedPuzzle.Actions.Objects.Mail.Get
       Build.BedPuzzle.Actions.Objects.Mail.Look
       Build.BedPuzzle.Actions.Objects.Pill
       Build.BedPuzzle.Actions.Objects.Pill.Get

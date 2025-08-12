@@ -16,6 +16,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           playerGetGID,
                                                                           posturalActionMap,
                                                                           seeChairGID,
+                                                                          seeMailGID,
                                                                           seePocketRobeWornGID,
                                                                           seeRobeChairGID,
                                                                           seeRobeWornGID,
@@ -27,6 +28,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           whatPillGID)
 import           Build.Identifiers.Locations                             (bedroomInBedGID)
 import           Build.Identifiers.Objects                               (chairObjGID,
+                                                                          mailObjGID,
                                                                           pillObjGID,
                                                                           pocketObjGID,
                                                                           robeObjGID,
@@ -189,7 +191,12 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
+      , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       ]
+
+
+mailEffect :: Effect
+mailEffect = DirectionalStimulusEffect dirLook seeMailGID
 
 playerGetEffectMap :: ActionEffectMap
 playerGetEffectMap = ActionEffectMap
