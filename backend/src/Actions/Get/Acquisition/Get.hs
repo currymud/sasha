@@ -13,7 +13,7 @@ import           GameState                     (getLocationObjectIDsM,
                                                 modifyObjectActionManagementM)
 import           GameState.ActionManagement    (lookupAcquisition)
 import           GameState.Perception          (updatePerceptionMapM)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF),
+import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
@@ -49,7 +49,23 @@ manageAcquisitionProcess avp = do
               loc <- getPlayerLocationM
               actionFunc loc actionEffectMap avp
               processAcquisitionEffects actionGID avp
-        Just _ -> error "Programmer Error: Expected AcquisitionActionF but got something else"
+        Just (RemovedFromF locationRemovedAction) -> do
+          loc <- getPlayerLocationM
+          result <- locationRemovedAction loc avp
+          case result of
+            Left failureAction -> failureAction
+            Right successAction -> do
+              successAction
+              processAcquisitionEffects actionGID avp
+        Just (AcquiredFromF locationAcquiredAction) -> do
+          loc <- getPlayerLocationM
+          result <- locationAcquiredAction loc avp
+          case result of
+            Left failureAction -> failureAction
+            Right successAction -> do
+              successAction
+              processAcquisitionEffects actionGID avp
+
 
 -- Add helper function to process effects
 processAcquisitionEffects :: GID AcquisitionActionF -> AcquisitionVerbPhrase -> GameComputation Identity ()
