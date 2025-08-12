@@ -1,4 +1,5 @@
 module Build.BedPuzzle.BedRoom where
+import           Build.BedPuzzle.Actions.Objects.Mail                         (getMailAVP)
 import           Build.Identifiers.Actions                                    (agentCanSeeGID,
                                                                                getPillDeniedGID,
                                                                                getRobeGID,
@@ -123,7 +124,9 @@ actionMap = ActionManagementFunctions $ Data.Set.fromList [directionalStimulus, 
    implicitStimulus = ISAManagementKey implicitStimulusLook pitchBlackFGID
    directionalStimulus :: ActionManagement
    directionalStimulus = DSAManagementKey directionalStimulusLook lookAtGID
-   acquisitionVerbs' = Data.Set.fromList [ AAManagementKey getRobeAVP locGetGID, AAManagementKey getPillAVP getPillDeniedGID]
+   acquisitionVerbs' = Data.Set.fromList [ AAManagementKey getRobeAVP locGetGID
+                                         , AAManagementKey getPillAVP getPillDeniedGID
+                                         , AAManagementKey getMailAVP locGetGID ]
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get robeObjective
