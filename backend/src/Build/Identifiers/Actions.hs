@@ -12,6 +12,10 @@ import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
+import           Build.BedPuzzle.Actions.Objects.Mail.Get                (alreadyHaveMail,
+                                                                          getMail,
+                                                                          getMailDenied,
+                                                                          getMailDizzy)
 import           Build.BedPuzzle.Actions.Objects.Mail.Look               (notEvenMail,
                                                                           seeMail,
                                                                           whatMail)
@@ -105,7 +109,11 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
-makeAcquisitionActionGIDsAndMap [[| locGet |],
+makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMail|],
+                                  [| getMail |],
+                                  [| getMailDizzy |],
+                                  [| getMailDenied |],
+                                  [| locGet |],
                                  [| getDenied |],
                                  [| dizzyGet |],
                                  [| playerGet|],
