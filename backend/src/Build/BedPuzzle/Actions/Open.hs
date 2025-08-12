@@ -43,7 +43,7 @@ openEyes = SomaticAccessActionF opened
        process :: ActionEffectKey -> GameComputation Identity ()
        process actionEffectKey@(LocationKey lid) = do
          case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
-           Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
+           Nothing      -> pure () -- throwError "No effect for actionEffectKey found in actionEffectMap"
            Just effects -> mapM_ handleEffect effects
            where
              handleEffect :: Effect -> GameComputation Identity ()
@@ -88,7 +88,7 @@ openEyes = SomaticAccessActionF opened
              handleEffect err = throwError (Data.Text.pack $ "OUCH" <> show err)
        process actionEffectKey@(ObjectKey oid) = do
          case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
-           Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
+           Nothing      -> pure () --  throwError "No effect for actionEffectKey found in actionEffectMap"
            Just effects -> mapM_ handleEffect effects
            where
              handleEffect :: Effect -> GameComputation Identity ()

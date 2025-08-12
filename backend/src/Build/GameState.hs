@@ -147,7 +147,11 @@ actionKeyMap = ActionKeyMap
       , (alreadyHaveRobeKey, emptyEffectMap)
       , (standKey, emptyEffectMap)
       , (takePillKey, takePillEffectMap)
+      , (standUpKey, emptyEffectMap)
       ]
+
+standUpKey :: ActionKey
+standUpKey = PosturalActionKey standUpGID
 
 takePillKey :: ActionKey
 takePillKey = ConsumptionActionKey takePillFGID

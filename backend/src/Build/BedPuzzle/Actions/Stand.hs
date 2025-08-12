@@ -38,7 +38,7 @@ standUp = PosturalActionF stood
         process :: ActionEffectKey -> GameComputation Identity ()
         process actionEffectKey@(LocationKey lid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
-            Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
+            Nothing -> pure ()
             Just effects -> do
                               modifyNarration (updateActionConsequence "you stand up")
                               mapM_ handleEffect effects
@@ -83,7 +83,7 @@ standUp = PosturalActionF stood
               handleEffect err = throwError (Data.Text.pack $ "Unhandled effect in standUp: " <> show err)
         process actionEffectKey@(ObjectKey oid) = do
           case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
-            Nothing -> throwError "No effect for actionEffectKey found in actionEffectMap"
+            Nothing      -> pure () -- throwError "No effect for actionEffectKey found in actionEffectMap"
             Just effects -> mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
