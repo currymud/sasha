@@ -182,6 +182,7 @@ standUpEffectMap :: ActionEffectMap
 standUpEffectMap = ActionEffectMap
   $ fromList
       [ (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
+      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
       ]
 
 enableMailGetEffect :: Effect

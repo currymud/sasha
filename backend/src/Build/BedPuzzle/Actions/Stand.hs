@@ -12,7 +12,7 @@ import           GameState.Perception      (buildPerceptionMapFromObjects,
                                             modifyPerceptionMapM, youSeeM)
 import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                             ActionEffectMap (ActionEffectMap),
-                                            ActionManagement (DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                            ActionManagement (AAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                             ActionManagementFunctions (ActionManagementFunctions),
                                             Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
                                             GameComputation,
@@ -118,6 +118,14 @@ standUp = PosturalActionF stood
                       filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
                       updatedActions = Data.Set.insert (NPManagementKey verb changeTo) filteredActions
                   in ActionManagementFunctions updatedActions
+              handleEffect (AcquisitionEffect acquisitionVerbPhrase newActionGID) = do
+                modifyObjectActionManagementM oid $ \actionMgmt ->
+                  let ActionManagementFunctions actionSet = actionMgmt
+                      -- Remove any existing acquisition action for this phrase
+                      filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= acquisitionVerbPhrase; _ -> True) actionSet
+                      -- Add new action
+                      updatedActions = Data.Set.insert (AAManagementKey acquisitionVerbPhrase newActionGID) filteredActions
+                  in ActionManagementFunctions updatedActions
               handleEffect PerceptionEffect = do
                 perceivableObjects <- computePerceivableObjects
                 newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
@@ -133,6 +141,7 @@ standUp = PosturalActionF stood
                 processAcquisitionEffect targetAVP newActionGID
               handleEffect err = throwError (Data.Text.pack $ "Unhandled player effect in standUp: " <> show err)
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
+
 msg :: Text
 msg = "You stand up, feeling more alert and ready for action."
 
