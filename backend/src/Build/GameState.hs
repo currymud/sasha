@@ -126,7 +126,7 @@ player = Player
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
-      , AAManagementKey getMailAVP getMailDeniedGID
+      , AAManagementKey getMailAVP playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
 
@@ -153,17 +153,9 @@ actionKeyMap = ActionKeyMap
       , (alreadyHaveRobeKey, emptyEffectMap)
       , (standKey, emptyEffectMap)
       , (takePillKey, takePillEffectMap)
-      , (getMailKey, emptyEffectMap)
-      , (getMailDeniedKey, emptyEffectMap)
       , (standUpKey, standUpEffectMap)
       ]
 
-
-getMailKey :: ActionKey
-getMailKey = AcquisitionalActionKey getMailGID
-
-getMailDeniedKey :: ActionKey
-getMailDeniedKey = AcquisitionalActionKey getMailDeniedGID
 
 standUpKey :: ActionKey
 standUpKey = PosturalActionKey standUpGID
