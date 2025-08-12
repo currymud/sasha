@@ -7,7 +7,7 @@ import qualified Data.Map.Strict
 import qualified Data.Set
 import           GameState                  (getLocationObjectIDsM, getPlayerM)
 import           GameState.ActionManagement (lookupSomaticAccess)
-import           Model.GameState            (ActionEffectKey (LocationKey),
+import           Model.GameState            (ActionEffectKey (LocationKey, PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
                                              ActionKey (SomaticAccessActionKey),
                                              ActionKeyMap (ActionKeyMap, _unActionKeyMap),
@@ -19,6 +19,8 @@ import           Model.GameState            (ActionEffectKey (LocationKey),
 import           Model.GID                  (GID)
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 
+
+-- In Actions/Manipulate/SomaticAccess/Open.hs, modify manageSomaticAccessProcess:
 
 manageSomaticAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
 manageSomaticAccessProcess sav = do
@@ -36,7 +38,16 @@ manageSomaticAccessProcess sav = do
             Just actionEffectMap -> do
               lid <- _location <$> getPlayerM
               objectActionKeys <- getLocationObjectIDsM lid
-              actionFunc (Data.Set.insert (LocationKey lid) objectActionKeys) actionEffectMap
+
+              -- Add PlayerKey entries from the effect map to actionEffectKeys
+              let ActionEffectMap effectMap = actionEffectMap
+                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+                  allActionKeys = Data.Set.unions [
+                    Data.Set.singleton (LocationKey lid),
+                    objectActionKeys,
+                    playerKeys
+                    ]
+              actionFunc allActionKeys actionEffectMap
           where
             actionKey :: ActionKey
             actionKey = SomaticAccessActionKey actionGID

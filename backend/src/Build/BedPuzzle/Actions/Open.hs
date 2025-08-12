@@ -8,11 +8,13 @@ import           Data.Set                      (Set, filter, insert, toList)
 import           Data.Text                     (Text, pack)
 import           GameState                     (modifyLocationM,
                                                 modifyNarration,
-                                                modifyObjectActionManagementM)
+                                                modifyObjectActionManagementM,
+                                                processAcquisitionEffect,
+                                                processPosturalEffect)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
                                                 modifyPerceptionMapM, youSeeM)
-import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey),
+import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionManagement (CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
@@ -21,7 +23,10 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 Location (_locationActionManagement),
                                                 SomaticAccessActionF (SomaticAccessActionF),
                                                 updateActionConsequence)
+import           Model.Parser.Atomics.Nouns    (Consumable (Consumable))
+import           Model.Parser.Composites.Nouns (NounPhrase (SimpleNounPhrase))
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+import           Relude.String                 (ToText (toText))
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = SomaticAccessActionF (const (const denied))
@@ -83,8 +88,8 @@ openEyes = SomaticAccessActionF opened
                perceivableObjects <- computePerceivableObjects
                newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
                modifyPerceptionMapM (const newPerceptionMap)
-             handleEffect (AcquisitionEffect acquisitionVerb changeTo) = do
-               modifyNarration (updateActionConsequence "AcquisitionEffect handled")
+             handleEffect (AcquisitionEffect acquisitionVerbPhrase changeTo) = do
+                 processAcquisitionEffect acquisitionVerbPhrase changeTo
              handleEffect err = throwError (Data.Text.pack $ "OUCH" <> show err)
        process actionEffectKey@(ObjectKey oid) = do
          case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
@@ -143,7 +148,15 @@ openEyes = SomaticAccessActionF opened
                modifyPerceptionMapM (const newPerceptionMap)
              handleEffect (AcquisitionEffect acquisitionVerb changeTo) = do
                modifyNarration (updateActionConsequence "AcquisitionEffect handled")
-       process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
+       process actionEffectKey@(PlayerKey _) = do
+         case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
+           Nothing      -> pure ()
+           Just effects -> mapM_ handleEffect effects
+           where
+             handleEffect :: Effect -> GameComputation Identity ()
+             handleEffect (AcquisitionEffect targetAVP newActionGID) = do
+               processAcquisitionEffect targetAVP newActionGID
+             handleEffect err = throwError (Data.Text.pack $ "Unhandled player effect in openEyes: " <> show err)
 
 msg :: Text
 msg = "You open your eyes, and the world comes into focus."
