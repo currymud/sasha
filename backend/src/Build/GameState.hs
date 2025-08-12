@@ -50,7 +50,7 @@ import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
 import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
-                                                                          ActionKey (AcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                          ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                           ActionKeyMap (ActionKeyMap),
                                                                           ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, PPManagementKey, SSAManagementKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
@@ -146,6 +146,17 @@ actionKeyMap = ActionKeyMap
       , (getKey, playerGetEffectMap)
       , (alreadyHaveRobeKey, emptyEffectMap)
       , (standKey, emptyEffectMap)
+      , (takePillKey, takePillEffectMap)
+      ]
+
+takePillKey :: ActionKey
+takePillKey = ConsumptionActionKey takePillFGID
+
+
+takePillEffectMap :: ActionEffectMap
+takePillEffectMap = ActionEffectMap
+  $ fromList
+      [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
 
 alreadyHaveRobeKey :: ActionKey
@@ -183,9 +194,7 @@ playerGetEffectMap = ActionEffectMap
         (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
       , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
-        -- Pill acquisition effects would go here too
-      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect, pillCuresHeadacheEffect])
-        -- Other acquisition effects...
+      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect])
       ]
 pillReachableEffect :: Effect
 pillReachableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
