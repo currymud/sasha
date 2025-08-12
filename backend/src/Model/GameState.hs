@@ -247,7 +247,7 @@ data Effect
   = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
-  | AcquisitionEffect AcquisitionVerb (GID AcquisitionActionF)
+  | AcquisitionEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
   | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
   | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)

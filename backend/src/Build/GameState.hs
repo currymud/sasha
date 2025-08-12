@@ -185,7 +185,7 @@ standUpEffectMap = ActionEffectMap
       ]
 
 enableMailGetEffect :: Effect
-enableMailGetEffect = AcquisitionEffect get getMailGID
+enableMailGetEffect = AcquisitionEffect getMailAVP getMailGID
 
 alreadyHaveRobeKey :: ActionKey
 alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
@@ -256,8 +256,11 @@ impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
+
 getRobeEffect :: Effect
-getRobeEffect = AcquisitionEffect get alreadyHaveRobeGID
+getRobeEffect = AcquisitionEffect getRobeAVP alreadyHaveRobeGID
 
 getRobeKey :: ActionKey
 getRobeKey = AcquisitionalActionKey getRobeGID

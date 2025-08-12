@@ -5,15 +5,16 @@ import qualified Data.Map.Strict
 import           Data.Set                  (Set, filter, insert, toList)
 import           Data.Text                 (Text, pack)
 import           GameState                 (modifyLocationM, modifyNarration,
-                                            modifyObjectActionManagementM)
+                                            modifyObjectActionManagementM,
+                                            processAcquisitionEffect)
 import           GameState.Perception      (buildPerceptionMapFromObjects,
                                             computePerceivableObjects,
                                             modifyPerceptionMapM, youSeeM)
-import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey),
+import           Model.GameState           (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                             ActionManagementFunctions (ActionManagementFunctions),
-                                            Effect (DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                            Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
                                             PosturalActionF (PosturalActionF),
@@ -122,8 +123,16 @@ standUp = PosturalActionF stood
                 newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
                 modifyPerceptionMapM (const newPerceptionMap)
               handleEffect err = throwError (Data.Text.pack $ "Unhandled effect in standUp: " <> show err)
+        process actionEffectKey@(PlayerKey _) = do
+          case Data.Map.Strict.lookup actionEffectKey actionEffectMap of
+            Nothing      -> pure ()
+            Just effects -> mapM_ handleEffect effects
+            where
+              handleEffect :: Effect -> GameComputation Identity ()
+              handleEffect (AcquisitionEffect targetAVP newActionGID) = do
+                processAcquisitionEffect targetAVP newActionGID
+              handleEffect err = throwError (Data.Text.pack $ "Unhandled player effect in standUp: " <> show err)
         process _ = modifyNarration (updateActionConsequence "ActionEffectKey unimplemented")
-
 msg :: Text
 msg = "You stand up, feeling more alert and ready for action."
 
