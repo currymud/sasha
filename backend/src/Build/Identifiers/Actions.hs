@@ -12,6 +12,9 @@ import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
+import           Build.BedPuzzle.Actions.Objects.Mail.Look               (notEvenMail,
+                                                                          seeMail,
+                                                                          whatMail)
 import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPill,
                                                                           getPillDenied)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
@@ -95,7 +98,10 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| seePocketRobeWorn |]
                                           , [| emptyPocket |]
                                           , [| seeRobeChair |]
-                                          , [| seeRobeWorn  |]]
+                                          , [| seeRobeWorn  |]
+                                          , [| seeMail |]
+                                          , [| notEvenMail |]
+                                          , [| whatMail |]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
