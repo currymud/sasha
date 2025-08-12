@@ -8,6 +8,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           checkInventoryGID,
                                                                           consumptionActionMap,
                                                                           directionalStimulusActionMap,
+                                                                          dizzyGetGID,
                                                                           dsvEnabledLookGID,
                                                                           getMailDeniedGID,
                                                                           getMailGID,
@@ -126,8 +127,8 @@ player = Player
       , DSAManagementKey dsaLook dsvEnabledLookGID
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
-      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
-      , AAManagementKey getMailAVP playerGetGID
+      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) dizzyGetGID
+      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
 
@@ -161,8 +162,11 @@ actionKeyMap = ActionKeyMap
       , (standKey, emptyEffectMap)
       , (takePillKey, takePillEffectMap)
       , (standUpKey, standUpEffectMap)
+      , (dizzyGetKey, emptyEffectMap)
       ]
 
+dizzyGetKey :: ActionKey
+dizzyGetKey = AcquisitionalActionKey dizzyGetGID
 
 
 standUpKey :: ActionKey
@@ -186,7 +190,7 @@ standUpEffectMap = ActionEffectMap
       ]
 
 enableMailGetEffect :: Effect
-enableMailGetEffect = AcquisitionEffect getMailAVP getMailGID
+enableMailGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleMailOP) getMailGID
 
 alreadyHaveRobeKey :: ActionKey
 alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
@@ -215,8 +219,11 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
+      , (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton enableRobeGetEffect)
       ]
 
+enableRobeGetEffect :: Effect
+enableRobeGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
 
 mailEffect :: Effect
 mailEffect = DirectionalStimulusEffect dirLook seeMailGID
