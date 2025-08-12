@@ -44,7 +44,8 @@ import           Data.Set                                                (Set)
 import qualified Data.Set
 import           Data.Text                                               (Text)
 import           Evaluators.Player.General                               (eval)
-import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
+import           Grammar.Parser.Partitions.Nouns.Objectives              (mail,
+                                                                          pill,
                                                                           robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
@@ -126,12 +127,18 @@ player = Player
       , SSAManagementKey saOpen openEyesGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
-      , AAManagementKey getMailAVP playerGetGID
+      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
 
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
+
+simpleMailOP :: ObjectPhrase
+simpleMailOP = (ObjectPhrase . SimpleNounPhrase) mailObjective
+
+mailObjective :: Model.Parser.Atomics.Nouns.Objective
+mailObjective = Grammar.Parser.Partitions.Nouns.Objectives.mail
 
 simplePillOP :: ObjectPhrase
 simplePillOP = (ObjectPhrase . SimpleNounPhrase) pillObjective
@@ -155,6 +162,7 @@ actionKeyMap = ActionKeyMap
       , (takePillKey, takePillEffectMap)
       , (standUpKey, standUpEffectMap)
       ]
+
 
 
 standUpKey :: ActionKey
