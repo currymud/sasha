@@ -182,11 +182,15 @@ takePillEffectMap = ActionEffectMap
       [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
 
+enableMailGetLocationEffect :: Effect
+enableMailGetLocationEffect = AcquisitionEffect getMailAVP getMailGID
+
 standUpEffectMap :: ActionEffectMap
 standUpEffectMap = ActionEffectMap
   $ fromList
       [ (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
       , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
+      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
       ]
 
 enableMailGetEffect :: Effect

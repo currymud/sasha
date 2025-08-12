@@ -45,6 +45,14 @@ standUp = PosturalActionF stood
                               mapM_ handleEffect effects
             where
               handleEffect :: Effect -> GameComputation Identity ()
+              handleEffect (AcquisitionEffect acquisitionVerbPhrase newActionGID) = do
+                modifyLocationM lid $ \loc ->
+                  let ActionManagementFunctions actionSet = _locationActionManagement loc
+        -- Remove any existing acquisition action for this phrase
+                      filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= acquisitionVerbPhrase; _ -> True) actionSet
+        -- Add the new action
+                      updatedActions = Data.Set.insert (AAManagementKey acquisitionVerbPhrase newActionGID) filteredActions
+                  in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
               handleEffect (ImplicitStimulusEffect implicitStimulusVerb changeTo) = do
                 modifyLocationM lid $ \loc ->
                   let ActionManagementFunctions actionSet = _locationActionManagement loc
