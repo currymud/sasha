@@ -8,8 +8,8 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text)
 import           GameState                     (modifyNarration,
-                                                modifyObjectActionManagementM,
                                                 modifySpatialRelationshipsForObjectM)
+import           GameState.ActionManagement    (processAllEffects)
 import           Model.GameState               (ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionManagement (DSAManagementKey, NPManagementKey, PPManagementKey),
@@ -51,39 +51,4 @@ pillTooFarF = ConsumptionActionF (const (const (const (const denied))))
     msg = "You grab at it but it's hard to get to. try grabbing the robe first."
 
 takePillF :: ConsumptionActionF
-takePillF = ConsumptionActionF takeIt
-  where
-    takeIt :: GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
-    takeIt pillOID actionEffectKeys (ActionEffectMap actionEffectMap) _cvp = do
-      -- Remove the pill from whatever is containing/supporting it
-      modifySpatialRelationshipsForObjectM pillOID $ \relationships ->
-        Data.Set.filter (not . isLocationRelationship) relationships
-
-      -- Fire the consumption consequence
-      modifyNarration $ updateActionConsequence "You take the pill and swallow it."
-
-      -- Process effects for all action effect keys
-      mapM_ (processEffectKeyEntry actionEffectMap) (Data.Set.toList actionEffectKeys)
-
-    processEffectKeyEntry :: (Map ActionEffectKey (Set Effect))
-                          -> ActionEffectKey
-                          -> GameComputation Identity ()
-    processEffectKeyEntry effectMap actionEffectKey = do
-      case Data.Map.Strict.lookup actionEffectKey effectMap of
-        Nothing -> pure ()
-        Just effects -> mapM_ (processEffect actionEffectKey) (Data.Set.toList effects)
-
-    processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
-    processEffect (PlayerKey (PlayerKeyObject oid)) effect = pure ()
-      -- Update the player's positive postural actions
-
-    processEffect (PlayerKey (PlayerKeyObject oid)) effect  = pure ()
-
-    processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = pure ()
-
-    processEffect _ _ = pure () -- Handle other effect types as needed
-
-    isLocationRelationship :: SpatialRelationship -> Bool
-    isLocationRelationship (ContainedIn _) = True
-    isLocationRelationship (SupportedBy _) = True
-    isLocationRelationship _               = False
+takePillF = ConsumptionActionF (const (const (const (const (pure ())))))

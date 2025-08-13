@@ -7,14 +7,12 @@ import           Control.Monad.State           (modify')
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (getLocationObjectIDsM,
-                                                getPlayerLocationGID,
-                                                getPlayerLocationM, getPlayerM,
+import           GameState                     (getPlayerLocationM, getPlayerM)
+import           GameState.ActionManagement    (lookupAcquisition,
                                                 modifyObjectActionManagementM)
-import           GameState.ActionManagement    (lookupAcquisition)
 import           GameState.Perception          (updatePerceptionMapM)
 import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
-                                                ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+                                                ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionKeyMap (ActionKeyMap, _unActionKeyMap),
@@ -28,9 +26,7 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 PlayerKey (PlayerKeyObject),
                                                 _player)
 import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
-import           Model.Parser.Composites.Nouns (ObjectPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
@@ -44,7 +40,7 @@ manageAcquisitionProcess avp = do
         Just (AcquisitionActionF actionFunc) -> do
           actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
           case Data.Map.Strict.lookup (actionKey actionGID) actionKeyMap of
-            Nothing -> error $ "Programmer Error: No action key found for GID"
+            Nothing -> error "Programmer Error: No action key found for GID"
             Just actionEffectMap -> do
               loc <- getPlayerLocationM
               actionFunc loc actionEffectMap avp

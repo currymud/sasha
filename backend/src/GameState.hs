@@ -19,7 +19,6 @@ module GameState ( addToInventoryM
                  , modifyObjectMapM
                  , modifySpatialRelationshipMapM
                  , modifySpatialRelationshipsForObjectM
-                 , modifyObjectActionManagementM
                  , modifyPerceptionForStimulusM
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
