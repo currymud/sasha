@@ -2,6 +2,7 @@ module Build.BedPuzzle.Actions.Objects.Pill.Take (alreadyTookPillF, pillTooFarF,
 
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (modify')
+import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set)
 import qualified Data.Set
@@ -52,25 +53,34 @@ pillTooFarF = ConsumptionActionF (const (const (const denied)))
 takePillF :: ConsumptionActionF
 takePillF = ConsumptionActionF takeIt
   where
-    takeIt :: GID Object -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
-    takeIt objectGID actionEffectMap cvp = do
-      -- Remove the pill from whatever is containing/supporting it
-      modifySpatialRelationshipsForObjectM objectGID $ \relationships ->
-        Data.Set.filter (not . isLocationRelationship) relationships
+    takeIt :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
+    takeIt actionEffectKeys (ActionEffectMap actionEffectMap) = do
+      -- Find the pill object from the action effect keys
+      let pillObjectKeys = [oid | ObjectKey oid <- Data.Set.toList actionEffectKeys]
 
-      -- Fire the consumption consequence
-      modifyNarration $ updateActionConsequence "You take the pill and swallow it."
+      case pillObjectKeys of
+        (pillOID:_) -> do
+          -- Remove the pill from whatever is containing/supporting it
+          modifySpatialRelationshipsForObjectM pillOID $ \relationships ->
+            Data.Set.filter (not . isLocationRelationship) relationships
 
-      -- Process effects
-      let ActionEffectMap effectMap = actionEffectMap
-      mapM_ (processEffectEntry cvp) (Data.Map.Strict.toList effectMap)
+          -- Fire the consumption consequence
+          modifyNarration $ updateActionConsequence "You take the pill and swallow it."
 
-    processEffectEntry :: ConsumptionVerbPhrase -> (ActionEffectKey, Set Effect) -> GameComputation Identity ()
-    processEffectEntry cvp (effectKey, effects) = do
-      mapM_ (processEffect cvp effectKey) (Data.Set.toList effects)
+          -- Process effects for all action effect keys
+          mapM_ (processEffectKeyEntry actionEffectMap) (Data.Set.toList actionEffectKeys)
+        [] -> modifyNarration $ updateActionConsequence "No pill found to consume."
 
-    processEffect :: ConsumptionVerbPhrase -> ActionEffectKey -> Effect -> GameComputation Identity ()
-    processEffect cvp (PlayerKey (PlayerKeyObject oid)) (PositivePosturalEffect verb newActionGID) = do
+    processEffectKeyEntry :: Map ActionEffectKey (Set Effect)
+                          -> ActionEffectKey
+                          -> GameComputation Identity ()
+    processEffectKeyEntry effectMap actionEffectKey = do
+      case Data.Map.Strict.lookup actionEffectKey effectMap of
+        Nothing -> pure ()
+        Just effects -> mapM_ (processEffect actionEffectKey) (Data.Set.toList effects)
+
+    processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
+    processEffect (PlayerKey (PlayerKeyObject oid)) (PositivePosturalEffect verb newActionGID) = do
       -- Update the player's positive postural actions
       modify' $ \gs ->
         let player = gs._player
@@ -83,7 +93,7 @@ takePillF = ConsumptionActionF takeIt
             updatedPlayer = player { _playerActions = updatedPlayerActions }
         in gs { _player = updatedPlayer }
 
-    processEffect cvp (PlayerKey (PlayerKeyObject oid)) (NegativePosturalEffect verb newActionGID) = do
+    processEffect (PlayerKey (PlayerKeyObject oid)) (NegativePosturalEffect verb newActionGID) = do
       -- Update the player's negative postural actions
       modify' $ \gs ->
         let player = gs._player
@@ -96,7 +106,7 @@ takePillF = ConsumptionActionF takeIt
             updatedPlayer = player { _playerActions = updatedPlayerActions }
         in gs { _player = updatedPlayer }
 
-    processEffect _ (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
+    processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
       -- Update the object's directional stimulus action
       modifyObjectActionManagementM oid $ \actionMgmt ->
         let ActionManagementFunctions actionSet = actionMgmt
@@ -104,7 +114,7 @@ takePillF = ConsumptionActionF takeIt
             updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
         in ActionManagementFunctions updatedActions
 
-    processEffect _ _ _ = pure () -- Handle other effect types as needed
+    processEffect _ _ = pure () -- Handle other effect types as needed
 
     isLocationRelationship :: SpatialRelationship -> Bool
     isLocationRelationship (ContainedIn _) = True
