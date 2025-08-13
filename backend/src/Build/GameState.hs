@@ -40,7 +40,6 @@ import           Build.Identifiers.Objects                               (chairO
 import           Build.World                                             (world)
 import           Data.Map.Strict                                         (empty,
                                                                           fromList)
-import qualified Data.Map.Strict                                         as Data.MapStrict
 import           Data.Set                                                (Set)
 import qualified Data.Set
 import           Data.Text                                               (Text)
@@ -64,11 +63,11 @@ import           Model.GameState                                         (Action
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
                                                                           Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
-                                                                          GameState (GameState, _evaluation, _narration, _player, _world),
+                                                                          EffectRegistry,
+                                                                          GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _world),
                                                                           Narration (..),
                                                                           Player (Player, _location, _playerActions),
                                                                           PlayerKey (PlayerKeyObject))
-import           Model.Parser.Atomics.Adverbs                            (PositivePosturalDirection (PositivePosturalDirection))
 import qualified Model.Parser.Atomics.Nouns
 import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
                                                                           DirectionalStimulusVerb,
@@ -94,6 +93,7 @@ gameState = GameState
   , _player = player
   , _narration = initNarration
   , _evaluation = eval
+  , _effectRegistry = effectRegistry
   }
 
 config :: Config
@@ -130,6 +130,17 @@ player = Player
       , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
+
+effectRegistry :: EffectRegistry
+effectRegistry = Data.Map.Strict.fromList
+  [ (openEyesKey, openEyesEffectMap)
+  , (getKey, playerGetEffectMap)
+  , (alreadyHaveRobeKey, emptyEffectMap)
+  , (standKey, emptyEffectMap)
+  , (takePillKey, takePillEffectMap)
+  , (standUpKey, standUpEffectMap)
+  , (dizzyGetKey, emptyEffectMap)
+  ]
 
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
