@@ -40,7 +40,6 @@ openEyes = SomaticAccessActionF opened
  where
    opened :: Set ActionEffectKey ->  ActionEffectMap -> GameComputation Identity ()
    opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
-     -- Processing ToDo
      youSeeM
      modifyNarration (updateActionConsequence msg)
 

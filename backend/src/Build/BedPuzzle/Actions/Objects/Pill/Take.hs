@@ -51,4 +51,10 @@ pillTooFarF = ConsumptionActionF (const (const (const (const denied))))
     msg = "You grab at it but it's hard to get to. try grabbing the robe first."
 
 takePillF :: ConsumptionActionF
-takePillF = ConsumptionActionF (const (const (const (const (pure ())))))
+takePillF = ConsumptionActionF takePill
+  where
+    takePill :: GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
+    takePill _targetOid _actionKeys _effectMap _cvp = do
+      -- Add success narration
+      modifyNarration
+        $ updateActionConsequence "You take the pill and immediately feel better. Your headache is gone and you feel ready to get up."
