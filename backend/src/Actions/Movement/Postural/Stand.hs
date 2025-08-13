@@ -14,13 +14,13 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Pl
                                                 ActionMaps (_posturalActionMap),
                                                 Config (_actionMaps),
                                                 GameComputation,
-                                                Player (_actionKeyMap, _location, _playerActions),
+                                                Player (_location, _playerActions),
                                                 PosturalActionF (PosturalActionF))
 import           Model.Parser.Composites.Verbs (PosturalVerbPhrase)
 
 
 managePosturalProcess :: PosturalVerbPhrase -> GameComputation Identity ()
-managePosturalProcess posturalPhrase = do
+managePosturalProcess posturalPhrase = pure () {- do
  availableActions <- _playerActions <$> getPlayerM
  case lookupPostural posturalPhrase availableActions of
    Nothing -> error "Programmer Error: No postural action found for phrase: "
@@ -43,3 +43,5 @@ managePosturalProcess posturalPhrase = do
          where
            actionKey :: ActionKey
            actionKey = PosturalActionKey actionGID
+
+-}

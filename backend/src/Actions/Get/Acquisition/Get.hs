@@ -22,14 +22,14 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 Config (_actionMaps),
                                                 Effect (AcquisitionEffect, DirectionalStimulusEffect),
                                                 GameComputation,
-                                                Player (_actionKeyMap, _location, _playerActions),
+                                                Player (_location, _playerActions),
                                                 PlayerKey (PlayerKeyObject),
                                                 _player)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
-manageAcquisitionProcess avp = do
+manageAcquisitionProcess avp = pure () {- do
   availableActions <- _playerActions <$> getPlayerM
   case lookupAcquisition avp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for verb phrase"
@@ -123,3 +123,4 @@ processEffectWithKey _ _ _ = pure () -- Handle other effect types as needed
 
 actionKey :: GID AcquisitionActionF -> ActionKey
 actionKey = AcquisitionalActionKey
+-}

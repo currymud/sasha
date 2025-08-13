@@ -14,7 +14,7 @@ import           Model.GameState            (ActionEffectKey (LocationKey, Playe
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              GameComputation,
-                                             Player (_actionKeyMap, _location, _playerActions),
+                                             Player (_location, _playerActions),
                                              SomaticAccessActionF (SomaticAccessActionF))
 import           Model.GID                  (GID)
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
@@ -23,14 +23,14 @@ import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 -- In Actions/Manipulate/SomaticAccess/Open.hs, modify manageSomaticAccessProcess:
 
 manageSomaticAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
-manageSomaticAccessProcess sav = do
+manageSomaticAccessProcess sav = pure () {- do
   availableActions <- _playerActions <$> getPlayerM
   case lookupSomaticAccess sav availableActions of
     Nothing -> error "Programmer Error: No somatic access action found for verb: "
     Just actionGID -> do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error $ "Programmer Error: No somatic access action found for GID: "
+        Nothing -> error "Programmer Error: No somatic access action found for GID: "
         Just (SomaticAccessActionF actionFunc) -> do
           actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
           case Data.Map.Strict.lookup actionKey actionKeyMap of
@@ -51,3 +51,4 @@ manageSomaticAccessProcess sav = do
           where
             actionKey :: ActionKey
             actionKey = SomaticAccessActionKey actionGID
+            -}

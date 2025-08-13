@@ -27,7 +27,7 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 Object (_objectActionManagement),
-                                                Player (_actionKeyMap, _playerActions),
+                                                Player (_playerActions),
                                                 PlayerKey (PlayerKeyObject),
                                                 updateActionConsequence)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase),

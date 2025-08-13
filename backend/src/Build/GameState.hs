@@ -66,7 +66,7 @@ import           Model.GameState                                         (Action
                                                                           Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           GameState (GameState, _evaluation, _narration, _player, _world),
                                                                           Narration (..),
-                                                                          Player (Player, _actionKeyMap, _location, _playerActions),
+                                                                          Player (Player, _location, _playerActions),
                                                                           PlayerKey (PlayerKeyObject))
 import           Model.Parser.Atomics.Adverbs                            (PositivePosturalDirection (PositivePosturalDirection))
 import qualified Model.Parser.Atomics.Nouns
@@ -113,7 +113,6 @@ player :: Player
 player = Player
   { _location = bedroomInBedGID
   , _playerActions = playerActionMgmt
-  , _actionKeyMap = actionKeyMap
   }
   where
     dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look

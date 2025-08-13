@@ -51,7 +51,7 @@ module Model.GameState (
   , transformToIO, liftDisplay
   , fromDisplay
   , Perceptables (Perceptables, _perceptables)
-  , Player (Player, _actionKeyMap, _location, _playerActions)
+  , Player (Player, _location, _playerActions)
   , PlayerKey (PlayerKeyLocation, PlayerKeyObject)
   , PlayerProcessImplicitVerbMap
   , PosturalActionF (PosturalActionF)
@@ -330,7 +330,6 @@ type Player :: Type
 data Player = Player
   { _location      :: GID Location
   , _playerActions :: ActionManagementFunctions
-  , _actionKeyMap  :: ActionKeyMap
   }
 
 type SpatialRelationshipMap :: Type
