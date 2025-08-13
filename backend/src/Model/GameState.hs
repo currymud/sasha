@@ -37,6 +37,7 @@ module Model.GameState (
                , PositivePosturalEffect
                , NegativePosturalEffect
                , SomaticAccessEffect)
+  , EffectRegistry (EffectRegistry, _effectRegistry)
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation)
@@ -256,6 +257,11 @@ data Effect
   | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
   | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)
   | PerceptionEffect
+  deriving stock (Show, Eq, Ord)
+
+type EffectRegistry :: Type
+newtype EffectRegistry = EffectRegistry
+  { _effectRegistry :: Map ActionKey ActionEffectMap }
   deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type
