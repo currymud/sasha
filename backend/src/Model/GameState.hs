@@ -37,10 +37,10 @@ module Model.GameState (
                , PositivePosturalEffect
                , NegativePosturalEffect
                , SomaticAccessEffect)
-  , EffectRegistry (EffectRegistry, _effectRegistry)
+  , EffectRegistry
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _world, _player, _narration, _evaluation)
+  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -259,10 +259,7 @@ data Effect
   | PerceptionEffect
   deriving stock (Show, Eq, Ord)
 
-type EffectRegistry :: Type
-newtype EffectRegistry = EffectRegistry
-  { _effectRegistry :: Map ActionKey ActionEffectMap }
-  deriving stock (Show, Eq, Ord)
+type EffectRegistry = Map ActionKey ActionEffectMap
 
 type ActionEffect :: Type
 data ActionEffect
@@ -289,10 +286,11 @@ data Config = Config
 
 type GameState :: Type
 data GameState = GameState
-  { _world      :: World
-  , _player     :: Player
-  , _narration  :: Narration
-  , _evaluation :: Evaluator
+  { _world          :: World
+  , _player         :: Player
+  , _narration      :: Narration
+  , _evaluation     :: Evaluator
+  , _effectRegistry :: EffectRegistry
   }
 
 type Location :: Type

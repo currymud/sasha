@@ -92,6 +92,7 @@ library
       GameState
       GameState.ActionManagement
       GameState.Perception
+      GameState.EffectRegistry
       GameState.Spatial
       Grammar.Parser
       Grammar.Parser.Lexer
