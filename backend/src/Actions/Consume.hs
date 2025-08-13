@@ -6,7 +6,8 @@ import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
-                                                getPlayerM)
+                                                getPlayerLocationM, getPlayerM,
+                                                parseConsumptionPhrase)
 import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (ConsumptionActionKey),
@@ -15,6 +16,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Pl
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF),
                                                 GameComputation,
+                                                Location (_objectSemanticMap),
                                                 Player (_actionKeyMap, _location, _playerActions))
 
 import           GameState.ActionManagement    (lookupConsumption)
@@ -42,7 +44,14 @@ manageConsumptionProcess cvp = do
                   playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [locationKeys, objectActionKeys, playerKeys]
 
-              actionFunc allActionKeys actionEffectMap
+              -- Parse consumption phrase to find target object
+              let (consumablePhrase, nounKey) = parseConsumptionPhrase cvp
+              location <- getPlayerLocationM
+              case Data.Map.Strict.lookup nounKey location._objectSemanticMap of
+                Just objSet | not (Data.Set.null objSet) -> do
+                  let targetObjectGID = Data.Set.elemAt 0 objSet  -- Taking first object (no disambiguation for now)
+                  actionFunc targetObjectGID allActionKeys actionEffectMap cvp
+                _ -> error $ "Target object not found for consumption: " <> show nounKey
           where
             actionKey :: ActionKey
             actionKey = ConsumptionActionKey actionGID

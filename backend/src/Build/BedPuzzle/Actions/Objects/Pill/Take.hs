@@ -26,7 +26,7 @@ import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 
 takePillDeniedF :: ConsumptionActionF
-takePillDeniedF = ConsumptionActionF (const (const (const denied)))
+takePillDeniedF = ConsumptionActionF (const (const (const (const denied))))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -35,7 +35,7 @@ takePillDeniedF = ConsumptionActionF (const (const (const denied)))
 
 
 alreadyTookPillF :: ConsumptionActionF
-alreadyTookPillF = ConsumptionActionF (const (const (const denied)))
+alreadyTookPillF = ConsumptionActionF (const (const (const (const denied))))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -43,7 +43,7 @@ alreadyTookPillF = ConsumptionActionF (const (const (const denied)))
     msg = "You already took the pill."
 
 pillTooFarF :: ConsumptionActionF
-pillTooFarF = ConsumptionActionF (const (const (const denied)))
+pillTooFarF = ConsumptionActionF (const (const (const (const denied))))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -53,25 +53,19 @@ pillTooFarF = ConsumptionActionF (const (const (const denied)))
 takePillF :: ConsumptionActionF
 takePillF = ConsumptionActionF takeIt
   where
-    takeIt :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
-    takeIt actionEffectKeys (ActionEffectMap actionEffectMap) = do
-      -- Find the pill object from the action effect keys
-      let pillObjectKeys = [oid | ObjectKey oid <- Data.Set.toList actionEffectKeys]
+    takeIt :: GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
+    takeIt pillOID actionEffectKeys (ActionEffectMap actionEffectMap) _cvp = do
+      -- Remove the pill from whatever is containing/supporting it
+      modifySpatialRelationshipsForObjectM pillOID $ \relationships ->
+        Data.Set.filter (not . isLocationRelationship) relationships
 
-      case pillObjectKeys of
-        (pillOID:_) -> do
-          -- Remove the pill from whatever is containing/supporting it
-          modifySpatialRelationshipsForObjectM pillOID $ \relationships ->
-            Data.Set.filter (not . isLocationRelationship) relationships
+      -- Fire the consumption consequence
+      modifyNarration $ updateActionConsequence "You take the pill and swallow it."
 
-          -- Fire the consumption consequence
-          modifyNarration $ updateActionConsequence "You take the pill and swallow it."
+      -- Process effects for all action effect keys
+      mapM_ (processEffectKeyEntry actionEffectMap) (Data.Set.toList actionEffectKeys)
 
-          -- Process effects for all action effect keys
-          mapM_ (processEffectKeyEntry actionEffectMap) (Data.Set.toList actionEffectKeys)
-        [] -> modifyNarration $ updateActionConsequence "No pill found to consume."
-
-    processEffectKeyEntry :: Map ActionEffectKey (Set Effect)
+    processEffectKeyEntry :: (Map ActionEffectKey (Set Effect))
                           -> ActionEffectKey
                           -> GameComputation Identity ()
     processEffectKeyEntry effectMap actionEffectKey = do
@@ -80,39 +74,12 @@ takePillF = ConsumptionActionF takeIt
         Just effects -> mapM_ (processEffect actionEffectKey) (Data.Set.toList effects)
 
     processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
-    processEffect (PlayerKey (PlayerKeyObject oid)) (PositivePosturalEffect verb newActionGID) = do
+    processEffect (PlayerKey (PlayerKeyObject oid)) effect = pure ()
       -- Update the player's positive postural actions
-      modify' $ \gs ->
-        let player = gs._player
-            ActionManagementFunctions playerActionSet = _playerActions player
-            -- Remove any existing positive postural action for this verb
-            filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
-            -- Add the new action
-            updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-            updatedPlayerActions = ActionManagementFunctions updatedActions
-            updatedPlayer = player { _playerActions = updatedPlayerActions }
-        in gs { _player = updatedPlayer }
 
-    processEffect (PlayerKey (PlayerKeyObject oid)) (NegativePosturalEffect verb newActionGID) = do
-      -- Update the player's negative postural actions
-      modify' $ \gs ->
-        let player = gs._player
-            ActionManagementFunctions playerActionSet = _playerActions player
-            -- Remove any existing negative postural action for this verb
-            filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
-            -- Add the new action
-            updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
-            updatedPlayerActions = ActionManagementFunctions updatedActions
-            updatedPlayer = player { _playerActions = updatedPlayerActions }
-        in gs { _player = updatedPlayer }
+    processEffect (PlayerKey (PlayerKeyObject oid)) effect  = pure ()
 
-    processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
-      -- Update the object's directional stimulus action
-      modifyObjectActionManagementM oid $ \actionMgmt ->
-        let ActionManagementFunctions actionSet = actionMgmt
-            filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-            updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
-        in ActionManagementFunctions updatedActions
+    processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = pure ()
 
     processEffect _ _ = pure () -- Handle other effect types as needed
 
