@@ -11,7 +11,6 @@ import           GameState                     (getLocationObjectIDsM,
 import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (ConsumptionActionKey),
-                                                ActionKeyMap (_unActionKeyMap),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF),
@@ -19,11 +18,13 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Pl
                                                 Location (_objectSemanticMap),
                                                 Player (_location, _playerActions))
 
-import           GameState.ActionManagement    (lookupConsumption)
+import           GameState.ActionManagement    (lookupConsumption,
+                                                processEffectsFromRegistry)
+import           GameState.EffectRegistry      (lookupEffectsInRegistry)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 
 manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
-manageConsumptionProcess cvp = pure () {- do
+manageConsumptionProcess cvp = do
   availableActions <- _playerActions <$> getPlayerM
   case lookupConsumption cvp availableActions of
     Nothing -> error "Programmer Error: No consumption action found for phrase"
@@ -32,14 +33,15 @@ manageConsumptionProcess cvp = pure () {- do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No consumption action found for GID"
         Just (ConsumptionActionF actionFunc) -> do
-          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
-          case Data.Map.Strict.lookup actionKey actionKeyMap of
-            Nothing -> error "Programmer Error: No action key found for GID"
-            Just actionEffectMap@(ActionEffectMap effectMap) -> do
-              lid <- _location <$> getPlayerM
-              objectActionKeys <- getLocationObjectIDsM lid
+          lid <- _location <$> getPlayerM
+          objectActionKeys <- getLocationObjectIDsM lid
 
-              -- Build comprehensive actionEffectKeys following somatic/postural pattern
+          -- Build actionEffectKeys for the action function
+          let actionKey = ConsumptionActionKey actionGID
+          maybeEffectMap <- lookupEffectsInRegistry actionKey
+          case maybeEffectMap of
+            Nothing -> error "Programmer Error: No effects registered for consumption action"
+            Just (ActionEffectMap effectMap) -> do
               let locationKeys = Data.Set.singleton (LocationKey lid)
                   playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [locationKeys, objectActionKeys, playerKeys]
@@ -49,10 +51,8 @@ manageConsumptionProcess cvp = pure () {- do
               location <- getPlayerLocationM
               case Data.Map.Strict.lookup nounKey location._objectSemanticMap of
                 Just objSet | not (Data.Set.null objSet) -> do
-                  let targetObjectGID = Data.Set.elemAt 0 objSet  -- Taking first object (no disambiguation for now)
-                  actionFunc targetObjectGID allActionKeys actionEffectMap cvp
+                  let targetObjectGID = Data.Set.elemAt 0 objSet
+                  actionFunc targetObjectGID allActionKeys (ActionEffectMap effectMap) cvp
+                  -- Process effects from registry after action execution
+                  processEffectsFromRegistry actionKey
                 _ -> error $ "Target object not found for consumption: " <> show nounKey
-          where
-            actionKey :: ActionKey
-            actionKey = ConsumptionActionKey actionGID
-            -}

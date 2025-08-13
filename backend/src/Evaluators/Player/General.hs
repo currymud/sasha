@@ -2,7 +2,7 @@ module Evaluators.Player.General where
 import           Actions.Consume                       (manageConsumptionProcess)
 import           Actions.Get.Acquisition.Get           (manageAcquisitionProcess)
 import           Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess)
-import           Actions.Movement.Postural.Stand       (managePosturalProcess)
+import           Actions.Movement.Postural.SitStand    (managePosturalProcess)
 import           Actions.Percieve.Look                 (manageDirectionalStimulusProcess,
                                                         manageImplicitStimulusProcess)
 import           Build.Identifiers.Actions             (agentCanSeeGID)

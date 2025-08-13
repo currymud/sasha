@@ -6,12 +6,14 @@ import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (modifyLocationM, modifyObjectM)
+import           GameState.EffectRegistry      (lookupEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
                                                 modifyPerceptionMapM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
+                                                ActionKey,
                                                 ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
@@ -55,7 +57,14 @@ modifyObjectActionManagementM oid actionF =
   modifyObjectM oid $ \obj ->
     obj { _objectActionManagement = actionF (_objectActionManagement obj) }
 
--- | Process all effects in an ActionEffectMap
+processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
+processEffectsFromRegistry actionKey = do
+  maybeEffectMap <- lookupEffectsInRegistry actionKey
+  case maybeEffectMap of
+    Just effectMap -> processAllEffects effectMap
+    Nothing        -> pure () -- No effects registered for this action
+
+-- Updated: processAllEffects remains the same - just processes effects
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
   mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
@@ -64,7 +73,7 @@ processAllEffects (ActionEffectMap effectMap) = do
     processEffectEntry (effectKey, effects) =
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
--- | Process a single effect for a specific target
+-- processEffect implementation remains the same as in your original code
 processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
 
 -- LOCATION EFFECTS (updating location action management)

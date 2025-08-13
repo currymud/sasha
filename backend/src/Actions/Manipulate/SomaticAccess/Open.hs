@@ -6,24 +6,22 @@ import           Control.Monad.Reader.Class (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           GameState                  (getLocationObjectIDsM, getPlayerM)
-import           GameState.ActionManagement (lookupSomaticAccess)
+import           GameState.ActionManagement (lookupSomaticAccess,
+                                             processEffectsFromRegistry)
+import           GameState.EffectRegistry   (lookupEffectsInRegistry)
 import           Model.GameState            (ActionEffectKey (LocationKey, PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
                                              ActionKey (SomaticAccessActionKey),
-                                             ActionKeyMap (ActionKeyMap, _unActionKeyMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              GameComputation,
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (SomaticAccessActionF))
-import           Model.GID                  (GID)
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 
 
--- In Actions/Manipulate/SomaticAccess/Open.hs, modify manageSomaticAccessProcess:
-
 manageSomaticAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
-manageSomaticAccessProcess sav = pure () {- do
+manageSomaticAccessProcess sav = do
   availableActions <- _playerActions <$> getPlayerM
   case lookupSomaticAccess sav availableActions of
     Nothing -> error "Programmer Error: No somatic access action found for verb: "
@@ -32,23 +30,20 @@ manageSomaticAccessProcess sav = pure () {- do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No somatic access action found for GID: "
         Just (SomaticAccessActionF actionFunc) -> do
-          actionKeyMap <- _unActionKeyMap . _actionKeyMap <$> getPlayerM
-          case Data.Map.Strict.lookup actionKey actionKeyMap of
-            Nothing -> error $ "Programmer Error: No action key found for GID: "
-            Just actionEffectMap -> do
+          let actionKey = SomaticAccessActionKey actionGID
+          maybeEffectMap <- lookupEffectsInRegistry actionKey
+          case maybeEffectMap of
+            Nothing -> error $ "Programmer Error: No effects registered for somatic access action"
+            Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
               objectActionKeys <- getLocationObjectIDsM lid
-
               -- Add PlayerKey entries from the effect map to actionEffectKeys
-              let ActionEffectMap effectMap = actionEffectMap
-                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+              let playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [
                     Data.Set.singleton (LocationKey lid),
                     objectActionKeys,
                     playerKeys
                     ]
-              actionFunc allActionKeys actionEffectMap
-          where
-            actionKey :: ActionKey
-            actionKey = SomaticAccessActionKey actionGID
-            -}
+              actionFunc allActionKeys (ActionEffectMap effectMap)
+              -- Process effects from registry after action execution
+              processEffectsFromRegistry actionKey
