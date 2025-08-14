@@ -5,11 +5,12 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, elemAt, filter, insert,
-                                                null, toList)
+import           Data.Set                      (Set, delete, elemAt, filter,
+                                                insert, map, null, toList)
 import           Data.Text                     (Text)
-import           GameState                     (getObjectM, getPlayerM,
-                                                modifyNarration,
+import           GameState                     (addToInventoryM, getObjectM,
+                                                getPlayerM, modifyNarration,
+                                                modifySpatialRelationshipsForObjectM,
                                                 parseAcquisitionPhrase)
 import           GameState.ActionManagement    (lookupAcquisition)
 import           GameState.Perception          (updatePerceptionMapM)
@@ -24,12 +25,16 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 Config (_actionMaps),
                                                 Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
                                                 GameComputation,
-                                                GameState (_player),
+                                                GameState (_player, _world),
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 Object (_objectActionManagement),
                                                 Player (_playerActions),
                                                 PlayerKey (PlayerKeyObject),
+                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
+                                                World (_spatialRelationshipMap),
                                                 updateActionConsequence)
+import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
@@ -45,27 +50,83 @@ get :: AcquisitionActionF
 get = AcquisitionActionF getit
   where
     getit :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit loc actionEffectMap avp = pure ()
+    getit loc actionEffectMap avp = do
+      let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
 
-executeObjectGet :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity (Either (GameComputation Identity ()) (GameComputation Identity ()))
-executeObjectGet loc actionEffectMap avp = do
-  let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
-  case Data.Map.Strict.lookup nounKey loc._objectSemanticMap of
-    Just objSet | not (Data.Set.null objSet) -> do
-      let oid = Data.Set.elemAt 0 objSet
-      obj <- getObjectM oid
-      let objectActionMgmt = _objectActionManagement obj
-      case lookupAcquisition avp objectActionMgmt of
-        Just objectActionGID -> do
-          actionMap <- asks (_acquisitionActionMap . _actionMaps)
-          case Data.Map.Strict.lookup objectActionGID actionMap of
-            Just (AcquisitionActionF objectAction) -> do
-              pure $ Left $ objectAction loc actionEffectMap avp
-            Just (AcquiredFromF objectAcquiredAction) -> do
-              objectAcquiredAction loc avp
-            Just (RemovedFromF objectRemovedAction) -> do
-              objectRemovedAction loc avp
-            Nothing -> pure $ Left $ modifyNarration $ updateActionConsequence "Object action not found in action map"
-        Nothing ->
-          pure $ Right $ modifyNarration $ updateActionConsequence "Object allows general acquisition"
-    _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."
+      -- Find the object in location semantic map
+      case Data.Map.Strict.lookup nounKey loc._objectSemanticMap of
+        Just objSet | not (Data.Set.null objSet) -> do
+          let targetObjectGID = Data.Set.elemAt 0 objSet
+
+          -- Find what contains/supports this object using spatial relationships
+          world <- gets _world
+          let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+
+          case Data.Map.Strict.lookup targetObjectGID spatialMap of
+            Just relationships -> do
+              let containerGIDs = getContainerGIDs relationships
+
+              case containerGIDs of
+                (containerGID:_) -> do
+                  -- Call container's action to handle spatial relationship changes
+                  callContainerAction containerGID avp targetObjectGID
+
+                  -- Call object's action to handle inventory GID tracking
+                  callObjectAction targetObjectGID loc avp
+
+                [] -> do
+                  -- Object not in a container, just call object action
+                  callObjectAction targetObjectGID loc avp
+
+            Nothing -> do
+              -- No spatial relationships, just call object action
+              callObjectAction targetObjectGID loc avp
+
+        _ -> modifyNarration $ updateActionConsequence "You don't see that here."
+
+    -- Extract container/supporter GIDs from spatial relationships
+    getContainerGIDs :: Set SpatialRelationship -> [GID Object]
+    getContainerGIDs relationships =
+      [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
+      [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
+
+    -- Handle spatial relationship changes: remove from container and set to Inventory
+    callContainerAction :: GID Object -> AcquisitionVerbPhrase -> GID Object -> GameComputation Identity ()
+    callContainerAction containerGID avp targetObjectGID = do
+      -- Remove object from container's Contains/Supports relationship
+      modifySpatialRelationshipsForObjectM containerGID $ \relationships ->
+        let updatedRelationships = Data.Set.map removeFromContainerRelationship relationships
+            -- Remove empty Contains/Supports sets
+            cleanedRelationships = Data.Set.filter (not . isEmpty) updatedRelationships
+        in cleanedRelationships
+
+      -- Set object's spatial relationship to Inventory
+      modifySpatialRelationshipsForObjectM targetObjectGID $ \relationships ->
+        -- Remove old containment/support relationships and add Inventory
+        let cleanedRelationships = Data.Set.filter (not . isContainmentRelationship) relationships
+        in Data.Set.insert Inventory cleanedRelationships
+
+      where
+        removeFromContainerRelationship :: SpatialRelationship -> SpatialRelationship
+        removeFromContainerRelationship (Contains objSet) =
+          Contains (Data.Set.delete targetObjectGID objSet)
+        removeFromContainerRelationship (Supports objSet) =
+          Supports (Data.Set.delete targetObjectGID objSet)
+        removeFromContainerRelationship other = other
+
+        isEmpty :: SpatialRelationship -> Bool
+        isEmpty (Contains objSet) = Data.Set.null objSet
+        isEmpty (Supports objSet) = Data.Set.null objSet
+        isEmpty _                 = False
+
+        isContainmentRelationship :: SpatialRelationship -> Bool
+        isContainmentRelationship (ContainedIn _) = True
+        isContainmentRelationship (SupportedBy _) = True
+        isContainmentRelationship Inventory       = True  -- Remove existing Inventory too
+        isContainmentRelationship _               = False
+
+    -- Call the object's action to handle inventory tracking
+    callObjectAction :: GID Object -> Location -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    callObjectAction targetObjectGID loc avp = do
+      -- Object's only job: add its GID to player's inventory
+      addToInventoryM targetObjectGID
