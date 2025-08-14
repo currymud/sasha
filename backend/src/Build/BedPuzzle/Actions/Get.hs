@@ -59,11 +59,12 @@ get = AcquisitionActionF getit
 doGet :: GID Object -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()
 doGet sourceGID targetGID avp = do
   -- Role 1: Execute source object's RemovedFromF action
+  actionMap <- asks (_acquisitionActionMap . _actionMaps)
+
   sourceObj <- getObjectM sourceGID
   let sourceActionMgmt = _objectActionManagement sourceObj
       removedFromRes = case lookupAcquisition avp sourceActionMgmt of
         Just sourceActionGID -> do
-         actionMap <- asks (_acquisitionActionMap . _actionMaps)
          case Data.Map.Strict.lookup sourceActionGID actionMap of
              Just (RemovedFromF actionFunc) -> do
                actionFunc
@@ -74,10 +75,9 @@ doGet sourceGID targetGID avp = do
   let targetActionMgmt = _objectActionManagement targetObj
       addedToRes = case lookupAcquisition avp targetActionMgmt of
         Just targetActionGID -> do
-          actionMap <- asks (_acquisitionActionMap . _actionMaps)
           case Data.Map.Strict.lookup targetActionGID actionMap of
             Just (AcquiredFromF actionFunc) -> actionFunc
             Just _ -> error "Target object should use AcquiredFromF constructor"
             Nothing -> error "Target object's acquisition action not found in action map"
         Nothing -> error "Target object has no acquisition action for this phrase"
-  either const const (removedFromRes >> addedToRes)
+  either id id(removedFromRes >> addedToRes)
