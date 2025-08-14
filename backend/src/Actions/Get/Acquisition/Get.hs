@@ -10,7 +10,7 @@ import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisition,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupEffectsInRegistry)
-import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
