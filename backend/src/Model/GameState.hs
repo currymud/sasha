@@ -60,6 +60,7 @@ module Model.GameState (
   , ProcessImplicitStimulusVerb (ProcessImplicitStimulusVerb, _unProcessImplicitStimlusVerb)
   , ProcessImplicitVerbMap
   , ProcessImplicitVerbMaps
+  , SearchStrategy
   , SomaticAccessActionF (SomaticAccessActionF, _somaticAccessAction)
   , SomaticStimulusActionMap
   , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
@@ -186,11 +187,14 @@ type PosturalActionF :: Type
 newtype PosturalActionF = PosturalActionF
   { _positivePosturalAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
 
+type SearchStrategy :: Type
+type SearchStrategy = NounKey
+                        -> GameComputation Identity (Maybe (GID Object, GID Object))
 type AcquisitionActionF :: Type
 data AcquisitionActionF
- = AcquisitionActionF (Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | RemovedFromF (Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
- | AcquiredFromF (Location -> AcquisitionVerbPhrase ->GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ())))
+ = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
+ | RemovedFromF  (Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | AcquiredFromF (Either (GameComputation Identity ()) (GameComputation Identity ()))
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
