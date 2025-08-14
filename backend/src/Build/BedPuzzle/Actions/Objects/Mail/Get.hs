@@ -8,7 +8,7 @@ import           Data.Text                     (Text)
 import           GameState                     (addToInventoryM,
                                                 modifyNarration,
                                                 parseAcquisitionPhrase)
-import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF),
+import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
                                                 GameComputation,
                                                 Location (_locationActionManagement, _objectSemanticMap),
                                                 updateActionConsequence)
@@ -16,7 +16,7 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 import           Relude.String                 (ToText (toText))
 
 alreadyHaveMail :: AcquisitionActionF
-alreadyHaveMail = AcquisitionActionF (const (const (const haveRobe)))
+alreadyHaveMail = AcquiredFromF (Left haveRobe)
   where
     haveRobe :: GameComputation Identity ()
     haveRobe = modifyNarration $ updateActionConsequence msg
@@ -24,7 +24,7 @@ alreadyHaveMail = AcquisitionActionF (const (const (const haveRobe)))
     msg = "You are already have your mail. it'll probably be important later."
 
 getMailDizzy :: AcquisitionActionF
-getMailDizzy = AcquisitionActionF (const (const (const getMDizzy)))
+getMailDizzy = AcquiredFromF (pure getMDizzy)
   where
     getMDizzy :: GameComputation Identity ()
     getMDizzy = modifyNarration $ updateActionConsequence msg
@@ -32,7 +32,7 @@ getMailDizzy = AcquisitionActionF (const (const (const getMDizzy)))
     msg = "You can't see it. You're dizzy with a hangover from the night before. Open your eyes."
 
 getMailDenied :: AcquisitionActionF
-getMailDenied = AcquisitionActionF (const (const (const denied)))
+getMailDenied = AcquiredFromF (pure denied)
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -42,15 +42,5 @@ getMailDenied = AcquisitionActionF (const (const (const denied)))
 getMail :: AcquisitionActionF
 getMail = AcquiredFromF getit
   where
-    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ()) )
-    getit loc avp = do
-      let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
-
-      -- Find the object in the current location
-      case Data.Map.Strict.lookup nounKey loc._objectSemanticMap of
-        Just objSet | not (Data.Set.null objSet) -> do
-          let oid = Data.Set.elemAt 0 objSet  -- Taking first object (no disambiguation)
-          addToInventoryM oid
-          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> toText objectPhrase <> " and put it in your inventory.")
-
-        _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."
+    getit :: Either (GameComputation Identity ()) (GameComputation Identity ())
+    getit = Left (pure ())

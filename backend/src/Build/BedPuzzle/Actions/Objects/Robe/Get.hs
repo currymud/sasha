@@ -20,7 +20,7 @@ import           Model.Parser.GCase            (NounKey)
 import           Relude.String                 (ToText (toText))
 
 alreadyHaveRobe :: AcquisitionActionF
-alreadyHaveRobe = AcquisitionActionF (const (const (const haveRobe)))
+alreadyHaveRobe = AcquisitionActionF (const (const haveRobe))
   where
     haveRobe :: GameComputation Identity ()
     haveRobe = modifyNarration $ updateActionConsequence msg
@@ -28,7 +28,7 @@ alreadyHaveRobe = AcquisitionActionF (const (const (const haveRobe)))
     msg = "You are already wearing the robe."
 
 getRobeDenied :: AcquisitionActionF
-getRobeDenied = AcquisitionActionF (const (const (const denied)))
+getRobeDenied = AcquiredFromF (Left denied)
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -38,15 +38,5 @@ getRobeDenied = AcquisitionActionF (const (const (const denied)))
 getRobe :: AcquisitionActionF
 getRobe = AcquiredFromF getit
   where
-    getit :: Location -> AcquisitionVerbPhrase -> GameComputation Identity ( Either (GameComputation Identity ()) (GameComputation Identity ()) )
-    getit loc avp = do
-      let (objectPhrase, nounKey) = parseAcquisitionPhrase avp
-
-      -- Find the object in the current location
-      case Data.Map.Strict.lookup nounKey loc._objectSemanticMap of
-        Just objSet | not (Data.Set.null objSet) -> do
-          let oid = Data.Set.elemAt 0 objSet  -- Taking first object (no disambiguation)
-          addToInventoryM oid
-          pure $ Right $ modifyNarration $ updateActionConsequence ("You take the " <> toText objectPhrase <> " and put it in your inventory.")
-
-        _ -> pure $ Left $ modifyNarration $ updateActionConsequence "You don't see that here."
+    getit :: Either (GameComputation Identity ()) (GameComputation Identity ())
+    getit = Left (pure ())

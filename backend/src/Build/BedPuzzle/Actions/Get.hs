@@ -31,6 +31,7 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
                                                 Object (_objectActionManagement),
                                                 Player (_playerActions),
                                                 PlayerKey (PlayerKeyObject),
+                                                SearchStrategy,
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap),
@@ -42,7 +43,7 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
 import           Model.Parser.GCase            (NounKey)
 
 getDenied :: AcquisitionActionF
-getDenied = AcquisitionActionF (const (const (const denied)))
+getDenied = AcquisitionActionF (const (const denied))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -52,8 +53,8 @@ getDenied = AcquisitionActionF (const (const (const denied)))
 get :: AcquisitionActionF
 get = AcquisitionActionF getit
   where
-    getit :: Location -> ActionEffectMap -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit loc actionEffectMap avp = undefined
+    getit :: SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    getit loc avp = undefined
 
 doGet :: GID Object -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()
 doGet sourceGID targetGID avp = do
