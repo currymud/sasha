@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Objects.Pill.Get (getPill,getPillDenied,alreadyHavePill) where
+module Build.BedPuzzle.Actions.Objects.Pill.Get (getPillDeniedF,alreadyHavePillF) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (modify')
 import qualified Data.Map.Strict
@@ -9,7 +9,7 @@ import           Data.Text                     (Text)
 import           GameState                     (addToInventoryM,
                                                 modifyNarration,
                                                 parseAcquisitionPhrase)
-import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF),
+import           Model.GameState               (AcquisitionActionF (CollectedF),
                                                 GameComputation,
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
@@ -18,25 +18,27 @@ import           Model.GameState               (AcquisitionActionF (AcquiredFrom
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 import           Model.Parser.GCase            (NounKey)
 import           Relude.String                 (ToText (toText))
+  {-
 
-alreadyHavePill :: AcquisitionActionF
-alreadyHavePill = AcquiredFromF (Left havePill)
+when doing an actual get attempt, use helper functions in top level
+
+the functions here answer different questions. Are you capable of getting the robe
+
+  -}
+
+alreadyHavePillF :: AcquisitionActionF
+alreadyHavePillF = CollectedF (const havePill)
   where
-    havePill :: GameComputation Identity ()
-    havePill = modifyNarration $ updateActionConsequence msg
+    havePill :: Either (GameComputation Identity ()) (GameComputation Identity ())
+    havePill = Left $ modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You already have the pill in your inventory."
 
-getPillDenied :: AcquisitionActionF
-getPillDenied = AcquiredFromF (Left denied)
+getPillDeniedF :: AcquisitionActionF
+getPillDeniedF = CollectedF (const denied)
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg
+    denied :: Either (GameComputation Identity ()) (GameComputation Identity ())
+    denied = Left $ modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
-getPill :: AcquisitionActionF
-getPill = AcquiredFromF getit
-  where
-    getit :: (Either (GameComputation Identity ()) (GameComputation Identity ()))
-    getit = Left (pure ())

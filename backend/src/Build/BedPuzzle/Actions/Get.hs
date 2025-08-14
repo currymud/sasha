@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Get (get,getDenied) where
+module Build.BedPuzzle.Actions.Get (get,getDenied, getObjectF, getFromSupportF) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import           Control.Monad.State           (gets, modify')
@@ -15,7 +15,7 @@ import           GameState                     (addToInventoryM, getObjectM,
                                                 parseAcquisitionPhrase)
 import           GameState.ActionManagement    (lookupAcquisition)
 import           GameState.Perception          (updatePerceptionMapM)
-import           Model.GameState               (AcquisitionActionF (AcquiredFromF, AcquisitionActionF, RemovedFromF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
@@ -66,8 +66,8 @@ doGet sourceGID targetGID avp = do
       removedFromRes = case lookupAcquisition avp sourceActionMgmt of
         Just sourceActionGID -> do
          case Data.Map.Strict.lookup sourceActionGID actionMap of
-             Just (RemovedFromF actionFunc) -> do
-               actionFunc
+             Just (LosesObjectF actionFunc) -> do
+               actionFunc sourceGID targetGID
              Just _ -> error "Source object should use RemovedFromF constructor"
              Nothing -> error "Source object's acquisition action not found in action map"
         Nothing -> error "Source object has no acquisition action for this phrase"
@@ -76,8 +76,27 @@ doGet sourceGID targetGID avp = do
       addedToRes = case lookupAcquisition avp targetActionMgmt of
         Just targetActionGID -> do
           case Data.Map.Strict.lookup targetActionGID actionMap of
-            Just (AcquiredFromF actionFunc) -> actionFunc
+            Just (CollectedF actionFunc) -> actionFunc targetGID
             Just _ -> error "Target object should use AcquiredFromF constructor"
             Nothing -> error "Target object's acquisition action not found in action map"
         Nothing -> error "Target object has no acquisition action for this phrase"
   either id id(removedFromRes >> addedToRes)
+
+getObjectF :: AcquisitionActionF
+getObjectF = CollectedF getit
+  where
+    getit :: GID Object
+               -> Either (GameComputation Identity ()) (GameComputation Identity ())
+    getit objectGID = Right $ addToInventoryM objectGID
+
+getFromSupportF :: AcquisitionActionF
+getFromSupportF = LosesObjectF getit
+  where
+    getit :: GID Object
+              -> GID Object
+              -> Either (GameComputation Identity ()) (GameComputation Identity ())
+    getit _supportObjectGID _supportedObjectGID = do
+-- Step 1: If the contained object is not in the robes spatial relation , then it's  Left modifyNarration "That's not in the robe."
+-- Step 2: If it is, then change the spatial relationship of the contained object to be in the player's inventory.
+--  this is how you do narrations  modifyNarration $ updateActionConsequence msg
+      Left $ pure ()

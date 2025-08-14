@@ -22,7 +22,7 @@ module Model.GameState (
                  ,_somaticStimulusActionMap
                  ,_acquisitionActionMap
                  , _consumptionActionMap)
-  , AcquisitionActionF (AcquisitionActionF, RemovedFromF, AcquiredFromF)
+  , AcquisitionActionF (AcquisitionActionF,CollectedF,LosesObjectF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
   , Config (Config, _actionMaps)
@@ -190,11 +190,12 @@ newtype PosturalActionF = PosturalActionF
 type SearchStrategy :: Type
 type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
+
 type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | RemovedFromF  (Either (GameComputation Identity ()) (GameComputation Identity ()))
- | AcquiredFromF (Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | CollectedF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | LosesObjectF (GID Object -> GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF

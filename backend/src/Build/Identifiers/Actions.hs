@@ -7,20 +7,22 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
 
+import           Build.BedPuzzle.Actions.Get                             (getFromSupportF,
+                                                                          getObjectF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
-import qualified Build.BedPuzzle.Actions.Locations.Bedroom.Get
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChair,
                                                                           whatChair)
-import           Build.BedPuzzle.Actions.Objects.Mail.Get                (alreadyHaveMail,
-                                                                          getMail,
-                                                                          getMailDenied,
-                                                                          getMailDizzy)
+import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
+import           Build.BedPuzzle.Actions.Objects.Floor.Look              (notEvenFloorF,
+                                                                          seeFloorF)
+import           Build.BedPuzzle.Actions.Objects.Mail.Get                (alreadyHaveMailF,
+                                                                          getMailDeniedF,
+                                                                          getMailDizzyF)
 import           Build.BedPuzzle.Actions.Objects.Mail.Look               (notEvenMail,
                                                                           seeMail,
                                                                           whatMail)
-import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPill,
-                                                                          getPillDenied)
+import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPillDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
                                                                           seePill,
                                                                           whatPill)
@@ -33,9 +35,8 @@ import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (emptyP
                                                                           seePocketChair,
                                                                           seePocketRobeWorn,
                                                                           whatPocket)
-import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alreadyHaveRobe,
-                                                                          getRobe,
-                                                                          getRobeDenied)
+import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alreadyHaveRobeF,
+                                                                          getRobeDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Robe.Look               (notEvenRobe,
                                                                           seeRobeChair,
                                                                           seeRobeWorn,
@@ -66,18 +67,12 @@ dsvEnabledLook :: DirectionalStimulusActionF
 dsvEnabledLook =
   dsvActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
-locGet :: AcquisitionActionF
-locGet = Build.BedPuzzle.Actions.Locations.Bedroom.Get.get
--- implicitStimulusActionMap
-
 playerGet :: AcquisitionActionF
 playerGet = Build.BedPuzzle.Actions.Get.get
 
 dizzyGet :: AcquisitionActionF
 dizzyGet = Build.BedPuzzle.Actions.Get.getDenied
 
-getDenied :: AcquisitionActionF
-getDenied = Build.BedPuzzle.Actions.Locations.Bedroom.Get.getDenied
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
                                       [| pitchBlackF |],
@@ -105,23 +100,21 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
                                           , [| seeRobeWorn  |]
                                           , [| seeMail |]
                                           , [| notEvenMail |]
-                                          , [| whatMail |]]
+                                          , [| whatMail |]
+                                          , [| notEvenFloorF |]
+                                          , [| seeFloorF|]]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
-makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMail|],
-                                  [| getMail |],
-                                  [| getMailDizzy |],
-                                  [| getMailDenied |],
-                                  [| locGet |],
-                                 [| getDenied |],
-                                 [| dizzyGet |],
-                                 [| playerGet|],
-                                 [| getPillDenied |],
-                                 [| getPill|],
-                                 [| alreadyHaveRobe |],
-                                 [| getRobeDenied |],
-                                 [| getRobe|]]
+makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMail|]]
+                     --             [| getMailDizzyF |],
+                      --            [| getMailDeniedF |],
+                      --           [| getDenied |],
+                       --          [| dizzyGet |],
+                         --        [| getPillDeniedF |],
+                           --      [| alreadyHaveRobeF |],
+                         --        [| getRobeDeniedF |],
+                         --       [| getFloorDeniedF |]]
 
 makeConsumptionActionGIDsAndMap [ [|alreadyTookPillF |],
                                   [| pillTooFarF |],
