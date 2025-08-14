@@ -106,11 +106,10 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
-makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMail|],
+makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
                                   [| getMailDizzyF |],
                                   [| getMailDeniedF |],
                                  [| getDenied |],
-                                 [| dizzyGet |],
                                  [| getPillDeniedF |],
                                  [| alreadyHaveRobeF |],
                                  [| getRobeDeniedF |],
