@@ -8,7 +8,7 @@ import           Model.GameState        (AcquisitionActionF (CollectedF),
                                          GameComputation,
                                          updateActionConsequence)
 getFloorDeniedF :: AcquisitionActionF
-getFloorDeniedF = CollectedF (const denied)
+getFloorDeniedF = CollectedF denied
   where
     denied :: Either (GameComputation Identity ()) (GameComputation Identity ())
     denied = Left $ modifyNarration $ updateActionConsequence msg

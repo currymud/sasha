@@ -27,7 +27,7 @@ the functions here answer different questions. Are you capable of getting the ro
   -}
 
 alreadyHavePillF :: AcquisitionActionF
-alreadyHavePillF = CollectedF (const havePill)
+alreadyHavePillF = CollectedF havePill
   where
     havePill :: Either (GameComputation Identity ()) (GameComputation Identity ())
     havePill = Left $ modifyNarration $ updateActionConsequence msg
@@ -35,10 +35,9 @@ alreadyHavePillF = CollectedF (const havePill)
     msg = "You already have the pill in your inventory."
 
 getPillDeniedF :: AcquisitionActionF
-getPillDeniedF = CollectedF (const denied)
+getPillDeniedF = CollectedF denied
   where
     denied :: Either (GameComputation Identity ()) (GameComputation Identity ())
     denied = Left $ modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
-

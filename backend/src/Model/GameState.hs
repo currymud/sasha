@@ -195,7 +195,7 @@ type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
  | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity ()))
- | LosesObjectF (GID Object -> GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF

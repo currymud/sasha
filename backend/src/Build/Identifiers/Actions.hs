@@ -6,10 +6,10 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           isvActionEnabled,
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
-
-import           Build.BedPuzzle.Actions.Get                             (getDeniedF,
-                                                                          getFromSupportF,
+import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
+
+import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChairF,
@@ -48,6 +48,7 @@ import           Build.BedPuzzle.Actions.Open                            (openEy
                                                                           openEyesDenied)
 import           Build.BedPuzzle.Actions.Stand                           (standDenied,
                                                                           standUp)
+import           Build.Identifiers.Objects                               (robeObjGID)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
@@ -74,6 +75,8 @@ playerGetF = Build.BedPuzzle.Actions.Get.getF
 dizzyGetF :: AcquisitionActionF
 dizzyGetF = Build.BedPuzzle.Actions.Get.getDeniedF
 
+getRobeF :: AcquisitionActionF
+getRobeF = getObjectF robeObjGID
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
                                       [| pitchBlackF |],

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Get (getF,getDeniedF, getObjectF, getFromSupportF) where
+module Build.BedPuzzle.Actions.Get (getF,getDeniedF) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import           Control.Monad.State           (gets, modify')
@@ -67,7 +67,7 @@ doGet sourceGID targetGID avp = do
         Just sourceActionGID -> do
          case Data.Map.Strict.lookup sourceActionGID actionMap of
              Just (LosesObjectF actionFunc) -> do
-               actionFunc sourceGID targetGID
+               actionFunc targetGID
              Just _ -> error "Source object should use RemovedFromF constructor"
              Nothing -> error "Source object's acquisition action not found in action map"
         Nothing -> error "Source object has no acquisition action for this phrase"
@@ -76,26 +76,10 @@ doGet sourceGID targetGID avp = do
       addedToRes = case lookupAcquisition avp targetActionMgmt of
         Just targetActionGID -> do
           case Data.Map.Strict.lookup targetActionGID actionMap of
-            Just (CollectedF actionFunc) -> actionFunc targetGID
+            Just (CollectedF actionFunc) -> actionFunc
             Just _ -> error "Target object should use AcquiredFromF constructor"
             Nothing -> error "Target object's acquisition action not found in action map"
         Nothing -> error "Target object has no acquisition action for this phrase"
   either id id(removedFromRes >> addedToRes)
 
-getObjectF :: GID Object -> AcquisitionActionF
-getObjectF objectGID  = CollectedF getit
-  where
-    getit :: Either (GameComputation Identity ()) (GameComputation Identity ())
-    getit = Right $ addToInventoryM objectGID
 
-getFromSupportF :: GID Object -> AcquisitionActionF
-getFromSupportF = LosesObjectF getit
-  where
-    getit :: GID Object
-              -> GID Object
-              -> Either (GameComputation Identity ()) (GameComputation Identity ())
-    getit _supportObjectGID _supportedObjectGID = do
--- Step 1: If the contained object is not in the robes spatial relation , then it's  Left modifyNarration "That's not in the robe."
--- Step 2: If it is, then change the spatial relationship of the contained object to be in the player's inventory.
---  this is how you do narrations  modifyNarration $ updateActionConsequence msg
-      Left $ pure ()

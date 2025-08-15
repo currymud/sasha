@@ -59,6 +59,7 @@ library
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
+      Build.BedPuzzle.Actions.Get.Constructors
       Build.BedPuzzle.Actions.Stand
       Build.BedPuzzle.Actions.Take
       Build.BedPuzzle.Actions.Objects.Chair

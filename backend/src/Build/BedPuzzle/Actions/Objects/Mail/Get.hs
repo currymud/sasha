@@ -10,7 +10,7 @@ import           Model.GameState        (AcquisitionActionF (CollectedF),
 
 
 alreadyHaveMailF :: AcquisitionActionF
-alreadyHaveMailF = CollectedF (const haveMail)
+alreadyHaveMailF = CollectedF haveMail
   where
     haveMail :: Either (GameComputation Identity ()) (GameComputation Identity ())
     haveMail = Left $ modifyNarration $ updateActionConsequence msg
@@ -18,7 +18,7 @@ alreadyHaveMailF = CollectedF (const haveMail)
     msg = "You are already have your mail. it'll probably be important later."
 
 getMailDeniedF :: AcquisitionActionF
-getMailDeniedF = CollectedF (const denied)
+getMailDeniedF = CollectedF denied
   where
     denied :: Either (GameComputation Identity ()) (GameComputation Identity ())
     denied = Left $ modifyNarration $ updateActionConsequence msg
@@ -26,7 +26,7 @@ getMailDeniedF = CollectedF (const denied)
     msg = "You can't reach it from your bed. You need to get up first."
 
 getMailDizzyF :: AcquisitionActionF
-getMailDizzyF = CollectedF (const denied)
+getMailDizzyF = CollectedF denied
   where
     denied :: Either (GameComputation Identity ()) (GameComputation Identity ())
     denied = Left $ modifyNarration $ updateActionConsequence msg

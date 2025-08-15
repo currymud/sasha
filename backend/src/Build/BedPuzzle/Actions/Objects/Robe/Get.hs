@@ -37,7 +37,7 @@ alreadyHaveRobeF = AcquisitionActionF (const (const haveRobe))
     msg = "You are already wearing the robe."
 
 getRobeDeniedF :: AcquisitionActionF
-getRobeDeniedF = CollectedF (const (Left denied))
+getRobeDeniedF = CollectedF (Left denied)
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
