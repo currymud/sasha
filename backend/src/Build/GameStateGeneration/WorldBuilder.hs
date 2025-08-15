@@ -1,4 +1,6 @@
 module Build.GameStateGeneration.WorldBuilder where
+import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
+                                                                          getObjectF)
 import           Build.GameStateGeneration.WorldGeneration               (ObjectBehaviorSpec (ObjectBehaviorSpec, _behaviors, _objectGID),
                                                                           PlayerSpec (PlayerSpec, _playerBehaviors, _playerLocationGID),
                                                                           WorldSpec (WorldSpec, _locationSpecs, _objectSpecs, _playerSpec, _spatialRelationships))
@@ -40,7 +42,9 @@ import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
 import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
-import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs
+import           Model.GameState                                         (AcquisitionActionF,
+                                                                          ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
@@ -60,7 +64,8 @@ import qualified Model.Parser.Atomics.Nouns
 import qualified Model.Parser.Atomics.Nouns                              as Grammar.Parser.Partitions.Nouns
 import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
                                                                           DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb)
+                                                                          ImplicitStimulusVerb,
+                                                                          SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
@@ -94,10 +99,10 @@ applyBehaviorSpec specs (gid, obj) =
     Nothing -> (gid, obj)
 
 
-buildGameStateFromSpec :: WorldSpec -> GameState
-buildGameStateFromSpec spec = GameState
-  { _world = buildWorldFromSpec spec
-  , _player = buildPlayerFromSpec (_playerSpec spec)
+buildGameStateFromSpec :: WorldSpec -> PlayerSpec -> GameState
+buildGameStateFromSpec w_spec p_spec = GameState
+  { _world = buildWorldFromSpec w_spec
+  , _player = buildPlayerFromSpec p_spec
   , _narration = initNarration
   , _evaluation = eval
   , _effectRegistry = effectRegistry
@@ -107,6 +112,15 @@ initNarration = Narration
   { _playerAction  = [initialAction]
   , _actionConsequence = mempty
   }
+
+dsaLook :: DirectionalStimulusVerb
+dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
+
+isaLook :: ImplicitStimulusVerb
+isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
+
+saOpen :: SomaticAccessVerb
+saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
 
 initialAction :: Text
 initialAction = "It was a rough night. You smoked your mind the night before, on cigarettes and songs that you'd been pickin'."
@@ -256,6 +270,13 @@ getRobeEffectMap = ActionEffectMap
       [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
       ]
+
+getRobe :: AcquisitionActionF
+getRobe = getObjectF robeObjGID
+
+getFromRobe :: AcquisitionActionF
+getFromRobe = getFromSupportF robeObjGID
+
 robeWornEffect :: Effect
 robeWornEffect = DirectionalStimulusEffect dirLook seeRobeWornGID
 

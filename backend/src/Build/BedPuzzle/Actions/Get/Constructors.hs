@@ -11,7 +11,7 @@ getObjectF objectGID  = CollectedF getit
     getit :: Either (GameComputation Identity ()) (GameComputation Identity ())
     getit = Right $ addToInventoryM objectGID
 
-getFromSupportF :: Object -> AcquisitionActionF
+getFromSupportF :: GID Object -> AcquisitionActionF
 getFromSupportF _supportObjGID = LosesObjectF getit
   where
     getit :: GID Object

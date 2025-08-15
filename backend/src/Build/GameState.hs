@@ -2,6 +2,10 @@
 module Build.GameState where
 import           Build.BedPuzzle.Actions.Objects.Mail                    (getMailAVP)
 import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
+import           Build.GameStateGeneration.BedroomWorldSpec              (bedroomPlayerSpec,
+                                                                          bedroomWorldSpec)
+import           Build.GameStateGeneration.WorldBuilder                  (buildGameStateFromSpec,
+                                                                          buildWorldFromSpec)
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
                                                                           alreadyHaveRobeFGID,
@@ -62,9 +66,11 @@ import           Model.GameState                                         (Action
                                                                           Config (Config, _actionMaps),
                                                                           Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           EffectRegistry,
+                                                                          GameState,
                                                                           Narration (..),
                                                                           Player (Player, _location, _playerActions),
-                                                                          PlayerKey (PlayerKeyObject))
+                                                                          PlayerKey (PlayerKeyObject),
+                                                                          World)
 import qualified Model.Parser.Atomics.Nouns
 import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
                                                                           DirectionalStimulusVerb,
@@ -98,128 +104,8 @@ config = Config
                    acquisitionActionMap
                    consumptionActionMap
                    posturalActionMap
-player :: Player
-player = Player
-  { _location = bedroomInBedGID
-  , _playerActions = playerActionMgmt
-  }
-  where
-    dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
-    isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
-    saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
-    playerActionMgmt :: ActionManagementFunctions
-    playerActionMgmt = ActionManagementFunctions $ Data.Set.fromList
-      [ ISAManagementKey isaLook isaEnabledLookGID
-      , ISAManagementKey inventory checkInventoryGID
-      , CAManagementKey takePillCVP pillTooFarFGID
-      , DSAManagementKey dsaLook dsvEnabledLookGID
-      , SSAManagementKey saOpen openEyesGID
--- needs adjustment
---       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
---      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) dizzyGetGID
---      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
-      , PPManagementKey stand standDeniedGID
-      ]
 
-  {-
-pillObjective :: Model.Parser.Atomics.Nouns.Objective
-pillObjective = pill
-
-simpleMailOP :: ObjectPhrase
-simpleMailOP = (ObjectPhrase . SimpleNounPhrase) mailObjective
-
-mailObjective :: Model.Parser.Atomics.Nouns.Objective
-mailObjective = Grammar.Parser.Partitions.Nouns.Objectives.mail
-
-simplePillOP :: ObjectPhrase
-simplePillOP = (ObjectPhrase . SimpleNounPhrase) pillObjective
-
-standKey :: ActionKey
-standKey = PosturalActionKey standDeniedGID
-
-dizzyGetKey :: ActionKey
-dizzyGetKey = AcquisitionalActionKey dizzyGetFGID
+gameState :: GameState
+gameState = buildGameStateFromSpec bedroomWorldSpec bedroomPlayerSpec
 
 
-standUpKey :: ActionKey
-standUpKey = PosturalActionKey standUpGID
-
-takePillKey :: ActionKey
-takePillKey = ConsumptionActionKey takePillFGID
-
-
-takePillEffectMap :: ActionEffectMap
-takePillEffectMap = ActionEffectMap
-  $ fromList
-      [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
-      ]
-
-
--- enableMailGetLocationEffect :: Effect
--- enableMailGetLocationEffect = AcquisitionEffect getMailAVP getMailGID
-
-standUpEffectMap :: ActionEffectMap
-standUpEffectMap = ActionEffectMap
-  $ fromList
-      [--  (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
---      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
---      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
-      ]
-
--- enableMailGetEffect :: Effect
--- enableMailGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleMailOP) getMailGID
-
-alreadyHaveRobeKey :: ActionKey
-alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeFGID
-
-emptyEffectMap :: ActionEffectMap
-emptyEffectMap = ActionEffectMap mempty
-
-getKeyMap :: ActionEffectMap
-getKeyMap = ActionEffectMap
-  $ fromList
-      [ (ObjectKey robeObjGID, Data.Set.empty)
-      ]
-
-getKey :: ActionKey
-getKey = AcquisitionalActionKey playerGetFGID
-
-
-playerGetEffectMap :: ActionEffectMap
-playerGetEffectMap = ActionEffectMap
-  $ fromList
-      [ -- Robe acquisition effects (player zone responsibility)
-        (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
-      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
-      , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
-      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect])
-      ]
-pillReachableEffect :: Effect
-pillReachableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
-
-pillTakeableEffect :: Effect
-pillTakeableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
-
-pillCuresHeadacheEffect :: Effect
-pillCuresHeadacheEffect = PositivePosturalEffect stand standUpGID  -- Changes stand action to successful version
-
-takeCV :: ConsumptionVerb
-takeCV = take
-
-pocketWornEffect :: Effect
-pocketWornEffect = DirectionalStimulusEffect dirLook seePocketRobeWornGID
-
-openEyesEffect :: Set Effect
-openEyesEffect = Data.Set.fromList [ImplicitStimulusEffect impLook agentCanSeeGID, PerceptionEffect]
-
-impLook :: ImplicitStimulusVerb
-impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
-
-dirLook :: DirectionalStimulusVerb
-dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
-
--- getRobeKey :: ActionKey
--- getRobeKey = AcquisitionalActionKey getRobeFGID
-
-
--}
