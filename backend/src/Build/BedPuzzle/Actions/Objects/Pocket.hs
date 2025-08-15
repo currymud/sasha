@@ -1,5 +1,4 @@
 module Build.BedPuzzle.Actions.Objects.Pocket where
-import           Build.Identifiers.Actions                               (notEvenPocketGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -41,4 +40,4 @@ pocketObj =
     verbMaps :: ActionManagementFunctions
     verbMaps = directionalStimulusVerbs
     directionalStimulusVerbs :: ActionManagementFunctions
-    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look notEvenPocketGID)
+    directionalStimulusVerbs = ActionManagementFunctions Data.Set.empty -- (DSAManagementKey look notEvenPocketGID)

@@ -1,43 +1,33 @@
-{-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Build.GameState where
-import           Build.BedPuzzle.Actions.Objects.Mail                    (getMailAVP)
-import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
-import           Build.Identifiers.Actions                               (acquisitionActionMap,
-                                                                          agentCanSeeGID,
+module Build.GameStateGeneration.WorldBuilder where
+import           Build.GameStateGeneration.WorldGeneration               (ObjectBehaviorSpec (ObjectBehaviorSpec, _behaviors, _objectGID),
+                                                                          PlayerSpec (PlayerSpec, _playerBehaviors, _playerLocationGID),
+                                                                          WorldSpec (WorldSpec, _locationSpecs, _objectSpecs, _playerSpec, _spatialRelationships))
+import           Build.Identifiers.Actions                               (agentCanSeeGID,
                                                                           alreadyHaveRobeFGID,
-                                                                          checkInventoryGID,
-                                                                          consumptionActionMap,
-                                                                          directionalStimulusActionMap,
                                                                           dizzyGetFGID,
-                                                                          dsvEnabledLookGID,
-                                                                          getMailDeniedFGID,
-                                                                          implicitStimulusActionMap,
-                                                                          isaEnabledLookGID,
                                                                           openEyesGID,
-                                                                          pillTooFarFGID,
                                                                           playerGetFGID,
-                                                                          posturalActionMap,
                                                                           seeChairFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
                                                                           seeRobeChairGID,
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
-                                                                          somaticAccessActionMap,
                                                                           standDeniedGID,
                                                                           standUpGID,
                                                                           takePillFGID,
                                                                           whatPillGID)
-import           Build.Identifiers.Locations                             (bedroomInBedGID)
+import           Build.Identifiers.Locations                             (bedroomInBedGID,
+                                                                          locationMap)
 import           Build.Identifiers.Objects                               (chairObjGID,
                                                                           mailObjGID,
+                                                                          objectMap,
                                                                           pillObjGID,
                                                                           pocketObjGID,
                                                                           robeObjGID,
                                                                           tableObjGID)
-import           Build.World                                             (world)
-import           Data.Map.Strict                                         (empty,
-                                                                          fromList)
+import qualified Data.Bifunctor
+import qualified Data.Map.Strict
 import           Data.Set                                                (Set)
 import qualified Data.Set
 import           Data.Text                                               (Text)
@@ -46,35 +36,72 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (mail,
                                                                           pill,
                                                                           robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
-import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
-import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory)
-import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
+import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
+import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
+import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb
 import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
-import qualified Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (open)
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
-                                                                          ActionKeyMap (ActionKeyMap),
-                                                                          ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, PPManagementKey, SSAManagementKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
-                                                                          ActionMaps (ActionMaps),
-                                                                          Config (Config, _actionMaps),
                                                                           Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           EffectRegistry,
-                                                                          Narration (..),
+                                                                          GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _world),
+                                                                          Narration (Narration, _actionConsequence, _playerAction),
+                                                                          Object (_objectActionManagement),
                                                                           Player (Player, _location, _playerActions),
-                                                                          PlayerKey (PlayerKeyObject))
+                                                                          PlayerKey (PlayerKeyObject),
+                                                                          SpatialRelationship,
+                                                                          SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                          World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+import           Model.GID                                               (GID)
+import           Model.Mappings                                          (GIDToDataMap (GIDToDataMap))
 import qualified Model.Parser.Atomics.Nouns
+import qualified Model.Parser.Atomics.Nouns                              as Grammar.Parser.Partitions.Nouns
 import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
                                                                           DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                                          ConsumptionVerbPhrase)
-import           Prelude                                                 hiding
-                                                                         (take)
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase))
+import           Relude.Foldable                                         (find)
+
+-- Generic function that TH will call
+buildWorldFromSpec :: WorldSpec -> World
+buildWorldFromSpec spec = World
+  { _objectMap = buildObjectMap (_objectSpecs spec)
+  , _locationMap = GIDToDataMap locationMap
+  , _perceptionMap = mempty
+  , _spatialRelationshipMap = buildSpatialMap (_spatialRelationships spec)
+  }
+
+buildPlayerFromSpec :: PlayerSpec -> Player
+buildPlayerFromSpec spec = Player
+  { _location = _playerLocationGID spec
+  , _playerActions = ActionManagementFunctions $ Data.Set.fromList (_playerBehaviors spec)
+  }
+
+buildObjectMap :: [ObjectBehaviorSpec] -> GIDToDataMap Object Object
+buildObjectMap specs =
+  let baseObjects = Data.Map.Strict.toList objectMap
+      objectsWithBehaviors = map (applyBehaviorSpec specs) baseObjects
+  in GIDToDataMap $ Data.Map.Strict.fromList objectsWithBehaviors
+
+applyBehaviorSpec :: [ObjectBehaviorSpec] -> (GID Object, Object) -> (GID Object, Object)
+applyBehaviorSpec specs (gid, obj) =
+  case find (\spec -> _objectGID spec == gid) specs of
+    Just spec -> (gid, obj { _objectActionManagement = ActionManagementFunctions $ Data.Set.fromList (_behaviors spec) })
+    Nothing -> (gid, obj)
+
+
+buildGameStateFromSpec :: WorldSpec -> GameState
+buildGameStateFromSpec spec = GameState
+  { _world = buildWorldFromSpec spec
+  , _player = buildPlayerFromSpec (_playerSpec spec)
+  , _narration = initNarration
+  , _evaluation = eval
+  , _effectRegistry = effectRegistry
+  }
 initNarration :: Narration
 initNarration = Narration
   { _playerAction  = [initialAction]
@@ -82,46 +109,12 @@ initNarration = Narration
   }
 
 initialAction :: Text
-initialAction = "Finally! Let's see how look works"
+initialAction = "It was a rough night. You smoked your mind the night before, on cigarettes and songs that you'd been pickin'."
 
+buildSpatialMap :: [(GID Object, [SpatialRelationship])] -> SpatialRelationshipMap
+buildSpatialMap spatialSpecs = SpatialRelationshipMap $ Data.Map.Strict.fromList $
+  map (Data.Bifunctor.second Data.Set.fromList) spatialSpecs
 
-config :: Config
-config = Config
-  { _actionMaps = actionMaps
-  }
-  where
-    actionMaps :: ActionMaps
-    actionMaps = ActionMaps
-                   implicitStimulusActionMap
-                   directionalStimulusActionMap
-                   somaticAccessActionMap
-                   acquisitionActionMap
-                   consumptionActionMap
-                   posturalActionMap
-player :: Player
-player = Player
-  { _location = bedroomInBedGID
-  , _playerActions = playerActionMgmt
-  }
-  where
-    dsaLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
-    isaLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
-    saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
-    playerActionMgmt :: ActionManagementFunctions
-    playerActionMgmt = ActionManagementFunctions $ Data.Set.fromList
-      [ ISAManagementKey isaLook isaEnabledLookGID
-      , ISAManagementKey inventory checkInventoryGID
-      , CAManagementKey takePillCVP pillTooFarFGID
-      , DSAManagementKey dsaLook dsvEnabledLookGID
-      , SSAManagementKey saOpen openEyesGID
--- needs adjustment
---       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
---      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) dizzyGetGID
---      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
-      , PPManagementKey stand standDeniedGID
-      ]
-
-  {-
 pillObjective :: Model.Parser.Atomics.Nouns.Objective
 pillObjective = pill
 
@@ -150,17 +143,16 @@ takePillKey = ConsumptionActionKey takePillFGID
 
 takePillEffectMap :: ActionEffectMap
 takePillEffectMap = ActionEffectMap
-  $ fromList
+  $ Data.Map.Strict.fromList
       [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
-
 
 -- enableMailGetLocationEffect :: Effect
 -- enableMailGetLocationEffect = AcquisitionEffect getMailAVP getMailGID
 
 standUpEffectMap :: ActionEffectMap
 standUpEffectMap = ActionEffectMap
-  $ fromList
+  $ Data.Map.Strict.fromList
       [--  (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
 --      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
 --      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
@@ -177,17 +169,42 @@ emptyEffectMap = ActionEffectMap mempty
 
 getKeyMap :: ActionEffectMap
 getKeyMap = ActionEffectMap
-  $ fromList
+  $ Data.Map.Strict.fromList
       [ (ObjectKey robeObjGID, Data.Set.empty)
       ]
 
 getKey :: ActionKey
 getKey = AcquisitionalActionKey playerGetFGID
 
+effectRegistry :: EffectRegistry
+effectRegistry = Data.Map.Strict.fromList
+  [ (openEyesKey, openEyesEffectMap)
+  , (getKey, playerGetEffectMap)
+  , (alreadyHaveRobeKey, emptyEffectMap)
+  , (standKey, emptyEffectMap)
+  , (takePillKey, takePillEffectMap)
+  , (standUpKey, standUpEffectMap)
+  , (dizzyGetKey, emptyEffectMap)
+  ]
+
+openEyesKey :: ActionKey
+openEyesKey  = SomaticAccessActionKey openEyesGID
+
+openEyesEffectMap :: ActionEffectMap
+openEyesEffectMap = ActionEffectMap
+  $ Data.Map.Strict.fromList
+      [ (bedroomOpenEyesKey, openEyesEffect)
+      , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
+      , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
+      , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
+      , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
+      , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
+      ]
 
 playerGetEffectMap :: ActionEffectMap
 playerGetEffectMap = ActionEffectMap
-  $ fromList
+  $ Data.Map.Strict.fromList
       [ -- Robe acquisition effects (player zone responsibility)
         (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
@@ -204,7 +221,7 @@ pillCuresHeadacheEffect :: Effect
 pillCuresHeadacheEffect = PositivePosturalEffect stand standUpGID  -- Changes stand action to successful version
 
 takeCV :: ConsumptionVerb
-takeCV = take
+takeCV = Grammar.Parser.Partitions.Verbs.ConsumptionVerbs.take
 
 pocketWornEffect :: Effect
 pocketWornEffect = DirectionalStimulusEffect dirLook seePocketRobeWornGID
@@ -218,8 +235,41 @@ impLook = Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
 dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
--- getRobeKey :: ActionKey
--- getRobeKey = AcquisitionalActionKey getRobeFGID
+bedroomOpenEyesKey :: ActionEffectKey
+bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
+enableRobeGetEffect :: Effect
+enableRobeGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetFGID
 
--}
+mailEffect :: Effect
+mailEffect = DirectionalStimulusEffect dirLook seeMailGID
+
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
+
+getRobeEffect :: Effect
+getRobeEffect = AcquisitionEffect getRobeAVP alreadyHaveRobeFGID
+
+getRobeEffectMap :: ActionEffectMap
+getRobeEffectMap = ActionEffectMap
+  $ Data.Map.Strict.fromList
+      [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
+      ]
+robeWornEffect :: Effect
+robeWornEffect = DirectionalStimulusEffect dirLook seeRobeWornGID
+
+simpleRobeOP :: ObjectPhrase
+simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
+
+robeObjective :: Model.Parser.Atomics.Nouns.Objective
+robeObjective = robe
+
+robeEffect :: Effect
+robeEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
+pillEffect :: Effect
+pillEffect = DirectionalStimulusEffect dirLook whatPillGID
+tableEffect :: Effect
+tableEffect = DirectionalStimulusEffect dirLook seeTableGID
+chairEffect :: Effect
+chairEffect = DirectionalStimulusEffect dirLook seeChairFGID

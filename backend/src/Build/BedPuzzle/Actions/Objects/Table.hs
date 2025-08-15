@@ -1,5 +1,4 @@
 module Build.BedPuzzle.Actions.Objects.Table where
-import           Build.Identifiers.Actions                               (whatTableGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Adjectives                    (small)
 import           Grammar.Parser.Partitions.Misc                          (the)
@@ -27,4 +26,4 @@ tableObj =
     verbMaps = directionalStimulusVerbs
 
     directionalStimulusVerbs :: ActionManagementFunctions
-    directionalStimulusVerbs =  ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look whatTableGID)
+    directionalStimulusVerbs =  ActionManagementFunctions $ Data.Set.empty -- (DSAManagementKey look whatTableGID)

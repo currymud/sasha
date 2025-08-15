@@ -1,7 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 module Build.BedPuzzle.Actions.Objects.Pill where
-import           Build.Identifiers.Actions                               (notEvenPillGID,
-                                                                          takePillDeniedFGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Adjectives                    (white)
 import           Grammar.Parser.Partitions.Misc                          (the)
@@ -35,8 +33,8 @@ pillObj =
   where
     verbMaps :: ActionManagementFunctions
     verbMaps = ActionManagementFunctions $ Data.Set.fromList
-      [ DSAManagementKey look notEvenPillGID
-      , CAManagementKey takePillCVP takePillDeniedFGID
+      [ --  DSAManagementKey look notEvenPillGID
+       -- CAManagementKey takePillCVP takePillDeniedFGID
       ]
 
 -- Helper definitions
