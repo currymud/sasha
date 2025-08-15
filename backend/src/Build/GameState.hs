@@ -17,7 +17,7 @@ import           Build.Identifiers.Actions                               (acquis
                                                                           pillTooFarFGID,
                                                                           playerGetFGID,
                                                                           posturalActionMap,
-                                                                          seeChairGID,
+                                                                          seeChairFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
                                                                           seeRobeChairGID,
@@ -303,4 +303,4 @@ pillEffect = DirectionalStimulusEffect dirLook whatPillGID
 tableEffect :: Effect
 tableEffect = DirectionalStimulusEffect dirLook seeTableGID
 chairEffect :: Effect
-chairEffect = DirectionalStimulusEffect dirLook seeChairGID
+chairEffect = DirectionalStimulusEffect dirLook seeChairFGID

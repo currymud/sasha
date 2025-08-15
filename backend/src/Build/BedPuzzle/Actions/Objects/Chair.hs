@@ -1,5 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Chair where
-import           Build.Identifiers.Actions                               (whatChairGID)
+import           Build.Identifiers.Actions                               (whatChairFGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Adjectives                    (small)
 import           Grammar.Parser.Partitions.Misc                          (the)
@@ -26,4 +26,4 @@ chairObj =
     verbMaps :: ActionManagementFunctions
     verbMaps = directionalStimulusVerbs
     directionalStimulusVerbs :: ActionManagementFunctions
-    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look whatChairGID)
+    directionalStimulusVerbs = ActionManagementFunctions $ Data.Set.singleton (DSAManagementKey look whatChairFGID)

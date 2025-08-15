@@ -2,8 +2,8 @@
 module Build.World (world) where
 
 import           Build.Identifiers.Locations (locationMap)
-import           Build.Identifiers.Objects   (chairObjGID, mailObjGID,
-                                              objectMap, pillObjGID,
+import           Build.Identifiers.Objects   (chairObjGID, floorObjGID,
+                                              mailObjGID, objectMap, pillObjGID,
                                               pocketObjGID, robeObjGID,
                                               tableObjGID)
 import           Data.Map.Strict             (Map)
@@ -28,15 +28,18 @@ world = World objectMap' locationMap' mempty spatialRelationships
    spatialRelationships =  SpatialRelationshipMap srMap
    srMap :: Map (GID Object) (Set SpatialRelationship)
    srMap = Data.Map.Strict.fromList
-     [ (chairObjGID, chairHolds)
+     [ (chairObjGID, Data.Set.fromList [chairHolds, chairSupported])
      , (mailObjGID, Data.Set.singleton mailSupported)
      , (robeObjGID, Data.Set.fromList [robeHeld, robeContains])
      , (pocketObjGID, Data.Set.fromList [pocketContained, pocketContains])  -- Pocket contained in robe AND contains pill
      , (pillObjGID, Data.Set.singleton pillContained)  -- Pill is contained in pocket
-     , (tableObjGID, Data.Set.singleton tableSupports)
+     , (tableObjGID, Data.Set.fromList [tableSupported,tableSupports])
      ]
-   chairHolds :: Set SpatialRelationship
-   chairHolds = Data.Set.fromList [Supports $ Data.Set.fromList [robeObjGID]]
+   chairHolds :: SpatialRelationship
+   chairHolds = Supports $ Data.Set.fromList [robeObjGID]
+
+   chairSupported :: SpatialRelationship
+   chairSupported = SupportedBy floorObjGID
 
    robeContains :: SpatialRelationship
    robeContains = Contains $ Data.Set.fromList [pocketObjGID]
@@ -44,7 +47,9 @@ world = World objectMap' locationMap' mempty spatialRelationships
    tableSupports :: SpatialRelationship
    tableSupports = Supports $ Data.Set.fromList [mailObjGID]
 
--- Add new mailSupported relationship:
+   tableSupported :: SpatialRelationship
+   tableSupported = SupportedBy floorObjGID
+
    mailSupported :: SpatialRelationship
    mailSupported = SupportedBy tableObjGID
 

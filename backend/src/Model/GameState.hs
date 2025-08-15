@@ -194,7 +194,7 @@ type SearchStrategy = NounKey
 type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | CollectedF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity ()))
  | LosesObjectF (GID Object -> GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
 
 type ConsumptionActionF :: Type

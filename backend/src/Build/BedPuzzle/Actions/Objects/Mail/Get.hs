@@ -8,6 +8,7 @@ import           Model.GameState        (AcquisitionActionF (CollectedF),
                                          GameComputation,
                                          updateActionConsequence)
 
+
 alreadyHaveMailF :: AcquisitionActionF
 alreadyHaveMailF = CollectedF (const haveMail)
   where

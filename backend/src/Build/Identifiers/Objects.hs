@@ -1,5 +1,6 @@
 module Build.Identifiers.Objects  where
 import           Build.BedPuzzle.Actions.Objects.Chair  (chairObj)
+import           Build.BedPuzzle.Actions.Objects.Floor  (floorObj)
 import           Build.BedPuzzle.Actions.Objects.Mail   (mailObj)
 import           Build.BedPuzzle.Actions.Objects.Pill   (pillObj)
 import           Build.BedPuzzle.Actions.Objects.Pocket (pocketObj)
@@ -12,4 +13,5 @@ makeObjectGIDsAndMap [ [| mailObj |]
                      , [| tableObj |]
                      , [| chairObj |]
                      , [| robeObj |]
-                     , [| pocketObj |]]
+                     , [| pocketObj |]
+                       , [| floorObj|] ]

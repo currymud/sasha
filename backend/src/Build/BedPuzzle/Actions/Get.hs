@@ -82,14 +82,13 @@ doGet sourceGID targetGID avp = do
         Nothing -> error "Target object has no acquisition action for this phrase"
   either id id(removedFromRes >> addedToRes)
 
-getObjectF :: AcquisitionActionF
-getObjectF = CollectedF getit
+getObjectF :: GID Object -> AcquisitionActionF
+getObjectF objectGID  = CollectedF getit
   where
-    getit :: GID Object
-               -> Either (GameComputation Identity ()) (GameComputation Identity ())
-    getit objectGID = Right $ addToInventoryM objectGID
+    getit :: Either (GameComputation Identity ()) (GameComputation Identity ())
+    getit = Right $ addToInventoryM objectGID
 
-getFromSupportF :: AcquisitionActionF
+getFromSupportF :: GID Object -> AcquisitionActionF
 getFromSupportF = LosesObjectF getit
   where
     getit :: GID Object
