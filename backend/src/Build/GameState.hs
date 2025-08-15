@@ -4,20 +4,18 @@ import           Build.BedPuzzle.Actions.Objects.Mail                    (getMai
 import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
 import           Build.Identifiers.Actions                               (acquisitionActionMap,
                                                                           agentCanSeeGID,
-                                                                          alreadyHaveRobeGID,
+                                                                          alreadyHaveRobeFGID,
                                                                           checkInventoryGID,
                                                                           consumptionActionMap,
                                                                           directionalStimulusActionMap,
-                                                                          dizzyGetGID,
+                                                                          dizzyGetFGID,
                                                                           dsvEnabledLookGID,
-                                                                          getMailDeniedGID,
-                                                                          getMailGID,
-                                                                          getRobeGID,
+                                                                          getMailDeniedFGID,
                                                                           implicitStimulusActionMap,
                                                                           isaEnabledLookGID,
                                                                           openEyesGID,
                                                                           pillTooFarFGID,
-                                                                          playerGetGID,
+                                                                          playerGetFGID,
                                                                           posturalActionMap,
                                                                           seeChairGID,
                                                                           seeMailGID,
@@ -125,9 +123,10 @@ player = Player
       , CAManagementKey takePillCVP pillTooFarFGID
       , DSAManagementKey dsaLook dsvEnabledLookGID
       , SSAManagementKey saOpen openEyesGID
-      , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
-      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) dizzyGetGID
-      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
+-- needs adjustment
+--       , AAManagementKey (SimpleAcquisitionVerbPhrase get simplePillOP) playerGetGID
+--      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleRobeOP) dizzyGetGID
+--      , AAManagementKey (SimpleAcquisitionVerbPhrase get simpleMailOP) playerGetGID
       , PPManagementKey stand standDeniedGID
       ]
 
@@ -176,7 +175,7 @@ actionKeyMap = ActionKeyMap
       ]
 
 dizzyGetKey :: ActionKey
-dizzyGetKey = AcquisitionalActionKey dizzyGetGID
+dizzyGetKey = AcquisitionalActionKey dizzyGetFGID
 
 
 standUpKey :: ActionKey
@@ -192,22 +191,22 @@ takePillEffectMap = ActionEffectMap
       [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
 
-enableMailGetLocationEffect :: Effect
-enableMailGetLocationEffect = AcquisitionEffect getMailAVP getMailGID
+-- enableMailGetLocationEffect :: Effect
+-- enableMailGetLocationEffect = AcquisitionEffect getMailAVP getMailGID
 
 standUpEffectMap :: ActionEffectMap
 standUpEffectMap = ActionEffectMap
   $ fromList
-      [ (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
-      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
-      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
+      [--  (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
+--      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
+--      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
       ]
 
-enableMailGetEffect :: Effect
-enableMailGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleMailOP) getMailGID
+-- enableMailGetEffect :: Effect
+-- enableMailGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleMailOP) getMailGID
 
 alreadyHaveRobeKey :: ActionKey
-alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeGID
+alreadyHaveRobeKey = AcquisitionalActionKey alreadyHaveRobeFGID
 
 emptyEffectMap :: ActionEffectMap
 emptyEffectMap = ActionEffectMap mempty
@@ -219,7 +218,7 @@ getKeyMap = ActionEffectMap
       ]
 
 getKey :: ActionKey
-getKey = AcquisitionalActionKey playerGetGID
+getKey = AcquisitionalActionKey playerGetFGID
 
 openEyesKey :: ActionKey
 openEyesKey  = SomaticAccessActionKey openEyesGID
@@ -237,7 +236,7 @@ openEyesEffectMap = ActionEffectMap
       ]
 
 enableRobeGetEffect :: Effect
-enableRobeGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetGID
+enableRobeGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetFGID
 
 mailEffect :: Effect
 mailEffect = DirectionalStimulusEffect dirLook seeMailGID
@@ -282,10 +281,10 @@ getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
 
 getRobeEffect :: Effect
-getRobeEffect = AcquisitionEffect getRobeAVP alreadyHaveRobeGID
+getRobeEffect = AcquisitionEffect getRobeAVP alreadyHaveRobeFGID
 
-getRobeKey :: ActionKey
-getRobeKey = AcquisitionalActionKey getRobeGID
+-- getRobeKey :: ActionKey
+-- getRobeKey = AcquisitionalActionKey getRobeFGID
 
 getRobeEffectMap :: ActionEffectMap
 getRobeEffectMap = ActionEffectMap

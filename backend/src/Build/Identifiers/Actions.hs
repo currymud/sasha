@@ -7,7 +7,8 @@ import           Actions.Percieve.Look                                   (agentC
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
 
-import           Build.BedPuzzle.Actions.Get                             (getFromSupportF,
+import           Build.BedPuzzle.Actions.Get                             (getDeniedF,
+                                                                          getFromSupportF,
                                                                           getObjectF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
 import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
@@ -67,11 +68,11 @@ dsvEnabledLook :: DirectionalStimulusActionF
 dsvEnabledLook =
   dsvActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
-playerGet :: AcquisitionActionF
-playerGet = Build.BedPuzzle.Actions.Get.get
+playerGetF :: AcquisitionActionF
+playerGetF = Build.BedPuzzle.Actions.Get.getF
 
-dizzyGet :: AcquisitionActionF
-dizzyGet = Build.BedPuzzle.Actions.Get.getDenied
+dizzyGetF :: AcquisitionActionF
+dizzyGetF = Build.BedPuzzle.Actions.Get.getDeniedF
 
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
@@ -107,14 +108,18 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
 makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
-                                  [| getMailDizzyF |],
+
                                   [| getMailDeniedF |],
+                                  [|  alreadyHaveRobeF |],
+                                  [| playerGetF|],
+                                  [| dizzyGetF |]]
+                                    {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],
                                  [| alreadyHaveRobeF |],
                                  [| getRobeDeniedF |],
                                 [| getFloorDeniedF |]]
-
+-}
 makeConsumptionActionGIDsAndMap [ [|alreadyTookPillF |],
                                   [| pillTooFarF |],
                                   [| takePillF |],

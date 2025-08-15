@@ -1,6 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Robe where
-import           Build.Identifiers.Actions                               (getRobeGID,
-                                                                          whatRobeGID)
+import           Build.Identifiers.Actions                               (whatRobeGID)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -44,7 +43,6 @@ robeObj =
     verbMaps :: ActionManagementFunctions
     verbMaps = ActionManagementFunctions $ Data.Set.fromList
       [ DSAManagementKey look whatRobeGID
-      , AAManagementKey getRobeAVP getRobeGID
       ]
 dsRobe :: DirectionalStimulus
 dsRobe = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.robe

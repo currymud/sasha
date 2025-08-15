@@ -1,6 +1,5 @@
 module Build.BedPuzzle.Actions.Objects.Mail where
-import           Build.Identifiers.Actions                               (getMailDeniedGID,
-                                                                          getMailGID,
+import           Build.Identifiers.Actions                               (getMailDeniedFGID,
                                                                           notEvenMailGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Misc                          (the)
@@ -33,7 +32,6 @@ mailObj =
     verbMaps :: ActionManagementFunctions
     verbMaps = ActionManagementFunctions $ Data.Set.fromList
       [ DSAManagementKey look notEvenMailGID
-      , AAManagementKey getMailAVP getMailGID
       ]
 
 mailObjective :: Objective

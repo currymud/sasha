@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Get (get,getDenied, getObjectF, getFromSupportF) where
+module Build.BedPuzzle.Actions.Get (getF,getDeniedF, getObjectF, getFromSupportF) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import           Control.Monad.State           (gets, modify')
@@ -42,16 +42,16 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Model.Parser.GCase            (NounKey)
 
-getDenied :: AcquisitionActionF
-getDenied = AcquisitionActionF (const (const denied))
+getDeniedF :: AcquisitionActionF
+getDeniedF = AcquisitionActionF (const (const denied))
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
-get :: AcquisitionActionF
-get = AcquisitionActionF getit
+getF :: AcquisitionActionF
+getF = AcquisitionActionF getit
   where
     getit :: SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
     getit loc avp = undefined
