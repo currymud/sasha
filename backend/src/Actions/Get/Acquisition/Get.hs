@@ -26,7 +26,7 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                 NounPhrase (SimpleNounPhrase))
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                 StimulusVerbPhrase (DirectStimulusVerbPhrase))
 import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
 
@@ -34,6 +34,9 @@ import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey)
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
+  let verb = case avp of
+        SimpleAcquisitionVerbPhrase v _ -> v
+        AcquisitionVerbPhrase v _ _ _   -> v
   case lookupAcquisition avp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do

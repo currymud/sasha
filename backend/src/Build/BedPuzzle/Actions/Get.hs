@@ -60,7 +60,7 @@ getF = AcquisitionActionF getit
     getit searchStrategy avp =
       let (_ophrase, nounKey) = parseAcquisitionPhrase avp
       in case avp of
-        SimpleAcquisitionVerbPhrase verb objectPhrase -> do
+        SimpleAcquisitionVerbPhrase _verb objectPhrase -> do
         -- Parse the object phrase to get the noun key
 
         -- Use search strategy to find target object and its container/supporter
@@ -68,12 +68,12 @@ getF = AcquisitionActionF getit
           case maybeResult of
             Just (targetGID, sourceGID) -> do
             -- Coordinate the handoff between source and target
-              doGet sourceGID targetGID verb
+              doGet sourceGID targetGID avp
             Nothing -> do
             -- Object not found or not accessible
               modifyNarration $ updateActionConsequence "You don't see that here."
 
-        AcquisitionVerbPhrase verb objectPhrase _sourceMarker supportPhrase -> do
+        AcquisitionVerbPhrase _verb objectPhrase _sourceMarker supportPhrase -> do
         -- Parse both the target and source from the phrase
           let sourceNounKey = parseSupportPhrase supportPhrase
 
@@ -103,19 +103,19 @@ getF = AcquisitionActionF getit
                         SupportedBy oid -> oid == sourceGID
                         _ -> False) (Data.Set.toList relationships)
                   if isContainedInSource
-                    then doGet sourceGID targetGID verb
+                    then doGet sourceGID targetGID avp
                     else modifyNarration $ updateActionConsequence "That's not in there."
                 Nothing -> modifyNarration $ updateActionConsequence "That's not in there."
             (Nothing, _) -> modifyNarration $ updateActionConsequence "You don't see that here."
             (_, Nothing) -> modifyNarration $ updateActionConsequence "You don't see that container here."
-doGet :: GID Object -> GID Object -> AcquisitionVerb -> GameComputation Identity ()
-doGet sourceGID targetGID verb = do
+doGet :: GID Object -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()
+doGet sourceGID targetGID avp = do
   -- Role 1: Execute source object's RemovedFromF action
   actionMap <- asks (_acquisitionActionMap . _actionMaps)
 
   sourceObj <- getObjectM sourceGID
   let sourceActionMgmt = _objectActionManagement sourceObj
-      removedFromRes = case lookupAcquisition verb sourceActionMgmt of
+      removedFromRes = case lookupAcquisition avp sourceActionMgmt of
         Just sourceActionGID -> do
          case Data.Map.Strict.lookup sourceActionGID actionMap of
              Just (LosesObjectF actionFunc) -> do
@@ -125,7 +125,7 @@ doGet sourceGID targetGID verb = do
         Nothing -> error "Source object has no acquisition action for this phrase"
   targetObj <- getObjectM targetGID
   let targetActionMgmt = _objectActionManagement targetObj
-      addedToRes = case lookupAcquisition verb targetActionMgmt of
+      addedToRes = case lookupAcquisition avp targetActionMgmt of
         Just targetActionGID -> do
           case Data.Map.Strict.lookup targetActionGID actionMap of
             Just (CollectedF actionFunc) -> actionFunc

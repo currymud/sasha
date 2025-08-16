@@ -161,17 +161,17 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 -- GameState.hs - Updated effect processing functions
 
-processAcquisitionEffect :: AcquisitionVerb
+processAcquisitionEffect :: AcquisitionVerbPhrase
                          -> GID AcquisitionActionF
                          -> GameComputation Identity ()
-processAcquisitionEffect verb newActionGID = do
+processAcquisitionEffect avp newActionGID = do
   modify' $ \gs ->
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
         -- Remove any existing acquisition action for this phrase
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) playerActionSet
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) playerActionSet
         -- Add the new action
-        updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
+        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
