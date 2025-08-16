@@ -84,10 +84,12 @@ library
       Build.BedPuzzle.BedRoom
       Build.GameState
       Build.GameStateGeneration.BedroomWorldSpec
+      Build.GameStateGeneration.LocationSpec.Locations
       Build.GameStateGeneration.LocationSpec.LocationGIDs
-      Build.GameStateGeneration.Objects
       Build.GameStateGeneration.ObjectSpec
+      Build.GameStateGeneration.ObjectSpec.Objects
       Build.GameStateGeneration.ObjectSpec.ObjectGIDS
+      Build.GameStateGeneration.World
       Build.GameStateGeneration.WorldGeneration
       Build.GameStateGeneration.WorldBuilder
       Build.Identifiers.Actions

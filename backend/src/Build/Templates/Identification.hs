@@ -120,6 +120,20 @@ makeObjectMap gidObjectPairs = do
        , ValD (VarP mapName) (NormalB gidToDataMapExp) []
        ]
 
+makeLocationMap :: [(Name, Name)] -> Q [Dec]
+makeLocationMap gidLocationPairs = do
+  let mapName = mkName "locationMap"
+      tuples = [ TupE [Just (VarE gidName), Just (VarE locName)]
+               | (gidName, locName) <- gidLocationPairs ]
+
+      listExp = ListE tuples
+      innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
+      gidToDataMapExp = AppE (ConE 'GIDToDataMap) innerMapExp
+      mapType = AppT (AppT (ConT ''GIDToDataMap) (ConT ''Location)) (ConT ''Location)
+
+  pure [ SigD mapName mapType
+       , ValD (VarP mapName) (NormalB gidToDataMapExp) []
+       ]
 -- | Alternative version that takes expressions directly
 makeObjectMapFromExprs :: [ExpQ] -> Q [Dec]
 makeObjectMapFromExprs pairExpQs = do
