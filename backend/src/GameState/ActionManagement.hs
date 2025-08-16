@@ -9,7 +9,7 @@ import           GameState                     (modifyLocationM, modifyObjectM)
 import           GameState.EffectRegistry      (lookupEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
-                                                modifyPerceptionMapM)
+                                                modifyPerceptionMapM, youSeeM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
@@ -221,6 +221,7 @@ processEffect _ PerceptionEffect = do
   perceivableObjects <- computePerceivableObjects
   newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
   modifyPerceptionMapM (const newPerceptionMap)
+  youSeeM
 
 -- Catch-all for unhandled effect/key combinations
 processEffect effectKey effect = do
