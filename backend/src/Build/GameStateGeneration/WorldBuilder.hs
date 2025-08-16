@@ -211,7 +211,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
-      , (ObjectKey robeObjGID, Data.Set.singleton robeEffect)
+      , (ObjectKey robeObjGID, Data.Set.singleton robeLookEffect)
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
       ]
@@ -286,8 +286,11 @@ simpleRobeOP = (ObjectPhrase . SimpleNounPhrase) robeObjective
 robeObjective :: Model.Parser.Atomics.Nouns.Objective
 robeObjective = robe
 
-robeEffect :: Effect
-robeEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
+robeLookEffect :: Effect
+robeLookEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
+
+
+
 pillEffect :: Effect
 pillEffect = DirectionalStimulusEffect dirLook whatPillGID
 tableEffect :: Effect

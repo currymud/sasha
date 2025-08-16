@@ -30,11 +30,27 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
                                                 StimulusVerbPhrase (DirectStimulusVerbPhrase))
 import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
 
+
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  pure ()
-
+  case lookupAcquisition avp availableActions of
+    Nothing -> error "Programmer Error: No acquisition action found for phrase: "
+    Just actionGID -> do
+      actionMap <- asks (_acquisitionActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error "Programmer Error: No acquisition action found for GID: "
+        Just (AcquisitionActionF actionFunc) -> do
+          let actionKey = AcquisitionalActionKey actionGID
+          actionFunc locationSearchStrategy avp
+          processEffectsFromRegistry actionKey
+        Just (LosesObjectF _actionFunc) -> do
+          let actionKey = AcquisitionalActionKey actionGID
+          -- For drop actions, we'd need different logic here
+          -- But for now, error since drop isn't implemented
+          error "Drop actions not yet implemented"
+          processEffectsFromRegistry actionKey
+        Just (CollectedF _) -> error "CollectedF should not be in player action map"
 -- | General case: Search current location's object semantic map
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
