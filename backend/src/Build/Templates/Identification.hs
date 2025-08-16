@@ -23,6 +23,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 SomaticAccessActionF)
 import           Model.GID                     (GID (GID))
 import           Model.Label                   (Label (Label))
+import           Model.Mappings                (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
@@ -103,6 +104,40 @@ capitalize []     = []
 capitalize (c:cs) = toUpper c : map toLower cs
 -- This is all code that is likely cruft
 
+-- | Generate object map from GID-Object pairs
+makeObjectMap :: [(Name, Name)] -> Q [Dec]
+makeObjectMap gidObjectPairs = do
+  let mapName = mkName "objectMap"
+      tuples = [ TupE [Just (VarE gidName), Just (VarE objName)]
+               | (gidName, objName) <- gidObjectPairs ]
+
+      listExp = ListE tuples
+      innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
+      gidToDataMapExp = AppE (ConE 'GIDToDataMap) innerMapExp
+      mapType = AppT (AppT (ConT ''GIDToDataMap) (ConT ''Object)) (ConT ''Object)
+
+  pure [ SigD mapName mapType
+       , ValD (VarP mapName) (NormalB gidToDataMapExp) []
+       ]
+
+-- | Alternative version that takes expressions directly
+makeObjectMapFromExprs :: [ExpQ] -> Q [Dec]
+makeObjectMapFromExprs pairExpQs = do
+  pairExps <- sequence pairExpQs
+  let mapName = mkName "objectMap"
+      tuples = [ case pairExp of
+                   TupE [Just gidExp, Just objExp] -> TupE [Just gidExp, Just objExp]
+                   _ -> error "Expected tuple expression"
+               | pairExp <- pairExps ]
+
+      listExp = ListE tuples
+      innerMapExp = AppE (VarE 'Data.Map.Strict.fromList) listExp
+      gidToDataMapExp = AppE (ConE 'GIDToDataMap) innerMapExp
+      mapType = AppT (AppT (ConT ''GIDToDataMap) (ConT ''Object)) (ConT ''Object)
+
+  pure [ SigD mapName mapType
+       , ValD (VarP mapName) (NormalB gidToDataMapExp) []
+       ]
 
 makeLabels :: [(ExpQ, Lexeme)] -> Q [Dec]
 makeLabels expLexemePairs = do
