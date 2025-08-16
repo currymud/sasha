@@ -33,7 +33,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
 
@@ -239,9 +239,17 @@ lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
-lookupAcquisition :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-lookupAcquisition avp (ActionManagementFunctions actions) =
+lookupAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
   listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+
+lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+lookupAcquisition verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | AAManagementKey phrase gid <- Data.Set.toList actions, matchesVerb phrase]
+  where
+    matchesVerb :: AcquisitionVerbPhrase -> Bool
+    matchesVerb (SimpleAcquisitionVerbPhrase v _) = v == verb
+    matchesVerb (AcquisitionVerbPhrase v _ _ _)   = v == verb
 
 lookupConsumption :: ConsumptionVerbPhrase -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption phrase (ActionManagementFunctions actions) =

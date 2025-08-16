@@ -8,6 +8,7 @@ import qualified Data.Map.Strict
 import           Data.Set                      (Set, elemAt, null, toList)
 import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisition,
+                                                lookupAcquisitionVerbPhrase,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupEffectsInRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
@@ -34,10 +35,7 @@ import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey)
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  let verb = case avp of
-        SimpleAcquisitionVerbPhrase v _ -> v
-        AcquisitionVerbPhrase v _ _ _   -> v
-  case lookupAcquisition avp availableActions of
+  case lookupAcquisitionVerbPhrase avp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)

@@ -15,7 +15,8 @@ import           GameState                     (addToInventoryM, getObjectM,
                                                 modifySpatialRelationshipsForObjectM,
                                                 parseAcquisitionPhrase,
                                                 parseSupportPhrase)
-import           GameState.ActionManagement    (lookupAcquisition)
+import           GameState.ActionManagement    (lookupAcquisition,
+                                                lookupAcquisitionVerbPhrase)
 import           GameState.Perception          (updatePerceptionMapM)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
@@ -115,7 +116,7 @@ doGet sourceGID targetGID avp = do
 
   sourceObj <- getObjectM sourceGID
   let sourceActionMgmt = _objectActionManagement sourceObj
-      removedFromRes = case lookupAcquisition avp sourceActionMgmt of
+      removedFromRes = case lookupAcquisitionVerbPhrase avp sourceActionMgmt of
         Just sourceActionGID -> do
          case Data.Map.Strict.lookup sourceActionGID actionMap of
              Just (LosesObjectF actionFunc) -> do
@@ -125,7 +126,7 @@ doGet sourceGID targetGID avp = do
         Nothing -> error "Source object has no acquisition action for this phrase"
   targetObj <- getObjectM targetGID
   let targetActionMgmt = _objectActionManagement targetObj
-      addedToRes = case lookupAcquisition avp targetActionMgmt of
+      addedToRes = case lookupAcquisitionVerbPhrase avp targetActionMgmt of
         Just targetActionGID -> do
           case Data.Map.Strict.lookup targetActionGID actionMap of
             Just (CollectedF actionFunc) -> actionFunc
