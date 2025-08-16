@@ -23,6 +23,10 @@ module GameState ( addToInventoryM
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
+                 , parseObjectPhrase
+                 , parseConsumablePhrase
+                 , parseDirectionalStimulusNounPhrase
+                 , parseSupportPhrase
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processAcquisitionEffect
@@ -30,7 +34,6 @@ module GameState ( addToInventoryM
                  , processPosturalEffect
                  , removeFromInventoryM
                  ) where
-import           Control.Monad                 (filterM)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
@@ -62,15 +65,19 @@ import           Model.GameState               (AcquisitionActionF,
                                                 updateActionConsequence)
 import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
+import           Model.Parser.Atomics.Nouns    (Consumable, Container, Surface)
 import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                DirectionalStimulusNounPhrase,
+                                                ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                ObjectPhrase (ObjectPhrase))
+                                                ObjectPhrase (ObjectPhrase),
+                                                SupportPhrase (ContainerSupport, SurfaceSupport),
+                                                SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
-import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ObjectiveKey))
+import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 
 getDescriptionM :: GID Object -> GameComputation Identity Text
@@ -97,6 +104,60 @@ parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp 
                (ConsumableNounPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
                (ConsumableNounPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
     in (ophrase, obj)
+-- GameState.hs - Updated effect processing functions
+
+
+parseDirectionalStimulusNounPhrase :: DirectionalStimulusNounPhrase -> NounKey
+parseDirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase nounPhrase) =
+  let noun = case nounPhrase of
+               SimpleNounPhrase obj             -> obj
+               NounPhrase _ obj                 -> obj
+               DescriptiveNounPhrase _ obj      -> obj
+               DescriptiveNounPhraseDet _ _ obj -> obj
+  in DirectionalStimulusKey noun
+
+parseObjectPhrase :: ObjectPhrase -> NounKey
+parseObjectPhrase (ObjectPhrase nounPhrase) =
+  let noun = case nounPhrase of
+               SimpleNounPhrase obj             -> obj
+               NounPhrase _ obj                 -> obj
+               DescriptiveNounPhrase _ obj      -> obj
+               DescriptiveNounPhraseDet _ _ obj -> obj
+  in ObjectiveKey noun
+
+parseConsumablePhrase :: ConsumableNounPhrase -> NounKey
+parseConsumablePhrase (ConsumableNounPhrase phrase) =
+  let noun = case phrase of
+                     SimpleNounPhrase noun'             -> noun'
+                     NounPhrase _ noun'                 -> noun'
+                     DescriptiveNounPhrase _ noun'      -> noun'
+                     DescriptiveNounPhraseDet _ _ noun' -> noun'
+  in ConsumableNounKey noun
+
+parseSupportPhrase :: SupportPhrase -> NounKey
+parseSupportPhrase supportPhrase = case supportPhrase of
+  SurfaceSupport surfacePhrase ->
+    case surfacePhrase of
+      SimpleSurfacePhrase nounPhrase -> extractSurfaceNoun nounPhrase
+      SurfacePhrase _ nounPhrase     -> extractSurfaceNoun nounPhrase
+  ContainerSupport containerPhrase ->
+    case containerPhrase of
+      SimpleContainerPhrase nounPhrase -> extractContainerNoun nounPhrase
+      ContainerPhrase _ nounPhrase     -> extractContainerNoun nounPhrase
+  where
+    extractSurfaceNoun :: NounPhrase Surface -> NounKey
+    extractSurfaceNoun nounPhrase = case nounPhrase of
+      SimpleNounPhrase surface             -> SurfaceKey surface
+      NounPhrase _ surface                 -> SurfaceKey surface
+      DescriptiveNounPhrase _ surface      -> SurfaceKey surface
+      DescriptiveNounPhraseDet _ _ surface -> SurfaceKey surface
+
+    extractContainerNoun :: NounPhrase Container -> NounKey
+    extractContainerNoun nounPhrase = case nounPhrase of
+      SimpleNounPhrase container             -> ContainerKey container
+      NounPhrase _ container                 -> ContainerKey container
+      DescriptiveNounPhrase _ container      -> ContainerKey container
+      DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 -- GameState.hs - Updated effect processing functions
 
 processAcquisitionEffect :: AcquisitionVerbPhrase

@@ -10,9 +10,11 @@ import           Data.Set                      (Set, delete, elemAt, filter,
                                                 insert, map, null, toList)
 import           Data.Text                     (Text)
 import           GameState                     (addToInventoryM, getObjectM,
-                                                getPlayerM, modifyNarration,
+                                                getPlayerLocationM, getPlayerM,
+                                                modifyNarration,
                                                 modifySpatialRelationshipsForObjectM,
-                                                parseAcquisitionPhrase)
+                                                parseAcquisitionPhrase,
+                                                parseSupportPhrase)
 import           GameState.ActionManagement    (lookupAcquisition)
 import           GameState.Perception          (updatePerceptionMapM)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
@@ -54,8 +56,57 @@ getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
     getit :: SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit loc avp = undefined
+    getit searchStrategy avp =
+      let (_ophrase, nounKey) = parseAcquisitionPhrase avp
+      in case avp of
+        SimpleAcquisitionVerbPhrase verb objectPhrase -> do
+        -- Parse the object phrase to get the noun key
 
+        -- Use search strategy to find target object and its container/supporter
+          maybeResult <- searchStrategy nounKey
+          case maybeResult of
+            Just (targetGID, sourceGID) -> do
+            -- Coordinate the handoff between source and target
+              doGet sourceGID targetGID avp
+            Nothing -> do
+            -- Object not found or not accessible
+              modifyNarration $ updateActionConsequence "You don't see that here."
+
+        AcquisitionVerbPhrase _verb objectPhrase _sourceMarker supportPhrase -> do
+        -- Parse both the target and source from the phrase
+          let sourceNounKey = parseSupportPhrase supportPhrase
+
+        -- Find target and source GIDs using location semantic map
+          playerLocation <- getPlayerLocationM
+          let objectSemanticMap = _objectSemanticMap playerLocation
+
+        -- Look up target object
+          targetResult <- case Data.Map.Strict.lookup nounKey objectSemanticMap of
+            Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
+            _ -> pure Nothing
+
+        -- Look up source object
+          sourceResult <- case Data.Map.Strict.lookup sourceNounKey objectSemanticMap of
+            Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
+            _ -> pure Nothing
+
+          case (targetResult, sourceResult) of
+            (Just targetGID, Just sourceGID) -> do
+            -- Verify the spatial relationship exists
+              world <- gets _world
+              let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+              case Data.Map.Strict.lookup targetGID spatialMap of
+                Just relationships -> do
+                  let isContainedInSource = any (\case
+                        ContainedIn oid -> oid == sourceGID
+                        SupportedBy oid -> oid == sourceGID
+                        _ -> False) (Data.Set.toList relationships)
+                  if isContainedInSource
+                    then doGet sourceGID targetGID avp
+                    else modifyNarration $ updateActionConsequence "That's not in there."
+                Nothing -> modifyNarration $ updateActionConsequence "That's not in there."
+            (Nothing, _) -> modifyNarration $ updateActionConsequence "You don't see that here."
+            (_, Nothing) -> modifyNarration $ updateActionConsequence "You don't see that container here."
 doGet :: GID Object -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()
 doGet sourceGID targetGID avp = do
   -- Role 1: Execute source object's RemovedFromF action

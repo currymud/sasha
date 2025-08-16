@@ -8,7 +8,7 @@ import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective,
                                                 SimpleAccessNoun, Supportive,
-                                                ToggleNoun)
+                                                Surface, ToggleNoun)
 import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
                                                 ConsumptionVerb,
                                                 DirectionalStimulusVerb,
@@ -52,7 +52,7 @@ type NounKey :: Type
 data NounKey
   = DirectionalStimulusKey DirectionalStimulus
   | ObjectiveKey Objective
-  | SupportiveKey Supportive
+  | SurfaceKey Surface
   | ContainerKey Container
   | ToggleNounKey ToggleNoun
   | ModToggleNounKey ToggleNoun
