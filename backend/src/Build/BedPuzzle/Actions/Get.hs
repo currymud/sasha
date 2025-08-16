@@ -26,7 +26,7 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
-                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
+                                                Effect (AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
                                                 GameComputation,
                                                 GameState (_player, _world),
                                                 Location (_locationActionManagement, _objectSemanticMap),

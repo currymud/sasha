@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
 module Build.GameStateGeneration.WorldBuilder where
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
@@ -7,6 +8,7 @@ import           Build.GameStateGeneration.WorldGeneration               (Object
 import           Build.Identifiers.Actions                               (agentCanSeeGID,
                                                                           alreadyHaveRobeFGID,
                                                                           dizzyGetFGID,
+                                                                          getFromChairFGID,
                                                                           openEyesGID,
                                                                           playerGetFGID,
                                                                           seeChairFGID,
@@ -48,7 +50,7 @@ import           Model.GameState                                         (Acquis
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                           ActionManagementFunctions (ActionManagementFunctions),
-                                                                          Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
+                                                                          Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           EffectRegistry,
                                                                           GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _world),
                                                                           Narration (Narration, _actionConsequence, _playerAction),
@@ -61,8 +63,8 @@ import           Model.GameState                                         (Acquis
 import           Model.GID                                               (GID)
 import           Model.Mappings                                          (GIDToDataMap (GIDToDataMap))
 import qualified Model.Parser.Atomics.Nouns
-import qualified Model.Parser.Atomics.Nouns                              as Grammar.Parser.Partitions.Nouns
-import           Model.Parser.Atomics.Verbs                              (ConsumptionVerb,
+import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
+                                                                          ConsumptionVerb (ConsumptionVerb),
                                                                           DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb,
                                                                           SomaticAccessVerb)
@@ -210,7 +212,7 @@ openEyesEffectMap = ActionEffectMap
       [ (bedroomOpenEyesKey, openEyesEffect)
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
-      , (ObjectKey chairObjGID, Data.Set.singleton chairLookEffect)
+      , (ObjectKey chairObjGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
       , (ObjectKey robeObjGID, Data.Set.singleton robeLookEffect)
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
@@ -253,7 +255,7 @@ bedroomOpenEyesKey :: ActionEffectKey
 bedroomOpenEyesKey = LocationKey bedroomInBedGID
 
 enableRobeGetEffect :: Effect
-enableRobeGetEffect = AcquisitionEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetFGID
+enableRobeGetEffect = AcquisitionPhraseEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetFGID
 
 mailEffect :: Effect
 mailEffect = DirectionalStimulusEffect dirLook seeMailGID
@@ -262,7 +264,7 @@ getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
 
 getRobeEffect :: Effect
-getRobeEffect = AcquisitionEffect getRobeAVP alreadyHaveRobeFGID
+getRobeEffect = AcquisitionPhraseEffect getRobeAVP alreadyHaveRobeFGID
 
 getRobeEffectMap :: ActionEffectMap
 getRobeEffectMap = ActionEffectMap
@@ -298,6 +300,8 @@ tableEffect = DirectionalStimulusEffect dirLook seeTableGID
 chairLookEffect :: Effect
 chairLookEffect = DirectionalStimulusEffect dirLook seeChairFGID
 
+getFromChairEffect :: Effect
+getFromChairEffect = AcquisitionVerbEffect get getFromChairFGID
 -- getFromChair :: AcquisitionVerbPhrase
 -- getFromChair
 -- AcquisitionEffect AcquisitionVerbPhrase (GID AcquisitionActionF)

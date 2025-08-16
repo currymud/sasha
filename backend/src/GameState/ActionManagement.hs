@@ -18,7 +18,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                                Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 GameComputation,
                                                 GameState (_player),
                                                 ImplicitStimulusActionF,
@@ -98,7 +98,7 @@ processEffect (LocationKey lid) (SomaticAccessEffect verb newActionGID) = do
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (AcquisitionEffect avp newActionGID) = do
+processEffect (LocationKey lid) (AcquisitionPhraseEffect avp newActionGID) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
@@ -141,7 +141,7 @@ processEffect (ObjectKey oid) (SomaticAccessEffect verb newActionGID) = do
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (ObjectKey oid) (AcquisitionEffect avp newActionGID) = do
+processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
@@ -179,7 +179,7 @@ processEffect (ObjectKey oid) (NegativePosturalEffect verb newActionGID) = do
     in ActionManagementFunctions updatedActions
 
 -- PLAYER EFFECTS (updating player action management)
-processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect verb newActionGID) = do
+processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionPhraseEffect verb newActionGID) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet

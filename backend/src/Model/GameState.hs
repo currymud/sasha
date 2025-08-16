@@ -29,7 +29,8 @@ module Model.GameState (
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  , Effect ( AcquisitionEffect
+  , Effect ( AcquisitionVerbEffect
+               , AcquisitionPhraseEffect
                , ConsumptionEffect
                , ImplicitStimulusEffect
                , DirectionalStimulusEffect
@@ -257,7 +258,8 @@ data Effect
   = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
-  | AcquisitionEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
+  | AcquisitionVerbEffect AcquisitionVerb (GID AcquisitionActionF)
+  | AcquisitionPhraseEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
   | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
   | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)

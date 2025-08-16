@@ -64,7 +64,7 @@ import           Model.GameState                                         (Action
                                                                           ActionManagementFunctions (ActionManagementFunctions),
                                                                           ActionMaps (ActionMaps),
                                                                           Config (Config, _actionMaps),
-                                                                          Effect (AcquisitionEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
+                                                                          Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
                                                                           EffectRegistry,
                                                                           GameState,
                                                                           Narration (..),

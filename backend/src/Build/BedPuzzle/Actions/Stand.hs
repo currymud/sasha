@@ -13,7 +13,7 @@ import           Model.GameState           (ActionEffectKey (LocationKey, Object
                                             ActionEffectMap (ActionEffectMap),
                                             ActionManagement (AAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                             ActionManagementFunctions (ActionManagementFunctions),
-                                            Effect (AcquisitionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                            Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
                                             GameComputation,
                                             Location (_locationActionManagement),
                                             PosturalActionF (PosturalActionF),
