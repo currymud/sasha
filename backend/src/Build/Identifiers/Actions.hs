@@ -85,6 +85,9 @@ robeCollectedF = getObjectF robeObjGID
 getFromChairF :: AcquisitionActionF
 getFromChairF = getFromSupportF chairObjGID
 
+getFromRobeF :: AcquisitionActionF
+getFromRobeF = getFromSupportF robeObjGID
+
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
                                       [| pitchBlackF |],
                                       [| isaEnabledLook |],
@@ -125,7 +128,7 @@ makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
                                   [| dizzyGetF |],
                                   [| getRobeF |],
                                   [| getFromChairF |],
-                                  [| robeCollectedF|]]
+                                  [| robeCollectedF|], [| getFromRobeF|]]
                                     {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],

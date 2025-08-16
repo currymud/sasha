@@ -84,6 +84,9 @@ library
       Build.BedPuzzle.BedRoom
       Build.GameState
       Build.GameStateGeneration.BedroomWorldSpec
+      Build.GameStateGeneration.LocationSpec.LocationGIDs
+      Build.GameStateGeneration.ObjectSpec
+      Build.GameStateGeneration.ObjectSpec.ObjectGIDS
       Build.GameStateGeneration.WorldGeneration
       Build.GameStateGeneration.WorldBuilder
       Build.Identifiers.Actions

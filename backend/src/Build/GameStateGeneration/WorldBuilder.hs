@@ -9,6 +9,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           alreadyHaveRobeFGID,
                                                                           dizzyGetFGID,
                                                                           getFromChairFGID,
+                                                                          getFromRobeFGID,
                                                                           openEyesGID,
                                                                           playerGetFGID,
                                                                           seeChairFGID,
@@ -213,7 +214,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
-      , (ObjectKey robeObjGID, Data.Set.fromList [robeLookEffect,getRobeEffect])
+      , (ObjectKey robeObjGID, Data.Set.fromList [robeLookEffect,getRobeEffect, getFromRobeEffect])
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
       ]
@@ -266,6 +267,9 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
 getRobeEffect :: Effect
 getRobeEffect = AcquisitionPhraseEffect getRobeAVP alreadyHaveRobeFGID
 
+getFromRobeEffect :: Effect
+getFromRobeEffect = AcquisitionVerbEffect get getFromRobeFGID
+
 getRobeEffectMap :: ActionEffectMap
 getRobeEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
@@ -275,9 +279,6 @@ getRobeEffectMap = ActionEffectMap
 
 getRobe :: AcquisitionActionF
 getRobe = getObjectF robeObjGID
-
-getFromRobe :: AcquisitionActionF
-getFromRobe = getFromSupportF robeObjGID
 
 robeWornEffect :: Effect
 robeWornEffect = DirectionalStimulusEffect dirLook seeRobeWornGID

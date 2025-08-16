@@ -1,25 +1,108 @@
 module Build.Templates.Identification where
-import           Data.Map.Strict            (Map)
+import           Data.Char                     (toLower, toUpper)
+import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
-import           Language.Haskell.TH        (reify)
-import           Language.Haskell.TH.Lib    (DecsQ, ExpQ)
-import           Language.Haskell.TH.Syntax (Body (NormalB), Dec (SigD, ValD),
-                                             Exp (AppE, ConE, ListE, LitE, TupE, VarE),
-                                             Info (VarI), Lit (IntegerL), Name,
-                                             Pat (VarP), Q,
-                                             Type (AppT, ArrowT, ConT, ForallT),
-                                             mkName, nameBase)
-import           Model.GameState            (AcquisitionActionF,
-                                             ConsumptionActionF,
-                                             DirectionalStimulusActionF,
-                                             ImplicitStimulusActionF, Location,
-                                             Object, PosturalActionF,
-                                             ProcessImplicitStimulusVerb,
-                                             SomaticAccessActionF)
-import           Model.GID                  (GID (GID))
-import           Model.Label                (Label (Label))
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb)
-import           Model.Parser.Lexer         (Lexeme)
+import qualified Data.Text
+import           Grammar.Parser.Lexer          (HasLexeme (toLexeme))
+import           Language.Haskell.TH           (reify)
+import           Language.Haskell.TH.Lib       (DecsQ, ExpQ)
+import           Language.Haskell.TH.Syntax    (Body (NormalB),
+                                                Dec (SigD, ValD),
+                                                Exp (AppE, ConE, ListE, LitE, TupE, VarE),
+                                                Info (VarI), Lit (IntegerL),
+                                                Name, Pat (VarP), Q,
+                                                Type (AppT, ArrowT, ConT, ForallT),
+                                                mkName, nameBase)
+import           Model.GameState               (AcquisitionActionF,
+                                                ConsumptionActionF,
+                                                DirectionalStimulusActionF,
+                                                ImplicitStimulusActionF,
+                                                Location, Object, Player,
+                                                PosturalActionF,
+                                                ProcessImplicitStimulusVerb,
+                                                SomaticAccessActionF)
+import           Model.GID                     (GID (GID))
+import           Model.Label                   (Label (Label))
+import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
+import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns (NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
+import           Model.Parser.Lexer            (Lexeme)
+import           Relude.String                 (ToText (toText))
+
+
+-- This is the new way, dsl migration commencing
+
+
+-- | Generate Object GIDs from noun phrases with optional suffixes
+declareObjectGIDs :: [(NounPhrase DirectionalStimulus, Maybe String)] -> Q [Dec]
+declareObjectGIDs nounPhrasesWithSuffixes = do
+  let numberedPhrases = zip nounPhrasesWithSuffixes [1..]
+  concat <$> mapM makeObjectGIDFromNounPhrase numberedPhrases
+  where
+    makeObjectGIDFromNounPhrase :: ((NounPhrase DirectionalStimulus, Maybe String), Int) -> Q [Dec]
+    makeObjectGIDFromNounPhrase ((nounPhrase, maybeSuffix), gidValue) = do
+      let gidName = mkName (nounPhraseToGIDName nounPhrase maybeSuffix ++ "GID")
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''Object)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+
+-- | Generate Location GIDs from noun phrases with optional suffixes
+declareLocationGIDs :: [(NounPhrase DirectionalStimulus, Maybe String)] -> Q [Dec]
+declareLocationGIDs nounPhrasesWithSuffixes = do
+  let numberedPhrases = zip nounPhrasesWithSuffixes [1..]
+  concat <$> mapM makeLocationGIDFromNounPhrase numberedPhrases
+  where
+    makeLocationGIDFromNounPhrase :: ((NounPhrase DirectionalStimulus, Maybe String), Int) -> Q [Dec]
+    makeLocationGIDFromNounPhrase ((nounPhrase, maybeSuffix), gidValue) = do
+      let gidName = mkName (nounPhraseToGIDName nounPhrase maybeSuffix ++ "GID")
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''Location)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+
+-- | Convert noun phrase to GID name string with optional suffix
+nounPhraseToGIDName :: NounPhrase DirectionalStimulus -> Maybe String -> String
+nounPhraseToGIDName nounPhrase maybeSuffix =
+  let baseName = case nounPhrase of
+        SimpleNounPhrase noun ->
+          toLowerFirst (lexemeToString noun)
+        NounPhrase _det noun ->
+          toLowerFirst (lexemeToString noun)
+        DescriptiveNounPhrase adj noun ->
+          toLowerFirst (lexemeToString adj) ++ capitalize (lexemeToString noun)
+        DescriptiveNounPhraseDet _det adj noun ->
+          toLowerFirst (lexemeToString adj) ++ capitalize (lexemeToString noun)
+  in case maybeSuffix of
+       Nothing     -> baseName
+       Just suffix -> baseName ++ capitalize suffix
+
+-- | Convert a type with HasLexeme instance to string
+lexemeToString :: (HasLexeme a) => a -> String
+lexemeToString = Data.Text.unpack . toText . toLexeme
+
+-- | Convenience functions for creating noun phrase specifications
+nounPhrase :: NounPhrase DirectionalStimulus -> (NounPhrase DirectionalStimulus, Maybe String)
+nounPhrase np = (np, Nothing)
+
+nounPhraseWithSuffix :: NounPhrase DirectionalStimulus -> String -> (NounPhrase DirectionalStimulus, Maybe String)
+nounPhraseWithSuffix np suffix = (np, Just suffix)
+
+-- | Convert first character to lowercase
+toLowerFirst :: String -> String
+toLowerFirst []     = []
+toLowerFirst (c:cs) = toLower c : map toLower cs
+
+-- | Capitalize first character, lowercase rest
+capitalize :: String -> String
+capitalize []     = []
+capitalize (c:cs) = toUpper c : map toLower cs
+-- This is all code that is likely cruft
+
 
 makeLabels :: [(ExpQ, Lexeme)] -> Q [Dec]
 makeLabels expLexemePairs = do
