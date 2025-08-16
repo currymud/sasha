@@ -210,7 +210,7 @@ openEyesEffectMap = ActionEffectMap
       [ (bedroomOpenEyesKey, openEyesEffect)
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
-      , (ObjectKey chairObjGID, Data.Set.singleton chairEffect)
+      , (ObjectKey chairObjGID, Data.Set.singleton chairLookEffect)
       , (ObjectKey robeObjGID, Data.Set.singleton robeLookEffect)
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
@@ -290,10 +290,15 @@ robeLookEffect :: Effect
 robeLookEffect = DirectionalStimulusEffect dirLook seeRobeChairGID
 
 
-
 pillEffect :: Effect
 pillEffect = DirectionalStimulusEffect dirLook whatPillGID
 tableEffect :: Effect
 tableEffect = DirectionalStimulusEffect dirLook seeTableGID
-chairEffect :: Effect
-chairEffect = DirectionalStimulusEffect dirLook seeChairFGID
+
+chairLookEffect :: Effect
+chairLookEffect = DirectionalStimulusEffect dirLook seeChairFGID
+
+-- getFromChair :: AcquisitionVerbPhrase
+-- getFromChair
+-- AcquisitionEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
+

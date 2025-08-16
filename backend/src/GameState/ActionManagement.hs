@@ -29,13 +29,13 @@ import           Model.GameState               (AcquisitionActionF,
                                                 PosturalActionF,
                                                 SomaticAccessActionF)
 import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
-
 
 modifyPlayerActionManagementM :: (ActionManagementFunctions -> ActionManagementFunctions)
                               -> GameComputation Identity ()
@@ -98,11 +98,11 @@ processEffect (LocationKey lid) (SomaticAccessEffect verb newActionGID) = do
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (AcquisitionEffect avp newActionGID) = do
+processEffect (LocationKey lid) (AcquisitionEffect verb newActionGID) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (LocationKey lid) (PositivePosturalEffect verb newActionGID) = do
@@ -141,11 +141,11 @@ processEffect (ObjectKey oid) (SomaticAccessEffect verb newActionGID) = do
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (ObjectKey oid) (AcquisitionEffect avp newActionGID) = do
+processEffect (ObjectKey oid) (AcquisitionEffect verb newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
@@ -179,11 +179,11 @@ processEffect (ObjectKey oid) (NegativePosturalEffect verb newActionGID) = do
     in ActionManagementFunctions updatedActions
 
 -- PLAYER EFFECTS (updating player action management)
-processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect avp newActionGID) = do
+processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionEffect verb newActionGID) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey (PlayerKeyObject oid)) (PositivePosturalEffect verb newActionGID) = do
@@ -239,9 +239,9 @@ lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
-lookupAcquisition :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-lookupAcquisition phrase (ActionManagementFunctions actions) =
-  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == phrase]
+lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+lookupAcquisition verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == verb]
 
 lookupConsumption :: ConsumptionVerbPhrase -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption phrase (ActionManagementFunctions actions) =

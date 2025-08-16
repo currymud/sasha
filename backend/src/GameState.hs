@@ -66,7 +66,8 @@ import           Model.GameState               (AcquisitionActionF,
 import           Model.GID                     (GID)
 import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container, Surface)
-import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
                                                 ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
                                                 DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -160,17 +161,17 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 -- GameState.hs - Updated effect processing functions
 
-processAcquisitionEffect :: AcquisitionVerbPhrase
+processAcquisitionEffect :: AcquisitionVerb
                          -> GID AcquisitionActionF
                          -> GameComputation Identity ()
-processAcquisitionEffect avp newActionGID = do
+processAcquisitionEffect verb newActionGID = do
   modify' $ \gs ->
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
         -- Remove any existing acquisition action for this phrase
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) playerActionSet
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) playerActionSet
         -- Add the new action
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
