@@ -79,6 +79,9 @@ dizzyGetF = Build.BedPuzzle.Actions.Get.getDeniedF
 getRobeF :: AcquisitionActionF
 getRobeF = getObjectF robeObjGID
 
+robeCollectedF :: AcquisitionActionF
+robeCollectedF = getObjectF robeObjGID
+
 getFromChairF :: AcquisitionActionF
 getFromChairF = getFromSupportF chairObjGID
 
@@ -121,7 +124,8 @@ makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
                                   [| playerGetF|],
                                   [| dizzyGetF |],
                                   [| getRobeF |],
-                                  [| getFromChairF |]]
+                                  [| getFromChairF |],
+                                  [| robeCollectedF|]]
                                     {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],

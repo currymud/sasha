@@ -213,7 +213,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
       , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairObjGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
-      , (ObjectKey robeObjGID, Data.Set.singleton robeLookEffect)
+      , (ObjectKey robeObjGID, Data.Set.fromList [robeLookEffect,getRobeEffect])
       , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
       , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
       ]

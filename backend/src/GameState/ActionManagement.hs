@@ -14,7 +14,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey,
-                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
@@ -245,7 +245,8 @@ lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
 
 lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisition verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | AAManagementKey phrase gid <- Data.Set.toList actions, matchesVerb phrase]
+  listToMaybe ([gid | AAManagementKey phrase gid <- Data.Set.toList actions, matchesVerb phrase] ++
+               [gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb])
   where
     matchesVerb :: AcquisitionVerbPhrase -> Bool
     matchesVerb (SimpleAcquisitionVerbPhrase v _) = v == verb

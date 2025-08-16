@@ -11,7 +11,7 @@ module Model.GameState (
                 PosturalActionKey,
                 SomaticAccessActionKey)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, CAManagementKey,
+  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, AVManagementKey, CAManagementKey,
                      PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
@@ -314,6 +314,7 @@ data ActionManagement
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
+  | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)
   | CAManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
