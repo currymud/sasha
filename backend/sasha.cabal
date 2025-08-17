@@ -55,6 +55,7 @@ library
       Actions.Manipulate.SomaticAccess.Open
       Actions.Movement.Postural.SitStand
       Actions.Percieve.Look
+      Build.GameState
       Build.BedPuzzle.Actions.Inventory
       Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
