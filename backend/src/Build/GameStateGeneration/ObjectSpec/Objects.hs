@@ -14,6 +14,7 @@ import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairG
                                                                           robeGID,
                                                                           smallTableGID)
 import           Build.Identifiers.Actions                               (alreadyHaveRobeFGID,
+                                                                          getRobeDeniedFGID,
                                                                           seeChairFGID,
                                                                           seeMailGID,
                                                                           seeRobeChairGID,
@@ -112,7 +113,7 @@ robeObj = defaultObject
   & withDescription "A comfortable robe"
   & withDescriptives [SimpleNounPhrase robeDS]
   & withBehaviors [DSAManagementKey look seeRobeChairGID,
-                   AAManagementKey getRobeAVP alreadyHaveRobeFGID]  -- Get behavior
+                   AAManagementKey getRobeAVP getRobeDeniedFGID]  -- Get behavior
 
 pocketDS :: DirectionalStimulus
 pocketDS = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pocket
