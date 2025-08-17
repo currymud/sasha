@@ -218,8 +218,15 @@ makeConsumptionActionGID exp gidValue = do
     _ -> fail "makeConsumptionActionGID expects a simple variable name"
 
 
-makeAcquisitionActionGIDsAndMap :: [ExpQ] -> Q [Dec]
-makeAcquisitionActionGIDsAndMap = makeGIDsAndMapForType ''AcquisitionActionF "acquisitionActionMap"
+makeAcquisitionActionGIDsAndMap :: [(ExpQ, Int)] -> Q [Dec]
+makeAcquisitionActionGIDsAndMap expGidPairs = do
+  exps <- mapM fst expGidPairs
+  let pairs = zip exps (map snd expGidPairs)
+
+  gidDecls <- concat <$> mapM (makeGIDForType ''AcquisitionActionF) pairs
+  mapDecl <- makeMapForType ''AcquisitionActionF "acquisitionActionMap" pairs
+
+  pure (gidDecls ++ [mapDecl])
 
 -- Also add this helper function for consistency with the pattern:
 makeAcquisitionActionGID :: Exp -> Int -> Q [Dec]

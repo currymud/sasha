@@ -120,17 +120,17 @@ makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
 
 makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
 
-makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
 
-                                  [| getMailDeniedF |],
-                                  [|  alreadyHaveRobeF |],
-                                  [| playerGetF|],
-                                  [| dizzyGetF |],
-                                  [| getRobeF |],
-                                  [| getFromChairF |],
-                                  [| getFromRobeF|],
-                                  [| robeCollectedF|],
-                                  [| getRobeDeniedF|]]
+makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
+                                  ([| getMailDeniedF |], 2),
+                                  ([| alreadyHaveRobeF |], 3),
+                                  ([| playerGetF|], 4),
+                                  ([| dizzyGetF |], 5),
+                                  ([| getRobeF |], 6),
+                                  ([| getFromChairF |], 7),
+                                  ([| getFromRobeF|], 8),
+                                  ([| robeCollectedF|], 9),
+                                  ([| getRobeDeniedF|], 10)]
                                     {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],

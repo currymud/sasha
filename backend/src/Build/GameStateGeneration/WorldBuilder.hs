@@ -22,6 +22,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getFromRobeFGID,
                                                                           openEyesGID,
                                                                           playerGetFGID,
+                                                                          robeCollectedFGID,
                                                                           seeChairFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
@@ -202,7 +203,7 @@ openEyesEffectMap = ActionEffectMap
       , (ObjectKey pillGID, Data.Set.singleton pillEffect)
       , (ObjectKey smallTableGID, Data.Set.singleton tableEffect)
       , (ObjectKey chairGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
-      , (ObjectKey robeGID, Data.Set.fromList [robeLookEffect,getRobeEffect, getFromRobeEffect])
+      , (ObjectKey robeGID, Data.Set.fromList [robeLookEffect,robeToGetEffect, getFromRobeEffect])
       , (ObjectKey mailGID, Data.Set.singleton mailEffect)
       , (PlayerKey (PlayerKeyObject robeGID), Data.Set.singleton enableRobeGetEffect)
       ]
@@ -255,6 +256,8 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
 getRobeEffect :: Effect
 getRobeEffect = AcquisitionPhraseEffect getRobeAVP alreadyHaveRobeFGID
 
+robeToGetEffect :: Effect
+robeToGetEffect = AcquisitionPhraseEffect getRobeAVP robeCollectedFGID
 getFromRobeEffect :: Effect
 getFromRobeEffect = AcquisitionVerbEffect get getFromRobeFGID
 
