@@ -1,7 +1,21 @@
 module Build.GameStateGeneration.BedroomWorldSpec (bedroomWorldSpec, bedroomPlayerSpec) where
-import           Build.BedPuzzle.Actions.Objects.Mail                 (getMailAVP)
-import           Build.BedPuzzle.Actions.Objects.Pill                 (takePillCVP)
-import           Build.BedPuzzle.BedRoom                              (bedroomInBed)
+
+
+import qualified Grammar.Parser.Partitions.Nouns.Consumables          as Consumables
+import qualified Grammar.Parser.Partitions.Nouns.Objectives           as Objectives
+import qualified Grammar.Parser.Partitions.Verbs.AcquisitionVerbs     as AcquisitionVerbs
+import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs     as ConsumptionVerbs
+
+import           Build.GameStateGeneration.LocationSpec.LocationGIDs  (bedroomGID)
+import           Build.GameStateGeneration.LocationSpec.Locations     (bedroom)
+import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS      (chairGID,
+                                                                       floorGID,
+                                                                       mailGID,
+                                                                       pillGID,
+                                                                       pocketGID,
+                                                                       robeGID,
+                                                                       smallTableGID)
+
 import           Build.GameStateGeneration.WorldBuilder               (dirLook,
                                                                        dsaLook,
                                                                        getRobeAVP,
@@ -25,14 +39,6 @@ import           Build.Identifiers.Actions                            (checkInve
                                                                        seeTableGID,
                                                                        takePillDeniedFGID,
                                                                        whatPillGID)
-import           Build.Identifiers.Locations                          (bedroomInBedGID)
-import           Build.Identifiers.Objects                            (chairObjGID,
-                                                                       floorObjGID,
-                                                                       mailObjGID,
-                                                                       pillObjGID,
-                                                                       pocketObjGID,
-                                                                       robeObjGID,
-                                                                       tableObjGID)
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (inventory)
 import           Model.GameState                                      (ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
@@ -40,25 +46,40 @@ import           Model.GameState                                      (ActionMan
                                                                        Object,
                                                                        SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 import           Model.GID                                            (GID)
+import           Model.Parser.Composites.Nouns                        (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                       NounPhrase (SimpleNounPhrase),
+                                                                       ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                        (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
+                                                                       ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
+
+takePillCVP :: ConsumptionVerbPhrase
+takePillCVP = ConsumptionVerbPhrase
+  ConsumptionVerbs.take
+  (ConsumableNounPhrase (SimpleNounPhrase Consumables.pill))
+
+getMailAVP :: AcquisitionVerbPhrase
+getMailAVP = SimpleAcquisitionVerbPhrase
+  AcquisitionVerbs.get
+  (ObjectPhrase (SimpleNounPhrase Objectives.mail))
 
 chairBehaviorSpec :: ObjectBehaviorSpec
 chairBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = chairObjGID
+  { _objectGID = chairGID
   , _behaviors =
       [ DSAManagementKey dsaLook seeChairFGID ]
   }
 
 tableBehaviorSpec :: ObjectBehaviorSpec
 tableBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = tableObjGID
+  { _objectGID = smallTableGID
   , _behaviors =
       [ DSAManagementKey dsaLook seeTableGID ]
   }
 
 pillBehaviorSpec :: ObjectBehaviorSpec
 pillBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = pillObjGID
+  { _objectGID = pillGID
   , _behaviors =
       [ DSAManagementKey dsaLook whatPillGID
       , CAManagementKey takePillCVP takePillDeniedFGID
@@ -67,7 +88,7 @@ pillBehaviorSpec = ObjectBehaviorSpec
 
 mailBehaviorSpec :: ObjectBehaviorSpec
 mailBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = mailObjGID
+  { _objectGID = mailGID
   , _behaviors =
       [ DSAManagementKey dsaLook seeMailGID
       , AAManagementKey getMailAVP getMailDeniedFGID
@@ -76,7 +97,7 @@ mailBehaviorSpec = ObjectBehaviorSpec
 
 robeBehaviorSpec :: ObjectBehaviorSpec
 robeBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = robeObjGID
+  { _objectGID = robeGID
   , _behaviors =
       [ DSAManagementKey dsaLook seeRobeChairGID
       , AAManagementKey getRobeAVP dizzyGetFGID
@@ -85,14 +106,14 @@ robeBehaviorSpec = ObjectBehaviorSpec
 
 pocketBehaviorSpec :: ObjectBehaviorSpec
 pocketBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = pocketObjGID
+  { _objectGID = pocketGID
   , _behaviors =
       [ DSAManagementKey dsaLook seePocketRobeWornGID ]
   }
 
 floorBehaviorSpec :: ObjectBehaviorSpec
 floorBehaviorSpec = ObjectBehaviorSpec
-  { _objectGID = floorObjGID
+  { _objectGID = floorGID
   , _behaviors =
       [ DSAManagementKey dsaLook seeFloorFGID ]
   }
@@ -121,24 +142,24 @@ allBedroomObjectSpecs =
 -- Spatial relationships for the bedroom scene
 bedroomSpatialRelationships :: [(GID Object, [SpatialRelationship])]
 bedroomSpatialRelationships =
-  [ (chairObjGID, [Supports (Data.Set.singleton robeObjGID), SupportedBy floorObjGID])
-  , (tableObjGID, [Supports (Data.Set.singleton mailObjGID), SupportedBy floorObjGID])
-  , (mailObjGID, [SupportedBy tableObjGID])
-  , (robeObjGID, [SupportedBy chairObjGID, Contains (Data.Set.singleton pocketObjGID)])
-  , (pocketObjGID, [ContainedIn robeObjGID, Contains (Data.Set.singleton pillObjGID)])
-  , (pillObjGID, [ContainedIn pocketObjGID])
-  , (floorObjGID, [Supports (Data.Set.fromList [chairObjGID, tableObjGID])])
+  [ (chairGID, [Supports (Data.Set.singleton robeGID), SupportedBy floorGID])
+  , (smallTableGID, [Supports (Data.Set.singleton mailGID), SupportedBy floorGID])
+  , (mailGID, [SupportedBy smallTableGID])
+  , (robeGID, [SupportedBy chairGID, Contains (Data.Set.singleton pocketGID)])
+  , (pocketGID, [ContainedIn robeGID, Contains (Data.Set.singleton pillGID)])
+  , (pillGID, [ContainedIn pocketGID])
+  , (floorGID, [Supports (Data.Set.fromList [chairGID, smallTableGID])])
   ]
 
 -- Location specifications for the bedroom
 bedroomLocationSpecs :: [(GID Location, Location)]
 bedroomLocationSpecs =
-  [(bedroomInBedGID, bedroomInBed)]
+  [(bedroomGID, bedroom)]
 
 -- PlayerSpec for the bedroom scenario
 bedroomPlayerSpec :: PlayerSpec
 bedroomPlayerSpec = PlayerSpec
-  { _playerLocationGID = bedroomInBedGID
+  { _playerLocationGID = bedroomGID
   , _playerBehaviors =
       [
         ISAManagementKey isaLook isaEnabledLookGID

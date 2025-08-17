@@ -48,8 +48,8 @@ import           Build.BedPuzzle.Actions.Open                            (openEy
                                                                           openEyesDenied)
 import           Build.BedPuzzle.Actions.Stand                           (standDenied,
                                                                           standUp)
-import           Build.Identifiers.Objects                               (chairObjGID,
-                                                                          robeObjGID)
+import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
+                                                                          robeGID)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
@@ -77,16 +77,16 @@ dizzyGetF :: AcquisitionActionF
 dizzyGetF = Build.BedPuzzle.Actions.Get.getDeniedF
 
 getRobeF :: AcquisitionActionF
-getRobeF = getObjectF robeObjGID
+getRobeF = getObjectF robeGID
 
 robeCollectedF :: AcquisitionActionF
-robeCollectedF = getObjectF robeObjGID
+robeCollectedF = getObjectF robeGID
 
 getFromChairF :: AcquisitionActionF
-getFromChairF = getFromSupportF chairObjGID
+getFromChairF = getFromSupportF chairGID
 
 getFromRobeF :: AcquisitionActionF
-getFromRobeF = getFromSupportF robeObjGID
+getFromRobeF = getFromSupportF robeGID
 
 makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
                                       [| pitchBlackF |],

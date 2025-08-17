@@ -27,16 +27,34 @@ import qualified Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (chair,
                                                                           robe,
                                                                           table)
 
-import           Build.BedPuzzle.Actions.Objects.Pill                    (takePillCVP)
-import           Build.BedPuzzle.Actions.Objects.Robe                    (getRobeAVP)
 import qualified Grammar.Parser.Partitions.Nouns.Consumables             (pill)
+import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
+                                                                          robe)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GameState                                         (ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey),
                                                                           Object)
-import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus)
-import           Model.Parser.Composites.Nouns                           (NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase))
+import           Model.Parser.Atomics.Nouns                              (Consumable,
+                                                                          DirectionalStimulus)
+import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                          NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase),
+                                                                          ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
+
+consumablePill :: Consumable
+consumablePill = Grammar.Parser.Partitions.Nouns.Consumables.pill
+takePillCVP :: ConsumptionVerbPhrase
+takePillCVP = ConsumptionVerbPhrase
+  Grammar.Parser.Partitions.Verbs.ConsumptionVerbs.take
+  (ConsumableNounPhrase (SimpleNounPhrase consumablePill))
+
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase
+  Grammar.Parser.Partitions.Verbs.AcquisitionVerbs.get
+  (ObjectPhrase (SimpleNounPhrase robe))
 
 chairDS :: DirectionalStimulus
 chairDS = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.chair
