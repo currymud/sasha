@@ -1,9 +1,18 @@
 module Model.GameState.GameStateDSL where
 
-import           Data.Kind       (Type)
-import           Model.GameState (GameState, Location, Object, Player,
-                                  SpatialRelationship)
-import           Model.GID       (GID)
+import           Data.Kind                     (Type)
+import           Model.GameState               (AcquisitionActionF, ActionKey,
+                                                ConsumptionActionF,
+                                                DirectionalStimulusActionF,
+                                                GameState,
+                                                ImplicitStimulusActionF,
+                                                Location, Object, Player,
+                                                PosturalActionF,
+                                                SomaticAccessActionF,
+                                                SpatialRelationship)
+import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
+import           Model.Parser.Composites.Nouns (NounPhrase)
 
 -- | World building DSL - designed to teach Functor -> Applicative -> Monad progression
 type WorldDSL :: Type -> Type
@@ -21,10 +30,23 @@ data WorldDSL :: Type -> Type where
   -- Monadic operations (teaches >>= and context-dependent computation)
   Bind :: WorldDSL a -> (a -> WorldDSL b) -> WorldDSL b
 
+-- GID Declaration constructors - let students create and bind their own names
+  DeclareObjectGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Object)
+  DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
+
+
   -- Core world building primitives - following current build system pattern
   BuildObject :: GID Object -> Object -> (Object -> Object) -> WorldDSL Object
   BuildLocation :: GID Location -> Location -> (Location -> Location) -> WorldDSL Location
   BuildPlayer :: Player -> (Player -> Player) -> WorldDSL Player
+
+-- ActionKey construction - raw values are fine for constructors
+  CreateImplicitStimulusActionKey :: GID ImplicitStimulusActionF -> WorldDSL ActionKey
+  CreateDirectionalStimulusActionKey :: GID DirectionalStimulusActionF -> WorldDSL ActionKey
+  CreateSomaticAccessActionKey :: GID SomaticAccessActionF -> WorldDSL ActionKey
+  CreateAcquisitionActionKey :: GID AcquisitionActionF -> WorldDSL ActionKey
+  CreateConsumptionActionKey :: GID ConsumptionActionF -> WorldDSL ActionKey
+  CreatePosturalActionKey :: GID PosturalActionF -> WorldDSL ActionKey
 
   -- Register mappings - both single and collections
   RegisterObject :: GID Object -> Object -> WorldDSL ()
