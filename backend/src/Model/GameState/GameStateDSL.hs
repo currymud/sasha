@@ -3,6 +3,7 @@ module Model.GameState.GameStateDSL where
 import           Data.Kind                     (Type)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectMap, ActionKey,
+                                                ActionManagement,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
                                                 Effect, GameState,
@@ -14,12 +15,16 @@ import           Model.GameState               (AcquisitionActionF,
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)
-import           Model.Parser.Atomics.Verbs    (ConsumptionVerb,
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                ConsumptionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
-                                                PositivePosturalVerb)
+                                                NegativePosturalVerb,
+                                                PositivePosturalVerb,
+                                                SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (NounPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ConsumptionVerbPhrase)
 
 -- | World building DSL
 type WorldDSL :: Type -> Type
@@ -57,6 +62,33 @@ data WorldDSL :: Type -> Type where
   -- Registration - returns GIDs for composition
   RegisterObject :: WorldDSL (GID Object) -> WorldDSL Object -> WorldDSL (GID Object)
   RegisterLocation :: WorldDSL (GID Location) -> WorldDSL Location -> WorldDSL (GID Location)
+
+  -- ActionManagement construction
+  CreateISAManagement :: WorldDSL ImplicitStimulusVerb -> WorldDSL (GID ImplicitStimulusActionF) -> WorldDSL ActionManagement
+  CreateDSAManagement :: WorldDSL DirectionalStimulusVerb -> WorldDSL (GID DirectionalStimulusActionF) -> WorldDSL ActionManagement
+  CreateSSAManagement :: WorldDSL SomaticAccessVerb -> WorldDSL (GID SomaticAccessActionF) -> WorldDSL ActionManagement
+  CreateAAManagement :: WorldDSL AcquisitionVerbPhrase -> WorldDSL (GID AcquisitionActionF) -> WorldDSL ActionManagement
+  CreateAVManagement :: WorldDSL AcquisitionVerb -> WorldDSL (GID AcquisitionActionF) -> WorldDSL ActionManagement
+  CreateCAManagement :: WorldDSL ConsumptionVerbPhrase -> WorldDSL (GID ConsumptionActionF) -> WorldDSL ActionManagement
+  CreatePPManagement :: WorldDSL PositivePosturalVerb -> WorldDSL (GID PosturalActionF) -> WorldDSL ActionManagement
+  CreateNPManagement :: WorldDSL NegativePosturalVerb -> WorldDSL (GID PosturalActionF) -> WorldDSL ActionManagement
+
+  -- Player management
+  SetPlayer :: WorldDSL Player -> WorldDSL ()
+  UpdatePlayer :: WorldDSL Player -> (Player -> Player) -> WorldDSL Player
+
+  -- Behavior assignment (single ActionManagement, not lists)
+  AssignObjectBehavior :: WorldDSL (GID Object) -> WorldDSL ActionManagement -> WorldDSL ()
+  AssignLocationBehavior :: WorldDSL (GID Location) -> WorldDSL ActionManagement -> WorldDSL ()
+  AssignPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
+
+  -- Complex builder operations
+  ModifyObject :: WorldDSL (GID Object) -> (Object -> Object) -> WorldDSL ()
+  ModifyLocation :: WorldDSL (GID Location) -> (Location -> Location) -> WorldDSL ()
+
+  -- Effect processing
+  ProcessEffectsIntoRegistry :: WorldDSL ()
+
 
   -- ActionKey construction
   CreateImplicitStimulusActionKey :: GID ImplicitStimulusActionF -> WorldDSL ActionKey
@@ -207,3 +239,53 @@ setSpatials :: WorldDSL [(GID Object, [SpatialRelationship])] -> WorldDSL ()
 setSpatials objectsAndRels = do
   pairs <- objectsAndRels
   sequence_ [setSpatial (pure objGID) (pure rels) | (objGID, rels) <- pairs]
+
+-- ActionManagement construction
+createISAManagement :: WorldDSL ImplicitStimulusVerb -> WorldDSL (GID ImplicitStimulusActionF) -> WorldDSL ActionManagement
+createISAManagement = CreateISAManagement
+
+createDSAManagement :: WorldDSL DirectionalStimulusVerb -> WorldDSL (GID DirectionalStimulusActionF) -> WorldDSL ActionManagement
+createDSAManagement = CreateDSAManagement
+
+createSSAManagement :: WorldDSL SomaticAccessVerb -> WorldDSL (GID SomaticAccessActionF) -> WorldDSL ActionManagement
+createSSAManagement = CreateSSAManagement
+
+createAAManagement :: WorldDSL AcquisitionVerbPhrase -> WorldDSL (GID AcquisitionActionF) -> WorldDSL ActionManagement
+createAAManagement = CreateAAManagement
+
+createAVManagement :: WorldDSL AcquisitionVerb -> WorldDSL (GID AcquisitionActionF) -> WorldDSL ActionManagement
+createAVManagement = CreateAVManagement
+
+createCAManagement :: WorldDSL ConsumptionVerbPhrase -> WorldDSL (GID ConsumptionActionF) -> WorldDSL ActionManagement
+createCAManagement = CreateCAManagement
+
+createPPManagement :: WorldDSL PositivePosturalVerb -> WorldDSL (GID PosturalActionF) -> WorldDSL ActionManagement
+createPPManagement = CreatePPManagement
+
+createNPManagement :: WorldDSL NegativePosturalVerb -> WorldDSL (GID PosturalActionF) -> WorldDSL ActionManagement
+createNPManagement = CreateNPManagement
+
+setPlayer :: WorldDSL Player -> WorldDSL ()
+setPlayer = SetPlayer
+
+updatePlayer :: WorldDSL Player -> (Player -> Player) -> WorldDSL Player
+updatePlayer = UpdatePlayer
+
+assignObjectBehavior :: WorldDSL (GID Object) -> WorldDSL ActionManagement -> WorldDSL ()
+assignObjectBehavior = AssignObjectBehavior
+
+assignLocationBehavior :: WorldDSL (GID Location) -> WorldDSL ActionManagement -> WorldDSL ()
+assignLocationBehavior = AssignLocationBehavior
+
+assignPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
+assignPlayerBehavior = AssignPlayerBehavior
+
+modifyObject :: WorldDSL (GID Object) -> (Object -> Object) -> WorldDSL ()
+modifyObject = ModifyObject
+
+modifyLocation :: WorldDSL (GID Location) -> (Location -> Location) -> WorldDSL ()
+modifyLocation = ModifyLocation
+
+processEffectsIntoRegistry :: WorldDSL ()
+processEffectsIntoRegistry = ProcessEffectsIntoRegistry
+
