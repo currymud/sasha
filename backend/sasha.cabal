@@ -136,6 +136,7 @@ library
       Location
       Model.Action.LocationAction
       Model.GameState
+      Model.GameState.GameStateDSL
       Model.GID
       Model.Label
       Model.Mappings
