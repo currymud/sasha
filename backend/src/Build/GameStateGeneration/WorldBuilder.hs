@@ -1,7 +1,17 @@
 {-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
 module Build.GameStateGeneration.WorldBuilder where
+
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
+import           Build.GameStateGeneration.LocationSpec.LocationGIDs     (bedroomGID)
+import           Build.GameStateGeneration.LocationSpec.Locations        (locationMap)
+import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
+                                                                          mailGID,
+                                                                          pillGID,
+                                                                          pocketGID,
+                                                                          robeGID,
+                                                                          smallTableGID)
+import           Build.GameStateGeneration.ObjectSpec.Objects            (objectMap)
 import           Build.GameStateGeneration.WorldGeneration               (ObjectBehaviorSpec (ObjectBehaviorSpec, _behaviors, _objectGID),
                                                                           PlayerSpec (PlayerSpec, _playerBehaviors, _playerLocationGID),
                                                                           WorldSpec (WorldSpec, _locationSpecs, _objectSpecs, _playerSpec, _spatialRelationships))
@@ -22,15 +32,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           standUpGID,
                                                                           takePillFGID,
                                                                           whatPillGID)
-import           Build.Identifiers.Locations                             (bedroomInBedGID,
-                                                                          locationMap)
-import           Build.Identifiers.Objects                               (chairObjGID,
-                                                                          mailObjGID,
-                                                                          objectMap,
-                                                                          pillObjGID,
-                                                                          pocketObjGID,
-                                                                          robeObjGID,
-                                                                          tableObjGID)
 import qualified Data.Bifunctor
 import qualified Data.Map.Strict
 import           Data.Set                                                (Set)
@@ -77,8 +78,8 @@ import           Relude.Foldable                                         (find)
 -- Generic function that TH will call
 buildWorldFromSpec :: WorldSpec -> World
 buildWorldFromSpec spec = World
-  { _objectMap = buildObjectMap (_objectSpecs spec)
-  , _locationMap = GIDToDataMap locationMap
+  { _objectMap = objectMap
+  , _locationMap = locationMap
   , _perceptionMap = mempty
   , _spatialRelationshipMap = buildSpatialMap (_spatialRelationships spec)
   }
@@ -88,19 +89,6 @@ buildPlayerFromSpec spec = Player
   { _location = _playerLocationGID spec
   , _playerActions = ActionManagementFunctions $ Data.Set.fromList (_playerBehaviors spec)
   }
-
-buildObjectMap :: [ObjectBehaviorSpec] -> GIDToDataMap Object Object
-buildObjectMap specs =
-  let baseObjects = Data.Map.Strict.toList objectMap
-      objectsWithBehaviors = map (applyBehaviorSpec specs) baseObjects
-  in GIDToDataMap $ Data.Map.Strict.fromList objectsWithBehaviors
-
-applyBehaviorSpec :: [ObjectBehaviorSpec] -> (GID Object, Object) -> (GID Object, Object)
-applyBehaviorSpec specs (gid, obj) =
-  case find (\spec -> _objectGID spec == gid) specs of
-    Just spec -> (gid, obj { _objectActionManagement = ActionManagementFunctions $ Data.Set.fromList (_behaviors spec) })
-    Nothing -> (gid, obj)
-
 
 buildGameStateFromSpec :: WorldSpec -> PlayerSpec -> GameState
 buildGameStateFromSpec w_spec p_spec = GameState
@@ -161,7 +149,7 @@ takePillKey = ConsumptionActionKey takePillFGID
 takePillEffectMap :: ActionEffectMap
 takePillEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
-      [ (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.singleton pillCuresHeadacheEffect)
+      [ (PlayerKey (PlayerKeyObject pillGID), Data.Set.singleton pillCuresHeadacheEffect)
       ]
 
 -- enableMailGetLocationEffect :: Effect
@@ -170,9 +158,9 @@ takePillEffectMap = ActionEffectMap
 standUpEffectMap :: ActionEffectMap
 standUpEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
-      [--  (PlayerKey (PlayerKeyObject mailObjGID), Data.Set.singleton enableMailGetEffect)
---      , (ObjectKey mailObjGID, Data.Set.singleton enableMailGetEffect)
---      , (LocationKey bedroomInBedGID, Data.Set.singleton enableMailGetLocationEffect)
+      [-- (PlayerKey (PlayerKeyObject mailGID), Data.Set.singleton enableMailGetEffect)
+--       (ObjectKey mailGID, Data.Set.singleton enableMailGetEffect)
+--      , (LocationKey bedroomGID, Data.Set.singleton enableMailGetLocationEffect)
       ]
 
 -- enableMailGetEffect :: Effect
@@ -187,7 +175,7 @@ emptyEffectMap = ActionEffectMap mempty
 getKeyMap :: ActionEffectMap
 getKeyMap = ActionEffectMap
   $ Data.Map.Strict.fromList
-      [ (ObjectKey robeObjGID, Data.Set.empty)
+      [ (ObjectKey robeGID, Data.Set.empty)
       ]
 
 getKey :: ActionKey
@@ -211,28 +199,28 @@ openEyesEffectMap :: ActionEffectMap
 openEyesEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
       [ (bedroomOpenEyesKey, openEyesEffect)
-      , (ObjectKey pillObjGID, Data.Set.singleton pillEffect)
-      , (ObjectKey tableObjGID, Data.Set.singleton tableEffect)
-      , (ObjectKey chairObjGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
-      , (ObjectKey robeObjGID, Data.Set.fromList [robeLookEffect,getRobeEffect, getFromRobeEffect])
-      , (ObjectKey mailObjGID, Data.Set.singleton mailEffect)
-      , ((PlayerKey (PlayerKeyObject robeObjGID)), Data.Set.singleton enableRobeGetEffect)
+      , (ObjectKey pillGID, Data.Set.singleton pillEffect)
+      , (ObjectKey smallTableGID, Data.Set.singleton tableEffect)
+      , (ObjectKey chairGID, Data.Set.fromList [chairLookEffect, getFromChairEffect])
+      , (ObjectKey robeGID, Data.Set.fromList [robeLookEffect,getRobeEffect, getFromRobeEffect])
+      , (ObjectKey mailGID, Data.Set.singleton mailEffect)
+      , (PlayerKey (PlayerKeyObject robeGID), Data.Set.singleton enableRobeGetEffect)
       ]
 
 playerGetEffectMap :: ActionEffectMap
 playerGetEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
       [ -- Robe acquisition effects (player zone responsibility)
-        (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
-      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
-      , (ObjectKey pocketObjGID, Data.Set.singleton pocketWornEffect)
-      , (PlayerKey (PlayerKeyObject pillObjGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect])
+        (PlayerKey (PlayerKeyObject robeGID), Data.Set.singleton getRobeEffect)
+      , (ObjectKey robeGID, Data.Set.singleton robeWornEffect)
+      , (ObjectKey pocketGID, Data.Set.singleton pocketWornEffect)
+      , (PlayerKey (PlayerKeyObject pillGID), Data.Set.fromList [pillReachableEffect, pillTakeableEffect])
       ]
 pillReachableEffect :: Effect
-pillReachableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
+pillReachableEffect = ConsumptionEffect takeCV pillGID takePillFGID
 
 pillTakeableEffect :: Effect
-pillTakeableEffect = ConsumptionEffect takeCV pillObjGID takePillFGID
+pillTakeableEffect = ConsumptionEffect takeCV pillGID takePillFGID
 
 pillCuresHeadacheEffect :: Effect
 pillCuresHeadacheEffect = PositivePosturalEffect stand standUpGID  -- Changes stand action to successful version
@@ -253,7 +241,7 @@ dirLook :: DirectionalStimulusVerb
 dirLook = Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
 bedroomOpenEyesKey :: ActionEffectKey
-bedroomOpenEyesKey = LocationKey bedroomInBedGID
+bedroomOpenEyesKey = LocationKey bedroomGID
 
 enableRobeGetEffect :: Effect
 enableRobeGetEffect = AcquisitionPhraseEffect (SimpleAcquisitionVerbPhrase get simpleRobeOP) playerGetFGID
@@ -273,12 +261,12 @@ getFromRobeEffect = AcquisitionVerbEffect get getFromRobeFGID
 getRobeEffectMap :: ActionEffectMap
 getRobeEffectMap = ActionEffectMap
   $ Data.Map.Strict.fromList
-      [ (PlayerKey (PlayerKeyObject robeObjGID), Data.Set.singleton getRobeEffect)
-      , (ObjectKey robeObjGID, Data.Set.singleton robeWornEffect)
+      [ (PlayerKey (PlayerKeyObject robeGID), Data.Set.singleton getRobeEffect)
+      , (ObjectKey robeGID, Data.Set.singleton robeWornEffect)
       ]
 
 getRobe :: AcquisitionActionF
-getRobe = getObjectF robeObjGID
+getRobe = getObjectF robeGID
 
 robeWornEffect :: Effect
 robeWornEffect = DirectionalStimulusEffect dirLook seeRobeWornGID
@@ -303,7 +291,3 @@ chairLookEffect = DirectionalStimulusEffect dirLook seeChairFGID
 
 getFromChairEffect :: Effect
 getFromChairEffect = AcquisitionVerbEffect get getFromChairFGID
--- getFromChair :: AcquisitionVerbPhrase
--- getFromChair
--- AcquisitionEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
-
