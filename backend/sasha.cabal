@@ -76,6 +76,7 @@ library
       Build.BedPuzzle.Actions.Objects.Robe.Look
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.GameStateGeneration.BedroomWorldSpec
+      Build.GameStateGeneration.EDSL.GameStateBuilder
       Build.GameStateGeneration.EffectRegistry
       Build.GameStateGeneration.LocationSpec.Locations
       Build.GameStateGeneration.LocationSpec.LocationGIDs
