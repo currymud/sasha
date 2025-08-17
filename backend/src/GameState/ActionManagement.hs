@@ -143,8 +143,6 @@ processEffect (ObjectKey oid) (SomaticAccessEffect verb newActionGID) = do
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (AcquisitionVerbEffect verb newActionGID) = do
-  trace ("DEBUG: Processing AcquisitionVerbEffect for object " ++ show oid ++ " verb " ++ show verb ++ " newActionGID " ++ show newActionGID) $
-
     modifyObjectActionManagementM oid $ \actionMgmt ->
       let ActionManagementFunctions actionSet = actionMgmt
           filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
@@ -152,14 +150,12 @@ processEffect (ObjectKey oid) (AcquisitionVerbEffect verb newActionGID) = do
       in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
-  trace ("DEBUG: Processing AcquisitionPhraseEffect for object " ++ show oid ++ " phrase " ++ show avp ++ " newActionGID " ++ show newActionGID) $
-    modifyObjectActionManagementM oid $ \actionMgmt ->
+  modifyObjectActionManagementM oid $ \actionMgmt ->
       let ActionManagementFunctions actionSet = actionMgmt
           filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
           updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
-      in trace ("DEBUG: AcquisitionPhraseEffect - Old actions: " ++ show (Data.Set.toList actionSet)) $
-         trace ("DEBUG: AcquisitionPhraseEffect - New actions: " ++ show (Data.Set.toList updatedActions)) $
-         ActionManagementFunctions updatedActions
+      in ActionManagementFunctions updatedActions
+
 processEffect (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -263,8 +259,6 @@ lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
   listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
 
 lookupAcquisition verb (ActionManagementFunctions actions) =
-  trace ("DEBUG: lookupAcquisition for verb " ++ show verb) $
-  trace ("DEBUG: Available actions: " ++ show (Data.Set.toList actions)) $
   let phraseMatches = [gid | AAManagementKey phrase gid <- Data.Set.toList actions,
                              let matches = matchesVerb phrase
                              in trace ("DEBUG: matchesVerb " ++ show phrase ++ " = " ++ show matches) matches]

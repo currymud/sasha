@@ -9,7 +9,6 @@ import qualified Data.Map.Strict
 import           Data.Set                      (Set, delete, elemAt, filter,
                                                 insert, map, null, toList)
 import           Data.Text                     (Text)
-import           Debug.Trace                   (trace)
 import           GameState                     (addToInventoryM, getObjectM,
                                                 getPlayerLocationM, getPlayerM,
                                                 modifyNarration,
@@ -117,7 +116,7 @@ doGet :: GID Object
            -> (AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
            -> GameComputation Identity ()
 doGet sourceGID targetGID avp lookupF = do
-  trace ("DEBUG: doGet called with sourceGID=" ++ show sourceGID ++ " targetGID=" ++ show targetGID) $ pure ()
+--  trace ("DEBUG: doGet called with sourceGID=" ++ show sourceGID ++ " targetGID=" ++ show targetGID) $ pure ()
 
   -- Role 1: Execute source object's RemovedFromF action
   actionMap <- asks (_acquisitionActionMap . _actionMaps)
@@ -136,13 +135,13 @@ doGet sourceGID targetGID avp lookupF = do
   targetObj <- getObjectM targetGID
 
   let targetActionMgmt = _objectActionManagement targetObj
-  trace ("DEBUG: Target object action management: " ++ show targetActionMgmt) $ pure ()
+--  trace ("DEBUG: Target object action management: " ++ show targetActionMgmt) $ pure ()
 
   let addedToRes = case lookupF avp targetActionMgmt of
         Just targetActionGID -> do
-          trace ("DEBUG: Found target action GID: " ++ show targetActionGID) $ pure ()
+         -- trace ("DEBUG: Found target action GID: " ++ show targetActionGID) $ pure ()
           case Data.Map.Strict.lookup targetActionGID actionMap of
-            Just (CollectedF actionFunc) -> trace "DEBUG: Found CollectedF action" $ actionFunc
+            Just (CollectedF actionFunc) -> actionFunc
             Just _ -> error ("Target object action GID " ++ show targetActionGID ++ " should use CollectedF constructor but uses different constructor")
             Nothing -> error ("Target object's acquisition action GID " ++ show targetActionGID ++ " not found in action map")
         Nothing -> error "Target object has no acquisition action for this phrase"
