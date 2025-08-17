@@ -1,4 +1,4 @@
-module Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs where
+module Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs (saOpen,open,close,somaticAccessVerbs) where
 
 import           Data.HashSet                                (HashSet, fromList)
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
@@ -16,6 +16,10 @@ import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitra
 
 makeSemanticValues [| SomaticAccessVerb |] [OPEN, CLOSE]
 -- These verbs don't take instruments
+
+saOpen :: SomaticAccessVerb
+saOpen = Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs.open
+
 somaticAccessVerbs :: HashSet SomaticAccessVerb
 somaticAccessVerbs = fromList [open, close]
 

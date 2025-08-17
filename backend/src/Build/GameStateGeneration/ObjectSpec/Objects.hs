@@ -16,6 +16,7 @@ import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairG
 import           Build.Identifiers.Actions                               (alreadyHaveRobeFGID,
                                                                           getFromChairFGID,
                                                                           getRobeDeniedFGID,
+                                                                          notEvenRobeGID,
                                                                           seeChairFGID,
                                                                           seeMailGID,
                                                                           seeRobeChairGID,
@@ -115,7 +116,7 @@ robeObj = defaultObject
   & withShortName "robe"
   & withDescription "A comfortable robe"
   & withDescriptives [SimpleNounPhrase robeDS]
-  & withBehaviors [DSAManagementKey look seeRobeChairGID,
+  & withBehaviors [DSAManagementKey look notEvenRobeGID,
                    AAManagementKey getRobeAVP getRobeDeniedFGID,
                    AVManagementKey get getRobeDeniedFGID]  -- Get behavior
 

@@ -1,67 +1,59 @@
 module Build.GameStateGeneration.BedroomWorldSpec (bedroomWorldSpec, bedroomPlayerSpec) where
 
 
-import qualified Grammar.Parser.Partitions.Nouns.Consumables          as Consumables
-import qualified Grammar.Parser.Partitions.Nouns.Objectives           as Objectives
-import qualified Grammar.Parser.Partitions.Verbs.AcquisitionVerbs     as AcquisitionVerbs
-import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs     as ConsumptionVerbs
+import qualified Grammar.Parser.Partitions.Nouns.Consumables             as Consumables
+import qualified Grammar.Parser.Partitions.Nouns.Objectives              as Objectives
+import qualified Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        as AcquisitionVerbs
+import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        as ConsumptionVerbs
 
-import           Build.GameStateGeneration.LocationSpec.LocationGIDs  (bedroomGID)
-import           Build.GameStateGeneration.LocationSpec.Locations     (bedroom)
-import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS      (chairGID,
-                                                                       floorGID,
-                                                                       mailGID,
-                                                                       pillGID,
-                                                                       pocketGID,
-                                                                       robeGID,
-                                                                       smallTableGID)
+import           Build.GameStateGeneration.LocationSpec.LocationGIDs     (bedroomGID)
+import           Build.GameStateGeneration.LocationSpec.Locations        (bedroom)
+import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
+                                                                          floorGID,
+                                                                          mailGID,
+                                                                          pillGID,
+                                                                          pocketGID,
+                                                                          robeGID,
+                                                                          smallTableGID)
 
-import           Build.GameStateGeneration.WorldBuilder               (dirLook,
-                                                                       dsaLook,
-                                                                       getRobeAVP,
-                                                                       isaLook,
-                                                                       saOpen)
-import           Build.GameStateGeneration.WorldGeneration            (ObjectBehaviorSpec (ObjectBehaviorSpec, _behaviors, _objectGID),
-                                                                       PlayerSpec (PlayerSpec, _playerBehaviors, _playerLocationGID),
-                                                                       WorldSpec (WorldSpec, _locationSpecs, _objectSpecs, _playerSpec, _spatialRelationships))
-import           Build.Identifiers.Actions                            (checkInventoryGID,
-                                                                       dizzyGetFGID,
-                                                                       dsvEnabledLookGID,
-                                                                       getMailDeniedFGID,
-                                                                       isaEnabledLookGID,
-                                                                       openEyesGID,
-                                                                       pillTooFarFGID,
-                                                                       seeChairFGID,
-                                                                       seeFloorFGID,
-                                                                       seeMailGID,
-                                                                       seePocketRobeWornGID,
-                                                                       seeRobeChairGID,
-                                                                       seeTableGID,
-                                                                       takePillDeniedFGID,
-                                                                       whatPillGID)
+import           Build.GameStateGeneration.WorldGeneration               (ObjectBehaviorSpec (ObjectBehaviorSpec, _behaviors, _objectGID),
+                                                                          PlayerSpec (PlayerSpec, _playerBehaviors, _playerLocationGID),
+                                                                          WorldSpec (WorldSpec, _locationSpecs, _objectSpecs, _playerSpec, _spatialRelationships))
+import           Build.Identifiers.Actions                               (checkInventoryGID,
+                                                                          dizzyGetFGID,
+                                                                          dsvEnabledLookGID,
+                                                                          getMailDeniedFGID,
+                                                                          isaEnabledLookGID,
+                                                                          openEyesGID,
+                                                                          pillTooFarFGID,
+                                                                          seeChairFGID,
+                                                                          seeFloorFGID,
+                                                                          seeMailGID,
+                                                                          seePocketRobeWornGID,
+                                                                          seeRobeChairGID,
+                                                                          seeTableGID,
+                                                                          takePillDeniedFGID,
+                                                                          whatPillGID)
 import qualified Data.Set
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (inventory)
-import           Model.GameState                                      (ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
-                                                                       Location,
-                                                                       Object,
-                                                                       SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
-import           Model.GID                                            (GID)
-import           Model.Parser.Composites.Nouns                        (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                                       NounPhrase (SimpleNounPhrase),
-                                                                       ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                        (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                                       ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+import           Grammar.Parser.Partitions.Nouns.Objectives              (robeOB)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
+import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory,
+                                                                          isaLook)
+import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
+import           Model.GameState                                         (ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                          Location,
+                                                                          Object,
+                                                                          SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
+import           Model.GID                                               (GID)
+import           Model.Parser.Atomics.Nouns                              (Objective)
+import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                          NounPhrase (SimpleNounPhrase),
+                                                                          ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
 
-takePillCVP :: ConsumptionVerbPhrase
-takePillCVP = ConsumptionVerbPhrase
-  ConsumptionVerbs.take
-  (ConsumableNounPhrase (SimpleNounPhrase Consumables.pill))
-
-getMailAVP :: AcquisitionVerbPhrase
-getMailAVP = SimpleAcquisitionVerbPhrase
-  AcquisitionVerbs.get
-  (ObjectPhrase (SimpleNounPhrase Objectives.mail))
 
 chairBehaviorSpec :: ObjectBehaviorSpec
 chairBehaviorSpec = ObjectBehaviorSpec
@@ -171,3 +163,24 @@ bedroomPlayerSpec = PlayerSpec
       , SSAManagementKey saOpen openEyesGID
       ]
   }
+
+-- =============================================================================
+-- ACQUISITION VERB PHRASES
+-- =============================================================================
+
+takePillCVP :: ConsumptionVerbPhrase
+takePillCVP = ConsumptionVerbPhrase
+  ConsumptionVerbs.take
+  (ConsumableNounPhrase (SimpleNounPhrase Consumables.pill))
+
+getMailAVP :: AcquisitionVerbPhrase
+getMailAVP = SimpleAcquisitionVerbPhrase
+  AcquisitionVerbs.get
+  (ObjectPhrase (SimpleNounPhrase Objectives.mail))
+
+simpleRobeOP :: ObjectPhrase
+simpleRobeOP = ObjectPhrase (SimpleNounPhrase robeOB)
+
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
+

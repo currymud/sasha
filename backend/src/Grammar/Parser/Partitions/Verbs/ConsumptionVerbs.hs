@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 module Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
-         (eat,take,consumptionVerbs) where
+         (eat,take,consumptionVerbs,takeCV) where
 
 
 import           Data.HashSet                                (HashSet, fromList)
@@ -21,6 +21,9 @@ makeSemanticValues [| ConsumptionVerb |] [EAT,TAKE]
 
 consumptionVerbs :: HashSet ConsumptionVerb
 consumptionVerbs = Data.HashSet.fromList [eat, take]
+
+takeCV :: ConsumptionVerb
+takeCV = Grammar.Parser.Partitions.Verbs.ConsumptionVerbs.take
 
 #ifdef TESTING
 

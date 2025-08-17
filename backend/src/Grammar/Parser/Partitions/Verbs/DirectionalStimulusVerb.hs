@@ -1,4 +1,4 @@
-module Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb where
+module Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look,dsaLook, directionalStimulusVerbs) where
 
 import           Data.HashSet                                (HashSet,
                                                               singleton)
@@ -19,6 +19,9 @@ makeSemanticValues [| DirectionalStimulusVerb |] [LOOK]
 -- Verbs that can take directional prepositions like "at"
 directionalStimulusVerbs :: HashSet DirectionalStimulusVerb
 directionalStimulusVerbs = singleton look
+
+dsaLook :: DirectionalStimulusVerb
+dsaLook = look
 
 #ifdef TESTING
 
