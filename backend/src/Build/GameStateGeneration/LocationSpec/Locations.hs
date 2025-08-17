@@ -18,12 +18,27 @@ import           Model.GameState                                      (ActionMan
                                                                        Location)
 import           Model.Parser.GCase                                   (NounKey (DirectionalStimulusKey))
 
+import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS      (chairGID,
+                                                                       floorGID,
+                                                                       mailGID,
+                                                                       robeGID,
+                                                                       smallTableGID)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus  (chair,
+                                                                       floor,
+                                                                       mail,
+                                                                       robe,
+                                                                       table)
+import           Prelude                                              hiding
+                                                                      (floor)
 -- Create locations using builder pattern
 bedroom :: Location
 bedroom = defaultLocation
   & withTitle "Bedroom in Bed"
   & withObjects [ (chairGID, DirectionalStimulusKey chair)
                 , (smallTableGID, DirectionalStimulusKey table)
+                , (robeGID, DirectionalStimulusKey robe)
+                , (mailGID, DirectionalStimulusKey mail)
+                , (floorGID, DirectionalStimulusKey floor)
                 ]
   & withLocationBehaviors [ISAManagementKey Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look pitchBlackFGID]
 bedroomUpstairs :: Location

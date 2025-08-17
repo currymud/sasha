@@ -7,6 +7,11 @@ import           Build.GameStateGeneration.ObjectSpec                    (defaul
                                                                           withDescriptives,
                                                                           withShortName)
 import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
+                                                                          floorGID,
+                                                                          mailGID,
+                                                                          pillGID,
+                                                                          pocketGID,
+                                                                          robeGID,
                                                                           smallTableGID)
 import           Build.Identifiers.Actions                               (alreadyHaveRobeFGID,
                                                                           seeChairFGID,
@@ -127,4 +132,10 @@ floorObj = defaultObject
   & withDescription "The bedroom floor"
   & withDescriptives [SimpleNounPhrase floorDS]
 
-makeObjectMap [ ('chairGID, 'chairObj), ('smallTableGID, 'smallTableObj) , ('smallTableGID, 'smallTableObj) ]  -- objectMap :: GIDToDataMap Object Object
+makeObjectMap [ ('chairGID, 'chairObj)
+              , ('smallTableGID, 'smallTableObj)
+              , ('pillGID, 'pillObj)
+              , ('mailGID, 'mailObj)
+              , ('robeGID, 'robeObj)
+              , ('pocketGID, 'pocketObj)
+              , ('floorGID, 'floorObj)]  -- objectMap :: GIDToDataMap Object Object
