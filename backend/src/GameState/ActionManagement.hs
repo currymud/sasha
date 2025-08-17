@@ -5,6 +5,7 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
+import           Debug.Trace                   (trace)
 import           GameState                     (modifyLocationM, modifyObjectM)
 import           GameState.EffectRegistry      (lookupEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
@@ -142,19 +143,23 @@ processEffect (ObjectKey oid) (SomaticAccessEffect verb newActionGID) = do
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (AcquisitionVerbEffect verb newActionGID) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
+  trace ("DEBUG: Processing AcquisitionVerbEffect for object " ++ show oid ++ " verb " ++ show verb ++ " newActionGID " ++ show newActionGID) $
+
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      let ActionManagementFunctions actionSet = actionMgmt
+          filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
+          updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
+      in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
+  trace ("DEBUG: Processing AcquisitionPhraseEffect for object " ++ show oid ++ " phrase " ++ show avp ++ " newActionGID " ++ show newActionGID) $
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      let ActionManagementFunctions actionSet = actionMgmt
+          filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
+          updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+      in trace ("DEBUG: AcquisitionPhraseEffect - Old actions: " ++ show (Data.Set.toList actionSet)) $
+         trace ("DEBUG: AcquisitionPhraseEffect - New actions: " ++ show (Data.Set.toList updatedActions)) $
+         ActionManagementFunctions updatedActions
 processEffect (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -257,10 +262,16 @@ lookupAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> ActionManagementFunction
 lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
   listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
 
-lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisition verb (ActionManagementFunctions actions) =
-  listToMaybe ([gid | AAManagementKey phrase gid <- Data.Set.toList actions, matchesVerb phrase] ++
-               [gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb])
+  trace ("DEBUG: lookupAcquisition for verb " ++ show verb) $
+  trace ("DEBUG: Available actions: " ++ show (Data.Set.toList actions)) $
+  let phraseMatches = [gid | AAManagementKey phrase gid <- Data.Set.toList actions,
+                             let matches = matchesVerb phrase
+                             in trace ("DEBUG: matchesVerb " ++ show phrase ++ " = " ++ show matches) matches]
+      verbMatches = [gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb]
+      result = listToMaybe (phraseMatches ++ verbMatches)
+  in trace ("DEBUG: phraseMatches: " ++ show phraseMatches ++ ", verbMatches: " ++ show verbMatches) $
+     trace ("DEBUG: lookupAcquisition result: " ++ show result) result
   where
     matchesVerb :: AcquisitionVerbPhrase -> Bool
     matchesVerb (SimpleAcquisitionVerbPhrase v _) = v == verb

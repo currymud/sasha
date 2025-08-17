@@ -9,6 +9,7 @@ import qualified Data.Map.Strict
 import           Data.Set                      (Set, delete, elemAt, filter,
                                                 insert, map, null, toList)
 import           Data.Text                     (Text)
+import           Debug.Trace                   (trace)
 import           GameState                     (addToInventoryM, getObjectM,
                                                 getPlayerLocationM, getPlayerM,
                                                 modifyNarration,
@@ -67,9 +68,9 @@ getF = AcquisitionActionF getit
         -- Use search strategy to find target object and its container/supporter
           maybeResult <- searchStrategy nounKey
           case maybeResult of
-            Just (targetGID, sourceGID) -> do
+            Just (objectGID, containerGID) -> do
             -- Coordinate the handoff between source and target
-              doGet sourceGID targetGID avp (lookupAcquisition . extractVerb)
+              doGet containerGID objectGID avp (lookupAcquisition . extractVerb)
             Nothing -> do
             -- Object not found or not accessible
               modifyNarration $ updateActionConsequence "You don't see that here."
@@ -116,27 +117,34 @@ doGet :: GID Object
            -> (AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
            -> GameComputation Identity ()
 doGet sourceGID targetGID avp lookupF = do
+  trace ("DEBUG: doGet called with sourceGID=" ++ show sourceGID ++ " targetGID=" ++ show targetGID) $ pure ()
+
   -- Role 1: Execute source object's RemovedFromF action
   actionMap <- asks (_acquisitionActionMap . _actionMaps)
 
   sourceObj <- getObjectM sourceGID
+
   let sourceActionMgmt = _objectActionManagement sourceObj
       removedFromRes = case lookupF avp sourceActionMgmt of
         Just sourceActionGID -> do
          case Data.Map.Strict.lookup sourceActionGID actionMap of
              Just (LosesObjectF actionFunc) -> do
                actionFunc targetGID
-             Just _ -> error "Source object should use RemovedFromF constructor"
+             Just _ -> error "Source object should use LosesObjectF constructor"
              Nothing -> error "Source object's acquisition action not found in action map"
-        Nothing -> error "Source object has no acquisition action"
+        Nothing -> error "Source object has no acquisitiion action"
   targetObj <- getObjectM targetGID
+
   let targetActionMgmt = _objectActionManagement targetObj
-      addedToRes = case lookupAcquisitionVerbPhrase avp targetActionMgmt of
+  trace ("DEBUG: Target object action management: " ++ show targetActionMgmt) $ pure ()
+
+  let addedToRes = case lookupF avp targetActionMgmt of
         Just targetActionGID -> do
+          trace ("DEBUG: Found target action GID: " ++ show targetActionGID) $ pure ()
           case Data.Map.Strict.lookup targetActionGID actionMap of
-            Just (CollectedF actionFunc) -> actionFunc
-            Just _ -> error "Target object should use AcquiredFromF constructor"
-            Nothing -> error "Target object's acquisition action not found in action map"
+            Just (CollectedF actionFunc) -> trace "DEBUG: Found CollectedF action" $ actionFunc
+            Just _ -> error ("Target object action GID " ++ show targetActionGID ++ " should use CollectedF constructor but uses different constructor")
+            Nothing -> error ("Target object's acquisition action GID " ++ show targetActionGID ++ " not found in action map")
         Nothing -> error "Target object has no acquisition action for this phrase"
   either id id (removedFromRes >> addedToRes)
 

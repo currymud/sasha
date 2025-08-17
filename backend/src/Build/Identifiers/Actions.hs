@@ -128,7 +128,9 @@ makeAcquisitionActionGIDsAndMap [ [| alreadyHaveMailF|],
                                   [| dizzyGetF |],
                                   [| getRobeF |],
                                   [| getFromChairF |],
-                                  [| robeCollectedF|], [| getFromRobeF|], [| getRobeDeniedF|]]
+                                  [| getFromRobeF|],
+                                  [| robeCollectedF|],
+                                  [| getRobeDeniedF|]]
                                     {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],

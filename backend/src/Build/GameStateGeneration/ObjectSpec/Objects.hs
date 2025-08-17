@@ -14,6 +14,7 @@ import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairG
                                                                           robeGID,
                                                                           smallTableGID)
 import           Build.Identifiers.Actions                               (alreadyHaveRobeFGID,
+                                                                          getFromChairFGID,
                                                                           getRobeDeniedFGID,
                                                                           seeChairFGID,
                                                                           seeMailGID,
@@ -39,7 +40,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (pill,
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Model.GameState                                         (ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey),
+import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey),
                                                                           Object)
 import           Model.Parser.Atomics.Nouns                              (Consumable,
                                                                           DirectionalStimulus)
@@ -70,7 +71,9 @@ chairObj = defaultObject
   & withShortName "a chair"
   & withDescription "It's the chair next to your bed"
   & withDescriptives [SimpleNounPhrase chairDS, DescriptiveNounPhraseDet the small chairDS]
-  & withBehaviors [DSAManagementKey Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look seeChairFGID]
+  & withBehaviors [DSAManagementKey Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look seeChairFGID
+                  , AVManagementKey get getFromChairFGID  -- Add this line
+                  ]
 
 
 tableDS :: DirectionalStimulus
@@ -113,7 +116,8 @@ robeObj = defaultObject
   & withDescription "A comfortable robe"
   & withDescriptives [SimpleNounPhrase robeDS]
   & withBehaviors [DSAManagementKey look seeRobeChairGID,
-                   AAManagementKey getRobeAVP getRobeDeniedFGID]  -- Get behavior
+                   AAManagementKey getRobeAVP getRobeDeniedFGID,
+                   AVManagementKey get getRobeDeniedFGID]  -- Get behavior
 
 pocketDS :: DirectionalStimulus
 pocketDS = Grammar.Parser.Partitions.Nouns.DirectionalStimulus.pocket

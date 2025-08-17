@@ -4,8 +4,7 @@ module Build.GameStateGeneration.EffectRegistry where
 
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           Model.GameState                                         (AcquisitionActionF,
-                                                                          ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                           Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
@@ -20,7 +19,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getFromRobeFGID,
                                                                           openEyesGID,
                                                                           playerGetFGID,
-                                                                          robeCollectedF,
                                                                           robeCollectedFGID,
                                                                           seeChairFGID,
                                                                           seeMailGID,
@@ -34,7 +32,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           whatPillGID)
 
 -- Import new DSL-generated GIDs
-import           Build.BedPuzzle.Actions.Get.Constructors                (getObjectF)
 import           Build.GameStateGeneration.LocationSpec.LocationGIDs     (bedroomGID)
 import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
                                                                           mailGID,
@@ -43,6 +40,7 @@ import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairG
                                                                           robeGID,
                                                                           smallTableGID)
 import           Data.Set                                                (Set)
+import           Debug.Trace                                             (trace)
 import qualified Grammar.Parser.Partitions.Nouns.Objectives
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (take)
@@ -111,7 +109,7 @@ getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
 
 getRobeEffect :: Effect
-getRobeEffect = AcquisitionPhraseEffect getRobeAVP robeCollectedFGID
+getRobeEffect = trace ("DEBUG: robeCollectedFGID resolves to " ++ show robeCollectedFGID) $ AcquisitionPhraseEffect getRobeAVP robeCollectedFGID
 
 getFromRobeEffect :: Effect
 getFromRobeEffect = AcquisitionVerbEffect get getFromRobeFGID
