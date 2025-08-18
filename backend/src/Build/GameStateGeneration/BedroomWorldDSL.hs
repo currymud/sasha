@@ -112,60 +112,76 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 -- OBJECT BUILDERS
 -- =============================================================================
 
-chairObj ::WorldDSL Object
-chairObj = defaultObject & chairObj'
+chairObj :: WorldDSL Object
+chairObj =
+  defaultObject & chairObj'
   where
+    descriptives = [ SimpleNounPhrase chairDS
+                   , DescriptiveNounPhraseDet the small chairDS
+                   ]
     chairObj' = withShortName "a chair"
                   >=> withDescription "It's the chair next to your bed"
-                  >=> withDescriptives [SimpleNounPhrase chairDS, DescriptiveNounPhraseDet the small chairDS]
+                  >=> withDescriptives descriptives
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeChairFGID))
+                  >=> (\o -> withObjectBehavior o (AVManagementKey  get  getFromChairFGID))
 
 tableObj :: WorldDSL Object
-tableObj = defaultObject & tableObj'
+tableObj =  defaultObject & tableObj'
   where
+    descriptives = [ SimpleNounPhrase tableDS
+                   , DescriptiveNounPhraseDet the small tableDS
+                   ]
     tableObj' = withShortName "small table"
                   >=> withDescription "A small bedside table"
-                  >=> withDescriptives [DescriptiveNounPhraseDet the small tableDS]
+                  >=> withDescriptives descriptives
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeTableGID))
 
 pillObj :: WorldDSL Object
 pillObj = defaultObject & pillObj'
   where
     pillObj' = withShortName "pill"
                  >=> withDescription "A small, round pill. Probably good for headaches."
-                 >=> withDescriptives [SimpleNounPhrase pillDS]
+                 >=> withDescriptives [ SimpleNounPhrase pillDS ]
+                 >=> (\o -> withObjectBehavior o (DSAManagementKey look whatPillGID))
+                 >=> (\o -> withObjectBehavior o (CAManagementKey takePillCVP takePillDeniedFGID))
 
 mailObj :: WorldDSL Object
-mailObj = defaultObject & mailObj'
-  where
-    mailObj' = withShortName "mail"
-                 >=> withDescription "Some mail on the table"
-                 >=> withDescriptives [SimpleNounPhrase mailDS]
-
+mailObj =  defaultObject & mailObj'
+ where
+   mailObj' = withShortName "mail"
+                >=> withDescription "Some mail on the table"
+                >=> withDescriptives [ SimpleNounPhrase mailDS ]
+                >=> (\o -> withObjectBehavior o (DSAManagementKey look seeMailGID))
+                >=> (\o -> withObjectBehavior o (AAManagementKey getMailAVP getMailDeniedFGID))
 
 robeObj :: WorldDSL Object
-robeObj = defaultObject & robeObj'
+robeObj =  defaultObject & robeObj'
   where
     robeObj' = withShortName "robe"
                  >=> withDescription "A comfortable robe"
-                 >=> withDescriptives [SimpleNounPhrase robeDS]
+                 >=> withDescriptives [ SimpleNounPhrase robeDS ]
+                 >=> (\o -> withObjectBehavior o (DSAManagementKey look notEvenRobeGID))
+                 >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP getRobeDeniedFGID))
+                 >=> (\o -> withObjectBehavior o (AVManagementKey  get        getRobeDeniedFGID))
 
 pocketObj :: WorldDSL Object
-pocketObj = defaultObject & pocketObj'
+pocketObj =  defaultObject & pocketObj'
   where
     pocketObj' = withShortName "pocket"
                    >=> withDescription "A pocket in the robe"
-                   >=> withDescriptives [SimpleNounPhrase pocketDS]
-
+                   >=> withDescriptives [ SimpleNounPhrase pocketDS ]
+                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seePocketRobeWornGID))
 
 floorObj :: WorldDSL Object
-floorObj =
-  defaultObject & floorObj'
+floorObj =  defaultObject & floorObj'
   where
     floorObj' = withShortName "floor"
                   >=> withDescription "The bedroom floor"
                   >=> withDescriptives [ SimpleNounPhrase floorDS ]
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeFloorFGID))
 
 
-
+  {-
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================
@@ -282,4 +298,4 @@ bedroomWorldDSL = do
   registerPlayer player
 
   finalizeGameState
-
+-}
