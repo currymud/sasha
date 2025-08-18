@@ -81,9 +81,10 @@ data WorldDSL :: Type -> Type where
   SetPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
   UpdatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 
-  WithBehavior :: Object -> ActionManagement -> WorldDSL Object
-  WithSpatial :: Object -> SpatialRelationship -> WorldDSL Object
+  WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
+  WithLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
+  WithSpatial :: Object -> SpatialRelationship -> WorldDSL Object
 
   -- Location management
   ModifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
@@ -196,8 +197,11 @@ setPlayerLocation = SetPlayerLocation
 updatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 updatePlayer = UpdatePlayer
 
-withBehavior :: Object -> ActionManagement -> WorldDSL Object
-withBehavior = WithBehavior
+withObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
+withObjectBehavior = WithObjectBehavior
+
+withLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
+withLocationBehavior = WithLocationBehavior
 
 withSpatial :: Object -> SpatialRelationship -> WorldDSL Object
 withSpatial = WithSpatial
