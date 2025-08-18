@@ -4,6 +4,7 @@ module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
+                                                                          addObjectToLocation,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
@@ -11,7 +12,11 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerObject,
                                                                           registerPlayer,
                                                                           setSpatial,
-                                                                          withObjectBehavior)
+                                                                          withDescription,
+                                                                          withDescriptives,
+                                                                          withObjectBehavior,
+                                                                          withShortName,
+                                                                          withTitle)
 import           Model.GID                                               (GID)
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
 import           Prelude                                                 hiding
@@ -40,17 +45,6 @@ import           Model.Parser.Composites.Nouns                           (Consum
                                                                           ObjectPhrase (ObjectPhrase))
 
 -- Import ObjectSpec builder functions
-import           Build.GameStateGeneration.ObjectSpec                    (defaultLocation,
-                                                                          defaultObject,
-                                                                          defaultPlayer,
-                                                                          withDescription,
-                                                                          withDescriptives,
-                                                                          withLocationBehaviors,
-                                                                          withObjects,
-                                                                          withPlayerBehaviors,
-                                                                          withPlayerLocation,
-                                                                          withShortName,
-                                                                          withTitle)
 
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
@@ -88,6 +82,13 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
+import           Build.GameStateGeneration.ObjectSpec                    (defaultLocation,
+                                                                          defaultPlayer,
+                                                                          withLocationBehaviors,
+                                                                          withObjects,
+                                                                          withPlayerBehaviors,
+                                                                          withPlayerLocation)
+import           Data.Foldable                                           (traverse_)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Relude.Function                                         ((&))
@@ -155,13 +156,25 @@ floorObj = defaultObject
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================
 
-buildBedroom :: GID Location -> [(GID Object, NounKey)] -> WorldDSL Location
+buildBedroom
+  :: GID Location
+  -> [(GID Object, NounKey)]
+  -> WorldDSL Location
 buildBedroom bedroomGID objectsWithKeys = do
-  let bedroomLocation = defaultLocation
-        & withTitle "Bedroom in Bed"
-        & withObjects objectsWithKeys
-        & withLocationBehaviors []  -- Add location behaviors if needed
-  return bedroomLocation
+  -- Treat withTitle as a pure field setter (per your notes).
+  let baseLocation =
+        defaultLocation
+          & withTitle "Bedroom in Bed"
+
+  -- Register location before linking objects.
+  _ <- registerLocation bedroomGID baseLocation
+
+  -- Link objects one-by-one (replaces withObjects).
+  traverse_ (\(objGID, nounKey) ->
+               addObjectToLocation bedroomGID objGID nounKey)
+            objectsWithKeys
+
+  pure baseLocation
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
