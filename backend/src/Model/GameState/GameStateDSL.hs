@@ -106,10 +106,6 @@ data WorldDSL :: Type -> Type where
   LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
 
-  -- Context queries
-  GetCurrentObjects :: WorldDSL [Object]
-  GetCurrentLocations :: WorldDSL [Location]
-  GetCurrentPlayer :: WorldDSL Player
 
   -- Final assembly
   FinalizeGameState :: WorldDSL GameState
@@ -231,15 +227,6 @@ linkEffectToLocation = LinkEffectToLocation
 
 linkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
-
-getCurrentObjects :: WorldDSL [Object]
-getCurrentObjects = GetCurrentObjects
-
-getCurrentLocations :: WorldDSL [Location]
-getCurrentLocations = GetCurrentLocations
-
-getCurrentPlayer :: WorldDSL Player
-getCurrentPlayer = GetCurrentPlayer
 
 finalizeGameState :: WorldDSL GameState
 finalizeGameState = FinalizeGameState
