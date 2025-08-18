@@ -18,6 +18,29 @@ makeSemanticValues [| DirectionalStimulus |] lexemes
 directionalStimulii :: HashSet DirectionalStimulus
 directionalStimulii = fromList [bedroom,pocket,pill,mail,satchel,towel,robe,chair, floor,table]
 
+bedroomDS :: DirectionalStimulus
+bedroomDS = bedroom
+
+chairDS :: DirectionalStimulus
+chairDS = chair
+
+tableDS :: DirectionalStimulus
+tableDS = table
+
+pillDS :: DirectionalStimulus
+pillDS = pill
+
+mailDS :: DirectionalStimulus
+mailDS = mail
+
+robeDS :: DirectionalStimulus
+robeDS = robe
+
+pocketDS :: DirectionalStimulus
+pocketDS = pocket
+
+floorDS :: DirectionalStimulus
+floorDS = floor
 #ifdef TESTING
 instance Arbitrary DirectionalStimulus where
   arbitary = elements $ HS.toList directionalStimulii

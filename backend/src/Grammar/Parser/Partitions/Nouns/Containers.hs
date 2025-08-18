@@ -1,4 +1,4 @@
-module Grammar.Parser.Partitions.Nouns.Containers (containers,pocket,satchel,robe) where
+module Grammar.Parser.Partitions.Nouns.Containers (pocketCT, robeCT,containers,pocket,satchel,robe) where
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (POCKET, ROBE, SATCHEL))
@@ -17,6 +17,11 @@ makeSemanticValues [| Container |] containers'
 containers :: HashSet Container
 containers = HashSet.fromList [pocket,satchel,robe]
 
+robeCT :: Container
+robeCT = robe
+
+pocketCT :: Container
+pocketCT = pocket
 
 #ifdef TESTING
 instance Arbitrary Container where

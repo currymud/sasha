@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Grammar.Parser.Partitions.Nouns.Surfaces (surfaces,chair,table,satchel) where
+module Grammar.Parser.Partitions.Nouns.Surfaces ( chairSF, tableSF, floorSF, surfaces,chair,table,satchel) where
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (CHAIR, FLOOR, SATCHEL, TABLE))
@@ -17,6 +17,16 @@ makeSemanticValues [| Surface |] surfaces'
 
 surfaces :: HashSet Surface
 surfaces = HashSet.fromList [chair,floor,table,satchel]
+
+chairSF :: Surface
+chairSF = chair
+
+tableSF :: Surface
+tableSF = table
+
+floorSF :: Surface
+floorSF = floor
+
 
 #ifdef TESTING
 instance Arbitrary Supportive where

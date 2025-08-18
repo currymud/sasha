@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Grammar.Parser.Partitions.Nouns.Objectives (robeOB,floor,table,chair,objectives,pill,mail,satchel,towel,robe) where
+module Grammar.Parser.Partitions.Nouns.Objectives ( floorOB, bedroomOB,chairOB,pillOB,mailOB,pocketOB,tableOB,robeOB,floor,table,chair,objectives,pill,mail,satchel,towel,robe) where
 import           Data.HashSet                                (HashSet)
 import qualified Data.HashSet                                as HashSet
 import           Grammar.Parser.Lexer                        (Lexeme (BEDROOM, CHAIR, FLOOR, MAIL, PILL, POCKET, ROBE, SATCHEL, TABLE, TOWEL))
@@ -20,7 +20,27 @@ objectives :: HashSet Objective
 objectives = HashSet.fromList [bedroom,pocket,floor,table,chair,pill, mail, satchel, towel, robe]
 
 robeOB :: Objective
-robeOB = Grammar.Parser.Partitions.Nouns.Objectives.robe
+robeOB = robe
+
+floorOB :: Objective
+floorOB = floor
+bedroomOB :: Objective
+bedroomOB = bedroom
+
+chairOB :: Objective
+chairOB = chair
+
+tableOB :: Objective
+tableOB = table
+
+pillOB :: Objective
+pillOB = pill
+
+mailOB :: Objective
+mailOB = mail
+
+pocketOB :: Objective
+pocketOB = pocket
 
 #ifdef TESTING
 instance Arbitrary Objective  where

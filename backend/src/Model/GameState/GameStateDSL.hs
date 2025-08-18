@@ -78,10 +78,9 @@ data WorldDSL :: Type -> Type where
   UpdatePlayer :: WorldDSL Player -> (Player -> Player) -> WorldDSL Player
 
   -- Behavior assignment (single ActionManagement, not lists)
-  AssignObjectBehavior :: WorldDSL (GID Object) -> WorldDSL ActionManagement -> WorldDSL ()
-  AssignLocationBehavior :: WorldDSL (GID Location) -> WorldDSL ActionManagement -> WorldDSL ()
-  AssignPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
-
+  WithPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
+  WithBehavior :: Object -> ActionManagement -> WorldDSL Object
+  WithSpatial :: Object -> [SpatialRelationship] -> WorldDSL Object
   -- Complex builder operations
   ModifyObject :: WorldDSL (GID Object) -> (Object -> Object) -> WorldDSL ()
   ModifyLocation :: WorldDSL (GID Location) -> (Location -> Location) -> WorldDSL ()
@@ -271,17 +270,14 @@ setPlayer = SetPlayer
 updatePlayer :: WorldDSL Player -> (Player -> Player) -> WorldDSL Player
 updatePlayer = UpdatePlayer
 
-assignObjectBehavior :: WorldDSL (GID Object) -> WorldDSL ActionManagement -> WorldDSL ()
-assignObjectBehavior = AssignObjectBehavior
+withBehavior :: Object -> ActionManagement -> WorldDSL Object
+withBehavior = WithBehavior
 
-assignLocationBehavior :: WorldDSL (GID Location) -> WorldDSL ActionManagement -> WorldDSL ()
-assignLocationBehavior = AssignLocationBehavior
+withSpatial :: Object -> [SpatialRelationship] -> WorldDSL Object
+withSpatial = WithSpatial
 
-assignPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
-assignPlayerBehavior = AssignPlayerBehavior
-
-modifyObject :: WorldDSL (GID Object) -> (Object -> Object) -> WorldDSL ()
-modifyObject = ModifyObject
+withPlayerBehavior :: WorldDSL Player -> WorldDSL ActionManagement -> WorldDSL Player
+withPlayerBehavior = WithPlayerBehavior
 
 modifyLocation :: WorldDSL (GID Location) -> (Location -> Location) -> WorldDSL ()
 modifyLocation = ModifyLocation
