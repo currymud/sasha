@@ -239,8 +239,6 @@ interpretDSL FinalizeGameState = do
   pure finalGameState
 
 interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
-  validateLocationGIDDeclared locGID
-  validateObjectGIDDeclared objGID
   state <- get
   let currentLocationMap = _getGIDToDataMap (_locationMap (_world (_gameState state)))
   case Data.Map.Strict.lookup locGID currentLocationMap of
