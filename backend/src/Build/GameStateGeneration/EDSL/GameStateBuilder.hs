@@ -2,10 +2,12 @@
 {-# LANGUAGE LambdaCase #-}
 module Build.GameStateGeneration.EDSL.GameStateBuilder where
 import           Control.Monad                 (unless, when)
-import           Control.Monad.Except          (ExceptT, MonadError, throwError)
-import           Control.Monad.State           (State, get, put)
-import           Control.Monad.State.Strict    (MonadState)
+import           Control.Monad.Except          (ExceptT, MonadError, runExceptT,
+                                                throwError)
+import           Control.Monad.State           (State, evalState, get, put)
+import           Control.Monad.State.Strict    (MonadState, runState)
 import           Data.Kind                     (Type)
+import qualified Data.List
 import           Data.Map.Strict               (Map, elems, findWithDefault,
                                                 fromListWith, insert, lookup,
                                                 map, member, singleton, toList,
@@ -20,8 +22,9 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 EffectRegistry,
-                                                GameState (_effectRegistry, _player),
+                                                GameState (_effectRegistry, _evaluation, _narration, _player),
                                                 Location (_objectSemanticMap, _title),
+                                                Narration (Narration),
                                                 Object (_description, _descriptives, _shortName),
                                                 Player (_location),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
@@ -29,7 +32,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePerceptionEffect, CreatePositivePosturalEffect, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePerceptionEffect, CreatePositivePosturalEffect, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, SetEvaluator, SetInitialNarration, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -109,6 +112,10 @@ newtype WorldBuilder a = WorldBuilder
                    , MonadState BuilderState
                    , MonadError WorldBuilderError
                    )
+
+-- Add this function to GameStateBuilder.hs
+runWorldBuilder :: WorldBuilder a -> BuilderState -> Either WorldBuilderError a
+runWorldBuilder (WorldBuilder computation) = evalState (runExceptT computation)
 
 -- Core interpreter function
 interpretDSL :: WorldDSL a -> WorldBuilder a
@@ -301,6 +308,17 @@ interpretDSL CreatePerceptionEffect = do
   put state { _createdEffects = effect : _createdEffects state }
   pure effect
 
+interpretDSL (SetEvaluator evaluator) = do
+  state <- get
+  let updatedGameState = (_gameState state) { _evaluation = evaluator }
+  put state { _gameState = updatedGameState }
+
+interpretDSL (SetInitialNarration text) = do
+  state <- get
+  let initialNarration = Narration (Data.List.singleton text) mempty
+      updatedGameState = (_gameState state) { _narration = initialNarration }
+  put state { _gameState = updatedGameState }
+
 interpretDSL (CreateISAManagement verb actionGID) =
   pure (ISAManagementKey verb actionGID)
 
@@ -365,10 +383,6 @@ interpretDSL (WithTitle text loc) = do
   pure updatedLoc
 
 -- Player management
-interpretDSL (RegisterPlayer player) = do
-  state <- get
-  let updatedGameState = (_gameState state) { _player = player }
-  put state { _gameState = updatedGameState }
 
 interpretDSL (WithPlayerLocation locGID) = do
   state <- get

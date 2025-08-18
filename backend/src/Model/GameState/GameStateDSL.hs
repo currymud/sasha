@@ -195,6 +195,7 @@ createPositivePosturalEffect = CreatePositivePosturalEffect
 
 createNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
 createNegativePosturalEffect = CreateNegativePosturalEffect
+
 createPerceptionEffect :: WorldDSL Effect
 createPerceptionEffect = CreatePerceptionEffect
 
