@@ -13,7 +13,7 @@ import qualified Data.Text
 import           Model.GameState               (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 GameState (_player),
-                                                Location (_title),
+                                                Location (_objectSemanticMap, _title),
                                                 Object (_description, _descriptives, _shortName),
                                                 Player (_location),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
@@ -21,7 +21,7 @@ import           Model.GameState               (ActionManagement (AAManagementKe
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, RegisterPlayer, Sequence, SetSpatial, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -154,36 +154,37 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       newGID <- generateLocationGID
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
-        {-
-interpretDSL (RegisterObject gid obj) = do
+
+interpretDSL (RegisterObject gid objDSL) = do
   validateObjectGIDDeclared gid
+  obj <- interpretDSL objDSL
   state <- get
   let currentObjectMap = _getGIDToDataMap (_objectMap (_world (_gameState state)))
   when (Data.Map.Strict.member gid currentObjectMap) $
     throwError (DuplicateObjectGID gid "Object already registered")
-
   let updatedObjectMap = Data.Map.Strict.insert gid obj currentObjectMap
       updatedWorld = (_world (_gameState state)) { _objectMap = GIDToDataMap updatedObjectMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
-  pure gid
--}
-  {-
-interpretDSL (RegisterLocation gid loc) = do
+
+interpretDSL (RegisterLocation gid locDSL) = do
   validateLocationGIDDeclared gid
+  loc <- interpretDSL locDSL
   state <- get
   let currentLocationMap = _getGIDToDataMap (_locationMap (_world (_gameState state)))
   when (Data.Map.Strict.member gid currentLocationMap) $
     throwError (DuplicateLocationGID gid "Location already registered")
-
   let updatedLocationMap = Data.Map.Strict.insert gid loc currentLocationMap
       updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
-  pure gid
--}
-interpretDSL (SetSpatial objGID spatialRel) = do
-  -- Validate the object GID exists
+
+interpretDSL (RegisterPlayer player) = do
+  state <- get
+  let updatedGameState = (_gameState state) { _player = player }
+  put state { _gameState = updatedGameState }
+
+interpretDSL (RegisterSpatial objGID spatialRel) = do
   validateObjectGIDDeclared objGID
   state <- get
   let currentWorld = _world (_gameState state)
@@ -195,6 +196,23 @@ interpretDSL (SetSpatial objGID spatialRel) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
 
+interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
+  validateLocationGIDDeclared locGID
+  validateObjectGIDDeclared objGID
+  state <- get
+  let currentLocationMap = _getGIDToDataMap (_locationMap (_world (_gameState state)))
+  case Data.Map.Strict.lookup locGID currentLocationMap of
+    Nothing -> throwError (InvalidLocationGID locGID "Location not registered")
+    Just loc -> do
+      let currentSemanticMap = _objectSemanticMap loc
+          currentObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentSemanticMap
+          updatedObjects = Data.Set.insert objGID currentObjects
+          updatedSemanticMap = Data.Map.Strict.insert nounKey updatedObjects currentSemanticMap
+          updatedLoc = loc { _objectSemanticMap = updatedSemanticMap }
+          updatedLocationMap = Data.Map.Strict.insert locGID updatedLoc currentLocationMap
+          updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
+          updatedGameState = (_gameState state) { _world = updatedWorld }
+      put state { _gameState = updatedGameState }
 
 interpretDSL (CreateISAManagement verb actionGID) =
   pure (ISAManagementKey verb actionGID)

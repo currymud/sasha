@@ -61,8 +61,6 @@ data WorldDSL :: Type -> Type where
   WithDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> WorldDSL Object
   WithTitle :: Text -> Location -> WorldDSL Location
   -- Registration - now take direct values
-  RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL (GID Object)
-  RegisterLocation :: GID Location -> WorldDSL Location -> WorldDSL (GID Location)
 
   -- ActionManagement construction - returns individual management keys
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
@@ -77,22 +75,18 @@ data WorldDSL :: Type -> Type where
   SetEvaluator :: Evaluator -> WorldDSL ()
   SetInitialNarration :: Text -> WorldDSL ()
   -- Player management - now take direct values
-  RegisterPlayer :: Player -> WorldDSL ()
   WithPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
-  UpdatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 
   WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
   WithLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 
-  -- Location management
-  ModifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
-
-  -- NEW: Object-Location integration
-  AddObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
-
-  -- Spatial relationships - now take direct values
-  SetSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
+-- Map registration constructors
+  RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL ()
+  RegisterLocation :: GID Location -> WorldDSL Location -> WorldDSL ()
+  RegisterPlayer :: Player -> WorldDSL ()
+  RegisterSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
+  RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
 
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
@@ -138,17 +132,6 @@ declareContainerGID = DeclareContainerGID
 declareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 declareLocationGID = DeclareLocationGID
 
--- Now take direct values instead of WorldDSL wrappers
-
-registerObject :: GID Object -> WorldDSL Object -> WorldDSL (GID Object)
-registerObject = RegisterObject
-
-registerLocation :: GID Location -> WorldDSL Location -> WorldDSL (GID Location)
-registerLocation = RegisterLocation
-
-setSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
-setSpatial = SetSpatial
-
 -- ActionManagement construction - FIXED: now returns ActionManagementFunctions
 createISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
 createISAManagement = CreateISAManagement
@@ -174,15 +157,11 @@ createPPManagement = CreatePPManagement
 createNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 createNPManagement = CreateNPManagement
 
-registerPlayer :: Player -> WorldDSL ()
-registerPlayer = RegisterPlayer
 
 -- NEW: Clean player location setting
 withPlayerLocation :: GID Location -> WorldDSL ()
 withPlayerLocation = WithPlayerLocation
 
-updatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
-updatePlayer = UpdatePlayer
 
 withObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
 withObjectBehavior = WithObjectBehavior
@@ -192,13 +171,6 @@ withLocationBehavior = WithLocationBehavior
 
 withPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 withPlayerBehavior = WithPlayerBehavior
-
-modifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
-modifyLocation = ModifyLocation
-
--- NEW: Object-Location integration
-addObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
-addObjectToLocation = AddObjectToLocation
 
 -- Effect creation - now clean
 createImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
@@ -256,7 +228,18 @@ withDescriptives = WithDescriptives
 withTitle :: Text -> Location -> WorldDSL Location
 withTitle = WithTitle
 
--- NEW: Batch object-location assignments
-addObjectsToLocation :: GID Location -> [(GID Object, NounKey)] -> WorldDSL ()
-addObjectsToLocation locationGID objectsWithKeys = do
-  sequence_ [addObjectToLocation locationGID objGID nounKey | (objGID, nounKey) <- objectsWithKeys]
+-- Replace existing functions:
+registerObject :: GID Object -> WorldDSL Object -> WorldDSL ()
+registerObject = RegisterObject
+
+registerLocation :: GID Location -> WorldDSL Location -> WorldDSL ()
+registerLocation = RegisterLocation
+
+registerPlayer :: Player -> WorldDSL ()
+registerPlayer = RegisterPlayer
+
+registerSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
+registerSpatial = RegisterSpatial
+
+registerObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
+registerObjectToLocation = RegisterObjectToLocation

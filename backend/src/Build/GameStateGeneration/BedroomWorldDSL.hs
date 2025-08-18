@@ -4,14 +4,12 @@ module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
-                                                                          addObjectToLocation,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
                                                                           registerLocation,
                                                                           registerObject,
                                                                           registerPlayer,
-                                                                          setSpatial,
                                                                           withDescription,
                                                                           withDescriptives,
                                                                           withObjectBehavior,
