@@ -154,7 +154,7 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       newGID <- generateLocationGID
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
-
+        {-
 interpretDSL (RegisterObject gid obj) = do
   validateObjectGIDDeclared gid
   state <- get
@@ -167,7 +167,8 @@ interpretDSL (RegisterObject gid obj) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
   pure gid
-
+-}
+  {-
 interpretDSL (RegisterLocation gid loc) = do
   validateLocationGIDDeclared gid
   state <- get
@@ -180,7 +181,7 @@ interpretDSL (RegisterLocation gid loc) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
   pure gid
-
+-}
 interpretDSL (SetSpatial objGID spatialRel) = do
   -- Validate the object GID exists
   validateObjectGIDDeclared objGID

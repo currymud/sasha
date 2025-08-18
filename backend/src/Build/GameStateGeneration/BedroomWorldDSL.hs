@@ -89,6 +89,7 @@ import           Build.GameStateGeneration.ObjectSpec                    (defaul
                                                                           withObjects,
                                                                           withPlayerBehaviors,
                                                                           withPlayerLocation)
+import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
@@ -111,47 +112,59 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 -- OBJECT BUILDERS
 -- =============================================================================
 
-chairObj :: Object
-chairObj = defaultObject
-  & withShortName "a chair"
-  & withDescription "It's the chair next to your bed"
-  & withDescriptives [SimpleNounPhrase chairDS, DescriptiveNounPhraseDet the small chairDS]
+chairObj ::WorldDSL Object
+chairObj = defaultObject & chairObj'
+  where
+    chairObj' = withShortName "a chair"
+                  >=> withDescription "It's the chair next to your bed"
+                  >=> withDescriptives [SimpleNounPhrase chairDS, DescriptiveNounPhraseDet the small chairDS]
 
-tableObj :: Object
-tableObj = defaultObject
-  & withShortName "small table"
-  & withDescription "A small bedside table"
-  & withDescriptives [DescriptiveNounPhraseDet the small tableDS]
+tableObj :: WorldDSL Object
+tableObj = defaultObject & tableObj'
+  where
+    tableObj' = withShortName "small table"
+                  >=> withDescription "A small bedside table"
+                  >=> withDescriptives [DescriptiveNounPhraseDet the small tableDS]
 
-pillObj :: Object
-pillObj = defaultObject
-  & withShortName "pill"
-  & withDescription "A small, round pill. Probably good for headaches."
-  & withDescriptives [SimpleNounPhrase pillDS]
+pillObj :: WorldDSL Object
+pillObj = defaultObject & pillObj'
+  where
+    pillObj' = withShortName "pill"
+                 >=> withDescription "A small, round pill. Probably good for headaches."
+                 >=> withDescriptives [SimpleNounPhrase pillDS]
 
-mailObj :: Object
-mailObj = defaultObject
-  & withShortName "mail"
-  & withDescription "Some mail on the table"
-  & withDescriptives [SimpleNounPhrase mailDS]
+mailObj :: WorldDSL Object
+mailObj = defaultObject & mailObj'
+  where
+    mailObj' = withShortName "mail"
+                 >=> withDescription "Some mail on the table"
+                 >=> withDescriptives [SimpleNounPhrase mailDS]
 
-robeObj :: Object
-robeObj = defaultObject
-  & withShortName "robe"
-  & withDescription "A comfortable robe"
-  & withDescriptives [SimpleNounPhrase robeDS]
 
-pocketObj :: Object
-pocketObj = defaultObject
-  & withShortName "pocket"
-  & withDescription "A pocket in the robe"
-  & withDescriptives [SimpleNounPhrase pocketDS]
+robeObj :: WorldDSL Object
+robeObj = defaultObject & robeObj'
+  where
+    robeObj' = withShortName "robe"
+                 >=> withDescription "A comfortable robe"
+                 >=> withDescriptives [SimpleNounPhrase robeDS]
+
+pocketObj :: WorldDSL Object
+pocketObj = defaultObject & pocketObj'
+  where
+    pocketObj' = withShortName "pocket"
+                   >=> withDescription "A pocket in the robe"
+                   >=> withDescriptives [SimpleNounPhrase pocketDS]
+
 
 floorObj :: WorldDSL Object
-floorObj = defaultObject
-  <$>  withShortName "floor"
-  <$> withDescription "The bedroom floor"
-  <$> withDescriptives [SimpleNounPhrase floorDS]
+floorObj =
+  defaultObject & floorObj'
+  where
+    floorObj' = withShortName "floor"
+                  >=> withDescription "The bedroom floor"
+                  >=> withDescriptives [ SimpleNounPhrase floorDS ]
+
+
 
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
@@ -269,3 +282,4 @@ bedroomWorldDSL = do
   registerPlayer player
 
   finalizeGameState
+

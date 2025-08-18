@@ -235,12 +235,6 @@ finalizeGameState = FinalizeGameState
 buildSequentially :: WorldDSL a -> WorldDSL b -> WorldDSL b
 buildSequentially = Sequence
 
--- Batch operations built from primitives - now cleaner
-registerObjects :: [(GID Object, Object)] -> WorldDSL [GID Object]
-registerObjects = mapM (uncurry registerObject)
-
-registerLocations :: [(GID Location, Location)] -> WorldDSL [GID Location]
-registerLocations = mapM (uncurry registerLocation)
 
 setEvaluator :: Evaluator -> WorldDSL ()
 setEvaluator = SetEvaluator
