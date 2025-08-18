@@ -29,7 +29,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePerceptionEffect, CreatePositivePosturalEffect, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -251,6 +251,52 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
 
 interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
   let effect = ImplicitStimulusEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
+  let effect = DirectionalStimulusEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+-- For AcquisitionVerb (simple verb like "get")
+interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
+  let effect = AcquisitionVerbEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+-- For AcquisitionVerbPhrase (complex phrase like "get the robe")
+interpretDSL (CreateAcquisitionPhraseEffect verbPhrase actionGID) = do
+  let effect = AcquisitionPhraseEffect verbPhrase actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+interpretDSL (CreateConsumptionEffect verb objGID actionGID) = do
+  let effect = ConsumptionEffect verb objGID actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+interpretDSL (CreatePositivePosturalEffect verb actionGID) = do
+  let effect = PositivePosturalEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+-- For negative postural actions (like "sit down")
+interpretDSL (CreateNegativePosturalEffect verb actionGID) = do
+  let effect = NegativePosturalEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
+
+-- PerceptionEffect is a singleton - no parameters needed
+interpretDSL CreatePerceptionEffect = do
+  let effect = PerceptionEffect
   state <- get
   put state { _createdEffects = effect : _createdEffects state }
   pure effect

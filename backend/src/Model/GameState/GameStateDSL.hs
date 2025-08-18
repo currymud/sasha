@@ -91,9 +91,11 @@ data WorldDSL :: Type -> Type where
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
-  CreateAcquisitionEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
+  CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
+  CreateAcquisitionPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
-  CreatePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
+  CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
+  CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreatePerceptionEffect :: WorldDSL Effect
 
   LinkEffectToObject :: GID Object -> Effect -> WorldDSL ()
@@ -179,15 +181,20 @@ createImplicitStimulusEffect = CreateImplicitStimulusEffect
 createDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
 createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
 
-createAcquisitionEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
-createAcquisitionEffect = CreateAcquisitionEffect
+createAcquisitionPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
+createAcquisitionPhraseEffect = CreateAcquisitionPhraseEffect
+
+createAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
+createAcquisitionVerbEffect = CreateAcquisitionVerbEffect
 
 createConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
 createConsumptionEffect = CreateConsumptionEffect
 
-createPosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
-createPosturalEffect = CreatePosturalEffect
+createPositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
+createPositivePosturalEffect = CreatePositivePosturalEffect
 
+createNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
+createNegativePosturalEffect = CreateNegativePosturalEffect
 createPerceptionEffect :: WorldDSL Effect
 createPerceptionEffect = CreatePerceptionEffect
 

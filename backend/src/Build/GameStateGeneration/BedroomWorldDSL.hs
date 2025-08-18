@@ -11,7 +11,6 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           finalizeGameState,
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
-                                                                          registerLocation,
                                                                           registerObject,
                                                                           registerObjectToLocation,
                                                                           registerPlayer,
