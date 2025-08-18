@@ -8,10 +8,11 @@ import           Control.Monad.State.Strict    (MonadState)
 import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map, elems, insert, lookup,
                                                 member)
-import           Model.GameState               (GameState, Location, Object,
+import           Model.GameState               (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                GameState, Location, Object,
                                                 World (_locationMap, _objectMap),
                                                 _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -170,6 +171,29 @@ interpretDSL (RegisterLocation gid loc) = do
   put state { _gameState = updatedGameState }
   pure gid
 
+interpretDSL (CreateISAManagement verb actionGID) =
+  pure (ISAManagementKey verb actionGID)
+
+interpretDSL (CreateDSAManagement verb actionGID) =
+  pure (DSAManagementKey verb actionGID)
+
+interpretDSL (CreateSSAManagement verb actionGID) =
+  pure (SSAManagementKey verb actionGID)
+
+interpretDSL (CreateAAManagement verbPhrase actionGID) =
+  pure (AAManagementKey verbPhrase actionGID)
+
+interpretDSL (CreateAVManagement verb actionGID) =
+  pure (AVManagementKey verb actionGID)
+
+interpretDSL (CreateCAManagement verbPhrase actionGID) =
+  pure (CAManagementKey verbPhrase actionGID)
+
+interpretDSL (CreatePPManagement verb actionGID) =
+  pure (PPManagementKey verb actionGID)
+
+interpretDSL (CreateNPManagement verb actionGID) =
+  pure (NPManagementKey verb actionGID)
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
