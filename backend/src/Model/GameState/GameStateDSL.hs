@@ -61,8 +61,8 @@ data WorldDSL :: Type -> Type where
   WithDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> WorldDSL Object
   WithTitle :: Text -> Location -> WorldDSL Location
   -- Registration - now take direct values
-  RegisterObject :: GID Object -> Object -> WorldDSL (GID Object)
-  RegisterLocation :: GID Location -> Location -> WorldDSL (GID Location)
+  RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL (GID Object)
+  RegisterLocation :: GID Location -> WorldDSL Location -> WorldDSL (GID Location)
 
   -- ActionManagement construction - returns individual management keys
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
@@ -140,10 +140,10 @@ declareLocationGID = DeclareLocationGID
 
 -- Now take direct values instead of WorldDSL wrappers
 
-registerObject :: GID Object -> Object -> WorldDSL (GID Object)
+registerObject :: GID Object -> WorldDSL Object -> WorldDSL (GID Object)
 registerObject = RegisterObject
 
-registerLocation :: GID Location -> Location -> WorldDSL (GID Location)
+registerLocation :: GID Location -> WorldDSL Location -> WorldDSL (GID Location)
 registerLocation = RegisterLocation
 
 setSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()

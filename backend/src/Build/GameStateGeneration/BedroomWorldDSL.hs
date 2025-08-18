@@ -83,6 +83,7 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen
 
 -- Import verb phrases
 import           Build.GameStateGeneration.ObjectSpec                    (defaultLocation,
+                                                                          defaultObject,
                                                                           defaultPlayer,
                                                                           withLocationBehaviors,
                                                                           withObjects,
@@ -146,35 +147,31 @@ pocketObj = defaultObject
   & withDescription "A pocket in the robe"
   & withDescriptives [SimpleNounPhrase pocketDS]
 
-floorObj :: Object
+floorObj :: WorldDSL Object
 floorObj = defaultObject
-  & withShortName "floor"
-  & withDescription "The bedroom floor"
-  & withDescriptives [SimpleNounPhrase floorDS]
+  <$>  withShortName "floor"
+  <$> withDescription "The bedroom floor"
+  <$> withDescriptives [SimpleNounPhrase floorDS]
 
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================
 
 buildBedroom
-  :: GID Location
-  -> [(GID Object, NounKey)]
-  -> WorldDSL Location
+  :: GID Location               -- ^ target Location GID
+  -> [(GID Object, NounKey)]    -- ^ objects to place (object GID, noun key)
+  -> WorldDSL ()
 buildBedroom bedroomGID objectsWithKeys = do
-  -- Treat withTitle as a pure field setter (per your notes).
-  let baseLocation =
-        defaultLocation
+  -- Prepare the spec for the location.
+  let loc = defaultLocation
           & withTitle "Bedroom in Bed"
 
-  -- Register location before linking objects.
-  _ <- registerLocation bedroomGID baseLocation
+  -- 1) Register the location under its GID.
+  _ <- registerLocation bedroomGID loc
 
-  -- Link objects one-by-one (replaces withObjects).
-  traverse_ (\(objGID, nounKey) ->
-               addObjectToLocation bedroomGID objGID nounKey)
+  -- 2) Link all required objects for this location.
+  traverse_ (uncurry (addObjectToLocation bedroomGID))
             objectsWithKeys
-
-  pure baseLocation
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
