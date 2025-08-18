@@ -4,12 +4,14 @@
 module Model.GameState.GameStateDSL where
 
 import           Data.Kind                     (Type)
+import           Data.Text                     (Text)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectMap, ActionKey,
                                                 ActionManagement,
+                                                ActionManagementFunctions,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect, GameState,
+                                                Effect, Evaluator, GameState,
                                                 ImplicitStimulusActionF,
                                                 Location, Object, Player,
                                                 PlayerKey, PosturalActionF,
@@ -28,6 +30,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
 import           Model.Parser.Composites.Nouns (NounPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase)
+import           Model.Parser.GCase            (NounKey)
 
 -- | World building DSL
 type WorldDSL :: Type -> Type
@@ -52,11 +55,6 @@ data WorldDSL :: Type -> Type where
   DeclareContainerGID :: NounPhrase Container -> WorldDSL (GID Object)
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 
-  -- Initial value constructors
-  InitialObject :: Object -> WorldDSL Object
-  InitialLocation :: Location -> WorldDSL Location
-  InitialPlayer :: Player -> WorldDSL Player
-
   -- Builder constructors - now take direct values instead of WorldDSL wrappers
   BuildObject :: GID Object -> Object -> (Object -> Object) -> WorldDSL Object
   BuildLocation :: GID Location -> Location -> (Location -> Location) -> WorldDSL Location
@@ -66,7 +64,7 @@ data WorldDSL :: Type -> Type where
   RegisterObject :: GID Object -> Object -> WorldDSL (GID Object)
   RegisterLocation :: GID Location -> Location -> WorldDSL (GID Location)
 
-  -- ActionManagement construction - now take direct values
+  -- ActionManagement construction - returns individual management keys
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
@@ -76,17 +74,22 @@ data WorldDSL :: Type -> Type where
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
   CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 
+  SetEvaluator :: Evaluator -> WorldDSL ()
+  SetInitialNarration :: Text -> WorldDSL ()
   -- Player management - now take direct values
   SetPlayer :: Player -> WorldDSL ()
+  SetPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
   UpdatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 
-  -- Object/Player behavior attachment - now take direct values
   WithBehavior :: Object -> ActionManagement -> WorldDSL Object
   WithSpatial :: Object -> SpatialRelationship -> WorldDSL Object
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 
   -- Location management
   ModifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
+
+  -- NEW: Object-Location integration
+  AddObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
 
   -- Spatial relationships - now take direct values
   SetSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
@@ -102,8 +105,6 @@ data WorldDSL :: Type -> Type where
   LinkEffectToObject :: GID Object -> Effect -> WorldDSL ()
   LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
-  RegisterEffectRegistry :: ActionKey -> ActionEffectMap -> WorldDSL ()
-  ProcessEffectsIntoRegistry :: WorldDSL ()
 
   -- Context queries
   GetCurrentObjects :: WorldDSL [Object]
@@ -141,15 +142,6 @@ declareContainerGID = DeclareContainerGID
 declareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 declareLocationGID = DeclareLocationGID
 
-initialObject :: Object -> WorldDSL Object
-initialObject = InitialObject
-
-initialLocation :: Location -> WorldDSL Location
-initialLocation = InitialLocation
-
-initialPlayer :: Player -> WorldDSL Player
-initialPlayer = InitialPlayer
-
 -- Now take direct values instead of WorldDSL wrappers
 buildObject :: GID Object -> Object -> (Object -> Object) -> WorldDSL Object
 buildObject = BuildObject
@@ -169,7 +161,7 @@ registerLocation = RegisterLocation
 setSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
 setSpatial = SetSpatial
 
--- ActionManagement construction - now clean
+-- ActionManagement construction - FIXED: now returns ActionManagementFunctions
 createISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
 createISAManagement = CreateISAManagement
 
@@ -197,10 +189,13 @@ createNPManagement = CreateNPManagement
 setPlayer :: Player -> WorldDSL ()
 setPlayer = SetPlayer
 
+-- NEW: Clean player location setting
+setPlayerLocation :: GID Location -> WorldDSL ()
+setPlayerLocation = SetPlayerLocation
+
 updatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 updatePlayer = UpdatePlayer
 
--- Behavior attachment - now clean
 withBehavior :: Object -> ActionManagement -> WorldDSL Object
 withBehavior = WithBehavior
 
@@ -213,8 +208,9 @@ withPlayerBehavior = WithPlayerBehavior
 modifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
 modifyLocation = ModifyLocation
 
-processEffectsIntoRegistry :: WorldDSL ()
-processEffectsIntoRegistry = ProcessEffectsIntoRegistry
+-- NEW: Object-Location integration
+addObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
+addObjectToLocation = AddObjectToLocation
 
 -- Effect creation - now clean
 createImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
@@ -244,9 +240,6 @@ linkEffectToLocation = LinkEffectToLocation
 linkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
 
-registerEffectRegistry :: ActionKey -> ActionEffectMap -> WorldDSL ()
-registerEffectRegistry = RegisterEffectRegistry
-
 getCurrentObjects :: WorldDSL [Object]
 getCurrentObjects = GetCurrentObjects
 
@@ -273,3 +266,14 @@ registerLocations = mapM (uncurry registerLocation)
 setSpatials :: [(GID Object, SpatialRelationship)] -> WorldDSL ()
 setSpatials objectsAndRels = do
   sequence_ [setSpatial objGID rel | (objGID, rel) <- objectsAndRels]
+
+setEvaluator :: Evaluator -> WorldDSL ()
+setEvaluator = SetEvaluator
+
+setInitialNarration :: Text -> WorldDSL ()
+setInitialNarration = SetInitialNarration
+
+-- NEW: Batch object-location assignments
+addObjectsToLocation :: GID Location -> [(GID Object, NounKey)] -> WorldDSL ()
+addObjectsToLocation locationGID objectsWithKeys = do
+  sequence_ [addObjectToLocation locationGID objGID nounKey | (objGID, nounKey) <- objectsWithKeys]

@@ -16,10 +16,6 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
-                                                                          initialLocation,
-                                                                          initialObject,
-                                                                          initialPlayer,
-                                                                          processEffectsIntoRegistry,
                                                                           registerLocation,
                                                                           registerObject,
                                                                           setPlayer,
@@ -212,14 +208,12 @@ bedroomWorldDSL = do
 
   -- Build and register objects with behaviors using DSL chaining
   chairWithBehaviors <- do
-    chair <- initialObject chairObj
-    chairWithLook <- withBehavior chair (DSAManagementKey look seeChairFGID)
+    chairWithLook <- withBehavior chairObj (DSAManagementKey look seeChairFGID)
     withBehavior chairWithLook (AVManagementKey get getFromChairFGID)
   registerObject chairGID chairWithBehaviors
 
   tableWithBehaviors <- do
-    table <- initialObject tableObj
-    withBehavior table (DSAManagementKey look seeTableGID)
+    withBehavior tableObj (DSAManagementKey look seeTableGID)
   registerObject tableGID tableWithBehaviors
 
   pillWithBehaviors <- do
@@ -239,8 +233,7 @@ bedroomWorldDSL = do
   registerObject robeGID robeWithBehaviors
 
   pocketWithBehaviors <- do
-    pocket <- initialObject pocketObj
-    withBehavior pocket (DSAManagementKey look seePocketRobeWornGID)
+    withBehavior pocketObj (DSAManagementKey look seePocketRobeWornGID)
   registerObject pocketGID pocketWithBehaviors
 
   floorWithBehaviors <- do
@@ -279,5 +272,4 @@ bedroomWorldDSL = do
   player <- buildBedroomPlayer bedroomGID
   setPlayer player
 
-  processEffectsIntoRegistry
   finalizeGameState
