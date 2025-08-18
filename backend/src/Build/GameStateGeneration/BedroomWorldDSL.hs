@@ -4,24 +4,14 @@ module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
-                                                                          buildLocation,
-                                                                          buildObject,
-                                                                          buildPlayer,
-                                                                          createAAManagement,
-                                                                          createAVManagement,
-                                                                          createCAManagement,
-                                                                          createDSAManagement,
-                                                                          createISAManagement,
-                                                                          createSSAManagement,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
                                                                           registerLocation,
                                                                           registerObject,
-                                                                          setPlayer,
+                                                                          registerPlayer,
                                                                           setSpatial,
-                                                                          withObjectBehavior,
-                                                                          withPlayerBehavior)
+                                                                          withObjectBehavior)
 import           Model.GID                                               (GID)
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
 import           Prelude                                                 hiding
@@ -36,12 +26,9 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroo
                                                                           pocketDS,
                                                                           robeDS,
                                                                           tableDS)
-import           Grammar.Parser.Partitions.Nouns.Objectives              (bedroomOB,
-                                                                          chairOB,
+import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
                                                                           floorOB,
                                                                           mailOB,
-                                                                          pillOB,
-                                                                          pocketOB,
                                                                           robeOB,
                                                                           tableOB)
 
@@ -75,7 +62,6 @@ import           Model.GameState                                         (Action
 
 -- Import action GIDs
 import           Build.Identifiers.Actions                               (checkInventoryGID,
-                                                                          dizzyGetFGID,
                                                                           dsvEnabledLookGID,
                                                                           getFromChairFGID,
                                                                           getMailDeniedFGID,
@@ -270,6 +256,6 @@ bedroomWorldDSL = do
 
   -- Create and set player
   player <- buildBedroomPlayer bedroomGID
-  setPlayer player
+  registerPlayer player
 
   finalizeGameState

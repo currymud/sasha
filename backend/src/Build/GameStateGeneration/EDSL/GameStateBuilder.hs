@@ -16,7 +16,7 @@ import           Model.GameState               (ActionManagement (AAManagementKe
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, BuildLocation, BuildObject, BuildPlayer, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithSpatial))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithSpatial))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -219,17 +219,6 @@ interpretDSL (WithLocationBehavior loc actionMgmt) = do
 
 interpretDSL (WithSpatial obj spatialRel) = do
   pure obj  -- Spatial relationships are handled separately via SetSpatial
-
-interpretDSL (BuildObject gid obj transform) = do
-  validateObjectGIDDeclared gid
-  pure (transform obj)
-
-interpretDSL (BuildLocation gid loc transform) = do
-  validateLocationGIDDeclared gid
-  pure (transform loc)
-
-interpretDSL (BuildPlayer player transform) = do
-  pure (transform player)
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()

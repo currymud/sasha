@@ -55,11 +55,11 @@ data WorldDSL :: Type -> Type where
   DeclareContainerGID :: NounPhrase Container -> WorldDSL (GID Object)
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 
-  -- Builder constructors - now take direct values instead of WorldDSL wrappers
-  BuildObject :: GID Object -> Object -> (Object -> Object) -> WorldDSL Object
-  BuildLocation :: GID Location -> Location -> (Location -> Location) -> WorldDSL Location
-  BuildPlayer :: Player -> (Player -> Player) -> WorldDSL Player
 
+  WithShortName :: Text -> Object -> WorldDSL Object
+  WithDescription :: Text -> Object -> WorldDSL Object
+  WithDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> WorldDSL Object
+  WithTitle :: Text -> Location -> WorldDSL Location
   -- Registration - now take direct values
   RegisterObject :: GID Object -> Object -> WorldDSL (GID Object)
   RegisterLocation :: GID Location -> Location -> WorldDSL (GID Location)
@@ -77,8 +77,8 @@ data WorldDSL :: Type -> Type where
   SetEvaluator :: Evaluator -> WorldDSL ()
   SetInitialNarration :: Text -> WorldDSL ()
   -- Player management - now take direct values
-  SetPlayer :: Player -> WorldDSL ()
-  SetPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
+  RegisterPlayer :: Player -> WorldDSL ()
+  WithPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
   UpdatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 
   WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
@@ -144,14 +144,6 @@ declareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 declareLocationGID = DeclareLocationGID
 
 -- Now take direct values instead of WorldDSL wrappers
-buildObject :: GID Object -> Object -> (Object -> Object) -> WorldDSL Object
-buildObject = BuildObject
-
-buildLocation :: GID Location -> Location -> (Location -> Location) -> WorldDSL Location
-buildLocation = BuildLocation
-
-buildPlayer :: Player -> (Player -> Player) -> WorldDSL Player
-buildPlayer = BuildPlayer
 
 registerObject :: GID Object -> Object -> WorldDSL (GID Object)
 registerObject = RegisterObject
@@ -187,12 +179,12 @@ createPPManagement = CreatePPManagement
 createNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 createNPManagement = CreateNPManagement
 
-setPlayer :: Player -> WorldDSL ()
-setPlayer = SetPlayer
+registerPlayer :: Player -> WorldDSL ()
+registerPlayer = RegisterPlayer
 
 -- NEW: Clean player location setting
-setPlayerLocation :: GID Location -> WorldDSL ()
-setPlayerLocation = SetPlayerLocation
+withPlayerLocation :: GID Location -> WorldDSL ()
+withPlayerLocation = WithPlayerLocation
 
 updatePlayer :: Player -> (Player -> Player) -> WorldDSL Player
 updatePlayer = UpdatePlayer
@@ -276,6 +268,20 @@ setEvaluator = SetEvaluator
 
 setInitialNarration :: Text -> WorldDSL ()
 setInitialNarration = SetInitialNarration
+
+-- Object field setters
+withShortName :: Text -> Object -> WorldDSL Object
+withShortName = WithShortName
+
+withDescription :: Text -> Object -> WorldDSL Object
+withDescription = WithDescription
+
+withDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> WorldDSL Object
+withDescriptives = WithDescriptives
+
+-- Location field setters
+withTitle :: Text -> Location -> WorldDSL Location
+withTitle = WithTitle
 
 -- NEW: Batch object-location assignments
 addObjectsToLocation :: GID Location -> [(GID Object, NounKey)] -> WorldDSL ()
