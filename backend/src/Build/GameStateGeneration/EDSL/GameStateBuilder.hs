@@ -175,19 +175,15 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       pure newGID
 
 interpretDSL (RegisterObject gid objDSL) = do
-  validateObjectGIDDeclared gid
   obj <- interpretDSL objDSL
   state <- get
   let currentObjectMap = _getGIDToDataMap (_objectMap (_world (_gameState state)))
-  when (Data.Map.Strict.member gid currentObjectMap) $
-    throwError (DuplicateObjectGID gid "Object already registered")
   let updatedObjectMap = Data.Map.Strict.insert gid obj currentObjectMap
       updatedWorld = (_world (_gameState state)) { _objectMap = GIDToDataMap updatedObjectMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
 
 interpretDSL (RegisterLocation gid locDSL) = do
-  validateLocationGIDDeclared gid
   loc <- interpretDSL locDSL
   state <- get
   let currentLocationMap = _getGIDToDataMap (_locationMap (_world (_gameState state)))
@@ -204,7 +200,6 @@ interpretDSL (RegisterPlayer player) = do
   put state { _gameState = updatedGameState }
 
 interpretDSL (RegisterSpatial objGID spatialRel) = do
-  validateObjectGIDDeclared objGID
   state <- get
   let currentWorld = _world (_gameState state)
       SpatialRelationshipMap currentSpatialMap = _spatialRelationshipMap currentWorld
@@ -216,13 +211,11 @@ interpretDSL (RegisterSpatial objGID spatialRel) = do
   put state { _gameState = updatedGameState }
 
 interpretDSL (LinkEffectToObject objGID effect) = do
-  validateObjectGIDDeclared objGID
   state <- get
   let newLink = (effect, ObjectKey objGID)
   put state { _effectLinks = newLink : _effectLinks state }
 
 interpretDSL (LinkEffectToLocation locGID effect) = do
-  validateLocationGIDDeclared locGID
   state <- get
   let newLink = (effect, LocationKey locGID)
   put state { _effectLinks = newLink : _effectLinks state }
@@ -385,7 +378,6 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation locGID) = do
   state <- get
   -- Validate the location GID exists
-  validateLocationGIDDeclared locGID
   let currentPlayer = _player (_gameState state)
       updatedPlayer = currentPlayer { _location = locGID }
       updatedGameState = (_gameState state) { _player = updatedPlayer }
