@@ -6,22 +6,28 @@ import           Control.Monad.Except          (ExceptT, MonadError, throwError)
 import           Control.Monad.State           (State, get, put)
 import           Control.Monad.State.Strict    (MonadState)
 import           Data.Kind                     (Type)
-import           Data.Map.Strict               (Map, elems, insert, lookup,
-                                                member)
+import           Data.Map.Strict               (Map, elems, findWithDefault,
+                                                insert, lookup, member)
 import qualified Data.Set
+import qualified Data.Text
 import           Model.GameState               (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                GameState, Location, Object,
-                                                World (_locationMap, _objectMap),
+                                                GameState (_player),
+                                                Location (_title),
+                                                Object (_description, _descriptives, _shortName),
+                                                Player (_location),
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
+                                                World (_locationMap, _objectMap, _spatialRelationshipMap),
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithSpatial))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, RegisterPlayer, Sequence, SetSpatial, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)
-import           Model.Parser.Composites.Nouns (NounPhrase)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                NounPhrase)
 
 type BuilderState :: Type
 data BuilderState = BuilderState
@@ -175,6 +181,20 @@ interpretDSL (RegisterLocation gid loc) = do
   put state { _gameState = updatedGameState }
   pure gid
 
+interpretDSL (SetSpatial objGID spatialRel) = do
+  -- Validate the object GID exists
+  validateObjectGIDDeclared objGID
+  state <- get
+  let currentWorld = _world (_gameState state)
+      SpatialRelationshipMap currentSpatialMap = _spatialRelationshipMap currentWorld
+      currentRelationships = Data.Map.Strict.findWithDefault Data.Set.empty objGID currentSpatialMap
+      updatedRelationships = Data.Set.insert spatialRel currentRelationships
+      updatedSpatialMap = Data.Map.Strict.insert objGID updatedRelationships currentSpatialMap
+      updatedWorld = currentWorld { _spatialRelationshipMap = SpatialRelationshipMap updatedSpatialMap }
+      updatedGameState = (_gameState state) { _world = updatedWorld }
+  put state { _gameState = updatedGameState }
+
+
 interpretDSL (CreateISAManagement verb actionGID) =
   pure (ISAManagementKey verb actionGID)
 
@@ -217,8 +237,41 @@ interpretDSL (WithLocationBehavior loc actionMgmt) = do
       updatedLoc = loc { _locationActionManagement = ActionManagementFunctions updatedSet }
   pure updatedLoc
 
-interpretDSL (WithSpatial obj spatialRel) = do
-  pure obj  -- Spatial relationships are handled separately via SetSpatial
+-- DSL Field Setter Implementations for Step 8
+-- Add these to the interpretDSL function in GameStateBuilder.hs
+
+-- Object field setters
+interpretDSL (WithShortName text obj) = do
+  let updatedObj = obj { _shortName = Data.Text.take 10 text }
+  pure updatedObj
+
+interpretDSL (WithDescription text obj) = do
+  let updatedObj = obj { _description = text }
+  pure updatedObj
+
+interpretDSL (WithDescriptives descriptives obj) = do
+  let updatedObj = obj { _descriptives = Data.Set.fromList $ map DirectionalStimulusNounPhrase descriptives }
+  pure updatedObj
+
+-- Location field setter
+interpretDSL (WithTitle text loc) = do
+  let updatedLoc = loc { _title = text }
+  pure updatedLoc
+
+-- Player management
+interpretDSL (RegisterPlayer player) = do
+  state <- get
+  let updatedGameState = (_gameState state) { _player = player }
+  put state { _gameState = updatedGameState }
+
+interpretDSL (WithPlayerLocation locGID) = do
+  state <- get
+  -- Validate the location GID exists
+  validateLocationGIDDeclared locGID
+  let currentPlayer = _player (_gameState state)
+      updatedPlayer = currentPlayer { _location = locGID }
+      updatedGameState = (_gameState state) { _player = updatedPlayer }
+  put state { _gameState = updatedGameState }
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()

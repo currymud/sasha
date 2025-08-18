@@ -84,7 +84,6 @@ data WorldDSL :: Type -> Type where
   WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
   WithLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
-  WithSpatial :: Object -> SpatialRelationship -> WorldDSL Object
 
   -- Location management
   ModifyLocation :: GID Location -> (Location -> Location) -> WorldDSL ()
@@ -195,9 +194,6 @@ withObjectBehavior = WithObjectBehavior
 withLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
 withLocationBehavior = WithLocationBehavior
 
-withSpatial :: Object -> SpatialRelationship -> WorldDSL Object
-withSpatial = WithSpatial
-
 withPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 withPlayerBehavior = WithPlayerBehavior
 
@@ -258,10 +254,6 @@ registerObjects = mapM (uncurry registerObject)
 
 registerLocations :: [(GID Location, Location)] -> WorldDSL [GID Location]
 registerLocations = mapM (uncurry registerLocation)
-
-setSpatials :: [(GID Object, SpatialRelationship)] -> WorldDSL ()
-setSpatials objectsAndRels = do
-  sequence_ [setSpatial objGID rel | (objGID, rel) <- objectsAndRels]
 
 setEvaluator :: Evaluator -> WorldDSL ()
 setEvaluator = SetEvaluator
