@@ -7,12 +7,20 @@ import           Control.Monad.State           (State, get, put)
 import           Control.Monad.State.Strict    (MonadState)
 import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map, elems, findWithDefault,
-                                                insert, lookup, member)
+                                                fromListWith, insert, lookup,
+                                                map, member, singleton, toList,
+                                                unionWith)
+import           Data.Set                      (Set)
 import qualified Data.Set
 import qualified Data.Text
-import           Model.GameState               (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+                                                ActionEffectMap (ActionEffectMap),
+                                                ActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                GameState (_player),
+                                                Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                                EffectRegistry,
+                                                GameState (_effectRegistry, _player),
                                                 Location (_objectSemanticMap, _title),
                                                 Object (_description, _descriptives, _shortName),
                                                 Player (_location),
@@ -21,7 +29,7 @@ import           Model.GameState               (ActionManagement (AAManagementKe
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -39,6 +47,8 @@ data BuilderState = BuilderState
   , _declaredConsumableGIDs :: Map (NounPhrase Consumable) (GID Object)
   , _declaredContainerGIDs :: Map (NounPhrase Container) (GID Object)
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
+  , _createdEffects :: [Effect]                    -- All created effects
+  , _effectLinks :: [(Effect, ActionEffectKey)]    -- Effect -> target mappings
   }
 
 -- Update initial builder state
@@ -52,6 +62,8 @@ initialBuilderState gs = BuilderState
   , _declaredConsumableGIDs = mempty
   , _declaredContainerGIDs = mempty
   , _declaredLocationGIDs = mempty
+  , _createdEffects = mempty
+  , _effectLinks = mempty
   }
 -- Initial builder state
 
@@ -196,6 +208,29 @@ interpretDSL (RegisterSpatial objGID spatialRel) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
 
+interpretDSL (LinkEffectToObject objGID effect) = do
+  validateObjectGIDDeclared objGID
+  state <- get
+  let newLink = (effect, ObjectKey objGID)
+  put state { _effectLinks = newLink : _effectLinks state }
+
+interpretDSL (LinkEffectToLocation locGID effect) = do
+  validateLocationGIDDeclared locGID
+  state <- get
+  let newLink = (effect, LocationKey locGID)
+  put state { _effectLinks = newLink : _effectLinks state }
+
+interpretDSL (LinkEffectToPlayer playerKey effect) = do
+  state <- get
+  let newLink = (effect, PlayerKey playerKey)
+  put state { _effectLinks = newLink : _effectLinks state }
+
+interpretDSL FinalizeGameState = do
+  state <- get
+  let assembledEffectRegistry = buildEffectRegistryFromLinks (_effectLinks state)
+      finalGameState = (_gameState state) { _effectRegistry = assembledEffectRegistry }
+  pure finalGameState
+
 interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   validateLocationGIDDeclared locGID
   validateObjectGIDDeclared objGID
@@ -213,6 +248,12 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
           updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
           updatedGameState = (_gameState state) { _world = updatedWorld }
       put state { _gameState = updatedGameState }
+
+interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
+  let effect = ImplicitStimulusEffect verb actionGID
+  state <- get
+  put state { _createdEffects = effect : _createdEffects state }
+  pure effect
 
 interpretDSL (CreateISAManagement verb actionGID) =
   pure (ISAManagementKey verb actionGID)
@@ -269,7 +310,7 @@ interpretDSL (WithDescription text obj) = do
   pure updatedObj
 
 interpretDSL (WithDescriptives descriptives obj) = do
-  let updatedObj = obj { _descriptives = Data.Set.fromList $ map DirectionalStimulusNounPhrase descriptives }
+  let updatedObj = obj { _descriptives = Data.Set.fromList $ fmap DirectionalStimulusNounPhrase descriptives }
   pure updatedObj
 
 -- Location field setter
@@ -320,6 +361,28 @@ generateObjectGID = do
   let newGID = GID (_nextObjectGID state)
   put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
+
+buildEffectRegistryFromLinks :: [(Effect, ActionEffectKey)] -> EffectRegistry
+buildEffectRegistryFromLinks links =
+  Data.Map.Strict.map ActionEffectMap $
+  Data.Map.Strict.fromListWith (Data.Map.Strict.unionWith Data.Set.union) $
+  fmap buildEntry links
+  where
+    buildEntry :: (Effect, ActionEffectKey) -> (ActionKey, Map ActionEffectKey (Set Effect))
+    buildEntry (effect, effectKey) =
+      (extractActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
+
+    extractActionKey :: Effect -> ActionKey
+    extractActionKey = \case
+      ImplicitStimulusEffect _ actionGID -> ImplicitStimulusActionKey actionGID
+      DirectionalStimulusEffect _ actionGID -> DirectionalStimulusActionKey actionGID
+      SomaticAccessEffect _ actionGID -> SomaticAccessActionKey actionGID
+      AcquisitionVerbEffect _ actionGID -> AcquisitionalActionKey actionGID
+      AcquisitionPhraseEffect _ actionGID -> AcquisitionalActionKey actionGID
+      ConsumptionEffect _ _ actionGID -> ConsumptionActionKey actionGID
+      PositivePosturalEffect _ actionGID -> PosturalActionKey actionGID
+      NegativePosturalEffect _ actionGID -> PosturalActionKey actionGID
+      PerceptionEffect -> error "PerceptionEffect needs special handling"
 
 generateLocationGID :: WorldBuilder (GID Location)
 generateLocationGID = do

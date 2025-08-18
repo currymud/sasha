@@ -4,12 +4,18 @@ module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
+                                                                          createDirectionalStimulusEffect,
+                                                                          createImplicitStimulusEffect,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
+                                                                          linkEffectToLocation,
+                                                                          linkEffectToObject,
                                                                           registerLocation,
                                                                           registerObject,
+                                                                          registerObjectToLocation,
                                                                           registerPlayer,
+                                                                          registerSpatial,
                                                                           withDescription,
                                                                           withDescriptives,
                                                                           withObjectBehavior,
@@ -32,6 +38,7 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroo
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
                                                                           floorOB,
                                                                           mailOB,
+                                                                          pillOB,
                                                                           robeOB,
                                                                           tableOB)
 
@@ -50,10 +57,12 @@ import           Model.GameState                                         (Action
                                                                           Location,
                                                                           Object,
                                                                           Player,
+                                                                          PlayerKey (PlayerKeyObject),
                                                                           SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 
 -- Import action GIDs
-import           Build.Identifiers.Actions                               (checkInventoryGID,
+import           Build.Identifiers.Actions                               (agentCanSeeGID,
+                                                                          checkInventoryGID,
                                                                           dsvEnabledLookGID,
                                                                           getFromChairFGID,
                                                                           getMailDeniedFGID,
@@ -179,26 +188,21 @@ floorObj =  defaultObject & floorObj'
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seeFloorFGID))
 
 
-  {-
+
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================
 
-buildBedroom
-  :: GID Location               -- ^ target Location GID
-  -> [(GID Object, NounKey)]    -- ^ objects to place (object GID, noun key)
-  -> WorldDSL ()
-buildBedroom bedroomGID objectsWithKeys = do
-  -- Prepare the spec for the location.
-  let loc = defaultLocation
-          & withTitle "Bedroom in Bed"
+populateLocation :: GID Location
+                    -> [(GID Object, NounKey)]
+                    -> WorldDSL ()
+populateLocation lid = traverse_ (uncurry (registerObjectToLocation lid))
 
-  -- 1) Register the location under its GID.
-  _ <- registerLocation bedroomGID loc
-
-  -- 2) Link all required objects for this location.
-  traverse_ (uncurry (addObjectToLocation bedroomGID))
-            objectsWithKeys
+-- objectsWithKeys -> [(GID Object, NounKey)]    -- ^ objects to place (object GID, noun key)
+bedroomLoc :: WorldDSL Location
+bedroomLoc = do
+  defaultLocation
+    & withTitle "Bedroom in Bed"
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
@@ -213,7 +217,7 @@ buildBedroomPlayer bedroomGID = do
             ]
   return player
 
--- =============================================================================
+-- ============================================================================
 -- MAIN DSL PROGRAM
 -- =============================================================================
 
@@ -222,78 +226,59 @@ bedroomWorldDSL = do
   -- Declare GIDs using semantic wrappers
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
-  tableGID <- declareObjectGID (DescriptiveNounPhraseDet the small tableDS)  -- "the small table" living in DSL
+  tableGID <- declareObjectGID (DescriptiveNounPhraseDet the small tableDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
   mailGID <- declareObjectGID (SimpleNounPhrase mailDS)
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
 
-  -- Build and register objects with behaviors using DSL chaining
-  chairWithBehaviors <- do
-    chairWithLook <- withObjectBehavior chairObj (DSAManagementKey look seeChairFGID)
-    withObjectBehavior chairWithLook (AVManagementKey get getFromChairFGID)
-  registerObject chairGID chairWithBehaviors
+  -- Build and register objects
+  registerObject chairGID chairObj
+  registerObject tableGID tableObj
+  registerObject pillGID pillObj
+  registerObject mailGID mailObj
+  registerObject robeGID robeObj
+  registerObject pocketGID pocketObj
+  registerObject floorGID floorObj
 
-  tableWithBehaviors <- do
-    withObjectBehavior tableObj (DSAManagementKey look seeTableGID)
-  registerObject tableGID tableWithBehaviors
+  -- Create and link effects for game actions
+  -- Look effects for objects
+  chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
+  linkEffectToObject chairGID chairLookEffect
 
-  pillWithBehaviors <- do
-    pillWithLook <- withObjectBehavior pillObj (DSAManagementKey look whatPillGID)
-    withObjectBehavior pillWithLook (CAManagementKey takePillCVP takePillDeniedFGID)
-  registerObject pillGID pillWithBehaviors
+  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
+  linkEffectToObject tableGID tableLookEffect
 
-  mailWithBehaviors <- do
-    mailWithLook <- withObjectBehavior mailObj (DSAManagementKey look seeMailGID)
-    withObjectBehavior mailWithLook (AAManagementKey getMailAVP getMailDeniedFGID)
-  registerObject mailGID mailWithBehaviors
+  pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
+  linkEffectToObject pillGID pillLookEffect
 
-  robeWithBehaviors <- do
-    robeWithLook <- withObjectBehavior robeObj (DSAManagementKey look notEvenRobeGID)
-    robeWithAcquisition <- withObjectBehavior robeWithLook (AAManagementKey getRobeAVP getRobeDeniedFGID)
-    withObjectBehavior robeWithAcquisition (AVManagementKey get getRobeDeniedFGID)
-  registerObject robeGID robeWithBehaviors
+  mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
+  linkEffectToObject mailGID mailLookEffect
 
-  pocketWithBehaviors <- do
-    withObjectBehavior pocketObj (DSAManagementKey look seePocketRobeWornGID)
-  registerObject pocketGID pocketWithBehaviors
+  -- Acquisition effects
+--  getRobeEffect <- createAcquisitionEffect getRobeAVP robeCollectedFGID
+--  linkEffectToObject robeGID getRobeEffect
 
-  floorWithBehaviors <- do
-    withObjectBehavior floorObj (DSAManagementKey look seeFloorFGID)
-  registerObject floorGID floorWithBehaviors
+  -- Consumption effects
+--  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
+--  linkEffectToPlayer (PlayerKeyObject pillGID) takePillEffect
+
+  -- Opening eyes effect (game start)
+  openEyesEffect <- createImplicitStimulusEffect isaLook agentCanSeeGID
+  linkEffectToLocation bedroomGID openEyesEffect
 
   -- Set up spatial relationships
-  setSpatial chairGID (Supports (Set.singleton robeGID))
-  setSpatial chairGID (SupportedBy floorGID)
-  setSpatial tableGID (Supports (Set.singleton mailGID))
-  setSpatial tableGID (SupportedBy floorGID)
-  setSpatial mailGID (SupportedBy tableGID)
-  setSpatial robeGID (SupportedBy chairGID)
-  setSpatial robeGID (Contains (Set.singleton pocketGID))
-  setSpatial pocketGID (ContainedIn robeGID)
-  setSpatial pocketGID (Contains (Set.singleton pillGID))
-  setSpatial pillGID (ContainedIn pocketGID)
-  setSpatial floorGID (Supports (Set.fromList [chairGID, tableGID]))
+  registerSpatial chairGID (Supports (Set.singleton robeGID))
+  registerSpatial chairGID (SupportedBy floorGID)
+  -- ... other spatial relationships
 
   -- Build and register location
-  bedroomLoc <- buildBedroom bedroomGID
-    [ (chairGID, DirectionalStimulusKey chairDS)
-    , (tableGID, DirectionalStimulusKey tableDS)
-    , (robeGID, DirectionalStimulusKey robeDS)
-    , (mailGID, DirectionalStimulusKey mailDS)
-    , (floorGID, DirectionalStimulusKey floorDS)
-    , (chairGID, ObjectiveKey chairOB)
-    , (tableGID, ObjectiveKey tableOB)
-    , (robeGID, ObjectiveKey robeOB)
-    , (mailGID, ObjectiveKey mailOB)
-    , (floorGID, ObjectiveKey floorOB)
-    ]
-  registerLocation bedroomGID bedroomLoc
+--  bedroomLoc' <- buildBedroom bedroomGID objectsWithKeys
+--  registerLocation bedroomGID bedroomLoc'
 
   -- Create and set player
   player <- buildBedroomPlayer bedroomGID
   registerPlayer player
 
   finalizeGameState
--}
