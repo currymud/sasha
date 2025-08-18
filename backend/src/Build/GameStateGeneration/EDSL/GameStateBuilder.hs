@@ -8,11 +8,15 @@ import           Control.Monad.State.Strict    (MonadState)
 import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map, elems, insert, lookup,
                                                 member)
+import qualified Data.Set
 import           Model.GameState               (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagementFunctions (ActionManagementFunctions),
                                                 GameState, Location, Object,
                                                 World (_locationMap, _objectMap),
-                                                _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence))
+                                                _locationActionManagement,
+                                                _objectActionManagement,
+                                                _playerActions, _world)
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, BuildLocation, BuildObject, BuildPlayer, CreateAAManagement, CreateAVManagement, CreateCAManagement, CreateDSAManagement, CreateISAManagement, CreateNPManagement, CreatePPManagement, CreateSSAManagement, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, Map, Pure, RegisterLocation, RegisterObject, Sequence, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithSpatial))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -194,6 +198,38 @@ interpretDSL (CreatePPManagement verb actionGID) =
 
 interpretDSL (CreateNPManagement verb actionGID) =
   pure (NPManagementKey verb actionGID)
+
+interpretDSL (WithObjectBehavior obj actionMgmt) = do
+  let ActionManagementFunctions currentSet = _objectActionManagement obj
+      updatedSet = Data.Set.insert actionMgmt currentSet
+      updatedObj = obj { _objectActionManagement = ActionManagementFunctions updatedSet }
+  pure updatedObj
+
+interpretDSL (WithPlayerBehavior player actionMgmt) = do
+  let ActionManagementFunctions currentSet = _playerActions player
+      updatedSet = Data.Set.insert actionMgmt currentSet
+      updatedPlayer = player { _playerActions = ActionManagementFunctions updatedSet }
+  pure updatedPlayer
+
+interpretDSL (WithLocationBehavior loc actionMgmt) = do
+  let ActionManagementFunctions currentSet = _locationActionManagement loc
+      updatedSet = Data.Set.insert actionMgmt currentSet
+      updatedLoc = loc { _locationActionManagement = ActionManagementFunctions updatedSet }
+  pure updatedLoc
+
+interpretDSL (WithSpatial obj spatialRel) = do
+  pure obj  -- Spatial relationships are handled separately via SetSpatial
+
+interpretDSL (BuildObject gid obj transform) = do
+  validateObjectGIDDeclared gid
+  pure (transform obj)
+
+interpretDSL (BuildLocation gid loc transform) = do
+  validateLocationGIDDeclared gid
+  pure (transform loc)
+
+interpretDSL (BuildPlayer player transform) = do
+  pure (transform player)
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()

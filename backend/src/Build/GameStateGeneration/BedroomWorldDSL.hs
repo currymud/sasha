@@ -20,7 +20,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerObject,
                                                                           setPlayer,
                                                                           setSpatial,
-                                                                          withBehavior,
+                                                                          withObjectBehavior,
                                                                           withPlayerBehavior)
 import           Model.GID                                               (GID)
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
@@ -208,36 +208,36 @@ bedroomWorldDSL = do
 
   -- Build and register objects with behaviors using DSL chaining
   chairWithBehaviors <- do
-    chairWithLook <- withBehavior chairObj (DSAManagementKey look seeChairFGID)
-    withBehavior chairWithLook (AVManagementKey get getFromChairFGID)
+    chairWithLook <- withObjectBehavior chairObj (DSAManagementKey look seeChairFGID)
+    withObjectBehavior chairWithLook (AVManagementKey get getFromChairFGID)
   registerObject chairGID chairWithBehaviors
 
   tableWithBehaviors <- do
-    withBehavior tableObj (DSAManagementKey look seeTableGID)
+    withObjectBehavior tableObj (DSAManagementKey look seeTableGID)
   registerObject tableGID tableWithBehaviors
 
   pillWithBehaviors <- do
-    pillWithLook <- withBehavior pillObj (DSAManagementKey look whatPillGID)
-    withBehavior pillWithLook (CAManagementKey takePillCVP takePillDeniedFGID)
+    pillWithLook <- withObjectBehavior pillObj (DSAManagementKey look whatPillGID)
+    withObjectBehavior pillWithLook (CAManagementKey takePillCVP takePillDeniedFGID)
   registerObject pillGID pillWithBehaviors
 
   mailWithBehaviors <- do
-    mailWithLook <- withBehavior mailObj (DSAManagementKey look seeMailGID)
-    withBehavior mailWithLook (AAManagementKey getMailAVP getMailDeniedFGID)
+    mailWithLook <- withObjectBehavior mailObj (DSAManagementKey look seeMailGID)
+    withObjectBehavior mailWithLook (AAManagementKey getMailAVP getMailDeniedFGID)
   registerObject mailGID mailWithBehaviors
 
   robeWithBehaviors <- do
-    robeWithLook <- withBehavior robeObj (DSAManagementKey look notEvenRobeGID)
-    robeWithAcquisition <- withBehavior robeWithLook (AAManagementKey getRobeAVP getRobeDeniedFGID)
-    withBehavior robeWithAcquisition (AVManagementKey get getRobeDeniedFGID)
+    robeWithLook <- withObjectBehavior robeObj (DSAManagementKey look notEvenRobeGID)
+    robeWithAcquisition <- withObjectBehavior robeWithLook (AAManagementKey getRobeAVP getRobeDeniedFGID)
+    withObjectBehavior robeWithAcquisition (AVManagementKey get getRobeDeniedFGID)
   registerObject robeGID robeWithBehaviors
 
   pocketWithBehaviors <- do
-    withBehavior pocketObj (DSAManagementKey look seePocketRobeWornGID)
+    withObjectBehavior pocketObj (DSAManagementKey look seePocketRobeWornGID)
   registerObject pocketGID pocketWithBehaviors
 
   floorWithBehaviors <- do
-    withBehavior floorObj (DSAManagementKey look seeFloorFGID)
+    withObjectBehavior floorObj (DSAManagementKey look seeFloorFGID)
   registerObject floorGID floorWithBehaviors
 
   -- Set up spatial relationships
