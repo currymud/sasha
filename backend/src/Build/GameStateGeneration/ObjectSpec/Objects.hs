@@ -1,5 +1,5 @@
 module Build.GameStateGeneration.ObjectSpec.Objects where
-
+  {-
 
 import           Build.GameStateGeneration.ObjectSpec                    (defaultObject,
                                                                           withBehaviors,
@@ -145,3 +145,4 @@ makeObjectMap [ ('chairGID, 'chairObj)
               , ('robeGID, 'robeObj)
               , ('pocketGID, 'pocketObj)
               , ('floorGID, 'floorObj)]  -- objectMap :: GIDToDataMap Object Object
+              -}

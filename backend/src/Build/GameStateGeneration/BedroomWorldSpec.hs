@@ -1,6 +1,6 @@
-module Build.GameStateGeneration.BedroomWorldSpec (bedroomWorldSpec, bedroomPlayerSpec) where
+module Build.GameStateGeneration.BedroomWorldSpec where
 
-
+  {-
 import qualified Grammar.Parser.Partitions.Nouns.Consumables             as Consumables
 import qualified Grammar.Parser.Partitions.Nouns.Objectives              as Objectives
 import qualified Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        as AcquisitionVerbs
@@ -183,4 +183,4 @@ simpleRobeOP = ObjectPhrase (SimpleNounPhrase robeOB)
 
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get simpleRobeOP
-
+-}

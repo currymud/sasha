@@ -101,7 +101,7 @@ makeAcquisitionActionGIDsAndMap expGidPairs = do
 -- =============================================================================
 -- CORE HELPER FUNCTIONS
 -- =============================================================================
-
+  {-
 makeGIDForType :: Name -> (Exp, Int) -> Q [Dec]
 makeGIDForType typeName (VarE name, gidValue) = do
   let gidName = mkName (nameBase name ++ "GID")
@@ -112,6 +112,20 @@ makeGIDForType typeName (VarE name, gidValue) = do
        , ValD (VarP gidName) (NormalB gidExpr) []
        ]
 makeGIDForType _ _ = fail "Expected variable"
+-}
+
+makeGIDForType :: Name -> (Exp, Int) -> Q [Dec]
+makeGIDForType typeName (exp, gidValue) = do
+  case exp of
+    VarE name -> do
+      let gidName = mkName (nameBase name ++ "GID")
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT typeName)
+
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+    _ -> fail $ "Expected variable, got: " ++ show exp
 
 makeMapForType :: Name -> String -> [(Exp, Int)] -> Q Dec
 makeMapForType typeName mapName pairs = do

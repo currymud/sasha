@@ -1,5 +1,5 @@
 module Build.GameStateGeneration.World where
-
+  {-
 import           Build.GameStateGeneration.LocationSpec.Locations (locationMap)
 import           Build.GameStateGeneration.ObjectSpec             (defaultWorld)
 import           Build.GameStateGeneration.ObjectSpec.Objects     (objectMap)
@@ -22,3 +22,4 @@ world = defaultWorld
 
 -- The old manual construction is completely replaced with DSL-generated maps
 -- No more hardcoded GID references, no more manual map construction
+-- -}

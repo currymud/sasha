@@ -22,7 +22,6 @@ import           Model.GameState                                 (ActionMaps (Ac
                                                                   Narration (Narration),
                                                                   World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                                   _world)
-import           Model.Mappings                                  (GIDToDataMap (GIDToDataMap))
 
 -- Build GameState using the DSL!
 gameState :: GameState

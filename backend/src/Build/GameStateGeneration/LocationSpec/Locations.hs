@@ -1,5 +1,5 @@
 module Build.GameStateGeneration.LocationSpec.Locations where
-
+  {-
 import           Build.GameStateGeneration.LocationSpec.LocationGIDs  (bedroomGID,
                                                                        bedroomUpstairsGID)
 import           Build.GameStateGeneration.ObjectSpec                 (defaultLocation,
@@ -31,6 +31,7 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus  (chair,
 import qualified Grammar.Parser.Partitions.Nouns.Objectives           as Objectives
 import           Prelude                                              hiding
                                                                       (floor)
+
 -- Create locations using builder pattern
 bedroom :: Location
 bedroom = defaultLocation
@@ -57,10 +58,4 @@ bedroomUpstairs = defaultLocation
 makeLocationMap [ ('bedroomGID, 'bedroom)
                 , ('bedroomUpstairsGID, 'bedroomUpstairs)
                 ]
-
--- This generates:
--- locationMap :: GIDToDataMap Location Location
--- locationMap = GIDToDataMap $ Data.Map.Strict.fromList
---   [ (bedroomGID, bedroom)
---   , (bedroomUpstairsGID, bedroomUpstairs)
---   ]
+-}

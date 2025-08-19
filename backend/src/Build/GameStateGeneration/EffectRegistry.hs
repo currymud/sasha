@@ -1,5 +1,5 @@
 module Build.GameStateGeneration.EffectRegistry where
-
+  {-
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
@@ -165,3 +165,4 @@ effectRegistry = Data.Map.Strict.fromList
   , withActionKey (PosturalActionKey standDeniedGID) emptyEffectMap
   , withActionKey (AcquisitionalActionKey dizzyGetFGID) emptyEffectMap
   ]
+  -}

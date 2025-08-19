@@ -5,7 +5,6 @@ import           Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProce
 import           Actions.Movement.Postural.SitStand    (managePosturalProcess)
 import           Actions.Percieve.Look                 (manageDirectionalStimulusProcess,
                                                         manageImplicitStimulusProcess)
-import           Build.Identifiers.Actions             (agentCanSeeGID)
 import           Control.Monad.Identity                (Identity)
 import           Model.GameState                       (GameComputation)
 import           Model.Parser                          (Sentence (Imperative))

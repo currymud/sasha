@@ -90,14 +90,19 @@ getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
 
 -- Implicit Stimulus Actions with manual GID assignment
+{-
 makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| pitchBlackF |], 2),
                                       ([| isaEnabledLook |], 3),
                                       ([| checkInventory |], 4)]
+                                      -}
+makeImplicitStimulusActionGIDsAndMap [
+                                      ([| pitchBlackF |],1),
+                                      ([| isaEnabledLook |], 2)]
 
 -- Directional Stimulus Actions with manual GID assignment
-makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1)]
-  {-             ([| notEvenPill|], 2),
+makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
+                                         ([| notEvenPill|], 2),
                                          ([| whatPill |], 3),
                                          ([| dsvEnabledLook|], 4),
                                          ([| lookAt |], 5),
@@ -109,15 +114,16 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1)]
                                          ([| notEvenRobe|], 11),
                                          ([| whatPocket |], 12),
                                          ([| notEvenPocket |], 13),
+
                                          ([| seePocketChair |], 14),
                                          ([| seePocketRobeWorn |], 15),
                                          ([| seeRobeChair |], 16),
                                          ([| seeMail |], 17),
                                          ([| whatMail |], 18),
-                                         ([| seeFloor |], 19),
-                                         ([| whatFloor |], 20)]
 
--}
+                                         ([| seeFloorF |], 19),
+                                         ([| notEvenFloorF |], 20)]
+
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),
                                   ([| alreadyHaveRobeF |], 3),
@@ -127,17 +133,18 @@ makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getFromChairF |], 7),
                                   ([| getFromRobeF|], 8),
                                   ([| robeCollectedF|], 9),
-                                  ([| getRobeDeniedF|], 10)]
+                                  ([| getRobeDeniedF|], 10),
+                                  ([| getMailDizzyF |], 11)]
                                     {-
                                  [| getDenied |],
                                  [| getPillDeniedF |],
                                  [| alreadyHaveRobeF |],
-                                 [| getRobeDeniedF |],
                                 [| getFloorDeniedF |]]
 -}
 
 makeConsumptionActionGIDsAndMap [([| takePillF |], 1),
-                                 ([| takePillDenied |], 2)]
+                                 ([| takePillDeniedF |], 2),
+                                 ( [| pillTooFarF |],3)]
 
 -- Somatic Access Actions with manual GID assignment
 makeSomaticAccessActionGIDsAndMap [([| openEyes |], 1),

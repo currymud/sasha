@@ -1,5 +1,5 @@
 module Build.GameStateGeneration.WorldBuilder where
-
+  {-
 import           Build.GameStateGeneration.LocationSpec.LocationGIDs     (bedroomGID)
 import           Build.GameStateGeneration.LocationSpec.Locations        (locationMap)
 import           Build.GameStateGeneration.ObjectSpec.Objects            (objectMap)
@@ -74,3 +74,4 @@ initialAction = "It was a rough night. You smoked your mind the night before, on
 buildSpatialMap :: [(GID Object, [SpatialRelationship])] -> SpatialRelationshipMap
 buildSpatialMap spatialSpecs = SpatialRelationshipMap $ Data.Map.Strict.fromList $
   map (Data.Bifunctor.second Data.Set.fromList) spatialSpecs
+  -}

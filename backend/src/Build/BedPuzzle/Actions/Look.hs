@@ -5,7 +5,7 @@ import           Model.GameState       (ImplicitStimulusActionF)
 
 
 pitchBlackF :: ImplicitStimulusActionF
-pitchBlackF =  agentCannotSee pitchBlack
+pitchBlackF =  error "wow" -- agentCannotSee pitchBlack
   where
     pitchBlack :: Text
     pitchBlack = "It's pitch black, you can't see a thing."

@@ -56,11 +56,11 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
     actionEnabled player loc = do
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
-        Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
+        Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in location map"
         Just actionGID -> do
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
-            Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
+            Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
             Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
 
 dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
