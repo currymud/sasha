@@ -3,6 +3,7 @@
 module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
+import           Model.GameState                                         (SystemEffect (PerceptionSystemEffect))
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionPhraseEffect,
                                                                           createConsumptionEffect,
@@ -11,10 +12,12 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           createSomaticAccessEffect,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
+                                                                          displayVisibleObjects,
                                                                           finalizeGameState,
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
                                                                           linkEffectToPlayer,
+                                                                          linkSystemEffectToAction,
                                                                           registerLocation,
                                                                           registerObject,
                                                                           registerObjectToLocation,
@@ -56,7 +59,8 @@ import           Model.Parser.Composites.Nouns                           (Consum
 -- Import ObjectSpec builder functions
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+import           Model.GameState                                         (ActionKey (SomaticAccessActionKey),
+                                                                          ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                           GameState,
                                                                           Location,
                                                                           Object,
@@ -302,7 +306,8 @@ bedroomWorldDSL = do
     , (mailGID, ObjectiveKey mailOB)
     , (floorGID, ObjectiveKey floorOB)
     ]
-
+  displayAction <- displayVisibleObjects
+  linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID
   registerPlayer player

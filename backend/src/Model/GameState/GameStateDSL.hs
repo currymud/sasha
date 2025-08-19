@@ -3,6 +3,7 @@
 
 module Model.GameState.GameStateDSL where
 
+import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
 import           Model.GameState               (AcquisitionActionF,
@@ -11,7 +12,8 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionManagementFunctions,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect, Evaluator, GameState,
+                                                Effect, Evaluator,
+                                                GameComputation, GameState,
                                                 ImplicitStimulusActionF,
                                                 Location, Object, Player,
                                                 PlayerKey, PosturalActionF,
@@ -106,7 +108,7 @@ data WorldDSL :: Type -> Type where
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
   LinkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
 
-
+  DisplayVisibleObjects :: WorldDSL (GameComputation Identity ())
   -- Final assembly
   FinalizeGameState :: WorldDSL GameState
 
@@ -261,3 +263,6 @@ registerSpatial = RegisterSpatial
 
 registerObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
 registerObjectToLocation = RegisterObjectToLocation
+
+displayVisibleObjects :: WorldDSL (GameComputation Identity ())
+displayVisibleObjects = DisplayVisibleObjects

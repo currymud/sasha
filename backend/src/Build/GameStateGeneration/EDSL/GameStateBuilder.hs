@@ -9,12 +9,13 @@ import           Control.Monad.State.Strict    (MonadState, runState)
 import           Data.Kind                     (Type)
 import qualified Data.List
 import           Data.Map.Strict               (Map, elems, findWithDefault,
-                                                fromListWith, insert, lookup,
-                                                map, member, singleton, toList,
-                                                unionWith)
+                                                fromList, fromListWith, insert,
+                                                lookup, map, member, singleton,
+                                                toList, unionWith)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import qualified Data.Text
+import           GameState.Perception          (youSeeM)
 import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
@@ -33,7 +34,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkSystemEffectToAction, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkSystemEffectToAction, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GID                     (GID (GID))
 import           Model.Mappings                (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -231,7 +232,9 @@ interpretDSL (LinkEffectToPlayer playerKey effect) = do
 interpretDSL FinalizeGameState = do
   state <- get
   let assembledEffectRegistry = buildEffectRegistryFromLinks (_effectLinks state)
-      finalGameState = (_gameState state) { _effectRegistry = assembledEffectRegistry }
+      systemEffectRegistry = Data.Map.Strict.fromList (_systemEffectLinks state)
+      finalGameState = (_gameState state) { _effectRegistry = assembledEffectRegistry
+                                          , _systemEffectRegistry = systemEffectRegistry }
   pure finalGameState
 
 interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
@@ -250,6 +253,7 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
           updatedGameState = (_gameState state) { _world = updatedWorld }
       put state { _gameState = updatedGameState }
 
+interpretDSL DisplayVisibleObjects = pure youSeeM
 interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
   let effect = ImplicitStimulusEffect verb actionGID
   state <- get
