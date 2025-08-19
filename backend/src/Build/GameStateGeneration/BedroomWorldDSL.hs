@@ -25,6 +25,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerSpatial,
                                                                           withDescription,
                                                                           withDescriptives,
+                                                                          withLocationBehavior,
                                                                           withObjectBehavior,
                                                                           withShortName,
                                                                           withTitle)
@@ -79,6 +80,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           notEvenRobeGID,
                                                                           openEyesGID,
                                                                           pillTooFarFGID,
+                                                                          pitchBlackFGID,
                                                                           robeCollectedFGID,
                                                                           seeChairFGID,
                                                                           seeFloorFGID,
@@ -210,9 +212,10 @@ populateLocation lid = traverse_ (uncurry (registerObjectToLocation lid))
 
 -- objectsWithKeys -> [(GID Object, NounKey)]    -- ^ objects to place (object GID, noun key)
 bedroomLoc :: WorldDSL Location
-bedroomLoc = do
-  defaultLocation
-    & withTitle "Bedroom in Bed"
+bedroomLoc = defaultLocation & bedroomLoc'
+  where
+    bedroomLoc' = withTitle "bedroom in bed"
+                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackFGID))
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
@@ -258,6 +261,9 @@ bedroomWorldDSL = do
 
   tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
   linkEffectToObject tableGID tableLookEffect
+
+  pitchBlackEffect <- createImplicitStimulusEffect isaLook pitchBlackFGID
+  linkEffectToLocation bedroomGID pitchBlackEffect
 
   pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
   linkEffectToObject pillGID pillLookEffect
