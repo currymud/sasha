@@ -22,6 +22,21 @@ import           Model.Label              (Label (Label))
 import           Model.Parser.Lexer       (Lexeme)
 import           Prelude                  hiding (exp)
 
+
+makeObjectGIDsFromNames :: [String] -> Q [Dec]
+makeObjectGIDsFromNames names = do
+  let numberedNames = zip names [1..]
+  concat <$> mapM makeObjectGIDFromName numberedNames
+  where
+    makeObjectGIDFromName :: (String, Int) -> Q [Dec]
+    makeObjectGIDFromName (name, gidValue) = do
+      let gidName = mkName (name ++ "GID")
+          gidExpr = AppE (ConE 'GID) (LitE (IntegerL (fromIntegral gidValue)))
+          gidType = AppT (ConT ''GID) (ConT ''Object)
+      pure [ SigD gidName gidType
+           , ValD (VarP gidName) (NormalB gidExpr) []
+           ]
+
 -- =============================================================================
 -- MANUAL GID ASSIGNMENT FUNCTIONS (UPDATED PATTERN)
 -- =============================================================================

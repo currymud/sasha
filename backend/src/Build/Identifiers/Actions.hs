@@ -8,6 +8,8 @@ import           Actions.Percieve.Look                                   (agentC
 import qualified Build.BedPuzzle.Actions.Get
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
+import           Build.Identifiers.Objects                               (chairGID,
+                                                                          robeGID)
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
@@ -48,8 +50,7 @@ import           Build.BedPuzzle.Actions.Open                            (openEy
                                                                           openEyesDenied)
 import           Build.BedPuzzle.Actions.Stand                           (standDenied,
                                                                           standUp)
-import           Build.GameStateGeneration.ObjectSpec.ObjectGIDS         (chairGID,
-                                                                          robeGID)
+
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
@@ -95,8 +96,8 @@ makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| checkInventory |], 4)]
 
 -- Directional Stimulus Actions with manual GID assignment
-makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
-                                         ([| notEvenPill|], 2),
+makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1)]
+  {-             ([| notEvenPill|], 2),
                                          ([| whatPill |], 3),
                                          ([| dsvEnabledLook|], 4),
                                          ([| lookAt |], 5),
@@ -116,7 +117,7 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| seeFloor |], 19),
                                          ([| whatFloor |], 20)]
 
-
+-}
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),
                                   ([| alreadyHaveRobeF |], 3),

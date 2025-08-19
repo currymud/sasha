@@ -87,6 +87,7 @@ library
       Build.GameStateGeneration.WorldGeneration
       Build.GameStateGeneration.WorldBuilder
       Build.Identifiers.Actions
+      Build.Identifiers.Objects
       Build.Identifiers.SentenceProcessing
       Build.Templates.Identification
       Build.Templates.Sentence
