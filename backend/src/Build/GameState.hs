@@ -29,6 +29,8 @@ import           Model.GameState                                      (ActionMap
                                                                        World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                                        _world,
                                                                        updateActionConsequence)
+import           Relude.DeepSeq                                       (deepseq,
+                                                                       force)
 -- Build GameState using the DSL!
 gameState :: GameState
 gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderState defaultGameState) of
@@ -47,7 +49,9 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
 
 testPitchBlackF :: ImplicitStimulusActionF
 testPitchBlackF = ImplicitStimulusActionF $ \_ _ ->
-  modifyNarration $ updateActionConsequence "TEST: It's pitch black, you can't see a thing."
+ error "hey" --  modifyNarration $ updateActionConsequence "TEST: It's pitch black, you can't see a thing."
+
+
 
 testIsaEnabledLook :: ImplicitStimulusActionF
 testIsaEnabledLook = isvActionEnabled Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
@@ -68,7 +72,7 @@ config = Config
   where
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
-                   testImplicitStimulusActionMap
+                   (Data.Map.Strict.keys testImplicitStimulusActionMap `deepseq` testImplicitStimulusActionMap)
                    directionalStimulusActionMap
                    somaticAccessActionMap
                    acquisitionActionMap

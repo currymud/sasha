@@ -236,7 +236,7 @@ buildBedroomPlayer bedroomGID = do
   let player = defaultPlayer
         & withPlayerLocation bedroomGID
         & withPlayerBehaviors
-            [ ISAManagementKey isaLook testIsaEnabledLookGID
+            [ ISAManagementKey isaLook testPitchBlackFGID
 --            , ISAManagementKey inventory checkInventoryGID
 --            , DSAManagementKey look dsvEnabledLookGID
 --            , CAManagementKey takePillCVP pillTooFarFGID

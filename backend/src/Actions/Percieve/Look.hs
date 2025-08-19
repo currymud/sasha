@@ -13,7 +13,8 @@ import           Control.Monad.Reader.Class                              (asks)
 import           Data.Map.Strict                                         (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           Data.Text                                               (Text)
+import           Data.Text                                               (Text,
+                                                                          pack)
 import           GameState                                               (getObjectM,
                                                                           getPlayerM,
                                                                           modifyNarration)
@@ -89,7 +90,27 @@ lookAt = DirectionalStimulusActionF lookAt'
               case Data.Map.Strict.lookup dsaGID dsActionMap' of
                 Nothing -> modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
                 Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
+manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 
+manageImplicitStimulusProcess isv = do
+  modifyNarration $ updateActionConsequence "TRACE: manageImplicitStimulusProcess called"
+  availableActions <- _playerActions <$> getPlayerM
+--  modifyNarration $ updateActionConsequence ("TRACE: Player actions: " <> ( Data.Text.pack $ show availableActions))
+  case lookupImplicitStimulus isv availableActions of
+    Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
+    Just actionGID -> do
+ --     modifyNarration $ updateActionConsequence ("TRACE: Found actionGID: " <> (Data.Text.pack $ show actionGID))
+      actionMap <- asks (_implicitStimulusActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
+        Just (ImplicitStimulusActionF actionFunc) -> do
+          modifyNarration $ updateActionConsequence "TRACE: About to call actionFunc"
+          player <- getPlayerM
+          let lid = player._location
+          loc <- getLocationM lid
+          actionFunc player loc
+          modifyNarration $ updateActionConsequence "TRACE: actionFunc completed"
+                  {-
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
   availableActions <- _playerActions <$> getPlayerM
@@ -105,7 +126,7 @@ manageImplicitStimulusProcess isv = do
           loc <- getLocationM lid
 
           actionFunc player loc
-
+-}
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do

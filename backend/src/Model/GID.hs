@@ -2,6 +2,7 @@ module Model.GID where
 
 import           Data.Kind                (Type)
 import           Data.Text                (Text, pack)
+import           Relude.DeepSeq           (NFData (rnf))
 import           Relude.String.Conversion (ToText (toText))
 
 type role GID phantom
@@ -12,6 +13,9 @@ newtype GID a = GID {unGID :: Int}
 instance ToText (GID a) where
   toText :: GID a -> Text
   toText = pack . show
+
+instance NFData (GID a) where
+ rnf (GID i) = rnf i
 
 type role ActionId phantom
 type ActionId :: Type -> Type
