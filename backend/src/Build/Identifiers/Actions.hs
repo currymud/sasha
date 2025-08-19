@@ -96,9 +96,9 @@ makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| isaEnabledLook |], 3),
                                       ([| checkInventory |], 4)]
                                       -}
-makeImplicitStimulusActionGIDsAndMap [
-                                      ([| pitchBlackF |],1),
-                                      ([| isaEnabledLook |], 2)]
+-- makeImplicitStimulusActionGIDsAndMap [
+ --                                     ([| pitchBlackF |],1),
+ --                                     ([| isaEnabledLook |], 2)]
 
 -- Directional Stimulus Actions with manual GID assignment
 makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),

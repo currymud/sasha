@@ -94,7 +94,7 @@ manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identit
 manageImplicitStimulusProcess isv = do
   availableActions <- _playerActions <$> getPlayerM
   case lookupImplicitStimulus isv availableActions of
-    Nothing -> error "Programmer Error: No implicit stimulus action found for verb: "
+    Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in player "
     Just actionGID -> do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
@@ -103,6 +103,7 @@ manageImplicitStimulusProcess isv = do
           player <- getPlayerM
           let lid = player._location
           loc <- getLocationM lid
+
           actionFunc player loc
 
 

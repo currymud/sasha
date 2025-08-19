@@ -3,7 +3,8 @@
 module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
-import           Model.GameState                                         (SystemEffect (PerceptionSystemEffect))
+import           Model.GameState                                         (ImplicitStimulusActionF,
+                                                                          SystemEffect (PerceptionSystemEffect))
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionPhraseEffect,
                                                                           createConsumptionEffect,
@@ -29,7 +30,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           withObjectBehavior,
                                                                           withShortName,
                                                                           withTitle)
-import           Model.GID                                               (GID)
+import           Model.GID                                               (GID (GID))
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
 import           Prelude                                                 hiding
                                                                          (take)
@@ -92,9 +93,10 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           takePillFGID,
                                                                           whatPillGID)
 -}
+  {-
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
                                                                           pitchBlackFGID)
-
+-}
 
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
@@ -119,6 +121,13 @@ import           Model.Parser.Composites.Verbs                           (Acquis
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Relude.Function                                         ((&))
 
+
+
+testPitchBlackFGID :: GID ImplicitStimulusActionF
+testPitchBlackFGID = GID 1
+
+testIsaEnabledLookGID :: GID ImplicitStimulusActionF
+testIsaEnabledLookGID = GID 2
 -- =============================================================================
 -- VERB PHRASES
 -- =============================================================================
@@ -220,14 +229,14 @@ bedroomLoc :: WorldDSL Location
 bedroomLoc = defaultLocation & bedroomLoc'
   where
     bedroomLoc' = withTitle "bedroom in bed"
-                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackFGID))
+                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook testPitchBlackFGID))
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
   let player = defaultPlayer
         & withPlayerLocation bedroomGID
         & withPlayerBehaviors
-            [ ISAManagementKey isaLook isaEnabledLookGID
+            [ ISAManagementKey isaLook testIsaEnabledLookGID
 --            , ISAManagementKey inventory checkInventoryGID
 --            , DSAManagementKey look dsvEnabledLookGID
 --            , CAManagementKey takePillCVP pillTooFarFGID
