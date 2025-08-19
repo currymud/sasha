@@ -5,7 +5,7 @@ import qualified Data.Set
 import           Model.GameState                                         (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                           ActionEffectMap (ActionEffectMap),
                                                                           ActionKey (AcquisitionalActionKey, ConsumptionActionKey, PosturalActionKey, SomaticAccessActionKey),
-                                                                          Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PerceptionEffect, PositivePosturalEffect),
+                                                                          Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, PositivePosturalEffect),
                                                                           EffectRegistry,
                                                                           PlayerKey (PlayerKeyObject))
 
@@ -62,7 +62,7 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 
 -- Perception and Look Effects
 openEyesEffect :: Set Effect
-openEyesEffect = Data.Set.fromList [ImplicitStimulusEffect isaLook agentCanSeeGID, PerceptionEffect]
+openEyesEffect = Data.Set.fromList [ImplicitStimulusEffect isaLook agentCanSeeGID] -- We don't use this anymore but it used to fire youSeeM, PerceptionEffect]
 
 pillEffect :: Effect
 pillEffect = DirectionalStimulusEffect dsaLook whatPillGID

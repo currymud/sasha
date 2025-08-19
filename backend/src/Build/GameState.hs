@@ -18,7 +18,7 @@ import           Data.Text                                       (Text)
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
                                                                   Config (Config, _actionMaps),
-                                                                  GameState (GameState, _effectRegistry, _evaluation, _narration, _player),
+                                                                  GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry),
                                                                   Narration (Narration),
                                                                   World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                                   _world)
@@ -34,7 +34,8 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
     defaultGameState = GameState
       { _world = defaultWorld
       , _player = defaultPlayer
-      , _effectRegistry = Data.Map.Strict.empty  -- Will be built by DSL
+      , _effectRegistry = Data.Map.Strict.empty
+      , _systemEffectRegistry = Data.Map.Strict.empty
       , _evaluation = eval
       , _narration = defaultNarration
       }

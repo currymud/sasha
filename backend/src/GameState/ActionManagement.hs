@@ -19,7 +19,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PerceptionEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                                Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 GameComputation,
                                                 GameState (_player),
                                                 ImplicitStimulusActionF,
@@ -230,13 +230,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ConsumptionEffect verb _targetO
   where
     filterAction (CAManagementKey (ConsumptionVerbPhrase v _) _) = v /= verb
     filterAction _                                               = True
-
--- PERCEPTION EFFECTS (global perception updates)
-processEffect _ PerceptionEffect = do
-  perceivableObjects <- computePerceivableObjects
-  newPerceptionMap <- buildPerceptionMapFromObjects (Data.Set.toList perceivableObjects)
-  modifyPerceptionMapM (const newPerceptionMap)
-  youSeeM
 
 -- Catch-all for unhandled effect/key combinations
 processEffect effectKey effect = do

@@ -34,14 +34,13 @@ module Model.GameState (
                , ConsumptionEffect
                , ImplicitStimulusEffect
                , DirectionalStimulusEffect
-               , PerceptionEffect
                , PositivePosturalEffect
                , NegativePosturalEffect
                , SomaticAccessEffect)
   , EffectRegistry
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry)
+  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -66,6 +65,8 @@ module Model.GameState (
   , SomaticStimulusActionMap
   , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
+  , SystemEffect (PerceptionSystemEffect)
+  , SystemEffectRegistry
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
   , updateActionConsequence
@@ -263,10 +264,13 @@ data Effect
   | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
   | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)
-  | PerceptionEffect
   deriving stock (Show, Eq, Ord)
 
+type EffectRegistry :: Type
 type EffectRegistry = Map ActionKey ActionEffectMap
+
+type SystemEffectRegistry :: Type
+type SystemEffectRegistry = Map ActionKey SystemEffect
 
 type ActionEffect :: Type
 data ActionEffect
@@ -275,6 +279,11 @@ data ActionEffect
   | ImplicitStimulusActionEffect (Map (GID ImplicitStimulusActionF) (Map ActionEffectKey Effect))
   | EdibleConsumptionActionEffect (Map (GID ConsumptionActionF) Effect)
   deriving stock (Show, Eq, Ord)
+
+type SystemEffect :: Type
+data SystemEffect
+  = PerceptionSystemEffect (GameComputation Identity ())
+
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
@@ -293,11 +302,12 @@ data Config = Config
 
 type GameState :: Type
 data GameState = GameState
-  { _world          :: World
-  , _player         :: Player
-  , _narration      :: Narration
-  , _evaluation     :: Evaluator
-  , _effectRegistry :: EffectRegistry
+  { _world                :: World
+  , _player               :: Player
+  , _narration            :: Narration
+  , _evaluation           :: Evaluator
+  , _effectRegistry       :: EffectRegistry
+  , _systemEffectRegistry :: SystemEffectRegistry
   }
 
 type Location :: Type

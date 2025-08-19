@@ -8,6 +8,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           createConsumptionEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
+                                                                          createSomaticAccessEffect,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
@@ -266,8 +267,13 @@ bedroomWorldDSL = do
   takePillEffect <- createConsumptionEffect take pillGID takePillFGID
   linkEffectToPlayer (PlayerKeyObject pillGID) takePillEffect
 
-  openEyesEffect <- createImplicitStimulusEffect isaLook agentCanSeeGID
-  linkEffectToLocation bedroomGID openEyesEffect
+  openEyesImplicitStimulusEffect <- createImplicitStimulusEffect isaLook agentCanSeeGID
+  linkEffectToLocation bedroomGID openEyesImplicitStimulusEffect
+
+  openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
+  linkEffectToLocation bedroomGID openEyesSomaticEffect
+
+
 
   -- Complete spatial relationships
   registerSpatial chairGID (Supports (Set.singleton robeGID))

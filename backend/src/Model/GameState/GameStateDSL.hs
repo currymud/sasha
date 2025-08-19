@@ -16,7 +16,8 @@ import           Model.GameState               (AcquisitionActionF,
                                                 Location, Object, Player,
                                                 PlayerKey, PosturalActionF,
                                                 SomaticAccessActionF,
-                                                SpatialRelationship)
+                                                SpatialRelationship,
+                                                SystemEffect)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)
@@ -27,7 +28,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns (NounPhrase)
+import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+                                                NounPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
@@ -72,6 +74,7 @@ data WorldDSL :: Type -> Type where
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
   CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 
+  SetPerceptionMap :: [(DirectionalStimulusNounPhrase, [GID Object])] -> WorldDSL ()
   SetEvaluator :: Evaluator -> WorldDSL ()
   SetInitialNarration :: Text -> WorldDSL ()
   -- Player management - now take direct values
@@ -96,11 +99,12 @@ data WorldDSL :: Type -> Type where
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
   CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
-  CreatePerceptionEffect :: WorldDSL Effect
+  CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 
   LinkEffectToObject :: GID Object -> Effect -> WorldDSL ()
   LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
+  LinkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
 
 
   -- Final assembly
@@ -196,8 +200,11 @@ createPositivePosturalEffect = CreatePositivePosturalEffect
 createNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
 createNegativePosturalEffect = CreateNegativePosturalEffect
 
-createPerceptionEffect :: WorldDSL Effect
-createPerceptionEffect = CreatePerceptionEffect
+createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
+createSomaticAccessEffect = CreateSomaticAccessEffect
+
+linkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
+linkSystemEffectToAction = LinkSystemEffectToAction
 
 linkEffectToObject :: GID Object -> Effect -> WorldDSL ()
 linkEffectToObject = LinkEffectToObject
@@ -221,6 +228,9 @@ setEvaluator = SetEvaluator
 
 setInitialNarration :: Text -> WorldDSL ()
 setInitialNarration = SetInitialNarration
+
+setPerceptionMap :: [(DirectionalStimulusNounPhrase, [GID Object])] -> WorldDSL ()
+setPerceptionMap = SetPerceptionMap
 
 -- Object field setters
 withShortName :: Text -> Object -> WorldDSL Object
