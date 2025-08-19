@@ -45,7 +45,7 @@ runGame comp' = do
   attSentence <- trySentence <$> liftIO getInput
   case attSentence of
     Left err       -> runGame $ errorHandler err
-    Right sentence ->runGame $ processWithSystemEffects sentence
+    Right sentence ->transformToIO $ processWithSystemEffects sentence
 
 processWithSystemEffects :: Sentence -> GameComputation Identity ()
 processWithSystemEffects sentence = do

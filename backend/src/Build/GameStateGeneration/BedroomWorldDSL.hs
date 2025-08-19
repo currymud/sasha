@@ -262,9 +262,6 @@ bedroomWorldDSL = do
   tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
   linkEffectToObject tableGID tableLookEffect
 
-  pitchBlackEffect <- createImplicitStimulusEffect isaLook pitchBlackFGID
-  linkEffectToLocation bedroomGID pitchBlackEffect
-
   pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
   linkEffectToObject pillGID pillLookEffect
 

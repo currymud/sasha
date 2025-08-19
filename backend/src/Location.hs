@@ -10,8 +10,8 @@ import           Model.GameState            (ActionManagementFunctions,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
+import           Model.GameState.Mappings   (_getGIDToDataMap)
 import           Model.GID                  (GID)
-import           Model.Mappings             (_getGIDToDataMap)
 
 getLocationIdM :: GameComputation Identity (GID Location)
 getLocationIdM = get <&> (_location . _player)

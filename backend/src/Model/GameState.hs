@@ -82,8 +82,8 @@ import           Data.Kind                     (Type)
 import           Data.Map.Strict               (Map)
 import           Data.Set                      (Set)
 import           Data.Text                     (Text)
+import           Model.GameState.Mappings      (GIDToDataMap)
 import           Model.GID                     (GID)
-import           Model.Mappings                (GIDToDataMap)
 import           Model.Parser                  (Sentence)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ConsumptionVerb,
@@ -317,6 +317,7 @@ data Location = Location {
   , _locationActionManagement :: ActionManagementFunctions
 --  , _locationEffects          :: LocationEffects
 }
+  deriving stock (Show, Eq, Ord)
 
 type ActionManagement :: Type
 data ActionManagement

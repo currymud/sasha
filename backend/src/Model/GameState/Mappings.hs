@@ -1,4 +1,4 @@
-module Model.Mappings where
+module Model.GameState.Mappings where
 
 import           Data.Kind          (Type)
 import           Data.List.NonEmpty (NonEmpty)

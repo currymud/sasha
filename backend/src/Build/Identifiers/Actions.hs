@@ -88,37 +88,33 @@ getFromChairF = getFromSupportF chairGID
 getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
 
-makeImplicitStimulusActionGIDsAndMap [[| agentCanSee |],
-                                      [| pitchBlackF |],
-                                      [| isaEnabledLook |],
-                                      [| checkInventory |]]
+-- Implicit Stimulus Actions with manual GID assignment
+makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
+                                      ([| pitchBlackF |], 2),
+                                      ([| isaEnabledLook |], 3),
+                                      ([| checkInventory |], 4)]
 
--- directionalStimulusActionMap
-makeDirectionalStimulusActionGIDsAndMap [[| seePill |]
-                                          , [| notEvenPill|]
-                                          , [| whatPill |]
-                                          , [| dsvEnabledLook|]
-                                          , [| lookAt |]
-                                          , [| whatTable |]
-                                          , [| seeTable |]
-                                          , [| whatChairF |]
-                                          , [| seeChairF|]
-                                          , [| whatRobe|]
-                                          , [| notEvenRobe|]
-                                          , [| whatPocket |]
-                                          , [| notEvenPocket |]
-                                          , [| seePocketChair |]
-                                          , [| seePocketRobeWorn |]
-                                          , [| emptyPocket |]
-                                          , [| seeRobeChair |]
-                                          , [| seeRobeWorn  |]
-                                          , [| seeMail |]
-                                          , [| notEvenMail |]
-                                          , [| whatMail |]
-                                          , [| notEvenFloorF |]
-                                          , [| seeFloorF|]]
-
-makeSomaticAccessActionGIDsAndMap [[|openEyesDenied |], [| openEyes|]]
+-- Directional Stimulus Actions with manual GID assignment
+makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
+                                         ([| notEvenPill|], 2),
+                                         ([| whatPill |], 3),
+                                         ([| dsvEnabledLook|], 4),
+                                         ([| lookAt |], 5),
+                                         ([| whatTable |], 6),
+                                         ([| seeTable |], 7),
+                                         ([| whatChairF |], 8),
+                                         ([| seeChairF|], 9),
+                                         ([| whatRobe|], 10),
+                                         ([| notEvenRobe|], 11),
+                                         ([| whatPocket |], 12),
+                                         ([| notEvenPocket |], 13),
+                                         ([| seePocketChair |], 14),
+                                         ([| seePocketRobeWorn |], 15),
+                                         ([| seeRobeChair |], 16),
+                                         ([| seeMail |], 17),
+                                         ([| whatMail |], 18),
+                                         ([| seeFloor |], 19),
+                                         ([| whatFloor |], 20)]
 
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
@@ -138,10 +134,15 @@ makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                  [| getRobeDeniedF |],
                                 [| getFloorDeniedF |]]
 -}
-makeConsumptionActionGIDsAndMap [ [|alreadyTookPillF |],
-                                  [| pillTooFarF |],
-                                  [| takePillF |],
-                                 [| takePillDeniedF |]]
 
-makePosturalActionGIDsAndMap [[| standDenied |], [| standUp |]]
+makeConsumptionActionGIDsAndMap [([| takePillF |], 1),
+                                 ([| takePillDenied |], 2)]
+
+-- Somatic Access Actions with manual GID assignment
+makeSomaticAccessActionGIDsAndMap [([| openEyes |], 1),
+                                   ([| openEyesDenied |], 2)]
+
+-- Postural Actions with manual GID assignment
+makePosturalActionGIDsAndMap [([| standUp |], 1),
+                              ([| standDenied |], 2)]
 

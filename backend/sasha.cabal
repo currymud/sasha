@@ -138,9 +138,9 @@ library
       Model.Action.LocationAction
       Model.GameState
       Model.GameState.GameStateDSL
+      Model.GameState.Mappings
       Model.GID
       Model.Label
-      Model.Mappings
       Model.Parser
       Model.Parser.Atomics.Adjectives
       Model.Parser.Atomics.Adverbs

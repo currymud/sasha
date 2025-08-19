@@ -12,8 +12,8 @@ import           Model.GameState               (ActionManagement,
                                                 Player (Player, _location, _playerActions),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+import           Model.GameState.Mappings      (GIDToDataMap (GIDToDataMap))
 import           Model.GID                     (GID (GID))
-import           Model.Mappings                (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Atomics.Nouns    (DirectionalStimulus)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                 NounPhrase)

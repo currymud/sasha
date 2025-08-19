@@ -63,8 +63,8 @@ import           Model.GameState               (AcquisitionActionF,
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap,
                                                 updateActionConsequence)
+import           Model.GameState.Mappings      (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
-import           Model.Mappings                (GIDToDataMap, _getGIDToDataMap)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container, Surface)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ImplicitStimulusVerb)
