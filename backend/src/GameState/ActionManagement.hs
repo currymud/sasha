@@ -7,7 +7,7 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Debug.Trace                   (trace)
 import           GameState                     (modifyLocationM, modifyObjectM)
-import           GameState.EffectRegistry      (lookupEffectsInRegistry)
+import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
                                                 modifyPerceptionMapM, youSeeM)
@@ -54,13 +54,17 @@ modifyLocationActionManagementM lid actionF = do
   modifyLocationM lid $ \loc ->
     loc { _locationActionManagement = actionF (_locationActionManagement loc) }
 
-
-registerSystemEffect :: SystemEffectKey
-                          -> SystemEffectConfig
-                          -> GameComputation Identity ()
-registerSystemEffect key config = modify' $ \gs ->
+registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> GameComputation Identity ()
+registerSystemEffect key effectGID config = modify' $ \gs ->
   let currentRegistry = _systemEffectRegistry gs
-      updatedRegistry = Data.Map.Strict.insertWith (++) key [config] currentRegistry
+      newEffectMap = Data.Map.Strict.singleton effectGID config
+      updatedRegistry = Data.Map.Strict.insertWith Data.Map.Strict.union key newEffectMap currentRegistry
+  in gs { _systemEffectRegistry = updatedRegistry }
+
+removeSystemEffect :: SystemEffectKey -> GID SystemEffect -> GameComputation Identity ()
+removeSystemEffect key effectGID = modify' $ \gs ->
+  let currentRegistry = _systemEffectRegistry gs
+      updatedRegistry = Data.Map.Strict.adjust (Data.Map.Strict.delete effectGID) key currentRegistry
   in gs { _systemEffectRegistry = updatedRegistry }
 
 
@@ -73,7 +77,7 @@ modifyObjectActionManagementM oid actionF =
 
 processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  maybeEffectMap <- lookupEffectsInRegistry actionKey
+  maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   case maybeEffectMap of
     Just effectMap -> processAllEffects effectMap
     Nothing        -> pure () -- No effects registered for this action

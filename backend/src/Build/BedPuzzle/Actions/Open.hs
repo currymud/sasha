@@ -18,7 +18,7 @@ import           Model.GameState            (ActionEffectKey (PlayerKey),
                                              updateActionConsequence)
 
 openEyesDenied :: SomaticAccessActionF
-openEyesDenied = SomaticAccessActionF (const (const denied))
+openEyesDenied = SomaticAccessActionF (const (const (const (const denied))))
  where
    denied :: GameComputation Identity ()
    denied = modifyNarration $ updateActionConsequence msg

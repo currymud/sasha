@@ -13,6 +13,7 @@ import           Model.GameState           (DisplayT, GameComputation,
                                             GameState (_evaluation, _narration, _systemEffectRegistry),
                                             GameT,
                                             SystemEffect (PerceptionSystemEffect),
+                                            SystemEffectConfig (SystemEffectConfig, _systemEffect, _systemEffectManagement),
                                             _actionConsequence, _playerAction,
                                             liftDisplay, transformToIO,
                                             updateActionConsequence)
@@ -49,13 +50,20 @@ runGame comp' = do
 
 processWithSystemEffects :: Sentence -> GameComputation Identity ()
 processWithSystemEffects sentence = do
+  toGameComputation sentence
   gameState <- get
-  let systemEffectComputations =  (\(PerceptionSystemEffect computation) -> computation) `fmap`  Data.Map.Strict.elems (_systemEffectRegistry gameState)
+  let systemEffectConfigs = concat $ Data.Map.Strict.elems $ fmap Data.Map.Strict.elems (_systemEffectRegistry gameState)
+      systemEffectComputations = fmap extractComputation systemEffectConfigs
+      postExecutionComputations = fmap _systemEffectManagement systemEffectConfigs
       composedSystemEffects = sequence_ systemEffectComputations
-      resetSystemEffectRegistry :: GameComputation Identity ()
-      resetSystemEffectRegistry = modify' $ \gs -> gs { _systemEffectRegistry = Data.Map.Strict.empty }
+      composedPostExecution = sequence_ postExecutionComputations
 
-  toGameComputation sentence >> composedSystemEffects >> resetSystemEffectRegistry
+  composedSystemEffects
+  composedPostExecution
+  where
+    extractComputation :: SystemEffectConfig -> GameComputation Identity ()
+    extractComputation config = case _systemEffect config of
+      PerceptionSystemEffect computation -> computation
 
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do

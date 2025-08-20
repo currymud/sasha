@@ -8,15 +8,16 @@ import qualified Data.Set
 import           GameState                  (getLocationObjectIDsM, getPlayerM)
 import           GameState.ActionManagement (lookupSomaticAccess,
                                              processEffectsFromRegistry)
-import           GameState.EffectRegistry   (lookupEffectsInRegistry)
+import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
 import           Model.GameState            (ActionEffectKey (LocationKey, PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
                                              ActionKey (SomaticAccessActionKey),
                                              ActionMaps (_somaticStimulusActionMap),
-                                             Config (_actionMaps),
+                                             Config (_actionMaps, _systemEffectMap),
                                              GameComputation,
                                              Player (_location, _playerActions),
-                                             SomaticAccessActionF (SomaticAccessActionF))
+                                             SomaticAccessActionF (SomaticAccessActionF),
+                                             SystemEffectConfig (_systemEffect))
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 
 
@@ -27,11 +28,13 @@ manageSomaticAccessProcess sav = do
     Nothing -> error "Programmer Error: No somatic access action found for verb: "
     Just actionGID -> do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
+      systemEffectMaps <- asks _systemEffectMap
+      let actionMapLookup = Data.Map.Strict.lookup actionGID actionMap
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No somatic access action found for GID: "
         Just (SomaticAccessActionF actionFunc) -> do
           let actionKey = SomaticAccessActionKey actionGID
-          maybeEffectMap <- lookupEffectsInRegistry actionKey
+          maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
             Nothing -> error $ "Programmer Error: No effects registered for somatic access action"
             Just (ActionEffectMap effectMap) -> do

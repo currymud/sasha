@@ -14,8 +14,8 @@ modifyGlobalEffectRegistry :: (EffectRegistry -> EffectRegistry)
 modifyGlobalEffectRegistry f = modify' $ \gs ->
   gs { _effectRegistry = f (_effectRegistry gs) }
 
-lookupEffectsInRegistry :: ActionKey -> GameComputation Identity (Maybe ActionEffectMap)
-lookupEffectsInRegistry actionKey = do
+lookupActionEffectsInRegistry :: ActionKey -> GameComputation Identity (Maybe ActionEffectMap)
+lookupActionEffectsInRegistry actionKey = do
   Data.Map.Strict.lookup actionKey <$> getGlobalEffectRegistry
 
 -- Utility to register new effects
