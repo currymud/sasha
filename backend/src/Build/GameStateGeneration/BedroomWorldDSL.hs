@@ -28,6 +28,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           withDescriptives,
                                                                           withLocationBehavior,
                                                                           withObjectBehavior,
+                                                                          withPlayerBehaviors,
                                                                           withPlayerLocation,
                                                                           withShortName,
                                                                           withTitle)
@@ -97,6 +98,8 @@ import           Build.Identifiers.Actions                               (agentC
 
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
                                                                           pitchBlackFGID)
+
+
 
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
@@ -225,16 +228,14 @@ bedroomLoc = defaultLocation & bedroomLoc'
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID =
      (withPlayerLocation defaultPlayer bedroomGID)
-
-      {-
-    >=> withPlayerBehaviors
+       & withPlayerBehaviors
           [ ISAManagementKey isaLook isaEnabledLookGID
           , ISAManagementKey inventory checkInventoryGID
           , DSAManagementKey look dsvEnabledLookGID
           , CAManagementKey takePillCVP pillTooFarFGID
           , SSAManagementKey saOpen openEyesGID
           ]
--}
+
 -- ============================================================================
 -- MAIN DSL PROGRAM
 -- =============================================================================

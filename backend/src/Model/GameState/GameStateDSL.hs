@@ -3,6 +3,7 @@
 
 module Model.GameState.GameStateDSL where
 
+import           Control.Monad                 (foldM)
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
@@ -179,6 +180,9 @@ withLocationBehavior = WithLocationBehavior
 
 withPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 withPlayerBehavior = WithPlayerBehavior
+
+withPlayerBehaviors :: Player -> [ActionManagement] -> WorldDSL Player
+withPlayerBehaviors = foldM withPlayerBehavior
 
 -- Effect creation - now clean
 createImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
