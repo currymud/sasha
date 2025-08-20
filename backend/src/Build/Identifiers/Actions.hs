@@ -13,7 +13,8 @@ import           Build.Identifiers.Objects                               (chairG
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
-import           Build.BedPuzzle.Actions.Locations.Look                  (pitchBlackF)
+import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
+                                                                          pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChairF,
                                                                           whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
@@ -94,10 +95,8 @@ getFromRobeF = getFromSupportF robeGID
 makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| pitchBlackF |], 2),
                                       ([| isaEnabledLook |], 3),
-                                      ([| checkInventory |], 4)]
--- makeImplicitStimulusActionGIDsAndMap [
- --                                     ([| pitchBlackF |],1),
- --                                     ([| isaEnabledLook |], 2)]
+                                      ([| checkInventory |], 4),
+                                      ([| lookF |],5)]
 
 -- Directional Stimulus Actions with manual GID assignment
 makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),

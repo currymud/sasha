@@ -288,8 +288,6 @@ bedroomWorldDSL = do
   openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
   linkEffectToLocation bedroomGID openEyesSomaticEffect
 
-
-
   -- Complete spatial relationships
   registerSpatial chairGID (Supports (Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
@@ -320,7 +318,6 @@ bedroomWorldDSL = do
   displayAction <- displayVisibleObjects
   linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
 
-  registerLocation bedroomGID bedroomLoc
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID
   registerPlayer player
