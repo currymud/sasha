@@ -231,10 +231,10 @@ buildBedroomPlayer bedroomGID = do
         & withPlayerLocation bedroomGID
         & withPlayerBehaviors
             [ ISAManagementKey isaLook isaEnabledLookGID
---            , ISAManagementKey inventory checkInventoryGID
---            , DSAManagementKey look dsvEnabledLookGID
---            , CAManagementKey takePillCVP pillTooFarFGID
---            , SSAManagementKey saOpen openEyesGID
+            , ISAManagementKey inventory checkInventoryGID
+            , DSAManagementKey look dsvEnabledLookGID
+            , CAManagementKey takePillCVP pillTooFarFGID
+            , SSAManagementKey saOpen openEyesGID
             ]
   return player
 
@@ -246,7 +246,7 @@ bedroomWorldDSL :: WorldDSL GameState
 bedroomWorldDSL = do
   -- Declare GIDs using semantic wrappers
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
-    {-
+
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   tableGID <- declareObjectGID (DescriptiveNounPhraseDet the small tableDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
@@ -263,9 +263,9 @@ bedroomWorldDSL = do
   registerObject robeGID robeObj
   registerObject pocketGID pocketObj
   registerObject floorGID floorObj
--}
+
   -- Create and link effects for game actions
-  {-
+
   chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
   linkEffectToObject chairGID chairLookEffect
 
@@ -289,9 +289,9 @@ bedroomWorldDSL = do
 
   openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
   linkEffectToLocation bedroomGID openEyesSomaticEffect
--}
 
-  {-
+
+
   -- Complete spatial relationships
   registerSpatial chairGID (Supports (Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
@@ -321,7 +321,7 @@ bedroomWorldDSL = do
     ]
   displayAction <- displayVisibleObjects
   linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
-  -}
+
   registerLocation bedroomGID bedroomLoc
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID
