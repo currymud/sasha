@@ -66,6 +66,7 @@ module Model.GameState (
   , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
   , SystemEffect (PerceptionSystemEffect)
+  , SystemEffectKey (SystemLocationKey, SystemObjectKey, SystemPlayerKey)
   , SystemEffectRegistry
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
@@ -183,7 +184,11 @@ type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
+  { _somaticAccessAction :: Set ActionEffectKey
+                              -> Set SystemEffectKey
+                              -> ActionEffectMap
+                              -> SystemEffectRegistry
+                              -> GameComputation Identity () }
 
 type PosturalActionF :: Type
 newtype PosturalActionF = PosturalActionF
@@ -238,6 +243,13 @@ data ActionEffectKey
   | PlayerKey PlayerKey
   deriving stock (Show, Eq, Ord)
 
+type SystemEffectKey :: Type
+data SystemEffectKey
+  = SystemLocationKey (GID Location)
+  | SystemObjectKey (GID Object)
+  | SystemPlayerKey PlayerKey
+  deriving stock (Show, Eq, Ord)
+
 type PlayerKey :: Type
 data PlayerKey
   = PlayerKeyLocation (GID Location)
@@ -270,7 +282,7 @@ type EffectRegistry :: Type
 type EffectRegistry = Map ActionKey ActionEffectMap
 
 type SystemEffectRegistry :: Type
-type SystemEffectRegistry = Map ActionKey SystemEffect
+type SystemEffectRegistry = Map SystemEffectKey (Set SystemEffect)
 
 type ActionEffect :: Type
 data ActionEffect

@@ -21,14 +21,15 @@ import           Model.GameState               (AcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 GameComputation,
-                                                GameState (_player),
+                                                GameState (_player, _systemEffectRegistry),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Object (_objectActionManagement),
                                                 Player (_playerActions),
                                                 PlayerKey (PlayerKeyObject),
                                                 PosturalActionF,
-                                                SomaticAccessActionF)
+                                                SomaticAccessActionF,
+                                                SystemEffect, SystemEffectKey)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
@@ -50,6 +51,19 @@ modifyLocationActionManagementM :: GID Location
 modifyLocationActionManagementM lid actionF = do
   modifyLocationM lid $ \loc ->
     loc { _locationActionManagement = actionF (_locationActionManagement loc) }
+
+registerSystemEffect :: SystemEffectKey -> SystemEffect -> GameComputation Identity ()
+registerSystemEffect systemKey systemEffect = do
+  modify' $ \gs -> gs  -- {
+--    _systemEffectRegistry = Data.Map.Strict.insert systemKey systemEffect (_systemEffectRegistry gs)
+--
+--  }
+
+removeSystemEffect :: SystemEffectKey -> GameComputation Identity ()
+removeSystemEffect systemKey = do
+  modify' $ \gs -> gs {
+    _systemEffectRegistry = Data.Map.Strict.delete systemKey (_systemEffectRegistry gs)
+  }
 
 modifyObjectActionManagementM :: GID Object
                               -> (ActionManagementFunctions -> ActionManagementFunctions)
