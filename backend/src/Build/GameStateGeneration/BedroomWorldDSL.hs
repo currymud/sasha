@@ -227,14 +227,14 @@ bedroomLoc = defaultLocation & bedroomLoc'
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID =
-     (withPlayerLocation defaultPlayer bedroomGID)
-       & withPlayerBehaviors
-          [ ISAManagementKey isaLook isaEnabledLookGID
-          , ISAManagementKey inventory checkInventoryGID
-          , DSAManagementKey look dsvEnabledLookGID
-          , CAManagementKey takePillCVP pillTooFarFGID
-          , SSAManagementKey saOpen openEyesGID
-          ]
+     withPlayerLocation defaultPlayer bedroomGID
+       >>= (\player -> withPlayerBehaviors player
+                         [ ISAManagementKey isaLook isaEnabledLookGID
+                         , ISAManagementKey inventory checkInventoryGID
+                         , DSAManagementKey look dsvEnabledLookGID
+                         , CAManagementKey takePillCVP pillTooFarFGID
+                         , SSAManagementKey saOpen openEyesGID
+                         ])
 
 -- ============================================================================
 -- MAIN DSL PROGRAM
