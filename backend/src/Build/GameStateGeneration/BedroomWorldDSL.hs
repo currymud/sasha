@@ -93,10 +93,10 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           takePillFGID,
                                                                           whatPillGID)
 -}
-  {-
+
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
                                                                           pitchBlackFGID)
--}
+
 
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
@@ -123,11 +123,6 @@ import           Relude.Function                                         ((&))
 
 
 
-testPitchBlackFGID :: GID ImplicitStimulusActionF
-testPitchBlackFGID = GID 1
-
-testIsaEnabledLookGID :: GID ImplicitStimulusActionF
-testIsaEnabledLookGID = GID 2
 -- =============================================================================
 -- VERB PHRASES
 -- =============================================================================
@@ -229,14 +224,14 @@ bedroomLoc :: WorldDSL Location
 bedroomLoc = defaultLocation & bedroomLoc'
   where
     bedroomLoc' = withTitle "bedroom in bed"
-                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook testPitchBlackFGID))
+                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackFGID))
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
 buildBedroomPlayer bedroomGID = do
   let player = defaultPlayer
         & withPlayerLocation bedroomGID
         & withPlayerBehaviors
-            [ ISAManagementKey isaLook testPitchBlackFGID
+            [ ISAManagementKey isaLook isaEnabledLookGID
 --            , ISAManagementKey inventory checkInventoryGID
 --            , DSAManagementKey look dsvEnabledLookGID
 --            , CAManagementKey takePillCVP pillTooFarFGID

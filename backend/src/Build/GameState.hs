@@ -1,9 +1,7 @@
 module Build.GameState where
 
 import           Actions.Percieve.Look                                (isvActionEnabled)
-import           Build.GameStateGeneration.BedroomWorldDSL            (bedroomWorldDSL,
-                                                                       testIsaEnabledLookGID,
-                                                                       testPitchBlackFGID)
+import           Build.GameStateGeneration.BedroomWorldDSL            (bedroomWorldDSL)
 import           Build.GameStateGeneration.EDSL.GameStateBuilder      (WorldBuilder,
                                                                        initialBuilderState,
                                                                        interpretDSL,
@@ -13,8 +11,10 @@ import           Build.GameStateGeneration.ObjectSpec                 (defaultPl
 import           Build.Identifiers.Actions                            (acquisitionActionMap,
                                                                        consumptionActionMap,
                                                                        directionalStimulusActionMap,
+                                                                       implicitStimulusActionMap,
                                                                        posturalActionMap,
                                                                        somaticAccessActionMap)
+import           Control.Monad.State                                  (MonadState (get))
 import qualified Data.Map.Strict
 import           Data.Text                                            (Text)
 import           Evaluators.Player.General                            (eval)
@@ -47,20 +47,8 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
       , _narration = defaultNarration
       }
 
-testPitchBlackF :: ImplicitStimulusActionF
-testPitchBlackF = ImplicitStimulusActionF $ \_ _ ->
- error "hey" --  modifyNarration $ updateActionConsequence "TEST: It's pitch black, you can't see a thing."
-
-
-
 testIsaEnabledLook :: ImplicitStimulusActionF
 testIsaEnabledLook = isvActionEnabled Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb.look
-
-testImplicitStimulusActionMap :: ImplicitStimulusActionMap
-testImplicitStimulusActionMap = Data.Map.Strict.fromList
-  [ (testPitchBlackFGID, testPitchBlackF)
-  , (testIsaEnabledLookGID, testIsaEnabledLook)
-  ]
 
 defaultNarration :: Narration
 defaultNarration = Narration ["Let's begin" :: Text] mempty
@@ -72,9 +60,19 @@ config = Config
   where
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
-                   (Data.Map.Strict.keys testImplicitStimulusActionMap `deepseq` testImplicitStimulusActionMap)
+                   (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)
                    directionalStimulusActionMap
                    somaticAccessActionMap
                    acquisitionActionMap
                    consumptionActionMap
                    posturalActionMap
+                     {-
+    actionMaps :: ActionMaps
+    actionMaps = ActionMaps
+                   (Data.Map.Strict.keys testImplicitStimulusActionMap `deepseq` testImplicitStimulusActionMap)
+                     (Data.Map.Strict.keys directionalStimulusActionMap `deepseq` directionalStimulusActionMap)
+ --                  (Data.Map.Strict.keys somaticAccessActionMap `deepseq` somaticAccessActionMap)
+ --                  (Data.Map.Strict.keys acquisitionActionMap `deepseq` acquisitionActionMap)
+ --                  (Data.Map.Strict.keys consumptionActionMap `deepseq` consumptionActionMap)
+                   (Data.Map.Strict.keys posturalActionMap `deepseq` posturalActionMap)
+                   -}

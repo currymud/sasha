@@ -1,7 +1,7 @@
 module TopLevel where
 import           Control.Monad.Identity    (Identity)
 import           Control.Monad.IO.Class    (MonadIO (liftIO))
-import           Control.Monad.State       (get)
+import           Control.Monad.State       (get, modify')
 import           Control.Monad.State.Class (gets, put)
 import           Data.Kind                 (Type)
 import qualified Data.Map.Strict
@@ -45,7 +45,7 @@ runGame comp' = do
   attSentence <- trySentence <$> liftIO getInput
   case attSentence of
     Left err       -> runGame $ errorHandler err
-    Right sentence ->transformToIO $ processWithSystemEffects sentence
+    Right sentence -> runGame $ processWithSystemEffects sentence
 
 processWithSystemEffects :: Sentence -> GameComputation Identity ()
 processWithSystemEffects sentence = do
@@ -53,7 +53,8 @@ processWithSystemEffects sentence = do
   let systemEffectComputations =  (\(PerceptionSystemEffect computation) -> computation) `fmap`  Data.Map.Strict.elems (_systemEffectRegistry gameState)
       composedSystemEffects = sequence_ systemEffectComputations
       resetSystemEffectRegistry :: GameComputation Identity ()
-      resetSystemEffectRegistry = put gameState { _systemEffectRegistry = Data.Map.Strict.empty }
+      resetSystemEffectRegistry = modify' $ \gs -> gs { _systemEffectRegistry = Data.Map.Strict.empty }
+
   toGameComputation sentence >> composedSystemEffects >> resetSystemEffectRegistry
 
 toGameComputation :: Sentence -> GameComputation Identity ()

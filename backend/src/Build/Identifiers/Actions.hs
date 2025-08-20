@@ -90,12 +90,11 @@ getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
 
 -- Implicit Stimulus Actions with manual GID assignment
-{-
+
 makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| pitchBlackF |], 2),
                                       ([| isaEnabledLook |], 3),
                                       ([| checkInventory |], 4)]
-                                      -}
 -- makeImplicitStimulusActionGIDsAndMap [
  --                                     ([| pitchBlackF |],1),
  --                                     ([| isaEnabledLook |], 2)]
@@ -153,4 +152,3 @@ makeSomaticAccessActionGIDsAndMap [([| openEyes |], 1),
 -- Postural Actions with manual GID assignment
 makePosturalActionGIDsAndMap [([| standUp |], 1),
                               ([| standDenied |], 2)]
-
