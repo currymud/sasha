@@ -395,13 +395,8 @@ interpretDSL (WithTitle text loc) = do
 
 -- Player management
 
-interpretDSL (WithPlayerLocation locGID) = do
-  state <- get
-  -- Validate the location GID exists
-  let currentPlayer = _player (_gameState state)
-      updatedPlayer = currentPlayer { _location = locGID }
-      updatedGameState = (_gameState state) { _player = updatedPlayer }
-  put state { _gameState = updatedGameState }
+interpretDSL (WithPlayerLocation player locGID) =
+  pure ( player { _location = locGID })
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()

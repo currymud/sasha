@@ -80,7 +80,7 @@ data WorldDSL :: Type -> Type where
   SetEvaluator :: Evaluator -> WorldDSL ()
   SetInitialNarration :: Text -> WorldDSL ()
   -- Player management - now take direct values
-  WithPlayerLocation :: GID Location -> WorldDSL ()  -- NEW: Clean player location setting
+  WithPlayerLocation :: Player -> GID Location -> WorldDSL Player -- NEW: Clean player location setting
 
   WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
   WithLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
@@ -167,7 +167,7 @@ createNPManagement = CreateNPManagement
 
 
 -- NEW: Clean player location setting
-withPlayerLocation :: GID Location -> WorldDSL ()
+withPlayerLocation :: Player -> GID Location ->  WorldDSL Player
 withPlayerLocation = WithPlayerLocation
 
 

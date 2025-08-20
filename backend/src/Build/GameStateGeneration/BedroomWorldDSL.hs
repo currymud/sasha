@@ -28,12 +28,14 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           withDescriptives,
                                                                           withLocationBehavior,
                                                                           withObjectBehavior,
+                                                                          withPlayerLocation,
                                                                           withShortName,
                                                                           withTitle)
 import           Model.GID                                               (GID (GID))
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
 import           Prelude                                                 hiding
                                                                          (take)
+
 
 -- Import semantic wrappers - DirectionalStimulus versions
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroomDS,
@@ -96,7 +98,6 @@ import           Build.Identifiers.Actions                               (agentC
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
                                                                           pitchBlackFGID)
 
-
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
@@ -107,13 +108,9 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
-import           Build.GameStateGeneration.ObjectSpec                    (defaultLocation,
+import           Build.GameStateGeneration.Defaults                      (defaultLocation,
                                                                           defaultObject,
-                                                                          defaultPlayer,
-                                                                          withLocationBehaviors,
-                                                                          withObjects,
-                                                                          withPlayerBehaviors,
-                                                                          withPlayerLocation)
+                                                                          defaultPlayer)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
@@ -226,18 +223,18 @@ bedroomLoc = defaultLocation & bedroomLoc'
                     >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackFGID))
 
 buildBedroomPlayer :: GID Location -> WorldDSL Player
-buildBedroomPlayer bedroomGID = do
-  let player = defaultPlayer
-        & withPlayerLocation bedroomGID
-        & withPlayerBehaviors
-            [ ISAManagementKey isaLook isaEnabledLookGID
-            , ISAManagementKey inventory checkInventoryGID
-            , DSAManagementKey look dsvEnabledLookGID
-            , CAManagementKey takePillCVP pillTooFarFGID
-            , SSAManagementKey saOpen openEyesGID
-            ]
-  return player
+buildBedroomPlayer bedroomGID =
+     (withPlayerLocation defaultPlayer bedroomGID)
 
+      {-
+    >=> withPlayerBehaviors
+          [ ISAManagementKey isaLook isaEnabledLookGID
+          , ISAManagementKey inventory checkInventoryGID
+          , DSAManagementKey look dsvEnabledLookGID
+          , CAManagementKey takePillCVP pillTooFarFGID
+          , SSAManagementKey saOpen openEyesGID
+          ]
+-}
 -- ============================================================================
 -- MAIN DSL PROGRAM
 -- =============================================================================

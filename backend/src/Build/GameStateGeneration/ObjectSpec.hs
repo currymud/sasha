@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Build.GameStateGeneration.ObjectSpec where
-
+  {-
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           Data.Text                     (Text)
@@ -20,34 +20,6 @@ import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (D
 import           Model.Parser.GCase            (NounKey)
 
 
-defaultObject :: Object
-defaultObject = Object
-  { _shortName = ""
-  , _description = ""
-  , _descriptives = Data.Set.empty
-  , _objectActionManagement = ActionManagementFunctions Data.Set.empty
-  }
-
-defaultLocation :: Location
-defaultLocation = Location
-  { _title = ""
-  , _objectSemanticMap = Data.Map.Strict.empty
-  , _locationActionManagement = ActionManagementFunctions Data.Set.empty
-  }
-
-defaultWorld :: World
-defaultWorld = World
-  { _objectMap = GIDToDataMap Data.Map.Strict.empty
-  , _locationMap = GIDToDataMap Data.Map.Strict.empty
-  , _perceptionMap = mempty
-  , _spatialRelationshipMap = SpatialRelationshipMap Data.Map.Strict.empty
-  }
-
-defaultPlayer :: Player
-defaultPlayer = Player
-  { _location = GID 0  -- Will be overridden
-  , _playerActions = ActionManagementFunctions Data.Set.empty
-  }
 
 -- | Builder functions for Object fields
 withShortName :: Text -> Object -> Object
@@ -85,3 +57,4 @@ withPlayerLocation locGID player = player { _location = locGID }
 withPlayerBehaviors :: [ActionManagement] -> Player -> Player
 withPlayerBehaviors behaviors player = player
   { _playerActions = ActionManagementFunctions (Data.Set.fromList behaviors) }
+  -}
