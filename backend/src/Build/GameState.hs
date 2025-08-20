@@ -13,10 +13,11 @@ import           Build.Identifiers.Actions                       (acquisitionAct
                                                                   implicitStimulusActionMap,
                                                                   posturalActionMap,
                                                                   somaticAccessActionMap)
+import           Build.Identifiers.Effects                       (systemEffectMap)
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
-                                                                  Config (Config, _actionMaps),
+                                                                  Config (Config, _actionMaps, _systemEffectMap),
                                                                   GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
@@ -40,6 +41,7 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
 config :: Config
 config = Config
   { _actionMaps = actionMaps
+  , _systemEffectMap = systemEffectMap
   }
   where
     actionMaps :: ActionMaps

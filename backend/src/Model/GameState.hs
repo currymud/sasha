@@ -25,7 +25,7 @@ module Model.GameState (
   , AcquisitionActionF (AcquisitionActionF,CollectedF,LosesObjectF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
-  , Config (Config, _actionMaps)
+  , Config (Config, _actionMaps, _systemEffectMap)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
@@ -66,7 +66,9 @@ module Model.GameState (
   , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
   , SpatialRelationshipMap (SpatialRelationshipMap, _spatialRelationshipMap)
   , SystemEffect (PerceptionSystemEffect)
+  , SystemEffectConfig (SystemEffectConfig, _systemEffect, _systemEffectManagement)
   , SystemEffectKey (SystemLocationKey, SystemObjectKey, SystemPlayerKey)
+  , SystemEffectMap
   , SystemEffectRegistry
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
@@ -281,8 +283,17 @@ data Effect
 type EffectRegistry :: Type
 type EffectRegistry = Map ActionKey ActionEffectMap
 
+type SystemEffectConfig :: Type
+data SystemEffectConfig = SystemEffectConfig
+  { _systemEffect           :: SystemEffect
+  , _systemEffectManagement :: GameComputation Identity ()
+  }
+
 type SystemEffectRegistry :: Type
-type SystemEffectRegistry = Map SystemEffectKey (Set SystemEffect)
+type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
+
+type SystemEffectMap :: Type
+type SystemEffectMap = Map (GID SystemEffect) SystemEffect
 
 type ActionEffect :: Type
 data ActionEffect
@@ -309,7 +320,8 @@ newtype ActionKeyMap = ActionKeyMap
 
 type Config :: Type
 data Config = Config
-  { _actionMaps             :: ActionMaps
+  { _actionMaps      :: ActionMaps
+  , _systemEffectMap :: SystemEffectMap
   }
 
 type GameState :: Type

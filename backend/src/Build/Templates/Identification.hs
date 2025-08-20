@@ -15,7 +15,7 @@ import           Model.GameState          (AcquisitionActionF,
                                            ImplicitStimulusActionF, Location,
                                            Object, PosturalActionF,
                                            ProcessImplicitStimulusVerb,
-                                           SomaticAccessActionF)
+                                           SomaticAccessActionF, SystemEffect)
 import           Model.GameState.Mappings (GIDToDataMap (GIDToDataMap))
 import           Model.GID                (GID (GID))
 import           Model.Label              (Label (Label))
@@ -41,6 +41,14 @@ makeObjectGIDsFromNames names = do
 -- MANUAL GID ASSIGNMENT FUNCTIONS (UPDATED PATTERN)
 -- =============================================================================
 
+makeSystemEffectGIDsAndMap :: [(ExpQ, Int)] -> Q [Dec]
+makeSystemEffectGIDsAndMap expGidPairs = do
+  pairs <- mapM (\(expQ, gid) -> (,gid) <$> expQ) expGidPairs
+
+  gidDecls <- concat <$> mapM (makeGIDForType ''SystemEffect) pairs
+  mapDecl <- makeMapForType ''SystemEffect "systemEffectMap" pairs
+
+  pure (gidDecls ++ [mapDecl])
 -- Updated: All functions now use manual GID assignment like makeAcquisitionActionGIDsAndMap
 
 makeImplicitStimulusActionGIDsAndMap :: [(ExpQ, Int)] -> Q [Dec]

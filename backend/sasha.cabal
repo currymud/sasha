@@ -75,6 +75,7 @@ library
       Build.BedPuzzle.Actions.Objects.Robe.Get
       Build.BedPuzzle.Actions.Objects.Robe.Look
       Build.BedPuzzle.Actions.Objects.Table.Look
+      Build.BedPuzzle.Effects.Perception.Look
       Build.GameStateGeneration.BedroomWorldDSL
       Build.GameStateGeneration.BedroomWorldSpec
       Build.GameStateGeneration.Defaults
@@ -88,6 +89,7 @@ library
       Build.GameStateGeneration.WorldGeneration
       Build.GameStateGeneration.WorldBuilder
       Build.Identifiers.Actions
+      Build.Identifiers.Effects
       Build.Identifiers.Objects
       Build.Identifiers.SentenceProcessing
       Build.Templates.Identification

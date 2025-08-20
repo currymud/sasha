@@ -29,7 +29,9 @@ import           Model.GameState               (AcquisitionActionF,
                                                 PlayerKey (PlayerKeyObject),
                                                 PosturalActionF,
                                                 SomaticAccessActionF,
-                                                SystemEffect, SystemEffectKey)
+                                                SystemEffect,
+                                                SystemEffectConfig (SystemEffectConfig, _systemEffectManagement),
+                                                SystemEffectKey, _systemEffect)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
@@ -52,18 +54,15 @@ modifyLocationActionManagementM lid actionF = do
   modifyLocationM lid $ \loc ->
     loc { _locationActionManagement = actionF (_locationActionManagement loc) }
 
-registerSystemEffect :: SystemEffectKey -> SystemEffect -> GameComputation Identity ()
-registerSystemEffect systemKey systemEffect = do
-  modify' $ \gs -> gs  -- {
---    _systemEffectRegistry = Data.Map.Strict.insert systemKey systemEffect (_systemEffectRegistry gs)
---
---  }
 
-removeSystemEffect :: SystemEffectKey -> GameComputation Identity ()
-removeSystemEffect systemKey = do
-  modify' $ \gs -> gs {
-    _systemEffectRegistry = Data.Map.Strict.delete systemKey (_systemEffectRegistry gs)
-  }
+registerSystemEffect :: SystemEffectKey
+                          -> SystemEffectConfig
+                          -> GameComputation Identity ()
+registerSystemEffect key config = modify' $ \gs ->
+  let currentRegistry = _systemEffectRegistry gs
+      updatedRegistry = Data.Map.Strict.insertWith (++) key [config] currentRegistry
+  in gs { _systemEffectRegistry = updatedRegistry }
+
 
 modifyObjectActionManagementM :: GID Object
                               -> (ActionManagementFunctions -> ActionManagementFunctions)

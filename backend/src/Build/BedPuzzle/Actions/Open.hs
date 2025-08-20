@@ -30,10 +30,10 @@ openEyes = SomaticAccessActionF opened
  where
    opened :: Set ActionEffectKey
              -> Set SystemEffectKey
-             ->  SystemEffectRegistry
              ->  ActionEffectMap
+             ->  SystemEffectRegistry
              -> GameComputation Identity ()
-   opened actionEffectKeys _ _ (ActionEffectMap actionEffectMap) = do
+   opened actionEffectKeys _ (ActionEffectMap actionEffectMap)_ = do
      modifyNarration (updateActionConsequence msg)
 
 msg :: Text
