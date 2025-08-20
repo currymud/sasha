@@ -320,8 +320,9 @@ newtype ActionKeyMap = ActionKeyMap
 
 type Config :: Type
 data Config = Config
-  { _actionMaps      :: ActionMaps
-  , _systemEffectMap :: SystemEffectMap
+  { _actionMaps             :: ActionMaps
+  , _systemEffectMap        :: SystemEffectMap
+  , _actionSystemEffectKeys :: Map ActionKey [SystemEffectKey]
   }
 
 type GameState :: Type
