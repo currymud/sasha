@@ -13,7 +13,7 @@ import           Build.Identifiers.Objects                               (chairG
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
 import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
-import           Build.BedPuzzle.Actions.Look                            (pitchBlackF)
+import           Build.BedPuzzle.Actions.Locations.Look                  (pitchBlackF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChairF,
                                                                           whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)

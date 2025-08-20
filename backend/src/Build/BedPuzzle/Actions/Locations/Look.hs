@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Look where
+module Build.BedPuzzle.Actions.Locations.Look where
 import           Actions.Percieve.Look (agentCannotSee)
 import           Data.Text             (Text)
 import           GameState             (modifyNarration)
@@ -11,3 +11,5 @@ pitchBlackF = ImplicitStimulusActionF (const (const (modifyNarration $ updateAct
   where
     pitchBlack :: Text
     pitchBlack = "It's pitch black, you can't see a thing."
+
+-- lookF :: ImplicitStimulusActionF

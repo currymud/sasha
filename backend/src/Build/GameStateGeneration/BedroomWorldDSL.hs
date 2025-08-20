@@ -69,7 +69,7 @@ import           Model.GameState                                         (Action
                                                                           Player,
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
-                                                                            {-
+
 -- Import action GIDs
 import           Build.Identifiers.Actions                               (agentCanSeeGID,
                                                                           checkInventoryGID,
@@ -92,7 +92,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
                                                                           whatPillGID)
--}
 
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
                                                                           pitchBlackFGID)
@@ -139,7 +138,7 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 -- =============================================================================
 -- OBJECT BUILDERS
 -- =============================================================================
-  {-
+
 chairObj :: WorldDSL Object
 chairObj =
   defaultObject & chairObj'
@@ -209,7 +208,7 @@ floorObj =  defaultObject & floorObj'
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seeFloorFGID))
 
 
--}
+
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================

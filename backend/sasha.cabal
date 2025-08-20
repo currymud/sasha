@@ -57,12 +57,12 @@ library
       Actions.Percieve.Look
       Build.GameState
       Build.BedPuzzle.Actions.Inventory
-      Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
       Build.BedPuzzle.Actions.Get.Constructors
       Build.BedPuzzle.Actions.Stand
       Build.BedPuzzle.Actions.Take
+      Build.BedPuzzle.Actions.Locations.Look
       Build.BedPuzzle.Actions.Objects.Chair.Look
       Build.BedPuzzle.Actions.Objects.Floor.Look
       Build.BedPuzzle.Actions.Objects.Floor.Get

@@ -1,31 +1,15 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
 module Build.BedPuzzle.Actions.Open where
-import           Control.Monad.Error.Class     (throwError)
-import           Control.Monad.Identity        (Identity)
-import qualified Data.Map.Strict
-import           Data.Set                      (Set, filter, insert, toList)
-import           Data.Text                     (Text, pack)
-import           GameState                     (modifyLocationM,
-                                                modifyNarration,
-                                                processAcquisitionEffect,
-                                                processPosturalEffect)
-import           GameState.Perception          (buildPerceptionMapFromObjects,
-                                                computePerceivableObjects,
-                                                modifyPerceptionMapM, youSeeM)
-import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
-                                                ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
-                                                ActionManagementFunctions (ActionManagementFunctions),
-                                                Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
-                                                GameComputation,
-                                                Location (_locationActionManagement),
-                                                SomaticAccessActionF (SomaticAccessActionF),
-                                                updateActionConsequence)
-import           Model.Parser.Atomics.Nouns    (Consumable (Consumable))
-import           Model.Parser.Composites.Nouns (NounPhrase (SimpleNounPhrase))
-import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (ConsumptionVerbPhrase))
-import           Relude.String                 (ToText (toText))
+import           Control.Monad.Identity (Identity)
+import           Data.Set               (Set)
+import           Data.Text              (Text)
+import           GameState              (modifyNarration)
+import           Model.GameState        (ActionEffectKey (PlayerKey),
+                                         ActionEffectMap (ActionEffectMap),
+                                         GameComputation,
+                                         SomaticAccessActionF (SomaticAccessActionF),
+                                         updateActionConsequence)
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = SomaticAccessActionF (const (const denied))

@@ -61,11 +61,11 @@ config = Config
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
                    (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)
-                   directionalStimulusActionMap
-                   somaticAccessActionMap
-                   acquisitionActionMap
-                   consumptionActionMap
-                   posturalActionMap
+                   (Data.Map.Strict.keys directionalStimulusActionMap `deepseq` directionalStimulusActionMap)
+                   (Data.Map.Strict.keys somaticAccessActionMap `deepseq` somaticAccessActionMap)
+                   (Data.Map.Strict.keys acquisitionActionMap `deepseq` acquisitionActionMap)
+                   (Data.Map.Strict.keys consumptionActionMap `deepseq` consumptionActionMap)
+                   (Data.Map.Strict.keys posturalActionMap `deepseq` posturalActionMap)
                      {-
     actionMaps :: ActionMaps
     actionMaps = ActionMaps

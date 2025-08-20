@@ -313,7 +313,6 @@ interpretDSL (SetPerceptionMap perceptionEntries) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
 
-
 interpretDSL (LinkSystemEffectToAction actionKey sysEffect) = do
   state <- get
   let currentLinks = _systemEffectLinks state
