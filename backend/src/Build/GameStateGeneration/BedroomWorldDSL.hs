@@ -4,7 +4,9 @@ module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
 import           Model.GameState                                         (ImplicitStimulusActionF,
-                                                                          SystemEffect (PerceptionSystemEffect))
+                                                                          SystemEffect (PerceptionSystemEffect),
+                                                                          SystemEffectConfig (SystemEffectConfig),
+                                                                          SystemEffectKey (SystemLocationKey))
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionPhraseEffect,
                                                                           createConsumptionEffect,
@@ -15,6 +17,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           declareObjectGID,
                                                                           displayVisibleObjects,
                                                                           finalizeGameState,
+                                                                          linkActionKeyToSystemEffect,
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
                                                                           linkEffectToPlayer,
@@ -23,6 +26,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerObjectToLocation,
                                                                           registerPlayer,
                                                                           registerSpatial,
+                                                                          registerSystemEffect,
                                                                           withDescription,
                                                                           withDescriptives,
                                                                           withLocationBehavior,
@@ -113,8 +117,10 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen
 import           Build.GameStateGeneration.Defaults                      (defaultLocation,
                                                                           defaultObject,
                                                                           defaultPlayer)
+import           Build.Identifiers.Effects                               (youSeeMEffectGID)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
+import           GameState.ActionManagement                              (removeSystemEffect)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Relude.Function                                         ((&))
@@ -315,9 +321,13 @@ bedroomWorldDSL = do
     , (floorGID, ObjectiveKey floorOB)
     ]
   displayAction <- displayVisibleObjects
--- linkSystemEffecttoAction is depricated
---  linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
+  let youSeeMConfig = SystemEffectConfig
+                          (PerceptionSystemEffect displayAction)
+                          (removeSystemEffect (SystemLocationKey bedroomGID) youSeeMEffectGID)
+  registerSystemEffect (SystemLocationKey bedroomGID) youSeeMEffectGID youSeeMConfig
 
+  -- Link the open eyes action to trigger the system effect
+  linkActionKeyToSystemEffect (SomaticAccessActionKey openEyesGID) (SystemLocationKey bedroomGID)
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID
   registerPlayer player

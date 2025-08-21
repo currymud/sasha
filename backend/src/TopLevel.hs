@@ -60,6 +60,7 @@ processWithSystemEffects sentence = do
 
   composedSystemEffects
   composedPostExecution
+
   where
     extractComputation :: SystemEffectConfig -> GameComputation Identity ()
     extractComputation config = case _systemEffect config of
