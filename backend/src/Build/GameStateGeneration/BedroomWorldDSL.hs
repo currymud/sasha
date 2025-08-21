@@ -283,8 +283,6 @@ bedroomWorldDSL = do
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
   robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
-  robeOpenEyesGetChangeEffect <- createAcquisitionPhraseEffect getRobeAVP dizzyGetFGID
-  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesGetChangeEffect
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
   chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
