@@ -4,9 +4,8 @@ module Build.GameStateGeneration.EDSL.GameStateBuilder where
 import           Control.Monad                 (unless, when)
 import           Control.Monad.Except          (ExceptT, MonadError, runExceptT,
                                                 throwError)
-import           Control.Monad.State           (State, evalState, get, gets,
-                                                put)
-import           Control.Monad.State.Strict    (MonadState)
+import           Control.Monad.State.Strict    (MonadState, State, evalState,
+                                                get, gets, put)
 import           Data.Kind                     (Type)
 import qualified Data.List
 import           Data.Map.Strict               (Map, elems, findWithDefault,
@@ -16,6 +15,7 @@ import           Data.Map.Strict               (Map, elems, findWithDefault,
 import           Data.Set                      (Set)
 import qualified Data.Set
 import qualified Data.Text
+import           Debug.Trace                   (trace)
 import           GameState.Perception          (youSeeM)
 import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
@@ -134,7 +134,8 @@ interpretDSL (DeclareObjectGID nounPhrase) = do
     Just existingGID -> throwError (DuplicateObjectGID existingGID "Object GID already declared")
     Nothing -> do
       newGID <- generateObjectGID
-      put state { _declaredObjectGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredObjectGIDs state) }
+      updatedState <- get  -- Get the state AFTER generateObjectGID
+      put updatedState { _declaredObjectGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredObjectGIDs updatedState) }
       pure newGID
 
 interpretDSL (DeclareObjectiveGID nounPhrase) = do
@@ -321,8 +322,18 @@ interpretDSL (SetPerceptionMap perceptionEntries) = do
         [(phrase, Data.Set.fromList gids) | (phrase, gids) <- perceptionEntries]
       updatedWorld = (_world (_gameState state)) { _perceptionMap = perceptionMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
+  trace ("SetPerceptionMap: Creating perception map with entries: " ++ show perceptionEntries) $
+    trace ("SetPerceptionMap: Resulting map: " ++ show perceptionMap) $
+      put state { _gameState = updatedGameState }
+  {-
+interpretDSL (SetPerceptionMap perceptionEntries) = do
+  state <- get
+  let perceptionMap = Data.Map.Strict.fromListWith Data.Set.union
+        [(phrase, Data.Set.fromList gids) | (phrase, gids) <- perceptionEntries]
+      updatedWorld = (_world (_gameState state)) { _perceptionMap = perceptionMap }
+      updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
-
+-}
 interpretDSL (SetEvaluator evaluator) = do
   state <- get
   let updatedGameState = (_gameState state) { _evaluation = evaluator }
@@ -435,12 +446,23 @@ validateLocationGIDDeclared gid = do
     throwError (InvalidLocationGID gid "Location GID not declared")
 
 -- Helper functions for GID generation
+  {-
 generateObjectGID :: WorldBuilder (GID Object)
 generateObjectGID = do
   state <- get
   let newGID = GID (_nextObjectGID state)
   put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
+-}
+
+generateObjectGID :: WorldBuilder (GID Object)
+generateObjectGID = do
+  state <- get
+  let newGID = GID (_nextObjectGID state)
+  trace ("generateObjectGID: current nextObjectGID: " ++ show (_nextObjectGID state) ++ ", generating: " ++ show newGID) $
+    put state { _nextObjectGID = _nextObjectGID state + 1 }
+  pure newGID
+
 
 buildEffectRegistryFromLinks :: [(Effect, ActionEffectKey)] -> EffectRegistry
 buildEffectRegistryFromLinks links =

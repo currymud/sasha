@@ -61,12 +61,20 @@ isObjectPerceivable oid = do
   anyPerceivable <- mapM queryPerceptionMap descriptives
   pure $ any (Set.member oid) anyPerceivable
 
+getAllPerceivableObjects :: GameComputation Identity (Set.Set (GID Object))
+getAllPerceivableObjects = do
+  perceptionMap <- gets (_perceptionMap . _world)
+  let result = Set.unions (Map.elems perceptionMap)
+  trace ("getAllPerceivableObjects: perception map: " ++ show perceptionMap) $
+    trace ("getAllPerceivableObjects: returning objects: " ++ show result) $
+      pure result
+    {-
 -- | Contract: Get all currently perceivable objects
 getAllPerceivableObjects :: GameComputation Identity (Set.Set (GID Object))
 getAllPerceivableObjects = do
   perceptionMap <- gets (_perceptionMap . _world)
   pure $ Set.unions (Map.elems perceptionMap)
-
+-}
 -- | Compute which objects should be perceivable based on spatial relationships
 computePerceivableObjects :: GameComputation Identity (Set.Set (GID Object))
 computePerceivableObjects = do

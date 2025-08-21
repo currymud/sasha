@@ -330,7 +330,6 @@ bedroomWorldDSL = do
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase tableDS), [tableGID])
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase robeDS), [robeGID])
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase mailDS), [mailGID])
-    , (DirectionalStimulusNounPhrase (SimpleNounPhrase floorDS), [floorGID])
     ]
   trace "Perception map has been set" $ pure ()
   displayAction <- displayVisibleObjects
