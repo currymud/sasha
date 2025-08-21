@@ -8,6 +8,7 @@ import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
 import           Model.GameState               (AcquisitionActionF,
+                                                ActionEffectKey,
                                                 ActionEffectMap, ActionKey,
                                                 ActionManagement,
                                                 ActionManagementFunctions,
@@ -108,9 +109,9 @@ data WorldDSL :: Type -> Type where
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 
-  LinkEffectToObject :: GID Object -> Effect -> WorldDSL ()
-  LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
-  LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
+  LinkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
+  LinkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
+  LinkEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
   LinkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
   DisplayVisibleObjects :: WorldDSL (GameComputation Identity ())
   -- Final assembly
@@ -212,13 +213,13 @@ createNegativePosturalEffect = CreateNegativePosturalEffect
 createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 createSomaticAccessEffect = CreateSomaticAccessEffect
 
-linkEffectToObject :: GID Object -> Effect -> WorldDSL ()
+linkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
 linkEffectToObject = LinkEffectToObject
 
-linkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
+linkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
 linkEffectToLocation = LinkEffectToLocation
 
-linkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
+linkEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
 
 linkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()

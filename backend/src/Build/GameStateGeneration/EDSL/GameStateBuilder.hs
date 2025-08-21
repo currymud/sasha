@@ -240,36 +240,32 @@ interpretDSL (LinkActionKeyToSystemEffect actionKey sysEffectKey) = do
       updatedGameState = currentGameState { _actionSystemEffectKeys = updatedRegistry }
   put state { _gameState = updatedGameState }
 
-interpretDSL (LinkEffectToObject objGID effect) = do
- state <- get
- let actionKey = extractActionKey effect
-     effectKey = ObjectKey objGID
-     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
-     ActionEffectMap currentMap = currentEffectMap
-     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
-     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
- put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+interpretDSL (LinkEffectToObject actionKey objGID effect) = do
+  state <- get
+  let effectKey = ObjectKey objGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
+interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
+  state <- get
+  let effectKey = LocationKey locGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
-interpretDSL (LinkEffectToLocation locGID effect) = do
- state <- get
- let actionKey = extractActionKey effect
-     effectKey = LocationKey locGID
-     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
-     ActionEffectMap currentMap = currentEffectMap
-     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
-     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
- put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
-
-interpretDSL (LinkEffectToPlayer playerKey effect) = do
- state <- get
- let actionKey = extractActionKey effect
-     effectKey = PlayerKey playerKey
-     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
-     ActionEffectMap currentMap = currentEffectMap
-     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
-     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
- put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+interpretDSL (LinkEffectToPlayer actionKey playerKey effect) = do
+  state <- get
+  let effectKey = PlayerKey playerKey
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
 interpretDSL FinalizeGameState = do
  gets _gameState

@@ -3,7 +3,8 @@
 module Build.GameStateGeneration.BedroomWorldDSL where
 
 import qualified Data.Set                                                as Set
-import           Model.GameState                                         (ImplicitStimulusActionF,
+import           Model.GameState                                         (ActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey),
+                                                                          ImplicitStimulusActionF,
                                                                           SystemEffect (PerceptionSystemEffect),
                                                                           SystemEffectConfig (SystemEffectConfig),
                                                                           SystemEffectKey (SystemLocationKey))
@@ -86,6 +87,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getMailDeniedFGID,
                                                                           getRobeDeniedFGID,
                                                                           isaEnabledLookGID,
+                                                                          lookFGID,
                                                                           notEvenPillGID,
                                                                           notEvenRobeGID,
                                                                           openEyesGID,
@@ -273,29 +275,29 @@ bedroomWorldDSL = do
   -- Create and link effects for game actions
 
   chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
-  linkEffectToObject chairGID chairLookEffect
+  linkEffectToObject (DirectionalStimulusActionKey seeChairFGID) chairGID chairLookEffect
 
   tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
-  linkEffectToObject tableGID tableLookEffect
+  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
 
   pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
-  linkEffectToObject pillGID pillLookEffect
+  linkEffectToObject (DirectionalStimulusActionKey whatPillGID) pillGID pillLookEffect
 
   mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
-  linkEffectToObject mailGID mailLookEffect
+  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
 
   getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP robeCollectedFGID
-  linkEffectToObject robeGID getRobeEffect
+  linkEffectToObject (AcquisitionalActionKey robeCollectedFGID) robeGID getRobeEffect
 
   takePillEffect <- createConsumptionEffect take pillGID takePillFGID
-  linkEffectToPlayer (PlayerKeyObject pillGID) takePillEffect
+  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
-  openEyesImplicitStimulusEffect <- createImplicitStimulusEffect isaLook agentCanSeeGID
-  linkEffectToLocation bedroomGID openEyesImplicitStimulusEffect
+  -- Create the effect that changes look behavior when eyes open
+  openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
 
   openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
-  linkEffectToLocation bedroomGID openEyesSomaticEffect
-
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesSomaticEffect
   -- Complete spatial relationships
   registerSpatial chairGID (Supports (Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
