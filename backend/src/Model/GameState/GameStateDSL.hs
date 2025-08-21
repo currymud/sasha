@@ -20,7 +20,9 @@ import           Model.GameState               (AcquisitionActionF,
                                                 PlayerKey, PosturalActionF,
                                                 SomaticAccessActionF,
                                                 SpatialRelationship,
-                                                SystemEffect, SystemEffectKey)
+                                                SystemEffect,
+                                                SystemEffectConfig,
+                                                SystemEffectKey)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)
@@ -93,7 +95,7 @@ data WorldDSL :: Type -> Type where
   RegisterPlayer :: Player -> WorldDSL ()
   RegisterSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
   RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
-
+  RegisterSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
@@ -107,7 +109,6 @@ data WorldDSL :: Type -> Type where
   LinkEffectToObject :: GID Object -> Effect -> WorldDSL ()
   LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
-  LinkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
   LinkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
   DisplayVisibleObjects :: WorldDSL (GameComputation Identity ())
   -- Final assembly
@@ -209,9 +210,6 @@ createNegativePosturalEffect = CreateNegativePosturalEffect
 createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 createSomaticAccessEffect = CreateSomaticAccessEffect
 
-linkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
-linkSystemEffectToAction = LinkSystemEffectToAction
-
 linkEffectToObject :: GID Object -> Effect -> WorldDSL ()
 linkEffectToObject = LinkEffectToObject
 
@@ -220,6 +218,9 @@ linkEffectToLocation = LinkEffectToLocation
 
 linkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
+
+linkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
+linkActionKeyToSystemEffect = LinkActionKeyToSystemEffect
 
 finalizeGameState :: WorldDSL GameState
 finalizeGameState = FinalizeGameState
@@ -267,6 +268,9 @@ registerSpatial = RegisterSpatial
 
 registerObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
 registerObjectToLocation = RegisterObjectToLocation
+
+registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
+registerSystemEffect = RegisterSystemEffect
 
 displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects

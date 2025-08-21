@@ -18,7 +18,6 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
                                                                           linkEffectToPlayer,
-                                                                          linkSystemEffectToAction,
                                                                           registerLocation,
                                                                           registerObject,
                                                                           registerObjectToLocation,
@@ -316,7 +315,8 @@ bedroomWorldDSL = do
     , (floorGID, ObjectiveKey floorOB)
     ]
   displayAction <- displayVisibleObjects
-  linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
+-- linkSystemEffecttoAction is depricated
+--  linkSystemEffectToAction (SomaticAccessActionKey openEyesGID) (PerceptionSystemEffect displayAction)
 
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID

@@ -4,14 +4,15 @@ module Build.GameStateGeneration.EDSL.GameStateBuilder where
 import           Control.Monad                 (unless, when)
 import           Control.Monad.Except          (ExceptT, MonadError, runExceptT,
                                                 throwError)
-import           Control.Monad.State           (State, evalState, get, put)
-import           Control.Monad.State.Strict    (MonadState, runState)
+import           Control.Monad.State           (State, evalState, get, gets,
+                                                put)
+import           Control.Monad.State.Strict    (MonadState)
 import           Data.Kind                     (Type)
 import qualified Data.List
 import           Data.Map.Strict               (Map, elems, findWithDefault,
                                                 fromList, fromListWith, insert,
-                                                lookup, map, member, singleton,
-                                                toList, unionWith)
+                                                insertWith, lookup, map, member,
+                                                singleton, unionWith)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import qualified Data.Text
@@ -29,14 +30,12 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 Object (_description, _descriptives, _shortName),
                                                 Player (_location),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                SystemEffect,
-                                                SystemEffectKeysRegistry,
-                                                SystemEffectRegistry,
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                _actionSystemEffectKeys,
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkSystemEffectToAction, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings      (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                     (GID (GID))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -54,10 +53,6 @@ data BuilderState = BuilderState
   , _declaredConsumableGIDs :: Map (NounPhrase Consumable) (GID Object)
   , _declaredContainerGIDs :: Map (NounPhrase Container) (GID Object)
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
-  , _createdEffects :: [Effect]                    -- All created effects
-  , _effectLinks :: [(Effect, ActionEffectKey)]    -- Effect -> target mappings
-  , _systemEffectLinks :: SystemEffectRegistry  -- ActionKey -> SystemEffect mappings
-  , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   }
 
 -- Update initial builder state
@@ -71,9 +66,6 @@ initialBuilderState gs = BuilderState
   , _declaredConsumableGIDs = mempty
   , _declaredContainerGIDs = mempty
   , _declaredLocationGIDs = mempty
-  , _createdEffects = mempty
-  , _effectLinks = mempty
-  , _systemEffectLinks = mempty
   }
 -- Initial builder state
 
@@ -217,28 +209,59 @@ interpretDSL (RegisterSpatial objGID spatialRel) = do
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
 
-interpretDSL (LinkEffectToObject objGID effect) = do
+interpretDSL (RegisterSystemEffect sysEffectKey effectGID config) = do
   state <- get
-  let newLink = (effect, ObjectKey objGID)
-  put state { _effectLinks = newLink : _effectLinks state }
+  let currentGameState = _gameState state
+      currentRegistry = _systemEffectRegistry currentGameState
+      currentEffectMap = Data.Map.Strict.findWithDefault mempty sysEffectKey currentRegistry
+      updatedEffectMap = Data.Map.Strict.insert effectGID config currentEffectMap
+      updatedRegistry = Data.Map.Strict.insert sysEffectKey updatedEffectMap currentRegistry
+      updatedGameState = currentGameState { _systemEffectRegistry = updatedRegistry }
+  put state { _gameState = updatedGameState }
+
+interpretDSL (LinkActionKeyToSystemEffect actionKey sysEffectKey) = do
+  state <- get
+  let currentGameState = _gameState state
+      currentRegistry = _actionSystemEffectKeys currentGameState
+      currentKeys = Data.Map.Strict.findWithDefault [] actionKey currentRegistry
+      updatedKeys = sysEffectKey : currentKeys
+      updatedRegistry = Data.Map.Strict.insert actionKey updatedKeys currentRegistry
+      updatedGameState = currentGameState { _actionSystemEffectKeys = updatedRegistry }
+  put state { _gameState = updatedGameState }
+
+interpretDSL (LinkEffectToObject objGID effect) = do
+ state <- get
+ let actionKey = extractActionKey effect
+     effectKey = ObjectKey objGID
+     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+     ActionEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
 
 interpretDSL (LinkEffectToLocation locGID effect) = do
-  state <- get
-  let newLink = (effect, LocationKey locGID)
-  put state { _effectLinks = newLink : _effectLinks state }
+ state <- get
+ let actionKey = extractActionKey effect
+     effectKey = LocationKey locGID
+     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+     ActionEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
 interpretDSL (LinkEffectToPlayer playerKey effect) = do
-  state <- get
-  let newLink = (effect, PlayerKey playerKey)
-  put state { _effectLinks = newLink : _effectLinks state }
+ state <- get
+ let actionKey = extractActionKey effect
+     effectKey = PlayerKey playerKey
+     currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+     ActionEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
 interpretDSL FinalizeGameState = do
-  state <- get
-  let assembledEffectRegistry = buildEffectRegistryFromLinks (_effectLinks state)
-      systemEffectRegistry = Data.Map.Strict.fromList (_systemEffectLinks state)
-      finalGameState = (_gameState state) { _effectRegistry = assembledEffectRegistry
-                                          , _systemEffectRegistry = systemEffectRegistry }
-  pure finalGameState
+ gets _gameState
 
 interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   state <- get
@@ -257,56 +280,33 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
       put state { _gameState = updatedGameState }
 
 interpretDSL DisplayVisibleObjects = pure youSeeM
-interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
-  let effect = ImplicitStimulusEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+
+interpretDSL (CreateImplicitStimulusEffect verb actionGID) =
+ pure (ImplicitStimulusEffect verb actionGID)
 
 interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
-  let effect = DirectionalStimulusEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (DirectionalStimulusEffect verb actionGID)
 
 -- For AcquisitionVerb (simple verb like "get")
 interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
-  let effect = AcquisitionVerbEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (AcquisitionVerbEffect verb actionGID)
 
 -- For AcquisitionVerbPhrase (complex phrase like "get the robe")
 interpretDSL (CreateAcquisitionPhraseEffect verbPhrase actionGID) = do
-  let effect = AcquisitionPhraseEffect verbPhrase actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (AcquisitionPhraseEffect verbPhrase actionGID)
 
 interpretDSL (CreateConsumptionEffect verb objGID actionGID) = do
-  let effect = ConsumptionEffect verb objGID actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (ConsumptionEffect verb objGID actionGID)
 
 interpretDSL (CreatePositivePosturalEffect verb actionGID) = do
-  let effect = PositivePosturalEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (PositivePosturalEffect verb actionGID)
 
 -- For negative postural actions (like "sit down")
 interpretDSL (CreateNegativePosturalEffect verb actionGID) = do
-  let effect = NegativePosturalEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (NegativePosturalEffect verb actionGID)
 
 interpretDSL (CreateSomaticAccessEffect verb actionGID) = do
-  let effect = SomaticAccessEffect verb actionGID
-  state <- get
-  put state { _createdEffects = effect : _createdEffects state }
-  pure effect
+  pure (SomaticAccessEffect verb actionGID)
 
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get
@@ -315,12 +315,6 @@ interpretDSL (SetPerceptionMap perceptionEntries) = do
       updatedWorld = (_world (_gameState state)) { _perceptionMap = perceptionMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
--- SystemEffectRegistry
-interpretDSL (LinkSystemEffectToAction actionKey sysEffect) = do
-  state <- get
-  let currentLinks = _systemEffectLinks state
-      newLinks = (actionKey, sysEffect) : currentLinks
-  put state { _systemEffectLinks = newLinks }
 
 interpretDSL (SetEvaluator evaluator) = do
   state <- get
@@ -400,6 +394,17 @@ interpretDSL (WithTitle text loc) = do
 
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
+
+extractActionKey :: Effect -> ActionKey
+extractActionKey = \case
+  ImplicitStimulusEffect _ actionGID -> ImplicitStimulusActionKey actionGID
+  DirectionalStimulusEffect _ actionGID -> DirectionalStimulusActionKey actionGID
+  SomaticAccessEffect _ actionGID -> SomaticAccessActionKey actionGID
+  AcquisitionVerbEffect _ actionGID -> AcquisitionalActionKey actionGID
+  AcquisitionPhraseEffect _ actionGID -> AcquisitionalActionKey actionGID
+  ConsumptionEffect _ _ actionGID -> ConsumptionActionKey actionGID
+  PositivePosturalEffect _ actionGID -> PosturalActionKey actionGID
+  NegativePosturalEffect _ actionGID -> PosturalActionKey actionGID
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()

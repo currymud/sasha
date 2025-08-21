@@ -8,7 +8,6 @@ import           Build.GameStateGeneration.EDSL.GameStateBuilder (initialBuilder
                                                                   interpretDSL,
                                                                   runWorldBuilder)
 import           Build.Identifiers.Actions                       (acquisitionActionMap,
-                                                                  actionSystemEffectMap,
                                                                   consumptionActionMap,
                                                                   directionalStimulusActionMap,
                                                                   implicitStimulusActionMap,
@@ -18,8 +17,8 @@ import           Build.Identifiers.Effects                       (systemEffectMa
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
-                                                                  Config (Config, _actionMaps, _actionSystemEffectMap, _systemEffectMap),
-                                                                  GameState (GameState, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry),
+                                                                  Config (Config, _actionMaps, _systemEffectMap),
+                                                                  GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
 -- Build GameState using the DSL!
@@ -36,7 +35,7 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
       , _systemEffectRegistry = Data.Map.Strict.empty
       , _evaluation = eval
       , _narration = defaultNarration
-      , _actionSystemEffectMap = mempty
+      , _actionSystemEffectKeys  = mempty
       }
 
 -- Config remains the same
@@ -44,10 +43,8 @@ config :: Config
 config = Config
   { _actionMaps = actionMaps
   , _systemEffectMap = systemEffectMap'
-  , _actionSystemEffectMap = actionSystemEffectMap'
   }
   where
-    actionSystemEffectMap' = Data.Map.Strict.keys actionSystemEffectMap `deepseq` actionSystemEffectMap
     systemEffectMap' = Data.Map.Strict.keys systemEffectMap `deepseq` systemEffectMap
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
