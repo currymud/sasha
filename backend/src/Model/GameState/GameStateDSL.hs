@@ -58,11 +58,10 @@ data WorldDSL :: Type -> Type where
 
   -- GID Declaration constructors
   DeclareObjectGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Object)
-  DeclareObjectiveGID :: NounPhrase Objective -> WorldDSL (GID Object)
-  DeclareConsumableGID :: NounPhrase Consumable -> WorldDSL (GID Object)
-  DeclareContainerGID :: NounPhrase Container -> WorldDSL (GID Object)
+  DeclareObjectiveGID :: GID Object -> NounPhrase Objective -> WorldDSL ()
+  DeclareConsumableGID :: GID Object -> NounPhrase Consumable -> WorldDSL ()
+  DeclareContainerGID :: GID Object -> NounPhrase Container -> WorldDSL ()
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
-
 
   WithShortName :: Text -> Object -> WorldDSL Object
   WithDescription :: Text -> Object -> WorldDSL Object
@@ -129,17 +128,16 @@ instance Monad WorldDSL where
    return = pure
    (>>=) = Bind
 
--- Smart constructors - now clean without pure wrapping
 declareObjectGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Object)
-declareObjectGID = DeclareObjectGID
+declareObjectGID  = DeclareObjectGID
 
-declareObjectiveGID :: NounPhrase Objective -> WorldDSL (GID Object)
+declareObjectiveGID :: GID Object -> NounPhrase Objective -> WorldDSL ()
 declareObjectiveGID = DeclareObjectiveGID
 
-declareConsumableGID :: NounPhrase Consumable -> WorldDSL (GID Object)
+declareConsumableGID :: GID Object -> NounPhrase Consumable -> WorldDSL ()
 declareConsumableGID = DeclareConsumableGID
 
-declareContainerGID :: NounPhrase Container -> WorldDSL (GID Object)
+declareContainerGID :: GID Object -> NounPhrase Container -> WorldDSL ()
 declareContainerGID = DeclareContainerGID
 
 declareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)

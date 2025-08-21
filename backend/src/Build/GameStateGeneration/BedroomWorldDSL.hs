@@ -82,10 +82,13 @@ import           Model.GameState                                         (Action
 -- Import action GIDs
 import           Build.Identifiers.Actions                               (agentCanSeeGID,
                                                                           checkInventoryGID,
+                                                                          dizzyGetFGID,
                                                                           dsvEnabledLookGID,
+                                                                          getDeniedFGID,
                                                                           getFromChairFGID,
                                                                           getMailDeniedFGID,
                                                                           getRobeDeniedFGID,
+                                                                          getRobeFGID,
                                                                           isaEnabledLookGID,
                                                                           lookFGID,
                                                                           notEvenPillGID,
@@ -98,6 +101,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           seeFloorFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
+                                                                          seeRobeChairGID,
                                                                           seeTableGID,
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
@@ -243,6 +247,7 @@ buildBedroomPlayer bedroomGID =
                          , ISAManagementKey inventory checkInventoryGID
                          , DSAManagementKey look dsvEnabledLookGID
                          , CAManagementKey takePillCVP pillTooFarFGID
+                         , AAManagementKey getRobeAVP getDeniedFGID
                          , SSAManagementKey saOpen openEyesGID
                          ])
 
@@ -273,6 +278,14 @@ bedroomWorldDSL = do
   registerObject floorGID floorObj
 
   -- Create and link effects for game actions
+
+  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look seeRobeChairGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
+
+  robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
+  robeOpenEyesGetChangeEffect <- createAcquisitionPhraseEffect getRobeAVP dizzyGetFGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesGetChangeEffect
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
   chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
   linkEffectToObject (DirectionalStimulusActionKey seeChairFGID) chairGID chairLookEffect

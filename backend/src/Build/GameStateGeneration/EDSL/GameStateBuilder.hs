@@ -138,32 +138,62 @@ interpretDSL (DeclareObjectGID nounPhrase) = do
       put updatedState { _declaredObjectGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredObjectGIDs updatedState) }
       pure newGID
 
-interpretDSL (DeclareObjectiveGID nounPhrase) = do
+interpretDSL (DeclareObjectiveGID gid nounPhrase) = do
   state <- get
+  -- Validate the provided GID exists in declared objects
+  let allDeclaredObjectGIDs = concat
+        [ Data.Map.Strict.elems (_declaredObjectGIDs state)
+        , Data.Map.Strict.elems (_declaredObjectiveGIDs state)
+        , Data.Map.Strict.elems (_declaredConsumableGIDs state)
+        , Data.Map.Strict.elems (_declaredContainerGIDs state)
+        ]
+  unless (gid `elem` allDeclaredObjectGIDs) $
+    throwError (InvalidObjectGID gid "Object GID not declared before grammatical registration")
+
+  -- Check for duplicate noun phrase registration
   case Data.Map.Strict.lookup nounPhrase (_declaredObjectiveGIDs state) of
-    Just existingGID -> throwError (DuplicateObjectGID existingGID "Objective GID already declared")
+    Just existingGID -> throwError (DuplicateObjectGID existingGID "Objective noun phrase already registered")
     Nothing -> do
-      newGID <- generateObjectGID
-      put state { _declaredObjectiveGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredObjectiveGIDs state) }
-      pure newGID
+      put state { _declaredObjectiveGIDs = Data.Map.Strict.insert nounPhrase gid (_declaredObjectiveGIDs state) }
+      pure ()
 
-interpretDSL (DeclareConsumableGID nounPhrase) = do
+interpretDSL (DeclareConsumableGID gid nounPhrase) = do
   state <- get
+  -- Validate the provided GID exists in declared objects
+  let allDeclaredObjectGIDs = concat
+        [ Data.Map.Strict.elems (_declaredObjectGIDs state)
+        , Data.Map.Strict.elems (_declaredObjectiveGIDs state)
+        , Data.Map.Strict.elems (_declaredConsumableGIDs state)
+        , Data.Map.Strict.elems (_declaredContainerGIDs state)
+        ]
+  unless (gid `elem` allDeclaredObjectGIDs) $
+    throwError (InvalidObjectGID gid "Object GID not declared before grammatical registration")
+
+  -- Check for duplicate noun phrase registration
   case Data.Map.Strict.lookup nounPhrase (_declaredConsumableGIDs state) of
-    Just existingGID -> throwError (DuplicateObjectGID existingGID "Consumable GID already declared")
+    Just existingGID -> throwError (DuplicateObjectGID existingGID "Consumable noun phrase already registered")
     Nothing -> do
-      newGID <- generateObjectGID
-      put state { _declaredConsumableGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredConsumableGIDs state) }
-      pure newGID
+      put state { _declaredConsumableGIDs = Data.Map.Strict.insert nounPhrase gid (_declaredConsumableGIDs state) }
+      pure ()
 
-interpretDSL (DeclareContainerGID nounPhrase) = do
+interpretDSL (DeclareContainerGID gid nounPhrase) = do
   state <- get
+  -- Validate the provided GID exists in declared objects
+  let allDeclaredObjectGIDs = concat
+        [ Data.Map.Strict.elems (_declaredObjectGIDs state)
+        , Data.Map.Strict.elems (_declaredObjectiveGIDs state)
+        , Data.Map.Strict.elems (_declaredConsumableGIDs state)
+        , Data.Map.Strict.elems (_declaredContainerGIDs state)
+        ]
+  unless (gid `elem` allDeclaredObjectGIDs) $
+    throwError (InvalidObjectGID gid "Object GID not declared before grammatical registration")
+
+  -- Check for duplicate noun phrase registration
   case Data.Map.Strict.lookup nounPhrase (_declaredContainerGIDs state) of
-    Just existingGID -> throwError (DuplicateObjectGID existingGID "Container GID already declared")
+    Just existingGID -> throwError (DuplicateObjectGID existingGID "Container noun phrase already registered")
     Nothing -> do
-      newGID <- generateObjectGID
-      put state { _declaredContainerGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredContainerGIDs state) }
-      pure newGID
+      put state { _declaredContainerGIDs = Data.Map.Strict.insert nounPhrase gid (_declaredContainerGIDs state) }
+      pure ()
 
 interpretDSL (DeclareLocationGID nounPhrase) = do
   state <- get
