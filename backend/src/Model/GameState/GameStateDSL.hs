@@ -96,6 +96,8 @@ data WorldDSL :: Type -> Type where
   RegisterSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
   RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
   RegisterSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
+  -- In DSL
+  RegisterTrigger :: ActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
@@ -271,6 +273,10 @@ registerObjectToLocation = RegisterObjectToLocation
 
 registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
 registerSystemEffect = RegisterSystemEffect
+
+-- In DSL
+registerTrigger :: ActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
+registerTrigger = RegisterTrigger
 
 displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects

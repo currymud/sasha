@@ -9,6 +9,7 @@ import qualified Data.Map.Strict               as Map
 import qualified Data.Set
 import qualified Data.Set                      as Set
 import qualified Data.Text
+import           Debug.Trace                   (trace)
 import           GameState                     (getDescriptionM, getObjectM,
                                                 getPlayerLocationGID,
                                                 modifyNarration)
@@ -201,13 +202,17 @@ modifyPerceptionMapM perceptionMapF = do
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do
+  trace "youSeeM: Starting execution" $ pure ()
+
   -- Get all currently perceivable objects from the perception map
   perceivableObjects <- GameState.Perception.getAllPerceivableObjects
-
+  trace ("youSeeM: Found " ++ show (Data.Set.size perceivableObjects) ++ " perceivable objects") $ pure ()
   -- Get descriptions and display if any objects exist
   descriptions <- mapM getDescriptionM (Data.Set.toList perceivableObjects)
+  trace ("youSeeM: Generated descriptions: " ++ show descriptions) $ pure ()
   unless (null descriptions) $ do
     let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+    trace ("youSeeM: Adding to narration: " ++ show seeText) $ pure ()
     modifyNarration $ updateActionConsequence seeText
 
 updatePerceptionMapM :: GID Object -> GameComputation Identity ()

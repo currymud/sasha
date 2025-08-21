@@ -27,6 +27,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerPlayer,
                                                                           registerSpatial,
                                                                           registerSystemEffect,
+                                                                          setPerceptionMap,
                                                                           withDescription,
                                                                           withDescriptives,
                                                                           withLocationBehavior,
@@ -61,6 +62,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (chairO
 import           Grammar.Parser.Partitions.Adjectives                    (small)
 import           Grammar.Parser.Partitions.Misc                          (the)
 import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                          DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 
@@ -120,6 +122,7 @@ import           Build.GameStateGeneration.Defaults                      (defaul
 import           Build.Identifiers.Effects                               (youSeeMEffectGID)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
+import           Debug.Trace                                             (trace)
 import           GameState.ActionManagement                              (removeSystemEffect)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
@@ -320,11 +323,15 @@ bedroomWorldDSL = do
     , (mailGID, ObjectiveKey mailOB)
     , (floorGID, ObjectiveKey floorOB)
     ]
+  setPerceptionMap
+    [ (DirectionalStimulusNounPhrase (SimpleNounPhrase chairDS), [chairGID])
+    , (DirectionalStimulusNounPhrase (SimpleNounPhrase tableDS), [tableGID])
+    , (DirectionalStimulusNounPhrase (SimpleNounPhrase robeDS), [robeGID])
+    , (DirectionalStimulusNounPhrase (SimpleNounPhrase mailDS), [mailGID])
+    , (DirectionalStimulusNounPhrase (SimpleNounPhrase floorDS), [floorGID])
+    ]
+  trace "Perception map has been set" $ pure ()
   displayAction <- displayVisibleObjects
-  let youSeeMConfig = SystemEffectConfig
-                          (PerceptionSystemEffect displayAction)
-                          (removeSystemEffect (SystemLocationKey bedroomGID) youSeeMEffectGID)
-  registerSystemEffect (SystemLocationKey bedroomGID) youSeeMEffectGID youSeeMConfig
 
   -- Link the open eyes action to trigger the system effect
   linkActionKeyToSystemEffect (SomaticAccessActionKey openEyesGID) (SystemLocationKey bedroomGID)

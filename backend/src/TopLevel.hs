@@ -6,6 +6,7 @@ import           Control.Monad.State.Class (gets, put)
 import           Data.Kind                 (Type)
 import qualified Data.Map.Strict
 import           Data.Text                 (Text, empty, pack)
+import           Debug.Trace               (trace)
 import           GameState                 (clearNarration, modifyNarration)
 import           Grammar.Parser            (parseTokens)
 import           Grammar.Parser.Lexer      (Lexeme, lexify, tokens)
@@ -51,9 +52,11 @@ runGame comp' = do
 processWithSystemEffects :: Sentence -> GameComputation Identity ()
 processWithSystemEffects sentence = do
   toGameComputation sentence
+  trace ("Processing sentence with system effects") $ pure ()
   gameState <- get
   let systemEffectConfigs = concat $ Data.Map.Strict.elems $ fmap Data.Map.Strict.elems (_systemEffectRegistry gameState)
-      systemEffectComputations = fmap extractComputation systemEffectConfigs
+  trace ("Found " ++ show (length systemEffectConfigs) ++ " system effects") $ pure ()
+  let systemEffectComputations = fmap extractComputation systemEffectConfigs
       postExecutionComputations = fmap _systemEffectManagement systemEffectConfigs
       composedSystemEffects = sequence_ systemEffectComputations
       composedPostExecution = sequence_ postExecutionComputations

@@ -40,7 +40,7 @@ module Model.GameState (
   , EffectRegistry
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys)
+  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys,_triggerRegistry)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -71,6 +71,7 @@ module Model.GameState (
   , SystemEffectKeysRegistry
   , SystemEffectMap
   , SystemEffectRegistry
+  , TriggerRegistry
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
   , liftToDisplay
   , updateActionConsequence
@@ -284,6 +285,9 @@ data Effect
 type EffectRegistry :: Type
 type EffectRegistry = Map ActionKey ActionEffectMap
 
+type TriggerRegistry :: Type
+type TriggerRegistry = Map ActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)]
+
 type SystemEffectConfig :: Type
 data SystemEffectConfig = SystemEffectConfig
   { _systemEffect           :: SystemEffect
@@ -337,6 +341,7 @@ data GameState = GameState
   , _effectRegistry         :: EffectRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
+  , _triggerRegistry        :: TriggerRegistry
   }
 
 
