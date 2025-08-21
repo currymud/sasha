@@ -29,7 +29,7 @@ openEyes :: SomaticAccessActionF
 openEyes = SomaticAccessActionF opened
  where
    opened :: Set ActionEffectKey
-             -> Set SystemEffectKey
+             -> [SystemEffectKey]
              ->  ActionEffectMap
              ->  SystemEffectRegistry
              -> GameComputation Identity ()

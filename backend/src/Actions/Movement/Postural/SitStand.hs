@@ -8,7 +8,7 @@ import           GameState                     (getLocationObjectIDsM,
                                                 getPlayerM)
 import           GameState.ActionManagement    (lookupPostural,
                                                 processEffectsFromRegistry)
-import           GameState.EffectRegistry      (lookupEffectsInRegistry)
+import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKey (PosturalActionKey),
@@ -32,7 +32,7 @@ managePosturalProcess posturalPhrase = do
         Nothing -> error $ "Programmer Error: No postural action found for GID: "
         Just (PosturalActionF actionFunc) -> do
           let actionKey = PosturalActionKey actionGID
-          maybeEffectMap <- lookupEffectsInRegistry actionKey
+          maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
             Nothing -> error $ "Programmer Error: No effects registered for postural action"
             Just (ActionEffectMap effectMap) -> do

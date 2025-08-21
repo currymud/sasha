@@ -20,7 +20,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 PlayerKey, PosturalActionF,
                                                 SomaticAccessActionF,
                                                 SpatialRelationship,
-                                                SystemEffect)
+                                                SystemEffect, SystemEffectKey)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)
@@ -108,7 +108,7 @@ data WorldDSL :: Type -> Type where
   LinkEffectToLocation :: GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: PlayerKey -> Effect -> WorldDSL ()
   LinkSystemEffectToAction :: ActionKey -> SystemEffect -> WorldDSL ()
-
+  LinkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
   DisplayVisibleObjects :: WorldDSL (GameComputation Identity ())
   -- Final assembly
   FinalizeGameState :: WorldDSL GameState

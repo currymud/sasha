@@ -40,7 +40,7 @@ module Model.GameState (
   , EffectRegistry
   , Evaluator
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry)
+  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -68,6 +68,7 @@ module Model.GameState (
   , SystemEffect (PerceptionSystemEffect)
   , SystemEffectConfig (SystemEffectConfig, _systemEffect, _systemEffectManagement)
   , SystemEffectKey (SystemLocationKey, SystemObjectKey, SystemPlayerKey)
+  , SystemEffectKeysRegistry
   , SystemEffectMap
   , SystemEffectRegistry
   , World (World, _objectMap, _locationMap,_perceptionMap, _spatialRelationshipMap)
@@ -187,7 +188,7 @@ type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
   { _somaticAccessAction :: Set ActionEffectKey
-                              -> Set SystemEffectKey
+                              -> [SystemEffectKey]
                               -> ActionEffectMap
                               -> SystemEffectRegistry
                               -> GameComputation Identity () }
@@ -320,20 +321,24 @@ newtype ActionKeyMap = ActionKeyMap
 
 type Config :: Type
 data Config = Config
-  { _actionMaps             :: ActionMaps
-  , _systemEffectMap        :: SystemEffectMap
-  , _actionSystemEffectKeys :: Map ActionKey [SystemEffectKey]
+  { _actionMaps      :: ActionMaps
+  , _systemEffectMap :: SystemEffectMap
   }
+
+type SystemEffectKeysRegistry :: Type
+type SystemEffectKeysRegistry = Map ActionKey [SystemEffectKey]
 
 type GameState :: Type
 data GameState = GameState
-  { _world                :: World
-  , _player               :: Player
-  , _narration            :: Narration
-  , _evaluation           :: Evaluator
-  , _effectRegistry       :: EffectRegistry
-  , _systemEffectRegistry :: SystemEffectRegistry
+  { _world                  :: World
+  , _player                 :: Player
+  , _narration              :: Narration
+  , _evaluation             :: Evaluator
+  , _effectRegistry         :: EffectRegistry
+  , _systemEffectRegistry   :: SystemEffectRegistry
+  , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   }
+
 
 type Location :: Type
 data Location = Location {

@@ -53,6 +53,7 @@ import           Build.BedPuzzle.Actions.Stand                           (standD
                                                                           standUp)
 
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
+                                                                          makeActionSystemEffectKeyMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
@@ -62,7 +63,9 @@ import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           DirectionalStimulusActionF,
-                                                                          ImplicitStimulusActionF)
+                                                                          ImplicitStimulusActionF,
+                                                                          PlayerKey (PlayerKeyLocation),
+                                                                          SystemEffectKey (SystemLocationKey, SystemPlayerKey))
 
 isaEnabledLook :: ImplicitStimulusActionF
 isaEnabledLook =
@@ -89,6 +92,7 @@ getFromChairF = getFromSupportF chairGID
 
 getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
+
 
 -- Implicit Stimulus Actions with manual GID assignment
 

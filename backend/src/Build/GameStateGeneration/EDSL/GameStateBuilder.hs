@@ -30,6 +30,8 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 Player (_location),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 SystemEffect,
+                                                SystemEffectKeysRegistry,
+                                                SystemEffectRegistry,
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _locationActionManagement,
                                                 _objectActionManagement,
@@ -54,7 +56,8 @@ data BuilderState = BuilderState
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
   , _createdEffects :: [Effect]                    -- All created effects
   , _effectLinks :: [(Effect, ActionEffectKey)]    -- Effect -> target mappings
-  , _systemEffectLinks :: [(ActionKey, SystemEffect)] -- ActionKey -> SystemEffect mappings
+  , _systemEffectLinks :: SystemEffectRegistry  -- ActionKey -> SystemEffect mappings
+  , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   }
 
 -- Update initial builder state
@@ -312,7 +315,7 @@ interpretDSL (SetPerceptionMap perceptionEntries) = do
       updatedWorld = (_world (_gameState state)) { _perceptionMap = perceptionMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
   put state { _gameState = updatedGameState }
-
+-- SystemEffectRegistry
 interpretDSL (LinkSystemEffectToAction actionKey sysEffect) = do
   state <- get
   let currentLinks = _systemEffectLinks state

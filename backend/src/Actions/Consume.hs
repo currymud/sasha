@@ -20,7 +20,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Pl
 
 import           GameState.ActionManagement    (lookupConsumption,
                                                 processEffectsFromRegistry)
-import           GameState.EffectRegistry      (lookupEffectsInRegistry)
+import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 
 manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
@@ -38,7 +38,7 @@ manageConsumptionProcess cvp = do
 
           -- Build actionEffectKeys for the action function
           let actionKey = ConsumptionActionKey actionGID
-          maybeEffectMap <- lookupEffectsInRegistry actionKey
+          maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
             Nothing -> error "Programmer Error: No effects registered for consumption action"
             Just (ActionEffectMap effectMap) -> do

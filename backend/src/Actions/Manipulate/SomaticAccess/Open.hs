@@ -1,8 +1,8 @@
-{-# OPTIONS_GHC -Wno-missing-local-signatures #-}
-module Actions.Manipulate.SomaticAccess.Open (manageSomaticAccessProcess) where
-
+module Actions.Manipulate.SomaticAccess.Open where
 import           Control.Monad.Identity     (Identity)
-import           Control.Monad.Reader.Class (asks)
+import           Control.Monad.Reader       (asks)
+import           Control.Monad.State        (get)
+import           Control.Monad.State.Strict (gets)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           GameState                  (getLocationObjectIDsM, getPlayerM)
@@ -14,12 +14,10 @@ import           Model.GameState            (ActionEffectKey (LocationKey, Playe
                                              ActionKey (SomaticAccessActionKey),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps, _systemEffectMap),
-                                             GameComputation,
+                                             GameComputation, GameState (..),
                                              Player (_location, _playerActions),
-                                             SomaticAccessActionF (SomaticAccessActionF),
-                                             SystemEffectConfig (_systemEffect))
+                                             SomaticAccessActionF (SomaticAccessActionF))
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
-
 
 manageSomaticAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
 manageSomaticAccessProcess sav = do
@@ -28,8 +26,6 @@ manageSomaticAccessProcess sav = do
     Nothing -> error "Programmer Error: No somatic access action found for verb: "
     Just actionGID -> do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
-      systemEffectMaps <- asks _systemEffectMap
-      let actionMapLookup = Data.Map.Strict.lookup actionGID actionMap
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No somatic access action found for GID: "
         Just (SomaticAccessActionF actionFunc) -> do
@@ -40,13 +36,20 @@ manageSomaticAccessProcess sav = do
             Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
               objectActionKeys <- getLocationObjectIDsM lid
-              -- Add PlayerKey entries from the effect map to actionEffectKeys
+
+              -- Get SystemEffectKeys from GameState
+              systemEffectKeysRegistry <- gets _actionSystemEffectKeys
+              let systemEffectKeysForAction = Data.Map.Strict.findWithDefault [] actionKey systemEffectKeysRegistry
+
+              -- Get SystemEffectRegistry from GameState
+              systemEffectRegistry <- gets _systemEffectRegistry
+
               let playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [
                     Data.Set.singleton (LocationKey lid),
                     objectActionKeys,
                     playerKeys
                     ]
-              actionFunc allActionKeys (ActionEffectMap effectMap)
-              -- Process effects from registry after action execution
+
+              actionFunc allActionKeys systemEffectKeysForAction (ActionEffectMap effectMap) systemEffectRegistry
               processEffectsFromRegistry actionKey
