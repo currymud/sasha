@@ -286,10 +286,13 @@ bedroomWorldDSL = do
   robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
-
+  trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
+  trace ("DEBUG: seeRobeWornGID = " ++ show seeRobeWornGID) $ pure ()
   getRobeChangesLookRobe <- createDirectionalStimulusEffect look seeRobeWornGID
-  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
+  trace ("DEBUG: Created getRobeChangesLookRobe effect: " ++ show getRobeChangesLookRobe) $ pure ()
 
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
+  trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
 --  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
 --  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
 

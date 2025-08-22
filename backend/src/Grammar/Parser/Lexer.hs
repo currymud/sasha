@@ -40,6 +40,8 @@ term :: Lexer Lexeme
 term =
   PORTAL <$ symbol "PORTAL"
     <|> BEDROOM <$ symbol "BEDROOM"
+    <|> QUIT <$ symbol "QUIT"
+    <|> DEBUG <$ symbol "DEBUG"
     <|> STAND <$ symbol "STAND"
     <|> SIT <$ symbol "SIT"
     <|> TAKE <$ symbol "TAKE"
