@@ -86,9 +86,6 @@ dizzyGetF = Build.BedPuzzle.Actions.Get.getDeniedF
 getRobeF :: AcquisitionActionF
 getRobeF = getObjectF robeGID
 
-robeCollectedF :: AcquisitionActionF
-robeCollectedF = getObjectF robeGID
-
 getFromChairF :: AcquisitionActionF
 getFromChairF = getFromSupportF chairGID
 
@@ -129,7 +126,8 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| whatMail |], 18),
                                          ([| seeFloorF |], 19),
                                          ([| notEvenFloorF |], 20),
-                                         ([| lookAtChairF |],21)]
+                                         ([| lookAtChairF |],21),
+                                         ([| seeRobeWorn|],22)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),
@@ -139,7 +137,6 @@ makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getRobeF |], 6),
                                   ([| getFromChairF |], 7),
                                   ([| getFromRobeF|], 8),
-                                  ([| robeCollectedF|], 9),
                                   ([| getRobeDeniedF|], 10),
                                   ([| getMailDizzyF |], 11),
                                   ([| getDeniedF |], 12)]

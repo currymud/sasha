@@ -81,6 +81,7 @@ import           Model.GameState                                         (Action
 
 -- Import action GIDs
 import           Build.Identifiers.Actions                               (agentCanSeeGID,
+                                                                          defaultInventoryLookFGID,
                                                                           dizzyGetFGID,
                                                                           dsvEnabledLookGID,
                                                                           getDeniedFGID,
@@ -98,22 +99,16 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           pillTooFarFGID,
                                                                           pitchBlackFGID,
                                                                           playerGetFGID,
-                                                                          robeCollectedFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
                                                                           seeRobeChairGID,
+                                                                          seeRobeWornGID,
                                                                           seeTableGID,
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
                                                                           whatChairFGID,
                                                                           whatPillGID)
-
-import           Build.Identifiers.Actions                               (defaultInventoryLookFGID,
-                                                                          isaEnabledLookGID,
-                                                                          pitchBlackFGID)
-
-
 
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
@@ -292,17 +287,20 @@ bedroomWorldDSL = do
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
 
-  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
-  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
+  getRobeChangesLookRobe <- createDirectionalStimulusEffect look seeRobeWornGID
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
 
-  pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
-  linkEffectToObject (DirectionalStimulusActionKey whatPillGID) pillGID pillLookEffect
+--  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
+--  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
 
-  mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
-  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
+--  pillLookEffect <- createDirectionalStimulusEffect look whatPillGID
+--  linkEffectToObject (DirectionalStimulusActionKey whatPillGID) pillGID pillLookEffect
 
-  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP robeCollectedFGID
-  linkEffectToObject (AcquisitionalActionKey robeCollectedFGID) robeGID getRobeEffect
+--  mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
+--  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
+
+--  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
+--  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
   takePillEffect <- createConsumptionEffect take pillGID takePillFGID
   linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
