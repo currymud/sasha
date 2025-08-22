@@ -109,7 +109,8 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           whatChairFGID,
                                                                           whatPillGID)
 
-import           Build.Identifiers.Actions                               (isaEnabledLookGID,
+import           Build.Identifiers.Actions                               (defaultInventoryLookFGID,
+                                                                          isaEnabledLookGID,
                                                                           pitchBlackFGID)
 
 
@@ -246,7 +247,7 @@ buildBedroomPlayer bedroomGID =
      withPlayerLocation defaultPlayer bedroomGID
        >>= (\player -> withPlayerBehaviors player
                          [ ISAManagementKey isaLook isaEnabledLookGID
-                         , ISAManagementKey inventory notEvenInventoryFGID
+                         , ISAManagementKey inventory defaultInventoryLookFGID
                          , DSAManagementKey look dsvEnabledLookGID
                          , CAManagementKey takePillCVP pillTooFarFGID
                          , AAManagementKey getRobeAVP getDeniedFGID

@@ -12,7 +12,7 @@ import           Build.Identifiers.Objects                               (chairG
                                                                           robeGID)
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
-import           Build.BedPuzzle.Actions.Inventory                       (checkInventoryF,
+import           Build.BedPuzzle.Actions.Inventory                       (defaultInventoryLookF,
                                                                           notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
@@ -105,7 +105,7 @@ lookAtChairF = supportLookF chairGID flavor
 makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| pitchBlackF |], 2),
                                       ([| isaEnabledLook |], 3),
-                                      ([| checkInventoryF |], 4),
+                                      ([| defaultInventoryLookF |], 4),
                                       ([| lookF |],5),
                                       ([| notEvenInventoryF |],6)]
 

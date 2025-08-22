@@ -1,13 +1,33 @@
-module Build.BedPuzzle.Actions.Inventory (checkInventoryF,notEvenInventoryF) where
+module Build.BedPuzzle.Actions.Inventory (defaultInventoryLookF, notEvenInventoryF) where
+
 import           Control.Monad.Identity (Identity)
-import qualified Data.Map.Strict
-import qualified Data.Set
-import qualified Data.Text
-import           GameState              (getDescriptionM, getInventoryObjectsM,
+import           Data.Kind              (Type)
+import           Data.Text              (Text)
+import qualified Data.Text              as Text
+import           GameState              (getInventoryObjectsM, getObjectM,
                                          modifyNarration)
 import           Model.GameState        (GameComputation,
                                          ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                         Player, updateActionConsequence)
+                                         Object (_shortName),
+                                         updateActionConsequence)
+import           Model.GID              (GID)
+
+-- | Template function for looking at player inventory
+-- Takes flavor text for both empty and non-empty cases
+-- Always queries current inventory state dynamically
+
+
+type InventoryFlavorText :: Type
+data InventoryFlavorText = InventoryFlavorText
+  { _emptyFlavorText     :: Text
+  , _inventoryFlavorText :: Text
+  }
+
+defaultFlavorText :: InventoryFlavorText
+defaultFlavorText = InventoryFlavorText
+  { _emptyFlavorText     ="You've got nothing but a terrible headache and a slight pang of regret."
+  , _inventoryFlavorText = "You look through your inventory. You have a feeling all these things are very important somehow."
+  }
 
 notEvenInventoryF :: ImplicitStimulusActionF
 notEvenInventoryF = ImplicitStimulusActionF (const (const notEvenInventory'))
@@ -16,17 +36,28 @@ notEvenInventoryF = ImplicitStimulusActionF (const (const notEvenInventory'))
     notEvenInventory'  = do
       modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
 
+defaultInventoryLookF :: ImplicitStimulusActionF
+defaultInventoryLookF = inventoryLookF defaultFlavorText
 
--- checkInventory is okay for now, but we'll have to figure out if we want info from player or gameState
-checkInventoryF :: ImplicitStimulusActionF
-checkInventoryF = ImplicitStimulusActionF $ flip (const checkInventory')
+inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
+
+inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
   where
-    checkInventory' :: Player -> GameComputation Identity ()
-    checkInventory' player = do
-      inventoryOids <- getInventoryObjectsM
-      descs <- mapM getDescriptionM inventoryOids
-      modifyNarration
-        $ updateActionConsequence
-        $ "You check your inventory: " <> Data.Text.intercalate ", " descs
-      pure ()
--- modifyNarration $ updateActionConsequence
+    inventoryLook' :: a -> b -> GameComputation Identity ()
+    inventoryLook' _player _location = do
+      inventoryObjects <- getInventoryObjectsM
+      case inventoryObjects of
+        [] -> do
+          -- Empty inventory case
+          modifyNarration $ updateActionConsequence _emptyFlavorText
+        objects -> do
+          -- Non-empty inventory case
+          objectNames <- mapM getObjectShortName objects
+          let itemsList = Text.intercalate ", " objectNames
+              fullMessage = _inventoryFlavorText <> " You are carrying: " <> itemsList <> "."
+          modifyNarration $ updateActionConsequence fullMessage
+-- | Get the short name of an object
+getObjectShortName :: GID Object -> GameComputation Identity Text
+getObjectShortName oid = do
+  obj <- getObjectM oid
+  pure $ _shortName obj
