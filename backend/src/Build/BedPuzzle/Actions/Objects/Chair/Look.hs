@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Objects.Chair.Look (seeChairF, whatChairF) where
+module Build.BedPuzzle.Actions.Objects.Chair.Look (whatChairF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration)
@@ -14,11 +14,3 @@ whatChairF = DirectionalStimulusActionF (const (const whatChair'))
 
     msg :: Text
     msg = "It would be alot easier to see the chair if you would open your eyes. Literally."
-
-seeChairF :: DirectionalStimulusActionF
-seeChairF = DirectionalStimulusActionF (const (const seeChair'))
-  where
-    seeChair' :: GameComputation Identity ()
-    seeChair' = modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You see a chair. It is a chair. It is not a very interesting chair, but it is a chair nonetheless."

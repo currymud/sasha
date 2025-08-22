@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Inventory where
+module Build.BedPuzzle.Actions.Inventory (checkInventoryF,notEvenInventoryF) where
 import           Control.Monad.Identity (Identity)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -9,10 +9,17 @@ import           Model.GameState        (GameComputation,
                                          ImplicitStimulusActionF (ImplicitStimulusActionF),
                                          Player, updateActionConsequence)
 
+notEvenInventoryF :: ImplicitStimulusActionF
+notEvenInventoryF = ImplicitStimulusActionF (const (const notEvenInventory'))
+  where
+    notEvenInventory' :: GameComputation Identity ()
+    notEvenInventory'  = do
+      modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
 
--- Claude remind me we don't need Player here anymore
-checkInventory :: ImplicitStimulusActionF
-checkInventory = ImplicitStimulusActionF $ flip (const checkInventory')
+
+-- checkInventory is okay for now, but we'll have to figure out if we want info from player or gameState
+checkInventoryF :: ImplicitStimulusActionF
+checkInventoryF = ImplicitStimulusActionF $ flip (const checkInventory')
   where
     checkInventory' :: Player -> GameComputation Identity ()
     checkInventory' player = do

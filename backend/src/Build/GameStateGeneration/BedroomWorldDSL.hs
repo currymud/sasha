@@ -81,7 +81,6 @@ import           Model.GameState                                         (Action
 
 -- Import action GIDs
 import           Build.Identifiers.Actions                               (agentCanSeeGID,
-                                                                          checkInventoryGID,
                                                                           dizzyGetFGID,
                                                                           dsvEnabledLookGID,
                                                                           getDeniedFGID,
@@ -90,7 +89,9 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getRobeDeniedFGID,
                                                                           getRobeFGID,
                                                                           isaEnabledLookGID,
+                                                                          lookAtChairFGID,
                                                                           lookFGID,
+                                                                          notEvenInventoryFGID,
                                                                           notEvenPillGID,
                                                                           notEvenRobeGID,
                                                                           openEyesGID,
@@ -98,7 +99,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           pitchBlackFGID,
                                                                           playerGetFGID,
                                                                           robeCollectedFGID,
-                                                                          seeChairFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
                                                                           seePocketRobeWornGID,
@@ -106,6 +106,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           seeTableGID,
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
+                                                                          whatChairFGID,
                                                                           whatPillGID)
 
 import           Build.Identifiers.Actions                               (isaEnabledLookGID,
@@ -164,7 +165,7 @@ chairObj =
     chairObj' = withShortName "a chair"
                   >=> withDescription "It's the chair next to your bed"
                   >=> withDescriptives descriptives
-                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeChairFGID))
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look whatChairFGID))
                   >=> (\o -> withObjectBehavior o (AVManagementKey  get  getFromChairFGID))
 
 tableObj :: WorldDSL Object
@@ -245,7 +246,7 @@ buildBedroomPlayer bedroomGID =
      withPlayerLocation defaultPlayer bedroomGID
        >>= (\player -> withPlayerBehaviors player
                          [ ISAManagementKey isaLook isaEnabledLookGID
-                         , ISAManagementKey inventory checkInventoryGID
+                         , ISAManagementKey inventory notEvenInventoryFGID
                          , DSAManagementKey look dsvEnabledLookGID
                          , CAManagementKey takePillCVP pillTooFarFGID
                          , AAManagementKey getRobeAVP getDeniedFGID
@@ -279,6 +280,9 @@ bedroomWorldDSL = do
   registerObject floorGID floorObj
 
   -- Create and link effects for game actions
+  openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
+
 
   robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look seeRobeChairGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
@@ -286,8 +290,6 @@ bedroomWorldDSL = do
   robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
-  chairLookEffect <- createDirectionalStimulusEffect look seeChairFGID
-  linkEffectToObject (DirectionalStimulusActionKey seeChairFGID) chairGID chairLookEffect
 
   tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
   linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect

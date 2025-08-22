@@ -12,11 +12,11 @@ import           Build.Identifiers.Objects                               (chairG
                                                                           robeGID)
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
-import           Build.BedPuzzle.Actions.Inventory                       (checkInventory)
+import           Build.BedPuzzle.Actions.Inventory                       (checkInventoryF,
+                                                                          notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
-import           Build.BedPuzzle.Actions.Objects.Chair.Look              (seeChairF,
-                                                                          whatChairF)
+import           Build.BedPuzzle.Actions.Objects.Chair.Look              (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Look              (notEvenFloorF,
                                                                           seeFloorF)
@@ -52,6 +52,7 @@ import           Build.BedPuzzle.Actions.Open                            (openEy
 import           Build.BedPuzzle.Actions.Stand                           (standDenied,
                                                                           standUp)
 
+import           Build.Identifiers.SupportLook                           (supportLookF)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeActionSystemEffectKeyMap,
                                                                           makeConsumptionActionGIDsAndMap,
@@ -59,6 +60,7 @@ import           Build.Templates.Identification                          (makeAc
                                                                           makeImplicitStimulusActionGIDsAndMap,
                                                                           makePosturalActionGIDsAndMap,
                                                                           makeSomaticAccessActionGIDsAndMap)
+import           Data.Text                                               (Text)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import           Model.GameState                                         (AcquisitionActionF,
@@ -93,14 +95,19 @@ getFromChairF = getFromSupportF chairGID
 getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
 
-
+lookAtChairF :: DirectionalStimulusActionF
+lookAtChairF = supportLookF chairGID flavor
+  where
+    flavor :: Text
+    flavor = "You see a chair. It is a chair. It is not a very interesting chair, but it is a chair nonetheless."
 -- Implicit Stimulus Actions with manual GID assignment
 
 makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
                                       ([| pitchBlackF |], 2),
                                       ([| isaEnabledLook |], 3),
-                                      ([| checkInventory |], 4),
-                                      ([| lookF |],5)]
+                                      ([| checkInventoryF |], 4),
+                                      ([| lookF |],5),
+                                      ([| notEvenInventoryF |],6)]
 
 -- Directional Stimulus Actions with manual GID assignment
 makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
@@ -111,20 +118,18 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| whatTable |], 6),
                                          ([| seeTable |], 7),
                                          ([| whatChairF |], 8),
-                                         ([| seeChairF|], 9),
                                          ([| whatRobe|], 10),
                                          ([| notEvenRobe|], 11),
                                          ([| whatPocket |], 12),
                                          ([| notEvenPocket |], 13),
-
                                          ([| seePocketChair |], 14),
                                          ([| seePocketRobeWorn |], 15),
                                          ([| seeRobeChair |], 16),
                                          ([| seeMail |], 17),
                                          ([| whatMail |], 18),
-
                                          ([| seeFloorF |], 19),
-                                         ([| notEvenFloorF |], 20)]
+                                         ([| notEvenFloorF |], 20),
+                                         ([| lookAtChairF |],21)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),

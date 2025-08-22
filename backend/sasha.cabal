@@ -94,6 +94,7 @@ library
       Build.Identifiers.SentenceProcessing
       Build.Templates.Identification
       Build.Templates.Sentence
+      Build.Identifiers.SupportLook
       Error
       Evaluators.Player.General
       GameState
