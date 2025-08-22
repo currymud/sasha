@@ -96,6 +96,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           openEyesGID,
                                                                           pillTooFarFGID,
                                                                           pitchBlackFGID,
+                                                                          playerGetFGID,
                                                                           robeCollectedFGID,
                                                                           seeChairFGID,
                                                                           seeFloorFGID,
@@ -302,6 +303,9 @@ bedroomWorldDSL = do
 
   takePillEffect <- createConsumptionEffect take pillGID takePillFGID
   linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
+
+  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionPhraseEffect getRobeAVP playerGetFGID
+  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
 
   -- Create the effect that changes look behavior when eyes open
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID

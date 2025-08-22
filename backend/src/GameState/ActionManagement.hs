@@ -68,19 +68,19 @@ removeSystemEffect key effectGID = modify' $ \gs ->
   in gs { _systemEffectRegistry = updatedRegistry }
 
 
-modifyObjectActionManagementM :: GID Object
-                              -> (ActionManagementFunctions -> ActionManagementFunctions)
-                              -> GameComputation Identity ()
-modifyObjectActionManagementM oid actionF =
-  modifyObjectM oid $ \obj ->
-    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
-
 processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   case maybeEffectMap of
     Just effectMap -> processAllEffects effectMap
     Nothing        -> pure () -- No effects registered for this action
+
+modifyObjectActionManagementM :: GID Object
+                             -> (ActionManagementFunctions -> ActionManagementFunctions)
+                             -> GameComputation Identity ()
+modifyObjectActionManagementM oid actionF = do
+ modifyObjectM oid $ \obj ->
+   obj { _objectActionManagement = actionF (_objectActionManagement obj) }
 
 -- Updated: processAllEffects remains the same - just processes effects
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
@@ -165,13 +165,24 @@ processEffect (ObjectKey oid) (AcquisitionVerbEffect verb newActionGID) = do
           filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
           updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
       in ActionManagementFunctions updatedActions
-
+        {-
 processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
       let ActionManagementFunctions actionSet = actionMgmt
           filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
           updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
       in ActionManagementFunctions updatedActions
+-}
+
+processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
+  trace ("processEffect: Processing AcquisitionPhraseEffect for object " ++ show oid ++ " with phrase " ++ show avp ++ " and new action " ++ show newActionGID) $
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      trace ("processEffect: LAMBDA EXECUTING - Inside modifyObjectActionManagementM lambda") $
+      let ActionManagementFunctions actionSet = actionMgmt
+          filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
+          updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+      in trace ("processEffect: LAMBDA COMPLETE - Original: " ++ show (Data.Set.toList actionSet) ++ " -> Updated: " ++ show (Data.Set.toList updatedActions)) $
+         ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -266,8 +277,15 @@ lookupSomaticAccess verb (ActionManagementFunctions actions) =
 
 lookupAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
-  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+  let result = listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+      allAAActions = [show (p, gid) | AAManagementKey p gid <- Data.Set.toList actions]
+  in trace ("lookupAcquisitionVerbPhrase: Looking for " ++ show avp ++ " in actions: " ++ show allAAActions ++ " -> result: " ++ show result) result
 
+    {-
+lookupAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+lookupAcquisitionVerbPhrase avp (ActionManagementFunctions actions) =
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+-}
 lookupAcquisition verb (ActionManagementFunctions actions) =
   let phraseMatches = [gid | AAManagementKey phrase gid <- Data.Set.toList actions,
                              let matches = matchesVerb phrase

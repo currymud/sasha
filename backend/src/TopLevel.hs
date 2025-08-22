@@ -5,24 +5,34 @@ import           Control.Monad.State       (get, modify')
 import           Control.Monad.State.Class (gets, put)
 import           Data.Kind                 (Type)
 import qualified Data.Map.Strict
-import           Data.Text                 (Text, empty, pack)
+import           Data.Text                 (Text, empty, pack, unpack)
 import           Debug.Trace               (trace)
 import           GameState                 (clearNarration, modifyNarration)
 import           Grammar.Parser            (parseTokens)
 import           Grammar.Parser.Lexer      (Lexeme, lexify, tokens)
 import           Model.GameState           (DisplayT, GameComputation,
-                                            GameState (_evaluation, _narration, _systemEffectRegistry),
-                                            GameT,
+                                            GameState (_evaluation, _narration, _systemEffectRegistry, _world),
+                                            GameT, Object (..),
                                             SystemEffect (PerceptionSystemEffect),
                                             SystemEffectConfig (SystemEffectConfig, _systemEffect, _systemEffectManagement),
-                                            _actionConsequence, _playerAction,
-                                            liftDisplay, transformToIO,
+                                            World (..), _actionConsequence,
+                                            _playerAction, liftDisplay,
+                                            transformToIO,
                                             updateActionConsequence)
+import           Model.GameState.Mappings
 import           Model.Parser              (Sentence)
 import           Relude.String.Conversion  (ToText (toText))
 import           System.Console.Haskeline  (InputT, defaultSettings,
                                             getInputLine, runInputT)
 
+debugObjectMap :: GameComputation Identity ()
+debugObjectMap = do
+  world <- gets _world
+  let objectMap = _getGIDToDataMap $ _objectMap world
+      objectEntries = Data.Map.Strict.toList objectMap
+  trace ("=== OBJECT MAP DEBUG ===") $ pure ()
+  mapM_ (\(gid, obj) -> trace ("Object GID " ++ show gid ++ ": " ++ (Data.Text.unpack $ _shortName obj)) $ pure ()) objectEntries
+  trace ("=== END OBJECT MAP ===") $ pure ()
 
 batchProcess :: [Text] -> GameComputation Identity ()
 batchProcess inputs = do
@@ -41,6 +51,7 @@ topLevel = runGame initComp
 
 runGame :: GameComputation Identity () -> GameT IO ()
 runGame comp' = do
+  transformToIO debugObjectMap
   transformToIO comp'
   liftDisplay displayResult
   transformToIO clearNarration

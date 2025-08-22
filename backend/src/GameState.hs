@@ -44,6 +44,7 @@ import           Data.Set                      (Set, delete, empty, fromList,
 import qualified Data.Set                      (filter, foldl', insert,
                                                 singleton)
 import           Data.Text                     (Text, intercalate, null, pack)
+import           Debug.Trace                   (trace)
 import           Error                         (throwMaybeM)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (ObjectKey),
@@ -345,7 +346,7 @@ modifyNarration narrationF = do
   current_narration <- gets _narration
   let updatedNarrative = narrationF current_narration
   modify' (\gs -> gs{ _narration = updatedNarrative })
-
+    {-
 modifyObjectM :: GID Object
               -> (Object -> Object)
               -> GameComputation Identity ()
@@ -358,6 +359,24 @@ modifyObjectM oid objectF = do
       updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
   modify' (\gs -> gs { _world = updatedWorld })
+-}
+
+modifyObjectM :: GID Object
+              -> (Object -> Object)
+              -> GameComputation Identity ()
+modifyObjectM oid objectF = do
+  world <- gets _world
+  let objectMap = _getGIDToDataMap $ _objectMap world
+  trace ("modifyObjectM: Looking for object " ++ show oid ++ " in map with keys: " ++ show (Data.Map.Strict.keys objectMap)) $ pure ()
+  object <- throwMaybeM ("Object not found: " <> pack (show oid)) $
+            Data.Map.Strict.lookup oid objectMap
+  trace ("modifyObjectM: Found object " ++ show oid ++ ", applying function") $ pure ()
+  let updatedObject = objectF object
+  trace ("modifyObjectM: Applied function, updating map") $ pure ()
+  let updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
+      updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
+  modify' (\gs -> gs { _world = updatedWorld })
+  trace ("modifyObjectM: Successfully updated object " ++ show oid) $ pure ()
 
 modifySpatialRelationshipMapM :: (SpatialRelationshipMap -> SpatialRelationshipMap)
                               -> GameComputation Identity ()
@@ -417,13 +436,6 @@ removeObjectFromLocationSemanticMapM lid nounKey oid =
                     then Data.Map.Strict.delete nounKey currentMap
                     else Data.Map.Strict.insert nounKey updatedSet currentMap
     in loc { _objectSemanticMap = updatedMap }
-
-modifyObjectActionManagementM :: GID Object
-                              -> (ActionManagementFunctions -> ActionManagementFunctions)
-                              -> GameComputation Identity ()
-modifyObjectActionManagementM oid actionF =
-  modifyObjectM oid $ \obj ->
-    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
 
 clearNarration :: GameComputation Identity ()
 clearNarration = modifyNarration (const emptyNarration)
