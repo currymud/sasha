@@ -2,6 +2,9 @@
 
 module Build.GameStateGeneration.BedroomWorldDSL where
 
+import           Build.GameStateGeneration.Defaults                      (defaultLocation,
+                                                                          defaultObject,
+                                                                          defaultPlayer)
 import qualified Data.Set                                                as Set
 import           Model.GameState                                         (ActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey),
                                                                           ImplicitStimulusActionF,
@@ -120,9 +123,6 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
-import           Build.GameStateGeneration.Defaults                      (defaultLocation,
-                                                                          defaultObject,
-                                                                          defaultPlayer)
 import           Build.Identifiers.Effects                               (youSeeMEffectGID)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
@@ -302,8 +302,8 @@ bedroomWorldDSL = do
 --  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
 --  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
-  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
-  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
+--  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
+--  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer

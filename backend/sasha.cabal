@@ -56,6 +56,7 @@ library
       Actions.Movement.Postural.SitStand
       Actions.Percieve.Look
       Build.GameState
+      Build.GameStateGeneration.Defaults
       Build.BedPuzzle.Actions.Inventory
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
@@ -77,17 +78,6 @@ library
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.Effects.Perception.Look
       Build.GameStateGeneration.BedroomWorldDSL
-      Build.GameStateGeneration.BedroomWorldSpec
-      Build.GameStateGeneration.Defaults
-      Build.GameStateGeneration.EDSL.GameStateBuilder
-      Build.GameStateGeneration.LocationSpec.Locations
-      Build.GameStateGeneration.LocationSpec.LocationGIDs
-      Build.GameStateGeneration.ObjectSpec
-      Build.GameStateGeneration.ObjectSpec.Objects
-      Build.GameStateGeneration.ObjectSpec.ObjectGIDS
-      Build.GameStateGeneration.World
-      Build.GameStateGeneration.WorldGeneration
-      Build.GameStateGeneration.WorldBuilder
       Build.Identifiers.Actions
       Build.Identifiers.Effects
       Build.Identifiers.Objects
