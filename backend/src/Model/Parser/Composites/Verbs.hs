@@ -8,6 +8,7 @@ import           Model.Parser.Atomics.Adverbs      (NegativePosturalDirection,
 import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker,
                                                     SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
+                                                    AdministrativeVerb,
                                                     ConsumptionVerb,
                                                     DirectionalStimulusVerb,
                                                     ImplicitStimulusVerb,
@@ -74,13 +75,16 @@ instance ToText StimulusVerbPhrase where
 
 type Imperative :: Type
 data Imperative
-  = StimulusVerbPhrase StimulusVerbPhrase
+  = Administrative AdministrativeVerb
+  | StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   | PosturalVerbPhrase PosturalVerbPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText Imperative where
+  toText (Administrative verb) =
+    toText verb
   toText (StimulusVerbPhrase verbPhrase) =
     toText verbPhrase
   toText (ConsumptionVerbPhrase' verbPhrase) =

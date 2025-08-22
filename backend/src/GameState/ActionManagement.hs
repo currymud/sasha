@@ -1,6 +1,6 @@
 module GameState.ActionManagement where
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (modify')
+import           Control.Monad.State           (gets, modify')
 import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
@@ -21,7 +21,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 GameComputation,
-                                                GameState (_player, _systemEffectRegistry),
+                                                GameState (_effectRegistry, _player, _systemEffectRegistry),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Object (_objectActionManagement),
@@ -68,12 +68,18 @@ removeSystemEffect key effectGID = modify' $ \gs ->
   in gs { _systemEffectRegistry = updatedRegistry }
 
 
+
 processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
+  trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   case maybeEffectMap of
-    Just effectMap -> processAllEffects effectMap
-    Nothing        -> pure () -- No effects registered for this action
+    Just effectMap -> do
+      trace ("DEBUG: Found effects") $ pure ()
+      processAllEffects effectMap
+    Nothing        -> do
+      trace ("DEBUG: No effects found") $
+        pure () -- No effects registered for this action
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)

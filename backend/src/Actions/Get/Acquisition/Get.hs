@@ -6,6 +6,7 @@ import           Control.Monad.Reader.Class    (asks)
 import           Control.Monad.State           (gets)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, elemAt, null, toList)
+import           Debug.Trace                   (trace)
 import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisition,
                                                 lookupAcquisitionVerbPhrase,
@@ -31,7 +32,31 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
                                                 StimulusVerbPhrase (DirectStimulusVerbPhrase))
 import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
 
+manageAcquisitionProcess avp = do
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupAcquisitionVerbPhrase avp availableActions of
+    Nothing -> error "Programmer Error: No acquisition action found for phrase: "
+    Just actionGID -> do
+      trace ("DEBUG: Found player action GID: " ++ show actionGID) $ pure () -- ADD THIS
+      actionMap <- asks (_acquisitionActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error "Programmer Error: No acquisition action found for GID: "
+        Just (AcquisitionActionF actionFunc) -> do
+          trace ("DEBUG: Executing AcquisitionActionF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
+          let actionKey = AcquisitionalActionKey actionGID
+          actionFunc locationSearchStrategy avp
+          trace ("DEBUG: About to call processEffectsFromRegistry with actionKey: " ++ show actionKey) $ pure () -- ADD THIS
+          processEffectsFromRegistry actionKey
+          trace ("DEBUG: processEffectsFromRegistry completed for actionKey: " ++ show actionKey) $ pure () -- ADD THIS
+        Just (LosesObjectF _actionFunc) -> do
+          trace ("DEBUG: Found LosesObjectF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
+          let actionKey = AcquisitionalActionKey actionGID
+          error "Drop actions not yet implemented"
+          processEffectsFromRegistry actionKey
+        Just (CollectedF _) ->
+          trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
 
+  {-
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
@@ -52,6 +77,7 @@ manageAcquisitionProcess avp = do
           error "Drop actions not yet implemented"
           processEffectsFromRegistry actionKey
         Just (CollectedF _) -> error "CollectedF should not be in player action map"
+        -}
 -- | General case: Search current location's object semantic map
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do

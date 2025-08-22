@@ -26,6 +26,7 @@ module Model.GameState (
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
   , Config (Config, _actionMaps, _systemEffectMap)
+  , CoordinationResult (CoordinationResult, _computation, _effectKeys)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
@@ -202,11 +203,17 @@ type SearchStrategy :: Type
 type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
+type CoordinationResult :: Type
+data CoordinationResult = CoordinationResult
+  { _computation :: GameComputation Identity ()
+  , _effectKeys  :: [ActionKey]
+  }
+
 type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity ()))
- | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity ()))
+ | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
@@ -383,6 +390,7 @@ data Player = Player
   { _location      :: GID Location
   , _playerActions :: ActionManagementFunctions
   }
+  deriving stock (Show, Eq, Ord)
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap

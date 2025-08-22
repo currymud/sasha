@@ -136,11 +136,16 @@ doGet sourceGID targetGID avp lookupF = do
 
      targetActionMgmt = _objectActionManagement targetObj
      addedToRes = case lookupF avp targetActionMgmt of
-       Just targetActionGID ->
+       Just targetActionGID -> do
+         trace ("DEBUG: Found target object action GID: " ++ show targetActionGID) $ pure ()
          case Data.Map.Strict.lookup targetActionGID actionMap of
-           Just (CollectedF actionFunc) -> actionFunc
+           Just (CollectedF actionFunc) -> do
+             trace ("DEBUG: Executing CollectedF action for GID: " ++ show targetActionGID) $
+               actionFunc
            Just (LosesObjectF _) ->
-             Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
+             trace ("DEBUG: Found LosesObjectF for target GID: " ++ show targetActionGID) $  -- ADD THIS
+
+               Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
            Just (AcquisitionActionF _) ->
              Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses AcquisitionActionF"
            Nothing ->

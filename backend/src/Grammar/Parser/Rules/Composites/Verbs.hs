@@ -16,6 +16,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (object
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
 import           Grammar.Parser.Partitions.Prepositions.SourceMarkers    (sourceMarkers)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (acquisitionVerbs)
+import           Grammar.Parser.Partitions.Verbs.AdministrativeVerbs     (administrativeVerbs)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (consumptionVerbs)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (directionalStimulusVerbs)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
@@ -39,12 +40,13 @@ import           Model.Parser.Atomics.Nouns                              (Consum
                                                                           SomaticStimulus (SomaticStimulus))
 import           Model.Parser.Atomics.Prepositions                       (SourceMarker (SourceMarker))
 import           Model.Parser.Atomics.Verbs                              (AcquisitionVerb (AcquisitionVerb),
+                                                                          AdministrativeVerb (AdministrativeVerb),
                                                                           ConsumptionVerb (ConsumptionVerb),
                                                                           DirectionalStimulusVerb (DirectionalStimulusVerb),
                                                                           SomaticAccessVerb (SomaticAccessVerb))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          Imperative (AcquisitionVerbPhrase', ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                                          Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                                           PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
@@ -111,11 +113,14 @@ posturalVerbPhraseRules = do
 
 imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do
+  administrativeVerb <- parseRule administrativeVerbs AdministrativeVerb
   stimulusVerbPhrase <- stimulusVerbPhraseRules
   consumptionVerbPhrase <- consumptionVerbPhraseRules
   acquisitionVerbPhrase <- acquisitionVerbPhraseRules
   posturalVerbPhrase <- posturalVerbPhraseRules
-  rule $ StimulusVerbPhrase <$> stimulusVerbPhrase
+  rule $ Administrative <$> administrativeVerb
+           <|> StimulusVerbPhrase <$> stimulusVerbPhrase
            <|> ConsumptionVerbPhrase' <$> consumptionVerbPhrase
            <|> AcquisitionVerbPhrase' <$> acquisitionVerbPhrase
            <|> PosturalVerbPhrase <$> posturalVerbPhrase
+
