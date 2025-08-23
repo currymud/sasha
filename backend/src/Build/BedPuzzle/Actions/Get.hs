@@ -5,6 +5,7 @@ import           Control.Monad.Identity                           (Identity)
 import           Control.Monad.Reader                             (asks)
 import           Control.Monad.State                              (gets,
                                                                    modify')
+import           Data.Kind                                        (Type)
 import           Data.Map.Strict                                  (Map)
 import qualified Data.Map.Strict
 import           Data.Set                                         (Set, delete,
@@ -12,7 +13,7 @@ import           Data.Set                                         (Set, delete,
                                                                    filter,
                                                                    insert, map,
                                                                    null, toList)
-import           Data.Text                                        (Text)
+import           Data.Text                                        (Text, pack)
 import           Debug.Trace                                      (trace)
 import           GameState                                        (addToInventoryM,
                                                                    getObjectM,
@@ -26,6 +27,7 @@ import           GameState.ActionManagement                       (findAAKey,
                                                                    findAVKey,
                                                                    lookupAcquisition,
                                                                    lookupAcquisitionVerbPhrase,
+                                                                   processAllEffects,
                                                                    processEffectsFromRegistry)
 import           GameState.Perception                             (updatePerceptionMapM)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
@@ -41,6 +43,7 @@ import           Model.GameState                                  (AcquisitionAc
                                                                    ActionMaps (_acquisitionActionMap),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
                                                                    Config (_actionMaps),
+                                                                   CoordinationResult (CoordinationResult),
                                                                    Effect (AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
                                                                    GameComputation,
                                                                    GameState (_player, _world),
@@ -60,7 +63,37 @@ import           Model.Parser.Composites.Nouns                    (SupportPhrase
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                    ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Model.Parser.GCase                               (NounKey)
-
+  {-
+                Just actionGID -> do
+                  case Data.Map.Strict.lookup actionGID actionMap of
+                    Nothing -> error $ "Programmer Error: getF - No acquisition action found for GID: " ++ show actionGID
+                    Just (CollectedF actionFunc) ->
+                       case actionFunc of
+                         Left notGetF -> notGetF >> processEffectsFromRegistry actionKey
+                         Right goGetF -> do
+                           supportActionManagement <- _objectActionManagement <$> getObjectM containerGID
+                           case findAVKey get supportActionManagement of
+                             Nothing -> error $ "Programmer Error: getF - Container " ++ show containerGID ++ " does not have a 'get' action."
+                             Just supportActionGID -> do
+                               case Data.Map.Strict.lookup supportActionGID actionMap of
+                                 Nothing -> error $ "Programmer Error: getF - No acquisiition action found for container GID: " ++ show supportActionGID
+                                 Just (LosesObjectF supportActionF) -> do
+                                   case supportActionF objectGID of
+                                     Left _errorF    -> pure ()
+                                     Right _successF -> pure ()
+                                 Just _ -> error $ "Programmer Error: getF - Action for GID: " ++ show supportActionGID ++ " is not a LosesObjectF."
+                               -- actionF objectGID
+                           pure ()
+                    _ -> error $ "Programmer Error: getF - Action for GID: " ++ show actionGID ++ " is not a CollectedF."
+-}
+  {-
+         maybeResult <- searchStrategy _saObjectKey
+          case maybeResult of
+            Nothing -> modifyNarration $ updateActionConsequence "You don't see that here."
+            Just (objectGID, containerGID) -> do
+              -- Coordinate the handoff between source and target
+              objectActionManagement <- _objectActionManagement <$> getObjectM objectGID
+-}
 getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
   where
@@ -68,6 +101,8 @@ getDeniedF = NotGettableF denied
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
+-- processAllEffects :: ActionEffectMap -> GameComputation Identity ()
+-- processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
 
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
@@ -80,135 +115,74 @@ getF = AcquisitionActionF getit
     getit actionKey actionMap searchStrategy avp = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
-          maybeResult <- searchStrategy _saObjectKey
-          case maybeResult of
-            Just (objectGID, containerGID) -> do
-              -- Coordinate the handoff between source and target
-              objectActionManagement <- _objectActionManagement <$> getObjectM objectGID
-              case findAVKey get objectActionManagement of
-                Nothing -> error $ "Programmer Error: getF - Object " ++ show objectGID ++ " does not have a 'get' action."
-                Just actionGID -> do
-                  case Data.Map.Strict.lookup actionGID actionMap of
-                    Nothing -> error $ "Programmer Error: getF - No acquisition action found for GID: " ++ show actionGID
-                    Just (CollectedF actionFunc) ->
-                       case actionFunc of
-                         Left notGetF -> notGetF >> processEffectsFromRegistry actionKey
-                         Right goGetF -> do
-                           supportActionManagement <- _objectActionManagement <$> getObjectM containerGID
-                           pure ()
-                    _ -> error $ "Programmer Error: getF - Action for GID: " ++ show actionGID ++ " is not a CollectedF."
---              _ <- doGet containerGID objectGID avp
+          osValidation <- validateObjectSearch searchStrategy _saObjectKey
+          case osValidation of
+            Left err -> handleAcquisitionError err
+            Right (objectGID, containerGID) -> do
+              objectActionLookup <- lookupAcquisitionAction objectGID actionMap ("Object " <> (Data.Text.pack . show) objectGID <> ":")
+              case objectActionLookup of
+                Left err-> handleAcquisitionError err
+                Right (CollectedF objectActionF) -> do
+                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap ("Container " <> (Data.Text.pack . show) containerGID <> ":")
+                  case containerActionLookup of
+                    Left err -> handleAcquisitionError err
+                    Right (LosesObjectF containerActionF) -> do
+                      (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
+                      (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
+                      let allEffects = actionKey:(objectEffects <> containerEffects)
+                      mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
+                      pure ()
+                    Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
+                Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
               pure ()
-            Nothing -> do
-              -- Object not found or not accessible
-              modifyNarration $ updateActionConsequence "You don't see that here."
-          pure ()
         Complete (CompleteAcquisitionRes {..}) -> pure ()
       pure ()
       where
         ares = parseAcquisitionPhrase avp
 
-      {-
-      let (_ophrase, nounKey) = parseAcquisitionPhrase avp
-      in case avp of
-        SimpleAcquisitionVerbPhrase _verb objectPhrase -> do
-        -- Parse the object phrase to get the noun key
+validateObjectSearch :: SearchStrategy -> NounKey -> GameComputation Identity (Either AcquisitionError (GID Object, GID Object))
+validateObjectSearch searchStrategy nounKey = do
+  maybeResult <- searchStrategy nounKey
+  case maybeResult of
+    Nothing -> pure $ Left $ ObjectNotFound "You don't see that here."
+    Just (objectGID, containerGID) -> pure $ Right (objectGID, containerGID)
 
-        -- Use search strategy to find target object and its container/supporter
-          maybeResult <- searchStrategy nounKey
-          case maybeResult of
-            Just (objectGID, containerGID) -> do
-            -- Coordinate the handoff between source and target
+lookupAcquisitionAction :: GID Object
+                             -> AcquisitionVerbActionMap
+                             -> Text
+                             -> GameComputation Identity (Either AcquisitionError AcquisitionActionF)
+lookupAcquisitionAction objectGID actionMap contextDescription = do
+  actionMgmt <- _objectActionManagement <$> getObjectM objectGID
+  case findAVKey get actionMgmt of
+    Nothing -> pure $ Left $ ContainerMissingAction $ contextDescription <> " " <> (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
+    Just actionGID ->
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> pure $ Left $ InvalidActionType $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
+        Just action -> pure $ Right action
 
-              doGet containerGID objectGID avp (lookupAcquisition . extractVerb)
-            Nothing -> do
-            e- Object not found or not accessible
-              modifyNarration $ updateActionConsequence "You don't see that here."
+type AcquisitionError :: Type
+data AcquisitionError
+  = ObjectNotFound Text
+  | ObjectNotGettable Text
+  | ContainerMissingAction Text
+  | InvalidActionType Text
+  | SpatialValidationFailed Text
 
-        AcquisitionVerbPhrase _verb objectPhrase _sourceMarker supportPhrase -> do
-        -- Parse both the target and source from the phrase
-          let sourceNounKey = parseSupportPhrase supportPhrase
-
-        -- Find target and source GIDs using location semantic map
-          playerLocation <- getPlayerLocationM
-          let objectSemanticMap = _objectSemanticMap playerLocation
-
-        -- Look up target object
-          targetResult <- case Data.Map.Strict.lookup nounKey objectSemanticMap of
-            Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
-            _ -> pure Nothing
-
-        -- Look up source object
-          sourceResult <- case Data.Map.Strict.lookup sourceNounKey objectSemanticMap of
-            Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
-            _ -> pure Nothing
-
-          case (targetResult, sourceResult) of
-            (Just targetGID, Just sourceGID) -> do
-            -- Verify the spatial relationship exists
-              world <- gets _world
-              let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-              case Data.Map.Strict.lookup targetGID spatialMap of
-                Just relationships -> do
-                  let isContainedInSource = any (\case
-                        ContainedIn oid -> oid == sourceGID
-                        SupportedBy oid -> oid == sourceGID
-                        _ -> False) (Data.Set.toList relationships)
-                  if isContainedInSource
-                    then doGet sourceGID targetGID avp lookupAcquisitionVerbPhrase
-                    else modifyNarration $ updateActionConsequence "That's not in there."
-                Nothing -> modifyNarration $ updateActionConsequence "That's not in there."
-            (Nothing, _) -> modifyNarration $ updateActionConsequence "You don't see that here."
-            (_, Nothing) -> modifyNarration $ updateActionConsequence "You don't see that container here."
--}
-  {-
-checkGettable :: GID Object -> AcquisitionVerbPhrase -> GameComputation Identity (Either (ActionKey -> GameComputation Identity ()) (ActionKey -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()))
-checkGettable targetGID avp = do
-  -- Get the target object and find its acquisition action
-  targetObj <- getObjectM targetGID
-  let targetActionMgmt = _objectActionManagement targetObj
-  actionMap <- asks (_acquisitionActionMap . _actionMaps)
-  case Data.Map.Strict.lookup targetActionGID actionMap of
-    Just (NotGettableF actionFunc) ->
-          -- Object is not gettable - return the NotGettable function
-     pure $ Left actionFunc
-     Just (CollectedF _) ->
-          -- Object is gettable - return continuation function
-       error "Programmer Error: CollectedF should not be used for the thing being gotten."
-     Just (LosesObjectF _) ->
-          -- Object is gettable - return continuation function
-     pure $ Right proceedWithSpatialValidation
-        Just (AcquisitionActionF _) ->
-          pure $ Left $ \_ -> modifyNarration $ updateActionConsequence "Object has incorrect action type."
-        Nothing ->
-          pure $ Left $ \_ -> modifyNarration $ updateActionConsequence "Object's action not
-
--- Step 1: Complete doGet implementation with internal findKeys function
-doGet :: GID Object
-          -> GID Object
-          -> AcquisitionVerbPhrase
-          -> GameComputation Identity [ActionKey]
-doGet sourceGID targetGID avp = do
-  -- Get the actual objects to access their action management
-  sourceObj <- getObjectM sourceGID
-  targetObj <- getObjectM targetGID
-
-  let sourceActionMgmt = _objectActionManagement sourceObj
-      targetActionMgmt = _objectActionManagement targetObj
-  -- Collect ActionKeys from both objects
-  let sourceKeys = findKeys avp sourceActionMgmt
-      targetKeys = findKeys avp targetActionMgmt
-
-  -- Return combined keys from both objects
-  pure (sourceKeys ++ targetKeys)
--}
+handleAcquisitionError :: AcquisitionError -> GameComputation Identity ()
+handleAcquisitionError err = modifyNarration $ updateActionConsequence $ case err of
+  ObjectNotFound msg          -> msg
+  ObjectNotGettable msg       -> msg
+  ContainerMissingAction msg  -> msg
+  InvalidActionType msg       -> msg
+  SpatialValidationFailed msg -> msg
+    {-
 findKeys :: AcquisitionVerbPhrase -> ActionManagementFunctions -> [ActionKey]
 findKeys phrase (ActionManagementFunctions actions) =
   let phraseKeys = [AcquisitionalActionKey gid | AAManagementKey p gid <- Data.Set.toList actions, p == phrase]
       verb = extractVerb phrase
       verbKeys = [AcquisitionalActionKey gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb]
   in phraseKeys ++ verbKeys
-
+-}
 extractVerb :: AcquisitionVerbPhrase -> AcquisitionVerb
 extractVerb (SimpleAcquisitionVerbPhrase verb _) = verb
 extractVerb (AcquisitionVerbPhrase verb _ _ _)   = verb

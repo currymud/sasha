@@ -23,8 +23,8 @@ import           Model.GID                                        (GID)
 getObjectF :: GID Object -> AcquisitionActionF
 getObjectF objectGID = CollectedF getit
   where
-    getit :: Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult)
-    getit = Right $ do
+    getit :: GameComputation Identity CoordinationResult
+    getit = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement
       -- Find the single AVManagementKey entry that matches the 'get' verb
@@ -38,8 +38,8 @@ getFromSupportF :: GID Object -> AcquisitionActionF
 getFromSupportF supportObjGID = LosesObjectF getit
   where
     getit :: GID Object
-              -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult)
-    getit targetObjectGID = Right $ do
+              -> GameComputation Identity CoordinationResult
+    getit targetObjectGID = do
       trace ("DEBUG: getFromSupportF executing with supportObjGID=" ++ show supportObjGID ++ " targetObjectGID=" ++ show targetObjectGID) $ pure ()
 
       -- Get the target object's action management

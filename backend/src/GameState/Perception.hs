@@ -162,9 +162,9 @@ addObjectToPerceptionMap :: GID Object -> GameComputation Identity ()
 addObjectToPerceptionMap oid = do
   obj <- getObjectM oid
   let descriptives = Set.toList (_descriptives obj)
-  mapM_ (addObjectUnderPhrase oid) descriptives
+  mapM_ addObjectUnderPhrase descriptives
   where
-    addObjectUnderPhrase oid phrase =
+    addObjectUnderPhrase phrase =
       modifyPerceptionMapM $ \perceptionMap ->
         let currentObjects = Map.findWithDefault Set.empty phrase perceptionMap
             updatedObjects = Set.insert oid currentObjects
@@ -175,16 +175,15 @@ removeObjectFromPerceptionMap :: GID Object -> GameComputation Identity ()
 removeObjectFromPerceptionMap oid = do
   obj <- getObjectM oid
   let descriptives = Set.toList (_descriptives obj)
-  mapM_ (removeObjectUnderPhrase oid) descriptives
+  mapM_ removeObjectUnderPhrase descriptives
   where
-    removeObjectUnderPhrase oid phrase =
+    removeObjectUnderPhrase phrase =
       modifyPerceptionMapM $ \perceptionMap ->
         let currentObjects = Map.findWithDefault Set.empty phrase perceptionMap
             updatedObjects = Set.delete oid currentObjects
         in if Set.null updatedObjects
            then Map.delete phrase perceptionMap
            else Map.insert phrase updatedObjects perceptionMap
-
 
 -- | Build perception map from a list of object GIDs
 buildPerceptionMapFromObjects :: [GID Object]

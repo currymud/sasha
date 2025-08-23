@@ -238,8 +238,8 @@ data SimpleAcquisitionRes = SimpleAcquisitionRes
 type AcquisitionActionF :: Type
 data AcquisitionActionF
  = AcquisitionActionF (ActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
- | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | CollectedF (GameComputation Identity CoordinationResult)
+ | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
  | NotGettableF (GameComputation Identity ())
 
 type ConsumptionActionF :: Type
