@@ -211,10 +211,10 @@ data CoordinationResult = CoordinationResult
 
 type AcquisitionActionF :: Type
 data AcquisitionActionF
- = AcquisitionActionF (SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
- | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
- | NotGettableF (GameComputation Identity ())
+ = AcquisitionActionF (ActionKey -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
+ | CollectedF ( ActionKey -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | LosesObjectF (ActionKey -> GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | NotGettableF (ActionKey -> GameComputation Identity ())
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF

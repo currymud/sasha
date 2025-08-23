@@ -55,6 +55,7 @@ manageAcquisitionProcess avp = do
           processEffectsFromRegistry actionKey
         Just (CollectedF _) ->
           trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
+          error "CollectedF should not be in player action map"
 
   {-
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
@@ -102,8 +103,10 @@ locationSearchStrategy targetNounKey = do
     getContainerSources relationships =
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
-        {-
--- | Edge case: Search global perception map
+
+
+  {-
+-- |  Search global perception map
 perceptionSearchStrategy :: SearchStrategy
 perceptionSearchStrategy targetNounKey = do
   world <- gets _world

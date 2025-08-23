@@ -19,7 +19,7 @@ import           GameState                     (addToInventoryM, getObjectM,
 import           GameState.ActionManagement    (lookupAcquisition,
                                                 lookupAcquisitionVerbPhrase)
 import           GameState.Perception          (updatePerceptionMapM)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap, _actionEffectMap),
                                                 ActionKey (AcquisitionalActionKey),
@@ -58,8 +58,8 @@ getDeniedF = AcquisitionActionF (const (const denied))
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit searchStrategy avp =
+    getit :: ActionKey -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
+    getit actionKey searchStrategy avp =
       let (_ophrase, nounKey) = parseAcquisitionPhrase avp
       in case avp of
         SimpleAcquisitionVerbPhrase _verb objectPhrase -> do
@@ -70,6 +70,7 @@ getF = AcquisitionActionF getit
           case maybeResult of
             Just (objectGID, containerGID) -> do
             -- Coordinate the handoff between source and target
+
               doGet containerGID objectGID avp (lookupAcquisition . extractVerb)
             Nothing -> do
             -- Object not found or not accessible
@@ -116,21 +117,44 @@ doGet :: GID Object
           -> (AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
           -> GameComputation Identity ()
 doGet sourceGID targetGID avp lookupF = do
- actionMap <- asks (_acquisitionActionMap . _actionMaps)
- sourceObj <- getObjectM sourceGID
- targetObj <- getObjectM targetGID
+-- actionMap <- asks (_acquisitionActionMap . _actionMaps)
+-- sourceObj <- getObjectM sourceGID
+-- targetObj <- getObjectM targetGID
+  let targetActionMgmt =_objectActionManagement targetObj
+      addedToRes = case lookupF avp targetActionMgmt of
+       Just targetActionGID -> do
+         trace ("DEBUG: Found target object action GID: " ++ show targetActionGID) $ pure ()
+         case Data.Map.Strict.lookup targetActionGID actionMap of
+           Just (CollectedF actionFunc) -> do
+          --   trace ("DEBUG: Executing CollectedF action for GID: " ++ show targetActionGID) $
+          --     actionFunc
+           Just (LosesObjectF _) ->
+             trace ("DEBUG: Found LosesObjectF for target GID: " ++ show targetActionGID) $  -- ADD THIS
+               Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
+           Just (AcquisitionActionF _) ->
+             Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses AcquisitionActionF"
+           Nothing ->
+             Left $ modifyNarration $ updateActionConsequence "Target object's acquisition action not found in action map"
+       Nothing ->
+         Left $ modifyNarration $ updateActionConsequence "Target object has no acquisition action for this phrase"
+  pure ()
 
+-- ToDo We need a validation that the source object actually contains or supports the target object before proceeding
+---- should be in getF
+{-
  let sourceActionMgmt = _objectActionManagement sourceObj
      removedFromRes = case lookupF avp sourceActionMgmt of
        Just sourceActionGID ->
          case Data.Map.Strict.lookup sourceActionGID actionMap of
             Just (LosesObjectF actionFunc) -> actionFunc targetGID
             Just (CollectedF _) ->
-              Left $ modifyNarration $ updateActionConsequence "Source object should use LosesObjectF constructor but uses CollectedF"
+              error "Source object should use LosesObjectF constructor but uses CollectedF"
             Just (AcquisitionActionF _) ->
-              Left $ modifyNarration $ updateActionConsequence "Source object should use LosesObjectF constructor but uses AcquisitionActionF"
+              error "Source object should use LosesObjectF constructor but uses AcquisitionActionF"
+            Just (NotGettableF _)->
+              error "Source object should use LosesObjectF constructor but uses NotGettableF"
             Nothing ->
-              Left $ modifyNarration $ updateActionConsequence "Source object's acquisition action not found in action map"
+              error "Source object's acquisition action not found in action map"
        Nothing ->
          Left $ modifyNarration $ updateActionConsequence "Source object has no acquisition action"
 
@@ -144,7 +168,6 @@ doGet sourceGID targetGID avp lookupF = do
                actionFunc
            Just (LosesObjectF _) ->
              trace ("DEBUG: Found LosesObjectF for target GID: " ++ show targetActionGID) $  -- ADD THIS
-
                Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
            Just (AcquisitionActionF _) ->
              Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses AcquisitionActionF"
@@ -157,6 +180,7 @@ doGet sourceGID targetGID avp lookupF = do
    comp1 <- removedFromRes
    comp2 <- addedToRes
    pure $ comp1 >> comp2
+   -}
 extractVerb :: AcquisitionVerbPhrase -> AcquisitionVerb
 extractVerb (SimpleAcquisitionVerbPhrase verb _) = verb
 extractVerb (AcquisitionVerbPhrase verb _ _ _)   = verb
