@@ -10,6 +10,10 @@ module Model.GameState (
                 DirectionalStimulusActionKey,
                 PosturalActionKey,
                 SomaticAccessActionKey)
+  , AcquisitionRes (Complete, Simple)
+  , AcquisitionVerbActionMap
+  , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
+  , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, AVManagementKey, CAManagementKey,
                      PPManagementKey, NPManagementKey)
@@ -99,7 +103,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 PositivePosturalVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
-                                                ObjectPhrase)
+                                                ObjectPhrase, SupportPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
@@ -209,12 +213,34 @@ data CoordinationResult = CoordinationResult
   , _effectKeys  :: [ActionKey]
   }
 
+type AcquisitionRes :: Type
+data AcquisitionRes
+  = Complete CompleteAcquisitionRes
+  | Simple SimpleAcquisitionRes
+  deriving stock (Show, Eq, Ord)
+
+type CompleteAcquisitionRes :: Type
+data CompleteAcquisitionRes = CompleteAcquisitionRes
+  { _caObjectKey     :: NounKey
+  , _caObjectPhrase  :: ObjectPhrase
+  , _caSupportKey    :: NounKey
+  , _caSupportPhrase :: SupportPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+type SimpleAcquisitionRes :: Type
+data SimpleAcquisitionRes = SimpleAcquisitionRes
+  { _saObjectKey    :: NounKey
+  , _saObjectPhrase :: ObjectPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
 type AcquisitionActionF :: Type
 data AcquisitionActionF
- = AcquisitionActionF (ActionKey -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
- | CollectedF ( ActionKey -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
- | LosesObjectF (ActionKey -> GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
- | NotGettableF (ActionKey -> GameComputation Identity ())
+ = AcquisitionActionF (ActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
+ | CollectedF (Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | LosesObjectF (GID Object -> Either (GameComputation Identity ()) (GameComputation Identity CoordinationResult))
+ | NotGettableF (GameComputation Identity ())
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF

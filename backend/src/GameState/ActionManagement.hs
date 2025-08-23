@@ -36,6 +36,8 @@ import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
+                                                NegativePosturalVerb,
+                                                PositivePosturalVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
@@ -318,4 +320,36 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
 -- Convenience builders
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
+
+findDSAKey :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
+findDSAKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findAAKey :: AcquisitionVerbPhrase ->  ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+findAAKey phrase (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actionSet, p == phrase]
+
+findAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+findAVKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findISAKey :: ImplicitStimulusVerb -> ActionManagementFunctions -> Maybe (GID ImplicitStimulusActionF)
+findISAKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | ISAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findSSAKey :: SomaticAccessVerb -> ActionManagementFunctions-> Maybe (GID SomaticAccessActionF)
+findSSAKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findCAKey :: ConsumptionVerbPhrase -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
+findCAKey phrase (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | CAManagementKey p gid <- Data.Set.toList actionSet, p == phrase]
+
+findPPKey :: PositivePosturalVerb -> ActionManagementFunctions -> Maybe (GID PosturalActionF)
+findPPKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findNPKey :: NegativePosturalVerb -> ActionManagementFunctions -> Maybe (GID PosturalActionF)
+findNPKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 

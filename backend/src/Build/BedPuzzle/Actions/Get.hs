@@ -1,54 +1,68 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
 module Build.BedPuzzle.Actions.Get (getF,getDeniedF) where
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.Reader          (asks)
-import           Control.Monad.State           (gets, modify')
-import           Data.Map.Strict               (Map)
+import           Control.Monad.Identity                           (Identity)
+import           Control.Monad.Reader                             (asks)
+import           Control.Monad.State                              (gets,
+                                                                   modify')
+import           Data.Map.Strict                                  (Map)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, delete, elemAt, filter,
-                                                insert, map, null, toList)
-import           Data.Text                     (Text)
-import           Debug.Trace                   (trace)
-import           GameState                     (addToInventoryM, getObjectM,
-                                                getPlayerLocationM, getPlayerM,
-                                                modifyNarration,
-                                                modifySpatialRelationshipsForObjectM,
-                                                parseAcquisitionPhrase,
-                                                parseSupportPhrase)
-import           GameState.ActionManagement    (lookupAcquisition,
-                                                lookupAcquisitionVerbPhrase)
-import           GameState.Perception          (updatePerceptionMapM)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                ActionEffectKey (ObjectKey, PlayerKey),
-                                                ActionEffectMap (ActionEffectMap, _actionEffectMap),
-                                                ActionKey (AcquisitionalActionKey),
-                                                ActionKeyMap (ActionKeyMap, _unActionKeyMap),
-                                                ActionManagement (AAManagementKey, CAManagementKey, DSAManagementKey, NPManagementKey, PPManagementKey),
-                                                ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionMaps (_acquisitionActionMap),
-                                                Config (_actionMaps),
-                                                Effect (AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
-                                                GameComputation,
-                                                GameState (_player, _world),
-                                                Location (_locationActionManagement, _objectSemanticMap),
-                                                Object (_objectActionManagement),
-                                                Player (_playerActions),
-                                                PlayerKey (PlayerKeyObject),
-                                                SearchStrategy,
-                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
-                                                SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_spatialRelationshipMap),
-                                                updateActionConsequence)
-import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
-import           Model.Parser.Composites.Nouns (SupportPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase))
-import           Model.Parser.GCase            (NounKey)
+import           Data.Set                                         (Set, delete,
+                                                                   elemAt,
+                                                                   filter,
+                                                                   insert, map,
+                                                                   null, toList)
+import           Data.Text                                        (Text)
+import           Debug.Trace                                      (trace)
+import           GameState                                        (addToInventoryM,
+                                                                   getObjectM,
+                                                                   getPlayerLocationM,
+                                                                   getPlayerM,
+                                                                   modifyNarration,
+                                                                   modifySpatialRelationshipsForObjectM,
+                                                                   parseAcquisitionPhrase,
+                                                                   parseSupportPhrase)
+import           GameState.ActionManagement                       (findAAKey,
+                                                                   findAVKey,
+                                                                   lookupAcquisition,
+                                                                   lookupAcquisitionVerbPhrase,
+                                                                   processEffectsFromRegistry)
+import           GameState.Perception                             (updatePerceptionMapM)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
+import           Model.GameState                                  (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                                   AcquisitionRes (Complete, Simple),
+                                                                   AcquisitionVerbActionMap,
+                                                                   ActionEffectKey (ObjectKey, PlayerKey),
+                                                                   ActionEffectMap (ActionEffectMap, _actionEffectMap),
+                                                                   ActionKey (AcquisitionalActionKey),
+                                                                   ActionKeyMap (ActionKeyMap, _unActionKeyMap),
+                                                                   ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, NPManagementKey, PPManagementKey),
+                                                                   ActionManagementFunctions (ActionManagementFunctions),
+                                                                   ActionMaps (_acquisitionActionMap),
+                                                                   CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
+                                                                   Config (_actionMaps),
+                                                                   Effect (AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
+                                                                   GameComputation,
+                                                                   GameState (_player, _world),
+                                                                   Location (_locationActionManagement, _objectSemanticMap),
+                                                                   Object (_objectActionManagement),
+                                                                   Player (_playerActions),
+                                                                   PlayerKey (PlayerKeyObject),
+                                                                   SearchStrategy,
+                                                                   SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase),
+                                                                   SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
+                                                                   SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                   World (_spatialRelationshipMap),
+                                                                   updateActionConsequence)
+import           Model.GID                                        (GID)
+import           Model.Parser.Atomics.Verbs                       (AcquisitionVerb)
+import           Model.Parser.Composites.Nouns                    (SupportPhrase)
+import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
+                                                                   ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+import           Model.Parser.GCase                               (NounKey)
 
 getDeniedF :: AcquisitionActionF
-getDeniedF = AcquisitionActionF (const (const denied))
+getDeniedF = NotGettableF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -58,8 +72,43 @@ getDeniedF = AcquisitionActionF (const (const denied))
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: ActionKey -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ()
-    getit actionKey searchStrategy avp =
+    getit :: ActionKey
+               -> AcquisitionVerbActionMap
+               -> SearchStrategy
+               -> AcquisitionVerbPhrase
+               -> GameComputation Identity ()
+    getit actionKey actionMap searchStrategy avp = do
+      case ares of
+        Simple (SimpleAcquisitionRes {..}) -> do
+          maybeResult <- searchStrategy _saObjectKey
+          case maybeResult of
+            Just (objectGID, containerGID) -> do
+              -- Coordinate the handoff between source and target
+              objectActionManagement <- _objectActionManagement <$> getObjectM objectGID
+              case findAVKey get objectActionManagement of
+                Nothing -> error $ "Programmer Error: getF - Object " ++ show objectGID ++ " does not have a 'get' action."
+                Just actionGID -> do
+                  case Data.Map.Strict.lookup actionGID actionMap of
+                    Nothing -> error $ "Programmer Error: getF - No acquisition action found for GID: " ++ show actionGID
+                    Just (CollectedF actionFunc) ->
+                       case actionFunc of
+                         Left notGetF -> notGetF >> processEffectsFromRegistry actionKey
+                         Right goGetF -> do
+                           supportActionManagement <- _objectActionManagement <$> getObjectM containerGID
+                           pure ()
+                    _ -> error $ "Programmer Error: getF - Action for GID: " ++ show actionGID ++ " is not a CollectedF."
+--              _ <- doGet containerGID objectGID avp
+              pure ()
+            Nothing -> do
+              -- Object not found or not accessible
+              modifyNarration $ updateActionConsequence "You don't see that here."
+          pure ()
+        Complete (CompleteAcquisitionRes {..}) -> pure ()
+      pure ()
+      where
+        ares = parseAcquisitionPhrase avp
+
+      {-
       let (_ophrase, nounKey) = parseAcquisitionPhrase avp
       in case avp of
         SimpleAcquisitionVerbPhrase _verb objectPhrase -> do
@@ -73,7 +122,7 @@ getF = AcquisitionActionF getit
 
               doGet containerGID objectGID avp (lookupAcquisition . extractVerb)
             Nothing -> do
-            -- Object not found or not accessible
+            e- Object not found or not accessible
               modifyNarration $ updateActionConsequence "You don't see that here."
 
         AcquisitionVerbPhrase _verb objectPhrase _sourceMarker supportPhrase -> do
@@ -111,76 +160,55 @@ getF = AcquisitionActionF getit
                 Nothing -> modifyNarration $ updateActionConsequence "That's not in there."
             (Nothing, _) -> modifyNarration $ updateActionConsequence "You don't see that here."
             (_, Nothing) -> modifyNarration $ updateActionConsequence "You don't see that container here."
+-}
+  {-
+checkGettable :: GID Object -> AcquisitionVerbPhrase -> GameComputation Identity (Either (ActionKey -> GameComputation Identity ()) (ActionKey -> GID Object -> AcquisitionVerbPhrase -> GameComputation Identity ()))
+checkGettable targetGID avp = do
+  -- Get the target object and find its acquisition action
+  targetObj <- getObjectM targetGID
+  let targetActionMgmt = _objectActionManagement targetObj
+  actionMap <- asks (_acquisitionActionMap . _actionMaps)
+  case Data.Map.Strict.lookup targetActionGID actionMap of
+    Just (NotGettableF actionFunc) ->
+          -- Object is not gettable - return the NotGettable function
+     pure $ Left actionFunc
+     Just (CollectedF _) ->
+          -- Object is gettable - return continuation function
+       error "Programmer Error: CollectedF should not be used for the thing being gotten."
+     Just (LosesObjectF _) ->
+          -- Object is gettable - return continuation function
+     pure $ Right proceedWithSpatialValidation
+        Just (AcquisitionActionF _) ->
+          pure $ Left $ \_ -> modifyNarration $ updateActionConsequence "Object has incorrect action type."
+        Nothing ->
+          pure $ Left $ \_ -> modifyNarration $ updateActionConsequence "Object's action not
+
+-- Step 1: Complete doGet implementation with internal findKeys function
 doGet :: GID Object
           -> GID Object
           -> AcquisitionVerbPhrase
-          -> (AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-          -> GameComputation Identity ()
-doGet sourceGID targetGID avp lookupF = do
--- actionMap <- asks (_acquisitionActionMap . _actionMaps)
--- sourceObj <- getObjectM sourceGID
--- targetObj <- getObjectM targetGID
-  let targetActionMgmt =_objectActionManagement targetObj
-      addedToRes = case lookupF avp targetActionMgmt of
-       Just targetActionGID -> do
-         trace ("DEBUG: Found target object action GID: " ++ show targetActionGID) $ pure ()
-         case Data.Map.Strict.lookup targetActionGID actionMap of
-           Just (CollectedF actionFunc) -> do
-          --   trace ("DEBUG: Executing CollectedF action for GID: " ++ show targetActionGID) $
-          --     actionFunc
-           Just (LosesObjectF _) ->
-             trace ("DEBUG: Found LosesObjectF for target GID: " ++ show targetActionGID) $  -- ADD THIS
-               Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
-           Just (AcquisitionActionF _) ->
-             Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses AcquisitionActionF"
-           Nothing ->
-             Left $ modifyNarration $ updateActionConsequence "Target object's acquisition action not found in action map"
-       Nothing ->
-         Left $ modifyNarration $ updateActionConsequence "Target object has no acquisition action for this phrase"
-  pure ()
+          -> GameComputation Identity [ActionKey]
+doGet sourceGID targetGID avp = do
+  -- Get the actual objects to access their action management
+  sourceObj <- getObjectM sourceGID
+  targetObj <- getObjectM targetGID
 
--- ToDo We need a validation that the source object actually contains or supports the target object before proceeding
----- should be in getF
-{-
- let sourceActionMgmt = _objectActionManagement sourceObj
-     removedFromRes = case lookupF avp sourceActionMgmt of
-       Just sourceActionGID ->
-         case Data.Map.Strict.lookup sourceActionGID actionMap of
-            Just (LosesObjectF actionFunc) -> actionFunc targetGID
-            Just (CollectedF _) ->
-              error "Source object should use LosesObjectF constructor but uses CollectedF"
-            Just (AcquisitionActionF _) ->
-              error "Source object should use LosesObjectF constructor but uses AcquisitionActionF"
-            Just (NotGettableF _)->
-              error "Source object should use LosesObjectF constructor but uses NotGettableF"
-            Nothing ->
-              error "Source object's acquisition action not found in action map"
-       Nothing ->
-         Left $ modifyNarration $ updateActionConsequence "Source object has no acquisition action"
+  let sourceActionMgmt = _objectActionManagement sourceObj
+      targetActionMgmt = _objectActionManagement targetObj
+  -- Collect ActionKeys from both objects
+  let sourceKeys = findKeys avp sourceActionMgmt
+      targetKeys = findKeys avp targetActionMgmt
 
-     targetActionMgmt = _objectActionManagement targetObj
-     addedToRes = case lookupF avp targetActionMgmt of
-       Just targetActionGID -> do
-         trace ("DEBUG: Found target object action GID: " ++ show targetActionGID) $ pure ()
-         case Data.Map.Strict.lookup targetActionGID actionMap of
-           Just (CollectedF actionFunc) -> do
-             trace ("DEBUG: Executing CollectedF action for GID: " ++ show targetActionGID) $
-               actionFunc
-           Just (LosesObjectF _) ->
-             trace ("DEBUG: Found LosesObjectF for target GID: " ++ show targetActionGID) $  -- ADD THIS
-               Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses LosesObjectF"
-           Just (AcquisitionActionF _) ->
-             Left $ modifyNarration $ updateActionConsequence "Target object should use CollectedF constructor but uses AcquisitionActionF"
-           Nothing ->
-             Left $ modifyNarration $ updateActionConsequence "Target object's acquisition action not found in action map"
-       Nothing ->
-         Left $ modifyNarration $ updateActionConsequence "Target object has no acquisition action for this phrase"
+  -- Return combined keys from both objects
+  pure (sourceKeys ++ targetKeys)
+-}
+findKeys :: AcquisitionVerbPhrase -> ActionManagementFunctions -> [ActionKey]
+findKeys phrase (ActionManagementFunctions actions) =
+  let phraseKeys = [AcquisitionalActionKey gid | AAManagementKey p gid <- Data.Set.toList actions, p == phrase]
+      verb = extractVerb phrase
+      verbKeys = [AcquisitionalActionKey gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb]
+  in phraseKeys ++ verbKeys
 
- either id id $ do
-   comp1 <- removedFromRes
-   comp2 <- addedToRes
-   pure $ comp1 >> comp2
-   -}
 extractVerb :: AcquisitionVerbPhrase -> AcquisitionVerb
 extractVerb (SimpleAcquisitionVerbPhrase verb _) = verb
 extractVerb (AcquisitionVerbPhrase verb _ _ _)   = verb

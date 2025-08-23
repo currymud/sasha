@@ -9,7 +9,7 @@ import           Data.Text                     (Text)
 import           GameState                     (addToInventoryM, getObjectM,
                                                 modifyNarration,
                                                 parseAcquisitionPhrase)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 GameComputation (GameComputation),
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
@@ -21,15 +21,8 @@ import           Model.Parser.GCase            (NounKey)
 import           Relude.String                 (ToText (toText))
 
 
-  {-
-
-when doing an actual get attempt, use helper functions in top level
-
-the functions here answer different questions. Are you capable of getting the robe
-
-  -}
 alreadyHaveRobeF :: AcquisitionActionF
-alreadyHaveRobeF = AcquisitionActionF (const (const haveRobe))
+alreadyHaveRobeF = NotGettableF haveRobe
   where
     haveRobe :: GameComputation Identity ()
     haveRobe = modifyNarration $ updateActionConsequence msg
@@ -37,7 +30,7 @@ alreadyHaveRobeF = AcquisitionActionF (const (const haveRobe))
     msg = "You are already wearing the robe."
 
 getRobeDeniedF :: AcquisitionActionF
-getRobeDeniedF = CollectedF (Left denied)
+getRobeDeniedF = NotGettableF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg

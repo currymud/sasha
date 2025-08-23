@@ -12,7 +12,7 @@ import           GameState.ActionManagement    (lookupAcquisition,
                                                 lookupAcquisitionVerbPhrase,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF),
+import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
@@ -32,6 +32,8 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (Acquisiti
                                                 StimulusVerbPhrase (DirectStimulusVerbPhrase))
 import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
 
+-- we are removing processEffectsFromRegistry from here
+manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
   case lookupAcquisitionVerbPhrase avp availableActions of
@@ -44,17 +46,15 @@ manageAcquisitionProcess avp = do
         Just (AcquisitionActionF actionFunc) -> do
           trace ("DEBUG: Executing AcquisitionActionF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
           let actionKey = AcquisitionalActionKey actionGID
-          actionFunc locationSearchStrategy avp
+          actionFunc actionKey actionMap locationSearchStrategy avp
           trace ("DEBUG: About to call processEffectsFromRegistry with actionKey: " ++ show actionKey) $ pure () -- ADD THIS
-          processEffectsFromRegistry actionKey
           trace ("DEBUG: processEffectsFromRegistry completed for actionKey: " ++ show actionKey) $ pure () -- ADD THIS
         Just (LosesObjectF _actionFunc) -> do
           trace ("DEBUG: Found LosesObjectF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
-          let actionKey = AcquisitionalActionKey actionGID
-          error "Drop actions not yet implemented"
-          processEffectsFromRegistry actionKey
+          error "Drop actions not yet implemented" -- dropped objects need to process their own effects
+        Just (NotGettableF actionF) -> actionF -- not gettables need to process their own effects
         Just (CollectedF _) ->
-          trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
+          trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $  -- ADD THIS
           error "CollectedF should not be in player action map"
 
   {-

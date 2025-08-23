@@ -30,72 +30,81 @@ module GameState ( addToInventoryM
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processAcquisitionEffect
+                 , processPositivePosturalEffect
+                 , processNegativePosturalEffect
                  , processConsumptionEffect
-                 , processPosturalEffect
                  , removeFromInventoryM
                  ) where
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (gets, modify')
+import           Control.Monad.Identity         (Identity)
+import           Control.Monad.State            (gets, modify')
 import qualified Data.Bifunctor
-import           Data.Map.Strict               (Map, elems)
+import           Data.Kind                      (Type)
+import           Data.Map.Strict                (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, delete, empty, fromList,
-                                                insert, member, null, toList)
-import qualified Data.Set                      (filter, foldl', insert,
-                                                singleton)
-import           Data.Text                     (Text, intercalate, null, pack)
-import           Debug.Trace                   (trace)
-import           Error                         (throwMaybeM)
-import           Model.GameState               (AcquisitionActionF,
-                                                ActionEffectKey (ObjectKey),
-                                                ActionManagement (AAManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey),
-                                                ActionManagementFunctions (ActionManagementFunctions),
-                                                ConsumptionActionF (_consumptionAction),
-                                                GameComputation,
-                                                GameState (_narration, _player, _world),
-                                                ImplicitStimulusActionF,
-                                                Location (_locationActionManagement),
-                                                Narration (Narration),
-                                                Object (_description, _descriptives, _objectActionManagement),
-                                                Player (_location, _playerActions),
-                                                PosturalActionF,
-                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
-                                                SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
-                                                _objectSemanticMap,
-                                                updateActionConsequence)
-import           Model.GameState.Mappings      (GIDToDataMap, _getGIDToDataMap)
-import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Nouns    (Consumable, Container, Surface)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
-                                                ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
-                                                DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                ObjectPhrase (ObjectPhrase),
-                                                SupportPhrase (ContainerSupport, SurfaceSupport),
-                                                SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
-import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
+import           Data.Set                       (Set, delete, empty, fromList,
+                                                 insert, member, null, toList)
+import qualified Data.Set                       (filter, foldl', insert,
+                                                 singleton)
+import           Data.Text                      (Text, intercalate, null, pack)
+import           Debug.Trace                    (trace)
+import           Error                          (throwMaybeM)
+import           Grammar.Parser.Partitions.Misc (a)
+import           Model.GameState                (AcquisitionActionF,
+                                                 AcquisitionRes (Complete, Simple),
+                                                 ActionEffectKey (ObjectKey),
+                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey),
+                                                 ActionManagementFunctions (ActionManagementFunctions),
+                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
+                                                 ConsumptionActionF (_consumptionAction),
+                                                 GameComputation,
+                                                 GameState (_narration, _player, _world),
+                                                 ImplicitStimulusActionF,
+                                                 Location (_locationActionManagement),
+                                                 Narration (Narration),
+                                                 Object (_description, _descriptives, _objectActionManagement),
+                                                 Player (_location, _playerActions),
+                                                 PosturalActionF,
+                                                 SimpleAcquisitionRes (SimpleAcquisitionRes),
+                                                 SpatialRelationship (Inventory),
+                                                 SpatialRelationshipMap (SpatialRelationshipMap),
+                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                 _objectSemanticMap)
+import           Model.GameState.Mappings       (GIDToDataMap, _getGIDToDataMap)
+import           Model.GID                      (GID)
+import           Model.Parser.Atomics.Nouns     (Consumable, Container,
+                                                 PosturalVerb, Surface)
+import           Model.Parser.Atomics.Verbs     (AcquisitionVerb,
+                                                 ConsumptionVerb,
+                                                 ImplicitStimulusVerb,
+                                                 NegativePosturalVerb (NegativePosturalVerb),
+                                                 PositivePosturalVerb (PositivePosturalVerb))
+import           Model.Parser.Composites.Nouns  (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                 ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                 DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                 ObjectPhrase (ObjectPhrase),
+                                                 SupportPhrase (ContainerSupport, SurfaceSupport),
+                                                 SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
+import           Model.Parser.Composites.Verbs  (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
+                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
+import           Model.Parser.GCase             (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 
 getDescriptionM :: GID Object -> GameComputation Identity Text
 getDescriptionM oid = do
   _description <$> getObjectM oid
 
-parseAcquisitionPhrase :: AcquisitionVerbPhrase -> (ObjectPhrase,NounKey)
-parseAcquisitionPhrase avp = Data.Bifunctor.second ObjectiveKey $ case avp of
+
+parseAcquisitionPhrase :: AcquisitionVerbPhrase -> AcquisitionRes
+parseAcquisitionPhrase avp =  case avp of
   SimpleAcquisitionVerbPhrase _ ophrase ->
-    let obj = case ophrase of
-               (ObjectPhrase (SimpleNounPhrase obj'))             -> obj'
-               (ObjectPhrase (NounPhrase _ obj'))                 -> obj'
-               (ObjectPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
-               (ObjectPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
-    in (ophrase, obj)
-  _ -> error "get: unsupported AcquisitionVerbPhrase"
+    let okey = parseObjectPhrase ophrase
+    in Simple $ SimpleAcquisitionRes okey ophrase
+  (AcquisitionVerbPhrase _ ophrase _ sphrase) ->
+    let okey = parseObjectPhrase ophrase
+        skey = parseSupportPhrase sphrase
+    in Complete $ CompleteAcquisitionRes okey ophrase skey sphrase
 
 parseConsumptionPhrase :: ConsumptionVerbPhrase -> (ConsumableNounPhrase,NounKey)
 parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp of
@@ -162,7 +171,7 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 -- GameState.hs - Updated effect processing functions
 
-processAcquisitionEffect :: AcquisitionVerbPhrase
+processAcquisitionEffect :: AcquisitionVerb
                          -> GID AcquisitionActionF
                          -> GameComputation Identity ()
 processAcquisitionEffect avp newActionGID = do
@@ -170,9 +179,9 @@ processAcquisitionEffect avp newActionGID = do
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
         -- Remove any existing acquisition action for this phrase
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) playerActionSet
+        filteredActions = Data.Set.filter (\case AVManagementKey p _ -> p /= avp; _ -> True) playerActionSet
         -- Add the new action
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+        updatedActions = Data.Set.insert (AVManagementKey avp newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
@@ -192,29 +201,36 @@ processConsumptionEffect cvp newActionGID = do
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
-processPosturalEffect :: PosturalVerbPhrase
-                      -> GID PosturalActionF
-                      -> GameComputation Identity ()
-processPosturalEffect posturalPhrase newActionGID = do
+processPositivePosturalEffect :: PositivePosturalVerb
+                               -> GID PosturalActionF
+                               -> GameComputation Identity ()
+processPositivePosturalEffect verb newActionGID = do
   modify' $ \gs ->
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
-        -- Remove any existing postural action for this phrase's verb
-        filteredActions = Data.Set.filter (filterPosturalAction posturalPhrase) playerActionSet
+        -- Remove any existing positive postural action for this verb
+        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
         -- Add the new action
-        updatedActions = Data.Set.insert (createPosturalManagementKey posturalPhrase newActionGID) filteredActions
+        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
-  where
-    filterPosturalAction phrase action = case (phrase, action) of
-      (PositivePosturalVerbPhrase verb _, PPManagementKey v _) -> v /= verb
-      (NegativePosturalVerbPhrase verb _, NPManagementKey v _) -> v /= verb
-      _                                                        -> True
 
-    createPosturalManagementKey phrase gid = case phrase of
-      PositivePosturalVerbPhrase verb _ -> PPManagementKey verb gid
-      NegativePosturalVerbPhrase verb _ -> NPManagementKey verb gid
+processNegativePosturalEffect :: NegativePosturalVerb
+                               -> GID PosturalActionF
+                               -> GameComputation Identity ()
+processNegativePosturalEffect verb newActionGID = do
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing negative postural action for this verb
+        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
 
 -- General function to get objects by spatial relationship
 getObjectsBySpatialRelationship :: SpatialRelationship -> GameComputation Identity [GID Object]
