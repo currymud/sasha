@@ -10,6 +10,7 @@ module Model.GameState (
                 DirectionalStimulusActionKey,
                 PosturalActionKey,
                 SomaticAccessActionKey)
+  , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
@@ -44,6 +45,7 @@ module Model.GameState (
                , SomaticAccessEffect)
   , EffectRegistry
   , Evaluator
+  , FinalizeAcquisitionF
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys,_triggerRegistry)
   , GameStateT (GameStateT, runGameStateT)
@@ -237,10 +239,21 @@ data SimpleAcquisitionRes = SimpleAcquisitionRes
 
 type AcquisitionActionF :: Type
 data AcquisitionActionF
- = AcquisitionActionF (ActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> GameComputation Identity ())
+ = AcquisitionActionF AcquisitionF
  | CollectedF (GameComputation Identity CoordinationResult)
  | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
  | NotGettableF (GameComputation Identity ())
+
+type AcquisitionF :: Type
+type AcquisitionF = (ActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+
+type FinalizeAcquisitionF :: Type
+type FinalizeAcquisitionF = ActionKey
+                               -> GID Object
+                               -> GID Object
+                               -> GameComputation Identity CoordinationResult
+                               -> (GID Object -> GameComputation Identity CoordinationResult)
+                               -> GameComputation Identity ()
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF

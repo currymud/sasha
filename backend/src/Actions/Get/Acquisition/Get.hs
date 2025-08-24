@@ -1,36 +1,33 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 module Actions.Get.Acquisition.Get (manageAcquisitionProcess) where
 
+import           Build.BedPuzzle.Actions.Utils (AcquisitionError (SpatialValidationFailed),
+                                                handleAcquisitionError)
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import           Control.Monad.State           (gets)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, elemAt, null, toList)
+import qualified Data.Text
 import           Debug.Trace                   (trace)
 import           GameState                     (getPlayerLocationM, getPlayerM)
-import           GameState.ActionManagement    (lookupAcquisition,
-                                                lookupAcquisitionVerbPhrase,
+import           GameState.ActionManagement    (lookupAcquisitionVerbPhrase,
                                                 processEffectsFromRegistry)
-import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionKey (AcquisitionalActionKey),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
+                                                CoordinationResult (CoordinationResult),
                                                 GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
-                                                Object,
-                                                Player (_location, _playerActions),
+                                                Object, Player (_playerActions),
                                                 SearchStrategy,
                                                 SpatialRelationship (ContainedIn, SupportedBy),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap))
 import           Model.GID                     (GID)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                NounPhrase (SimpleNounPhrase))
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                StimulusVerbPhrase (DirectStimulusVerbPhrase))
-import           Model.Parser.GCase            (NounKey (DirectionalStimulusKey))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 
 -- we are removing processEffectsFromRegistry from here
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
@@ -46,7 +43,7 @@ manageAcquisitionProcess avp = do
         Just (AcquisitionActionF actionFunc) -> do
           trace ("DEBUG: Executing AcquisitionActionF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
           let actionKey = AcquisitionalActionKey actionGID
-          actionFunc actionKey actionMap locationSearchStrategy avp
+          actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
           trace ("DEBUG: About to call processEffectsFromRegistry with actionKey: " ++ show actionKey) $ pure () -- ADD THIS
           trace ("DEBUG: processEffectsFromRegistry completed for actionKey: " ++ show actionKey) $ pure () -- ADD THIS
         Just (LosesObjectF _actionFunc) -> do
@@ -104,7 +101,29 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-
+finalizeAcquisition :: ActionKey
+                        -> GID Object
+                        -> GID Object
+                        -> GameComputation Identity CoordinationResult
+                        -> (GID Object -> GameComputation Identity CoordinationResult)
+                        -> GameComputation Identity ()
+finalizeAcquisition actionKey containerGID objectGID objectActionF containerActionF = do
+  world <- gets _world
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+  case Data.Map.Strict.lookup objectGID spatialMap of
+   Nothing -> handleAcquisitionError $ SpatialValidationFailed $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
+   Just relationships -> do
+     let isContainedInSource = any (\case
+           ContainedIn oid -> oid == containerGID
+           SupportedBy oid -> oid == containerGID
+           _ -> False) (Data.Set.toList relationships)
+     if not isContainedInSource
+     then handleAcquisitionError $ SpatialValidationFailed $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
+     else  do
+       (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
+       (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
+       let allEffects = actionKey:(objectEffects <> containerEffects)
+       mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
   {-
 -- |  Search global perception map
 perceptionSearchStrategy :: SearchStrategy
