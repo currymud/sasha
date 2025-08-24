@@ -171,7 +171,7 @@ processEffect (LocationKey lid) (NegativePosturalEffect verb newActionGID) = do
         filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-
+      {-
 -- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -179,6 +179,19 @@ processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
         filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
+-}
+
+processEffect (ObjectKey oid) (DirectionalStimulusEffect verb newActionGID) = do
+  trace ("processEffect: Processing DirectionalStimulusEffect for object " ++ show oid ++ " with verb " ++ show verb ++ " and new action " ++ show newActionGID) $
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      trace ("processEffect: OBJECT DSA LAMBDA EXECUTING - Inside modifyObjectActionManagementM lambda for object " ++ show oid) $
+      let ActionManagementFunctions actionSet = actionMgmt
+          oldLookActions = [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+          filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
+          updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
+      in trace ("processEffect: OBJECT DSA - Old look actions for verb: " ++ show oldLookActions) $
+         trace ("processEffect: OBJECT DSA LAMBDA COMPLETE - Original: " ++ show (Data.Set.toList actionSet) ++ " -> Updated: " ++ show (Data.Set.toList updatedActions)) $
+         ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ImplicitStimulusEffect verb newActionGID) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->

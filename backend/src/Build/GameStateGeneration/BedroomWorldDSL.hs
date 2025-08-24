@@ -13,6 +13,7 @@ import           Model.GameState                                         (Action
                                                                           SystemEffectKey (SystemLocationKey))
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionPhraseEffect,
+                                                                          createAcquisitionVerbEffect,
                                                                           createConsumptionEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
@@ -314,6 +315,9 @@ bedroomWorldDSL = do
   trace ("DEBUG: Linking to player with key: " ++ show (SomaticAccessActionKey openEyesGID) ++ " and target: " ++ show (PlayerKeyObject robeGID)) $ pure ()
   -- Create the effect that changes look behavior when eyes open
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
+
+  robeOpenEyesChangesGetVerb <- createAcquisitionVerbEffect get getRobeFGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesChangesGetVerb
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
 
   openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
