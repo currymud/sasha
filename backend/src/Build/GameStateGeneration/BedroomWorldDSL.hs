@@ -112,7 +112,8 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
                                                                           whatChairFGID,
-                                                                          whatPillGID)
+                                                                          whatPillGID,
+                                                                          whatPocketGID)
 
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
@@ -210,7 +211,7 @@ pocketObj =  defaultObject & pocketObj'
     pocketObj' = withShortName "pocket"
                    >=> withDescription "A pocket in the robe"
                    >=> withDescriptives [ SimpleNounPhrase pocketDS ]
-                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seePocketRobeWornGID))
+                   >=> (\o -> withObjectBehavior o (DSAManagementKey look whatPocketGID))
 
 floorObj :: WorldDSL Object
 floorObj =  defaultObject & floorObj'
