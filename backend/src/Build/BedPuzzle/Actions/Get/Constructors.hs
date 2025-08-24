@@ -15,7 +15,7 @@ import           Model.GameState                                  (AcquisitionAc
                                                                    CoordinationResult (CoordinationResult, _computation, _effectKeys),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
-                                                                   SpatialRelationship (ContainedIn, SupportedBy),
+                                                                   SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                                                    updateActionConsequence)
 import           Model.GID                                        (GID)
 
@@ -49,6 +49,47 @@ getFromSupportF supportObjGID = LosesObjectF getit
       let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
 
       let computation = do
+            -- Remove spatial relationships from target object (robe)
+            modifySpatialRelationshipsForObjectM targetObjectGID $ \rels ->
+              Data.Set.filter (\case
+                SupportedBy oid -> oid /= supportObjGID
+                ContainedIn oid -> oid /= supportObjGID
+                _ -> True) rels
+
+            -- Remove target object from support object's relationships (chair)
+            modifySpatialRelationshipsForObjectM supportObjGID $ \rels ->
+              Data.Set.map (\case
+                Supports objSet -> Supports (Data.Set.delete targetObjectGID objSet)
+                Contains objSet -> Contains (Data.Set.delete targetObjectGID objSet)
+                other -> other) rels
+
+            -- Add to inventory
+            addToInventoryM targetObjectGID
+            -- Success narration
+            modifyNarration $ updateActionConsequence "You pick it up."
+
+      pure $ CoordinationResult
+        { _computation = computation
+        , _effectKeys = map AcquisitionalActionKey getActionGIDs
+        }
+
+
+          {-
+getFromSupportF :: GID Object -> AcquisitionActionF
+getFromSupportF supportObjGID = LosesObjectF getit
+  where
+    getit :: GID Object
+              -> GameComputation Identity CoordinationResult
+    getit targetObjectGID = do
+      trace ("DEBUG: getFromSupportF executing with supportObjGID=" ++ show supportObjGID ++ " targetObjectGID=" ++ show targetObjectGID) $ pure ()
+
+      -- Get the target object's action management
+      actionManagement <- _objectActionManagement <$> getObjectM targetObjectGID
+      let ActionManagementFunctions actionSet = actionManagement
+      -- Find the AVManagementKey entry that matches the 'get' verb
+      let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
+
+      let computation = do
             -- Remove spatial relationships for this supporter
             modifySpatialRelationshipsForObjectM targetObjectGID $ \rels ->
               Data.Set.filter (\case
@@ -64,3 +105,4 @@ getFromSupportF supportObjGID = LosesObjectF getit
         { _computation = computation
         , _effectKeys = map AcquisitionalActionKey getActionGIDs
         }
+        -}

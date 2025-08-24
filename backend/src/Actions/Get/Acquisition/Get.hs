@@ -30,31 +30,6 @@ import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
 
 -- we are removing processEffectsFromRegistry from here
-  {-
-manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
-manageAcquisitionProcess avp = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisitionVerbPhrase avp availableActions of
-    Nothing -> error "Programmer Error: No acquisition action found for phrase: "
-    Just actionGID -> do
-      trace ("DEBUG: Found player action GID: " ++ show actionGID) $ pure () -- ADD THIS
-      actionMap <- asks (_acquisitionActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No acquisition action found for GID: "
-        Just (AcquisitionActionF actionFunc) -> do
-          trace ("DEBUG: Executing AcquisitionActionF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
-          let actionKey = AcquisitionalActionKey actionGID
-          actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
-          trace ("DEBUG: About to call processEffectsFromRegistry with actionKey: " ++ show actionKey) $ pure () -- ADD THIS
-          trace ("DEBUG: processEffectsFromRegistry completed for actionKey: " ++ show actionKey) $ pure () -- ADD THIS
-        Just (LosesObjectF _actionFunc) -> do
-          trace ("DEBUG: Found LosesObjectF for actionGID: " ++ show actionGID) $ pure () -- ADD THIS
-          error "Drop actions not yet implemented" -- dropped objects need to process their own effects
-        Just (NotGettableF actionF) -> actionF -- not gettables need to process their own effects
-        Just (CollectedF _) ->
-          trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $  -- ADD THIS
-          error "CollectedF should not be in player action map"
--}
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM

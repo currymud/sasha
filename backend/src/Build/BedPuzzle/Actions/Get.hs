@@ -14,7 +14,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.GameState                                  (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionRes (Complete, Simple),
                                                                    AcquisitionVerbActionMap,
-                                                                   ActionKey ,
+                                                                   ActionKey,
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
@@ -23,7 +23,7 @@ import           Model.GameState                                  (AcquisitionAc
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase),
                                                                    updateActionConsequence)
 import           Model.GID                                        (GID)
-import           Model.Parser.Composites.Verbs                    (ConsumptionVerbPhrase (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                               (NounKey)
 getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
@@ -33,6 +33,8 @@ getDeniedF = NotGettableF denied
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
+
+-- ToDo: refactor to remove dead code.
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
