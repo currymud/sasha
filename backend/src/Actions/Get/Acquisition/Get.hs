@@ -27,7 +27,7 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap))
 import           Model.GID                     (GID)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
 
 -- we are removing processEffectsFromRegistry from here
   {-
@@ -58,53 +58,25 @@ manageAcquisitionProcess avp = do
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisitionVerbPhrase avp availableActions of
+  case lookupAcquisitionVerbPhrase simpled availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do
-      trace ("DEBUG: Found player action GID: " ++ show actionGID) $ pure () -- ADD THIS
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No acquisition action found for GID: "
         Just foundAction -> do
-          trace ("DEBUG: Action map lookup for GID " ++ show actionGID ++ " found action type: " ++ show (case foundAction of AcquisitionActionF _ -> "AcquisitionActionF"; LosesObjectF _ -> "LosesObjectF"; NotGettableF _ -> "NotGettableF"; CollectedF _ -> "CollectedF")) $ pure ()
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               trace ("DEBUG: Executing AcquisitionActionF for actionGID: " ++ show actionGID) $ pure ()
                let actionKey = AcquisitionalActionKey actionGID
-               trace ("DEBUG: About to call processEffectsFromRegistry with actionKey: " ++ show actionKey) $ pure ()
-               trace ("DEBUG: processEffectsFromRegistry completed for actionKey: " ++ show actionKey) $ pure ()
                actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
-              trace ("DEBUG: Found LosesObjectF for actionGID: " ++ show actionGID) $ pure ()
               error "Drop actions not yet implemented"
             (NotGettableF actionF) -> do
-              trace ("DEBUG: Executing NotGettableF for actionGID: " ++ show actionGID) $ pure ()
               actionF
             (CollectedF _) ->
-              trace ("DEBUG: Found CollectedF for actionGID: " ++ show actionGID) $
               error "CollectedF should not be in player action map"
-  {-
-manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
-manageAcquisitionProcess avp = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisitionVerbPhrase avp availableActions of
-    Nothing -> error "Programmer Error: No acquisition action found for phrase: "
-    Just actionGID -> do
-      actionMap <- asks (_acquisitionActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No acquisition action found for GID: "
-        Just (AcquisitionActionF actionFunc) -> do
-          let actionKey = AcquisitionalActionKey actionGID
-          actionFunc locationSearchStrategy avp
-          processEffectsFromRegistry actionKey
-        Just (LosesObjectF _actionFunc) -> do
-          let actionKey = AcquisitionalActionKey actionGID
-          -- For drop actions, we'd need different logic here
-          -- But for now, error since drop isn't implemented
-          error "Drop actions not yet implemented"
-          processEffectsFromRegistry actionKey
-        Just (CollectedF _) -> error "CollectedF should not be in player action map"
-        -}
+  where
+    simpled = simplifyAcquisitionVerbPhrase avp
 -- | General case: Search current location's object semantic map
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
@@ -129,6 +101,10 @@ locationSearchStrategy targetNounKey = do
     getContainerSources relationships =
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
+
+simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerbPhrase
+simplifyAcquisitionVerbPhrase unchanged@(SimpleAcquisitionVerbPhrase _ _) = unchanged
+simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb objectPhrase _ _) = SimpleAcquisitionVerbPhrase verb objectPhrase
 
 finalizeAcquisition :: ActionKey
                         -> GID Object
