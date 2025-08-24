@@ -45,9 +45,15 @@ module Model.GameState (
                , SomaticAccessEffect)
   , EffectRegistry
   , Evaluator
+  , FieldEffect ( ObjectShortNameFieldEffect
+                , ObjectDescriptionFieldEffect
+                , LocationTitleFieldEffect
+                , PlayerLocationFieldEffect)
+  , FieldEffectMap (FieldEffectMap, _fieldEffectMap)
+  , FieldEffectRegistry
   , FinalizeAcquisitionF
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys,_triggerRegistry)
+  , GameState (GameState, _fieldEffectRegistry, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys,_triggerRegistry)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -307,6 +313,14 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
+type FieldEffect :: Type
+data FieldEffect
+  = ObjectShortNameFieldEffect Text (GID Object)      -- Text field value, target object GID
+  | ObjectDescriptionFieldEffect Text (GID Object)    -- Text field value, target object GID
+  | LocationTitleFieldEffect Text (GID Location)      -- Text field value, target location GID
+  | PlayerLocationFieldEffect (GID Location) PlayerKey -- Location GID value, target player key
+  deriving stock (Show, Eq, Ord)
+
 type ActionKey :: Type
 data ActionKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
@@ -341,11 +355,21 @@ data SystemEffectConfig = SystemEffectConfig
   , _systemEffectManagement :: GameComputation Identity ()
   }
 
+
+-- We're punting SystemEffectRegistry for now - it will be a map from SystemEffectKey to a map of SystemEffect GIDs to SystemEffectConfig
 type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
 
+type FieldEffectRegistry :: Type
+type FieldEffectRegistry = Map ActionKey FieldEffectMap
+
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
+
+type FieldEffectMap :: Type
+newtype FieldEffectMap = FieldEffectMap
+  { _fieldEffectMap :: Map ActionEffectKey (Set FieldEffect)}
+  deriving stock (Show, Eq, Ord)
 
 type ActionEffect :: Type
 data ActionEffect
@@ -388,6 +412,7 @@ data GameState = GameState
   , _effectRegistry         :: EffectRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
+  , _fieldEffectRegistry    :: FieldEffectRegistry
   , _triggerRegistry        :: TriggerRegistry
   }
 

@@ -14,7 +14,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionManagementFunctions,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect, Evaluator,
+                                                Effect, Evaluator, FieldEffect,
                                                 GameComputation, GameState,
                                                 ImplicitStimulusActionF,
                                                 Location, Object, Player,
@@ -88,6 +88,12 @@ data WorldDSL :: Type -> Type where
   WithObjectBehavior :: Object -> ActionManagement -> WorldDSL Object
   WithLocationBehavior :: Location -> ActionManagement -> WorldDSL Location
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
+
+  -- FieldEffect management - NEW: Field effect constructors
+  UpdateShortName :: Text -> GID Object -> WorldDSL FieldEffect
+  UpdateDescription :: Text -> GID Object -> WorldDSL FieldEffect
+  UpdateTitle :: Text -> GID Location -> WorldDSL FieldEffect
+  UpdateLocation :: GID Location -> PlayerKey -> WorldDSL FieldEffect
 
 -- Map registration constructors
   RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL ()
@@ -279,3 +285,16 @@ registerTrigger = RegisterTrigger
 
 displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects
+
+-- FieldEffect convenience functions - parallel to effect functions
+updateShortName :: Text -> GID Object -> WorldDSL ()
+updateShortName = UpdateShortName
+
+updateDescription :: Text -> GID Object -> WorldDSL ()
+updateDescription = UpdateDescription
+
+updateTitle :: Text -> GID Location -> WorldDSL ()
+updateTitle = UpdateTitle
+
+updateLocation :: GID Location -> PlayerKey -> WorldDSL ()
+updateLocation = UpdateLocation
