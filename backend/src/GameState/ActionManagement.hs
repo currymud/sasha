@@ -1,6 +1,6 @@
 module GameState.ActionManagement where
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (gets, modify')
+import           Control.Monad.State           (MonadState (get), gets, modify')
 import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
@@ -70,7 +70,7 @@ removeSystemEffect key effectGID = modify' $ \gs ->
   in gs { _systemEffectRegistry = updatedRegistry }
 
 
-
+  {-
 processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
@@ -82,6 +82,22 @@ processEffectsFromRegistry actionKey = do
     Nothing        -> do
       trace ("DEBUG: No effects found") $
         pure () -- No effects registered for this action
+-}
+
+processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
+processEffectsFromRegistry actionKey = do
+  trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
+  gameState <- get
+  let registry = _effectRegistry gameState
+  trace ("DEBUG: Full registry keys: " ++ show (Data.Map.Strict.keys registry)) $ pure ()
+  maybeEffectMap <- lookupActionEffectsInRegistry actionKey
+  case maybeEffectMap of
+    Just effectMap -> do
+      let ActionEffectMap effectMapContents = effectMap
+      trace ("DEBUG: Found effect map with keys: " ++ show (Data.Map.Strict.keys effectMapContents)) $ pure ()
+      processAllEffects effectMap
+    Nothing -> do
+      trace ("DEBUG: No effects found for key: " ++ show actionKey) $ pure ()
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
@@ -89,7 +105,7 @@ modifyObjectActionManagementM :: GID Object
 modifyObjectActionManagementM oid actionF = do
  modifyObjectM oid $ \obj ->
    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
-
+     {-
 -- Updated: processAllEffects remains the same - just processes effects
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
@@ -97,6 +113,17 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) =
+      mapM_ (processEffect effectKey) (Data.Set.toList effects)
+-}
+
+processAllEffects :: ActionEffectMap -> GameComputation Identity ()
+processAllEffects (ActionEffectMap effectMap) = do
+  trace ("DEBUG: processAllEffects called with effect keys: " ++ show (Data.Map.Strict.keys effectMap)) $ pure ()
+  mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
+  where
+    processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
+    processEffectEntry (effectKey, effects) = do
+      trace ("DEBUG: Processing effect key: " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ pure ()
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 -- processEffect implementation remains the same as in your original code
@@ -181,7 +208,7 @@ processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
           updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
       in ActionManagementFunctions updatedActions
 -}
-
+  {-
 processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
   trace ("processEffect: Processing AcquisitionPhraseEffect for object " ++ show oid ++ " with phrase " ++ show avp ++ " and new action " ++ show newActionGID) $
     modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -190,6 +217,22 @@ processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
           filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
           updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
       in trace ("processEffect: LAMBDA COMPLETE - Original: " ++ show (Data.Set.toList actionSet) ++ " -> Updated: " ++ show (Data.Set.toList updatedActions)) $
+         ActionManagementFunctions updatedActions
+-}
+
+processEffect (ObjectKey oid) (AcquisitionPhraseEffect avp newActionGID) = do
+  trace ("processEffect: Processing AcquisitionPhraseEffect for object " ++ show oid ++ " with phrase " ++ show avp ++ " and new action " ++ show newActionGID) $
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      trace ("processEffect: LAMBDA EXECUTING - Inside modifyObjectActionManagementM lambda") $
+      let ActionManagementFunctions actionSet = actionMgmt
+          -- ADD THIS TRACE:
+          matchingActions = [gid | AAManagementKey p gid <- Data.Set.toList actionSet, p == avp]
+          nonMatchingActions = [gid | AAManagementKey p gid <- Data.Set.toList actionSet, p /= avp]
+          filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
+          updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
+      in trace ("processEffect: MATCHING actions with same phrase: " ++ show matchingActions) $
+         trace ("processEffect: NON-MATCHING actions: " ++ show nonMatchingActions) $
+         trace ("processEffect: LAMBDA COMPLETE - Original: " ++ show (Data.Set.toList actionSet) ++ " -> Updated: " ++ show (Data.Set.toList updatedActions)) $
          ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ConsumptionEffect verb _targetOid newActionGID) = do
@@ -222,6 +265,20 @@ processEffect (ObjectKey oid) (NegativePosturalEffect verb newActionGID) = do
         updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
+processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionPhraseEffect verb newActionGID) = do
+  trace ("processEffect: Processing AcquisitionPhraseEffect for PLAYER related to object " ++ show oid ++ " with phrase " ++ show verb ++ " and new action " ++ show newActionGID) $
+    modifyPlayerActionManagementM $ \actionMgmt ->
+      trace ("processEffect: PLAYER LAMBDA EXECUTING - Inside modifyPlayerActionManagementM lambda") $
+      let ActionManagementFunctions actionSet = actionMgmt
+          matchingActions = [gid | AAManagementKey p gid <- Data.Set.toList actionSet, p == verb]
+          nonMatchingActions = [gid | AAManagementKey p gid <- Data.Set.toList actionSet, p /= verb]
+          filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet
+          updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
+      in trace ("processEffect: PLAYER MATCHING actions with same phrase: " ++ show matchingActions) $
+         trace ("processEffect: PLAYER NON-MATCHING actions: " ++ show nonMatchingActions) $
+         trace ("processEffect: PLAYER LAMBDA COMPLETE - Original: " ++ show (Data.Set.toList actionSet) ++ " -> Updated: " ++ show (Data.Set.toList updatedActions)) $
+         ActionManagementFunctions updatedActions
+  {-
 -- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionPhraseEffect verb newActionGID) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
@@ -229,7 +286,7 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionPhraseEffect verb ne
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (AAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-
+-}
 processEffect (PlayerKey (PlayerKeyObject oid)) (AcquisitionVerbEffect verb newActionGID) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt

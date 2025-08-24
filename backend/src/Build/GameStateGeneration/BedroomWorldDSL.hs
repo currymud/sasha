@@ -302,15 +302,16 @@ bedroomWorldDSL = do
 --  mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
 --  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
 
---  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
---  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
+  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
 --  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
 --  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
-
+  trace ("DEBUG: Created player effect: " ++ show robeOpenEyesLookChangesGetRobeForPlayer) $ pure ()
+  trace ("DEBUG: Linking to player with key: " ++ show (SomaticAccessActionKey openEyesGID) ++ " and target: " ++ show (PlayerKeyObject robeGID)) $ pure ()
   -- Create the effect that changes look behavior when eyes open
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
