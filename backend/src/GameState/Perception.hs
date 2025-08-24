@@ -19,7 +19,7 @@ import           Model.GameState               (GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
                                                 Object (_descriptives),
-                                                SpatialRelationship (ContainedIn, Inventory, SupportedBy, Supports),
+                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_perceptionMap, _spatialRelationshipMap),
                                                 updateActionConsequence)
@@ -207,7 +207,55 @@ modifyPerceptionMapM perceptionMapF = do
       updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
 
+
 youSeeM :: GameComputation Identity ()
+youSeeM = do
+  trace "youSeeM: Starting execution" $ pure ()
+
+  spatialMap <- gets (_spatialRelationshipMap . _world)
+  let SpatialRelationshipMap smap = spatialMap
+
+  -- Find anchor objects (not supported by or contained in anything)
+  let anchorObjects = [oid | (oid, rels) <- Data.Map.Strict.toList smap,
+                            not (any isContainedOrSupported (Data.Set.toList rels))]
+
+  trace ("youSeeM: Anchor objects: " ++ show anchorObjects) $ pure ()
+
+  -- Build hierarchical descriptions
+  descriptions <- concatMapM (buildHierarchy smap) anchorObjects
+
+  trace ("youSeeM: Generated descriptions: " ++ show descriptions) $ pure ()
+  unless (null descriptions) $ do
+    let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
+    modifyNarration $ updateActionConsequence seeText
+  where
+    isContainedOrSupported (ContainedIn _) = True
+    isContainedOrSupported (SupportedBy _) = True
+    isContainedOrSupported _               = False
+
+    buildHierarchy smap anchorOID = do
+      anchorDesc <- getDescriptionM anchorOID
+      let firstLevel = getDirectlySupported smap anchorOID
+      firstLevelDescs <- concatMapM (buildSecondLevel smap) firstLevel
+      pure $ [anchorDesc] ++ firstLevelDescs
+
+    buildSecondLevel smap firstLevelOID = do
+      firstDesc <- getDescriptionM firstLevelOID
+      let secondLevel = getDirectlySupported smap firstLevelOID
+      secondLevelDescs <- mapM getDescriptionM secondLevel
+      pure $ [firstDesc] ++ secondLevelDescs
+
+    getDirectlySupported smap containerOID =
+      case Data.Map.Strict.lookup containerOID smap of
+        Nothing -> []
+        Just relationships -> concatMap extractSupported (Data.Set.toList relationships)
+      where
+        extractSupported (Supports oidSet) = Data.Set.toList oidSet
+        extractSupported (Contains oidSet) = Data.Set.toList oidSet
+        extractSupported _                 = []
+
+    concatMapM f xs = fmap concat (mapM f xs)
+    {-
 youSeeM = do
   trace "youSeeM: Starting execution" $ pure ()
 
@@ -221,7 +269,7 @@ youSeeM = do
     let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
     trace ("youSeeM: Adding to narration: " ++ show seeText) $ pure ()
     modifyNarration $ updateActionConsequence seeText
-
+-}
 updatePerceptionMapM :: GID Object -> GameComputation Identity ()
 updatePerceptionMapM oid =
   isObjectPerceivable oid
