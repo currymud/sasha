@@ -26,6 +26,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
                                                                           linkEffectToPlayer,
+                                                                          linkFieldEffectToObject,
                                                                           registerLocation,
                                                                           registerObject,
                                                                           registerObjectToLocation,
@@ -33,6 +34,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerSpatial,
                                                                           registerSystemEffect,
                                                                           setPerceptionMap,
+                                                                          updateDescription,
                                                                           withDescription,
                                                                           withDescriptives,
                                                                           withLocationBehavior,
@@ -290,8 +292,12 @@ bedroomWorldDSL = do
 
   trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
   trace ("DEBUG: seeRobeWornGID = " ++ show seeRobeWornGID) $ pure ()
-  getRobeChangesLookRobe <- createDirectionalStimulusEffect look seeRobeWornGID
+  getRobeChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
   trace ("DEBUG: Created getRobeChangesLookRobe effect: " ++ show getRobeChangesLookRobe) $ pure ()
+
+-- Create field effect to change robe description when acquired
+  robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
+  linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect
 
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
