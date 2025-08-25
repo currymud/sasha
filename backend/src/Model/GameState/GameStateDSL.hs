@@ -114,6 +114,11 @@ data WorldDSL :: Type -> Type where
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 
+-- Add these after the existing LinkEffectTo* constructors:
+  LinkFieldEffectToObject :: ActionKey -> GID Object -> FieldEffect -> WorldDSL ()
+  LinkFieldEffectToLocation :: ActionKey -> GID Location -> FieldEffect -> WorldDSL ()
+  LinkFieldEffectToPlayer :: ActionKey -> PlayerKey -> FieldEffect -> WorldDSL ()
+
   LinkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
   LinkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
   LinkEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
@@ -287,14 +292,23 @@ displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects
 
 -- FieldEffect convenience functions - parallel to effect functions
-updateShortName :: Text -> GID Object -> WorldDSL ()
+updateShortName :: Text -> GID Object -> WorldDSL FieldEffect
 updateShortName = UpdateShortName
 
-updateDescription :: Text -> GID Object -> WorldDSL ()
+updateDescription :: Text -> GID Object -> WorldDSL FieldEffect
 updateDescription = UpdateDescription
 
-updateTitle :: Text -> GID Location -> WorldDSL ()
+updateTitle :: Text -> GID Location -> WorldDSL FieldEffect
 updateTitle = UpdateTitle
 
-updateLocation :: GID Location -> PlayerKey -> WorldDSL ()
+updateLocation :: GID Location -> PlayerKey -> WorldDSL FieldEffect
 updateLocation = UpdateLocation
+
+linkFieldEffectToObject :: ActionKey -> GID Object -> FieldEffect -> WorldDSL ()
+linkFieldEffectToObject = LinkFieldEffectToObject
+
+linkFieldEffectToLocation :: ActionKey -> GID Location -> FieldEffect -> WorldDSL ()
+linkFieldEffectToLocation = LinkFieldEffectToLocation
+
+linkFieldEffectToPlayer :: ActionKey -> PlayerKey -> FieldEffect -> WorldDSL ()
+linkFieldEffectToPlayer = LinkFieldEffectToPlayer
