@@ -217,8 +217,9 @@ type SearchStrategy = NounKey
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
-  { _computation :: GameComputation Identity ()
-  , _effectKeys  :: [ActionKey]
+  { _computation     :: GameComputation Identity ()
+  , _effectKeys      :: [ActionKey]
+  , _fieldEffectKeys :: [ActionKey]
   }
 
 type AcquisitionRes :: Type

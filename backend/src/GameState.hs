@@ -17,6 +17,7 @@ module GameState ( addToInventoryM
                  , modifyNarration
                  , modifyObjectM
                  , modifyObjectMapM
+                 , modifyPlayerM
                  , modifySpatialRelationshipMapM
                  , modifySpatialRelationshipsForObjectM
                  , modifyPerceptionForStimulusM
@@ -362,20 +363,6 @@ modifyNarration narrationF = do
   current_narration <- gets _narration
   let updatedNarrative = narrationF current_narration
   modify' (\gs -> gs{ _narration = updatedNarrative })
-    {-
-modifyObjectM :: GID Object
-              -> (Object -> Object)
-              -> GameComputation Identity ()
-modifyObjectM oid objectF = do
-  world <- gets _world
-  let objectMap = _getGIDToDataMap $ _objectMap world
-  object <- throwMaybeM ("Object not found: " <> pack (show oid)) $
-            Data.Map.Strict.lookup oid objectMap
-  let updatedObject = objectF object
-      updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
-      updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
-  modify' (\gs -> gs { _world = updatedWorld })
--}
 
 modifyObjectM :: GID Object
               -> (Object -> Object)
@@ -393,6 +380,13 @@ modifyObjectM oid objectF = do
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
   modify' (\gs -> gs { _world = updatedWorld })
   trace ("modifyObjectM: Successfully updated object " ++ show oid) $ pure ()
+
+modifyPlayerM :: (Player -> Player)
+              -> GameComputation Identity ()
+modifyPlayerM playerF = do
+  currentPlayer <- getPlayerM
+  let updatedPlayer = playerF currentPlayer
+  modify' (\gs -> gs { _player = updatedPlayer })
 
 modifySpatialRelationshipMapM :: (SpatialRelationshipMap -> SpatialRelationshipMap)
                               -> GameComputation Identity ()
