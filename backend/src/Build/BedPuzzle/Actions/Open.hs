@@ -9,7 +9,6 @@ import           GameState.ActionManagement (registerSystemEffect)
 import           GameState.Perception       (youSeeM)
 import           Model.GameState            (ActionEffectKey (PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
-                                             ActionKey (SomaticAccessActionKey),
                                              GameComputation,
                                              SomaticAccessActionF (SomaticAccessActionF),
                                              SystemEffect (PerceptionSystemEffect),

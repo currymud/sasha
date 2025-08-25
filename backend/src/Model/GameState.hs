@@ -4,12 +4,7 @@ module Model.GameState (
   ActionEffect (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
   , ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
-  , ActionKey ( AcquisitionalActionKey,
-                ConsumptionActionKey,
-                ImplicitStimulusActionKey,
-                DirectionalStimulusActionKey,
-                PosturalActionKey,
-                SomaticAccessActionKey)
+  , ActionKey (RegularEffectKey, FieldEffectKey)
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
@@ -30,8 +25,8 @@ module Model.GameState (
   , AcquisitionActionF (AcquisitionActionF,CollectedF,LosesObjectF,NotGettableF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
-  , Config (Config, _actionMaps, _systemEffectMap)
-  , CoordinationResult (CoordinationResult, _computation, _effectKeys)
+  , Config (Config, _actionMaps)
+  , CoordinationResult (CoordinationResult, _computation, _effectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
@@ -43,6 +38,18 @@ module Model.GameState (
                , PositivePosturalEffect
                , NegativePosturalEffect
                , SomaticAccessEffect)
+  , EffectActionKey ( ImplicitStimulusActionKey
+                      , DirectionalStimulusActionKey
+                      , SomaticAccessActionKey
+                      , AcquisitionalActionKey
+                      , ConsumptionActionKey
+                      , PosturalActionKey)
+  , FieldEffectActionKey ( ImplicitStimulusFieldEffectActionKey
+                         , DirectionalStimulusFieldEffectActionKey
+                         , SomaticAccessFieldEffectActionKey
+                         , AcquisitionalFieldEffectActionKey
+                         , ConsumptionFieldEffectActionKey
+                         , PosturalFieldEffectActionKey)
   , EffectRegistry
   , Evaluator
   , FieldEffect ( ObjectShortNameFieldEffect
@@ -53,7 +60,7 @@ module Model.GameState (
   , FieldEffectRegistry
   , FinalizeAcquisitionF
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _fieldEffectRegistry, _world, _player, _narration, _evaluation, _effectRegistry, _systemEffectRegistry,_actionSystemEffectKeys,_triggerRegistry)
+  , GameState (GameState, _fieldEffectRegistry, _triggerRegistry, _systemEffectRegistry , _world, _player, _narration, _evaluation, _effectRegistry,_actionSystemEffectKeys)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -322,14 +329,30 @@ data FieldEffect
   | PlayerLocationFieldEffect (GID Location) PlayerKey -- Location GID value, target player key
   deriving stock (Show, Eq, Ord)
 
-type ActionKey :: Type
-data ActionKey
+type EffectActionKey :: Type
+data EffectActionKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
   | PosturalActionKey (GID PosturalActionF)
+  deriving stock (Show, Eq, Ord)
+
+type FieldEffectActionKey :: Type
+data FieldEffectActionKey
+  = ImplicitStimulusFieldEffectActionKey (GID ImplicitStimulusActionF)
+  | DirectionalStimulusFieldEffectActionKey (GID DirectionalStimulusActionF)
+  | SomaticAccessFieldEffectActionKey (GID SomaticAccessActionF)
+  | AcquisitionalFieldEffectActionKey (GID AcquisitionActionF)
+  | ConsumptionFieldEffectActionKey (GID ConsumptionActionF)
+  | PosturalFieldEffectActionKey (GID PosturalActionF)
+  deriving stock (Show, Eq, Ord)
+
+type ActionKey :: Type
+data ActionKey
+  = RegularEffectKey EffectActionKey
+  | FieldEffectKey FieldEffectActionKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -398,7 +421,6 @@ newtype ActionKeyMap = ActionKeyMap
 type Config :: Type
 data Config = Config
   { _actionMaps      :: ActionMaps
-  , _systemEffectMap :: SystemEffectMap
   }
 
 type SystemEffectKeysRegistry :: Type
@@ -411,10 +433,10 @@ data GameState = GameState
   , _narration              :: Narration
   , _evaluation             :: Evaluator
   , _effectRegistry         :: EffectRegistry
-  , _systemEffectRegistry   :: SystemEffectRegistry
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
-  , _fieldEffectRegistry    :: FieldEffectRegistry
   , _triggerRegistry        :: TriggerRegistry
+  , _systemEffectRegistry   :: SystemEffectRegistry
+  , _fieldEffectRegistry    :: FieldEffectRegistry
   }
 
 

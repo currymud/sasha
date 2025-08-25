@@ -11,9 +11,10 @@ import           GameState.ActionManagement (lookupSomaticAccess,
 import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
 import           Model.GameState            (ActionEffectKey (LocationKey, PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
-                                             ActionKey (SomaticAccessActionKey),
+                                             ActionKey (RegularEffectKey),
                                              ActionMaps (_somaticStimulusActionMap),
-                                             Config (_actionMaps, _systemEffectMap),
+                                             Config (_actionMaps),
+                                             EffectActionKey (SomaticAccessActionKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (SomaticAccessActionF))
@@ -29,10 +30,10 @@ manageSomaticAccessProcess sav = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No somatic access action found for GID: "
         Just (SomaticAccessActionF actionFunc) -> do
-          let actionKey = SomaticAccessActionKey actionGID
+          let actionKey = RegularEffectKey (SomaticAccessActionKey actionGID)
           maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
-            Nothing -> error $ "Programmer Error: No effects registered for somatic access action"
+            Nothing -> error "Programmer Error: No effects registered for somatic access action"
             Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
               objectActionKeys <- getLocationObjectIDsM lid

@@ -14,10 +14,11 @@ import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisitionVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                ActionKey (AcquisitionalActionKey),
+                                                ActionKey (RegularEffectKey),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
                                                 CoordinationResult (CoordinationResult),
+                                                EffectActionKey (AcquisitionalActionKey),
                                                 GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
@@ -42,7 +43,7 @@ manageAcquisitionProcess avp = do
         Just foundAction -> do
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               let actionKey = AcquisitionalActionKey actionGID
+               let actionKey = RegularEffectKey (AcquisitionalActionKey actionGID)
                actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
@@ -100,8 +101,8 @@ finalizeAcquisition actionKey containerGID objectGID objectActionF containerActi
      if not isContainedInSource
      then handleAcquisitionError $ SpatialValidationFailed $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
      else  do
-       (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
-       (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
+       (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
+       (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
        let allEffects = actionKey:(objectEffects <> containerEffects)
        mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
   {-

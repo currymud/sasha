@@ -55,7 +55,6 @@ import           Build.BedPuzzle.Actions.Stand                           (standD
 
 import           Build.Identifiers.SupportLook                           (supportLookF)
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
-                                                                          makeActionSystemEffectKeyMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,

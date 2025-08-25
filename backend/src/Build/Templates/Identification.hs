@@ -2,28 +2,24 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 module Build.Templates.Identification where
-import           Data.Map.Strict          (Map)
 import qualified Data.Map.Strict
-import           Language.Haskell.TH      (Body (NormalB), Dec (SigD, ValD),
-                                           Exp (AppE, ConE, ListE, LitE, TupE, VarE),
-                                           ExpQ, Info (VarI), Lit (IntegerL),
-                                           Name, Pat (VarP), Q,
-                                           Type (AppT, ArrowT, ConT, ForallT),
-                                           mkName, nameBase, reify)
-import           Model.GameState          (AcquisitionActionF,
-                                           ActionKey (SomaticAccessActionKey),
-                                           ConsumptionActionF,
-                                           DirectionalStimulusActionF,
-                                           ImplicitStimulusActionF, Location,
-                                           Object, PosturalActionF,
-                                           ProcessImplicitStimulusVerb,
-                                           SomaticAccessActionF, SystemEffect,
-                                           SystemEffectKey)
-import           Model.GameState.Mappings (GIDToDataMap (GIDToDataMap))
-import           Model.GID                (GID (GID))
-import           Model.Label              (Label (Label))
-import           Model.Parser.Lexer       (Lexeme)
-import           Prelude                  hiding (exp)
+import           Language.Haskell.TH (Body (NormalB), Dec (SigD, ValD),
+                                      Exp (AppE, ConE, ListE, LitE, TupE, VarE),
+                                      ExpQ, Info (VarI), Lit (IntegerL), Name,
+                                      Pat (VarP), Q,
+                                      Type (AppT, ArrowT, ConT, ForallT),
+                                      mkName, nameBase, reify)
+import           Model.GameState     (AcquisitionActionF, ConsumptionActionF,
+                                      DirectionalStimulusActionF,
+                                      ImplicitStimulusActionF, Location, Object,
+                                      PosturalActionF,
+                                      ProcessImplicitStimulusVerb,
+                                      SomaticAccessActionF, SystemEffect,
+                                      SystemEffectKey)
+import           Model.GID           (GID (GID))
+import           Model.Label         (Label (Label))
+import           Model.Parser.Lexer  (Lexeme)
+import           Prelude             hiding (exp)
 
 
 makeObjectGIDsFromNames :: [String] -> Q [Dec]
@@ -43,35 +39,6 @@ makeObjectGIDsFromNames names = do
 -- =============================================================================
 -- MANUAL GID ASSIGNMENT FUNCTIONS (UPDATED PATTERN)
 -- =============================================================================
-
-makeActionSystemEffectKeyMap :: [(ExpQ, [ExpQ])] -> Q [Dec]
-makeActionSystemEffectKeyMap actionEffectPairs = do
-  pairs <- mapM (\(actionExpQ, effectKeysExpQ) -> do
-    actionExp <- actionExpQ
-    effectKeyExps <- sequence effectKeysExpQ
-    return (actionExp, effectKeyExps)) actionEffectPairs
-
-  mapDecl <- makeActionSystemEffectKeyMapDecl pairs
-  pure [mapDecl]
-  where
-    makeActionSystemEffectKeyMapDecl pairs = do
-      let mapName = mkName "actionSystemEffectKeyMap"
-          mapType = AppT (AppT (ConT ''Map) (ConT ''ActionKey)) (AppT (ConT ''[]) (ConT ''SystemEffectKey))
-
-          mapEntries = fmap makeMapEntry pairs
-          mapExpr = AppE (VarE 'Data.Map.Strict.fromList) (ListE mapEntries)
-
-      pure $ ValD (VarP mapName) (NormalB mapExpr) []
-
-    makeMapEntry (actionExp, effectKeyExps) =
-      let actionKey = case actionExp of
-            VarE actionName ->
-              let actionGIDName = mkName (nameBase actionName ++ "GID")
-              in AppE (ConE 'SomaticAccessActionKey) (VarE actionGIDName)
-            _ -> error "Expected action variable name"
-
-          effectKeyList = ListE effectKeyExps
-      in TupE [Just actionKey, Just effectKeyList]
 
 makeSystemEffectGIDsAndMap :: [(ExpQ, Int)] -> Q [Dec]
 makeSystemEffectGIDsAndMap expGidPairs = do

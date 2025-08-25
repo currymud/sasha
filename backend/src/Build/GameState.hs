@@ -13,12 +13,11 @@ import           Build.Identifiers.Actions                       (acquisitionAct
                                                                   implicitStimulusActionMap,
                                                                   posturalActionMap,
                                                                   somaticAccessActionMap)
-import           Build.Identifiers.Effects                       (systemEffectMap)
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
-                                                                  Config (Config, _actionMaps, _systemEffectMap),
-                                                                  GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry),
+                                                                  Config (Config, _actionMaps),
+                                                                  GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _fieldEffectRegistry, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
 -- Build GameState using the DSL!
@@ -32,7 +31,9 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
       { _world = defaultWorld
       , _player = defaultPlayer
       , _effectRegistry = Data.Map.Strict.empty
+      , _fieldEffectRegistry = Data.Map.Strict.empty
       , _systemEffectRegistry = Data.Map.Strict.empty
+      , _triggerRegistry = Data.Map.Strict.empty
       , _evaluation = eval
       , _narration = defaultNarration
       , _actionSystemEffectKeys  = mempty
@@ -42,10 +43,8 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
 config :: Config
 config = Config
   { _actionMaps = actionMaps
-  , _systemEffectMap = systemEffectMap'
   }
   where
-    systemEffectMap' = Data.Map.Strict.keys systemEffectMap `deepseq` systemEffectMap
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
                    (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)

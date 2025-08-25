@@ -63,23 +63,8 @@ runGame comp' = do
 processWithSystemEffects :: Sentence -> GameComputation Identity ()
 processWithSystemEffects sentence = do
   toGameComputation sentence
-  trace ("Processing sentence with system effects") $ pure ()
-  gameState <- get
-  let systemEffectConfigs = concat $ Data.Map.Strict.elems $ fmap Data.Map.Strict.elems (_systemEffectRegistry gameState)
-  trace ("Found " ++ show (length systemEffectConfigs) ++ " system effects") $ pure ()
-  let systemEffectComputations = fmap extractComputation systemEffectConfigs
-      postExecutionComputations = fmap _systemEffectManagement systemEffectConfigs
-      composedSystemEffects = sequence_ systemEffectComputations
-      composedPostExecution = sequence_ postExecutionComputations
-
-  composedSystemEffects
-  composedPostExecution
-
-  where
-    extractComputation :: SystemEffectConfig -> GameComputation Identity ()
-    extractComputation config = case _systemEffect config of
-      PerceptionSystemEffect computation -> computation
-
+  -- ToDo System Effects processing
+  --
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
   evaluator <- gets _evaluation

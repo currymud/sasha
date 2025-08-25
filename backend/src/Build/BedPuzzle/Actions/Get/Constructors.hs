@@ -9,10 +9,12 @@ import           GameState                                        (addToInventor
                                                                    modifySpatialRelationshipsForObjectM)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.GameState                                  (AcquisitionActionF (CollectedF, LosesObjectF),
-                                                                   ActionKey (AcquisitionalActionKey),
+                                                                   ActionKey (FieldEffectKey, RegularEffectKey),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                   CoordinationResult (CoordinationResult, _computation, _effectKeys),
+                                                                   CoordinationResult (CoordinationResult, _computation, _effectKeys, _fieldEffectKeys),
+                                                                   EffectActionKey (AcquisitionalActionKey),
+                                                                   FieldEffectActionKey (AcquisitionalFieldEffectActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
                                                                    SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
@@ -31,7 +33,8 @@ getObjectF objectGID = CollectedF getit
       let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
-        , _effectKeys = map AcquisitionalActionKey getActionGIDs
+        , _effectKeys = map (RegularEffectKey . AcquisitionalActionKey) getActionGIDs
+        , _fieldEffectKeys = map (FieldEffectKey . AcquisitionalFieldEffectActionKey) getActionGIDs
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -70,39 +73,7 @@ getFromSupportF supportObjGID = LosesObjectF getit
 
       pure $ CoordinationResult
         { _computation = computation
-        , _effectKeys = map AcquisitionalActionKey getActionGIDs
+        , _effectKeys = map (RegularEffectKey . AcquisitionalActionKey) getActionGIDs
+        , _fieldEffectKeys = map (FieldEffectKey . AcquisitionalFieldEffectActionKey) getActionGIDs
         }
 
-
-          {-
-getFromSupportF :: GID Object -> AcquisitionActionF
-getFromSupportF supportObjGID = LosesObjectF getit
-  where
-    getit :: GID Object
-              -> GameComputation Identity CoordinationResult
-    getit targetObjectGID = do
-      trace ("DEBUG: getFromSupportF executing with supportObjGID=" ++ show supportObjGID ++ " targetObjectGID=" ++ show targetObjectGID) $ pure ()
-
-      -- Get the target object's action management
-      actionManagement <- _objectActionManagement <$> getObjectM targetObjectGID
-      let ActionManagementFunctions actionSet = actionManagement
-      -- Find the AVManagementKey entry that matches the 'get' verb
-      let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
-
-      let computation = do
-            -- Remove spatial relationships for this supporter
-            modifySpatialRelationshipsForObjectM targetObjectGID $ \rels ->
-              Data.Set.filter (\case
-                SupportedBy oid -> oid /= supportObjGID
-                ContainedIn oid -> oid /= supportObjGID
-                _ -> True) rels
-            -- Add to inventory
-            addToInventoryM targetObjectGID
-            -- Success narration
-            modifyNarration $ updateActionConsequence "You pick it up."
-
-      pure $ CoordinationResult
-        { _computation = computation
-        , _effectKeys = map AcquisitionalActionKey getActionGIDs
-        }
-        -}

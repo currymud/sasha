@@ -11,7 +11,6 @@ import           GameState                     (getLocationObjectIDsM,
                                                 parseConsumptionPhrase)
 import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionKey (ConsumptionActionKey),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF),

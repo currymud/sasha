@@ -19,10 +19,11 @@ import           Debug.Trace                   (trace)
 import           GameState.Perception          (youSeeM)
 import           Model.GameState               (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                ActionKey (RegularEffectKey),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
+                                                EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                 EffectRegistry,
                                                 FieldEffect (LocationTitleFieldEffect, ObjectDescriptionFieldEffect, ObjectShortNameFieldEffect, PlayerLocationFieldEffect),
                                                 FieldEffectMap (FieldEffectMap),
@@ -528,16 +529,16 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-extractActionKey :: Effect -> ActionKey
-extractActionKey = \case
-  ImplicitStimulusEffect _ actionGID -> ImplicitStimulusActionKey actionGID
-  DirectionalStimulusEffect _ actionGID -> DirectionalStimulusActionKey actionGID
-  SomaticAccessEffect _ actionGID -> SomaticAccessActionKey actionGID
-  AcquisitionVerbEffect _ actionGID -> AcquisitionalActionKey actionGID
-  AcquisitionPhraseEffect _ actionGID -> AcquisitionalActionKey actionGID
-  ConsumptionEffect _ _ actionGID -> ConsumptionActionKey actionGID
-  PositivePosturalEffect _ actionGID -> PosturalActionKey actionGID
-  NegativePosturalEffect _ actionGID -> PosturalActionKey actionGID
+toActionKey :: Effect -> ActionKey
+toActionKey = \case
+  ImplicitStimulusEffect _ actionGID -> RegularEffectKey (ImplicitStimulusActionKey actionGID)
+  DirectionalStimulusEffect _ actionGID -> RegularEffectKey (DirectionalStimulusActionKey actionGID)
+  SomaticAccessEffect _ actionGID ->  RegularEffectKey (SomaticAccessActionKey actionGID)
+  AcquisitionVerbEffect _ actionGID -> RegularEffectKey (AcquisitionalActionKey actionGID)
+  AcquisitionPhraseEffect _ actionGID -> RegularEffectKey (AcquisitionalActionKey actionGID)
+  ConsumptionEffect _ _ actionGID -> RegularEffectKey (ConsumptionActionKey actionGID)
+  PositivePosturalEffect _ actionGID -> RegularEffectKey (PosturalActionKey actionGID)
+  NegativePosturalEffect _ actionGID -> RegularEffectKey (PosturalActionKey actionGID)
 
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
@@ -561,14 +562,6 @@ validateLocationGIDDeclared gid = do
     throwError (InvalidLocationGID gid "Location GID not declared")
 
 -- Helper functions for GID generation
-  {-
-generateObjectGID :: WorldBuilder (GID Object)
-generateObjectGID = do
-  state <- get
-  let newGID = GID (_nextObjectGID state)
-  put state { _nextObjectGID = _nextObjectGID state + 1 }
-  pure newGID
--}
 
 generateObjectGID :: WorldBuilder (GID Object)
 generateObjectGID = do
@@ -578,7 +571,6 @@ generateObjectGID = do
     put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
 
-
 buildEffectRegistryFromLinks :: [(Effect, ActionEffectKey)] -> EffectRegistry
 buildEffectRegistryFromLinks links =
   Data.Map.Strict.map ActionEffectMap $
@@ -587,18 +579,7 @@ buildEffectRegistryFromLinks links =
   where
     buildEntry :: (Effect, ActionEffectKey) -> (ActionKey, Map ActionEffectKey (Set Effect))
     buildEntry (effect, effectKey) =
-      (extractActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
-
-    extractActionKey :: Effect -> ActionKey
-    extractActionKey = \case
-      ImplicitStimulusEffect _ actionGID -> ImplicitStimulusActionKey actionGID
-      DirectionalStimulusEffect _ actionGID -> DirectionalStimulusActionKey actionGID
-      SomaticAccessEffect _ actionGID -> SomaticAccessActionKey actionGID
-      AcquisitionVerbEffect _ actionGID -> AcquisitionalActionKey actionGID
-      AcquisitionPhraseEffect _ actionGID -> AcquisitionalActionKey actionGID
-      ConsumptionEffect _ _ actionGID -> ConsumptionActionKey actionGID
-      PositivePosturalEffect _ actionGID -> PosturalActionKey actionGID
-      NegativePosturalEffect _ actionGID -> PosturalActionKey actionGID
+      (toActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
 
 generateLocationGID :: WorldBuilder (GID Location)
 generateLocationGID = do
