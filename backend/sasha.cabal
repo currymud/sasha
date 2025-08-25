@@ -58,6 +58,7 @@ library
       Build.GameState
       Build.GameStateGeneration.Defaults
       Build.BedPuzzle.Actions.Inventory
+      Build.BedPuzzle.Actions.Look
       Build.BedPuzzle.Actions.Open
       Build.BedPuzzle.Actions.Get
       Build.BedPuzzle.Actions.Get.Constructors

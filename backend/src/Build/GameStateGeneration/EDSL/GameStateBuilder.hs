@@ -24,7 +24,9 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 Effect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 EffectRegistry,
-                                                GameState (_effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
+                                                FieldEffect (LocationTitleFieldEffect, ObjectDescriptionFieldEffect, ObjectShortNameFieldEffect, PlayerLocationFieldEffect),
+                                                FieldEffectMap (FieldEffectMap),
+                                                GameState (_effectRegistry, _evaluation, _fieldEffectRegistry, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                 Location (_objectSemanticMap, _title),
                                                 Narration (Narration),
                                                 Object (_description, _descriptives, _shortName),
@@ -35,7 +37,7 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Ob
                                                 _locationActionManagement,
                                                 _objectActionManagement,
                                                 _playerActions, _world)
-import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL  (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings      (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                     (GID (GID))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
@@ -204,6 +206,18 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
+interpretDSL (UpdateShortName text objGID) =
+  pure (ObjectShortNameFieldEffect text objGID)
+
+interpretDSL (UpdateDescription text objGID) =
+  pure (ObjectDescriptionFieldEffect text objGID)
+
+interpretDSL (UpdateTitle text locGID) =
+  pure (LocationTitleFieldEffect text locGID)
+
+interpretDSL (UpdateLocation locGID playerKey) =
+  pure (PlayerLocationFieldEffect locGID playerKey)
+
 interpretDSL (RegisterObject gid objDSL) = do
   obj <- interpretDSL objDSL
   state <- get
@@ -298,8 +312,79 @@ interpretDSL (LinkEffectToPlayer actionKey playerKey effect) = do
       updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
   put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
 
+interpretDSL (LinkEffectToObject actionKey objGID effect) = do
+  state <- get
+  let effectKey = ObjectKey objGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
+interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
+  state <- get
+  let effectKey = LocationKey locGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
+interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
+  state <- get
+  let effectKey = LocationKey locGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
+interpretDSL (LinkEffectToPlayer actionKey playerKey effect) = do
+  state <- get
+  let effectKey = PlayerKey playerKey
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
+interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
+  state <- get
+  let effectKey = LocationKey locGID
+      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
+      ActionEffectMap currentMap = currentEffectMap
+      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
+      updatedRegistry = Data.Map.Strict.insert actionKey (ActionEffectMap updatedMap) (_effectRegistry (_gameState state))
+  put state { _gameState = (_gameState state) { _effectRegistry = updatedRegistry } }
+
+interpretDSL (LinkFieldEffectToObject actionKey objGID fieldEffect) = do
+ state <- get
+ let effectKey = ObjectKey objGID
+     currentEffectMap = Data.Map.Strict.findWithDefault (FieldEffectMap mempty) actionKey (_fieldEffectRegistry (_gameState state))
+     FieldEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton fieldEffect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (FieldEffectMap updatedMap) (_fieldEffectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _fieldEffectRegistry = updatedRegistry } }
 interpretDSL FinalizeGameState = do
  gets _gameState
+
+interpretDSL (LinkFieldEffectToLocation actionKey locGID fieldEffect) = do
+ state <- get
+ let effectKey = LocationKey locGID
+     currentEffectMap = Data.Map.Strict.findWithDefault (FieldEffectMap mempty) actionKey (_fieldEffectRegistry (_gameState state))
+     FieldEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton fieldEffect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (FieldEffectMap updatedMap) (_fieldEffectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _fieldEffectRegistry = updatedRegistry } }
+
+interpretDSL (LinkFieldEffectToPlayer actionKey playerKey fieldEffect) = do
+ state <- get
+ let effectKey = PlayerKey playerKey
+     currentEffectMap = Data.Map.Strict.findWithDefault (FieldEffectMap mempty) actionKey (_fieldEffectRegistry (_gameState state))
+     FieldEffectMap currentMap = currentEffectMap
+     updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton fieldEffect) currentMap
+     updatedRegistry = Data.Map.Strict.insert actionKey (FieldEffectMap updatedMap) (_fieldEffectRegistry (_gameState state))
+ put state { _gameState = (_gameState state) { _fieldEffectRegistry = updatedRegistry } }
 
 interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   state <- get

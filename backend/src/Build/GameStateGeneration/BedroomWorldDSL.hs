@@ -95,6 +95,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getRobeFGID,
                                                                           isaEnabledLookGID,
                                                                           lookAtChairFGID,
+                                                                          lookAtRobeFGID,
                                                                           lookFGID,
                                                                           notEvenInventoryFGID,
                                                                           notEvenPillGID,
@@ -282,7 +283,7 @@ bedroomWorldDSL = do
   linkEffectToObject (SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
 
 
-  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look seeRobeChairGID
+  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
   robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
@@ -359,10 +360,10 @@ bedroomWorldDSL = do
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase pocketDS), [pocketGID])
     ]
   trace "Perception map has been set" $ pure ()
-  displayAction <- displayVisibleObjects
+--  displayAction <- displayVisibleObjects
 
   -- Link the open eyes action to trigger the system effect
-  linkActionKeyToSystemEffect (SomaticAccessActionKey openEyesGID) (SystemLocationKey bedroomGID)
+--  linkActionKeyToSystemEffect (SomaticAccessActionKey openEyesGID) (SystemLocationKey bedroomGID)
   -- Create and register player
   player <- buildBedroomPlayer bedroomGID
   registerPlayer player

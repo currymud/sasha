@@ -16,6 +16,7 @@ import           Build.BedPuzzle.Actions.Inventory                       (defaul
                                                                           notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
+import           Build.BedPuzzle.Actions.Look                            (lookAtF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Look              (notEvenFloorF,
@@ -92,6 +93,9 @@ getFromChairF = getFromSupportF chairGID
 getFromRobeF :: AcquisitionActionF
 getFromRobeF = getFromSupportF robeGID
 
+lookAtRobeF :: DirectionalStimulusActionF
+lookAtRobeF = lookAtF robeGID
+
 lookAtChairF :: DirectionalStimulusActionF
 lookAtChairF = supportLookF chairGID flavor
   where
@@ -111,7 +115,7 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| notEvenPill|], 2),
                                          ([| whatPill |], 3),
                                          ([| dsvEnabledLook|], 4),
-                                         ([| lookAt |], 5),
+                                         ([| lookAtRobeF |], 5),
                                          ([| whatTable |], 6),
                                          ([| seeTable |], 7),
                                          ([| whatChairF |], 8),
