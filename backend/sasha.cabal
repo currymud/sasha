@@ -95,7 +95,6 @@ library
       GameState.ActionManagement
       GameState.Perception
       GameState.EffectRegistry
-      GameState.FieldEffectRegistry
       GameState.FieldValidation
       GameState.Spatial
       Grammar.Parser

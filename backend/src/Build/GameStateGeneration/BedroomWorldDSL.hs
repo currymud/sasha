@@ -294,7 +294,7 @@ bedroomWorldDSL = do
 
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
-  linkFieldEffectToObject ((FieldEffectKey . AcquisitionalFieldEffectActionKey) getRobeFGID) robeGID robeHoldingDescriptionEffect
+--  linkFieldEffectToObject ((FieldEffectKey . AcquisitionalFieldEffectActionKey) getRobeFGID) robeGID robeHoldingDescriptionEffect
 
   linkEffectToObject ((RegularEffectKey . AcquisitionalActionKey) getRobeFGID) robeGID getRobeChangesLookRobe
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()

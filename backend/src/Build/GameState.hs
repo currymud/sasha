@@ -17,7 +17,7 @@ import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
                                                                   Config (Config, _actionMaps),
-                                                                  GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _fieldEffectRegistry, _narration, _player, _systemEffectRegistry, _triggerRegistry),
+                                                                  GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
 -- Build GameState using the DSL!
@@ -31,7 +31,6 @@ gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderS
       { _world = defaultWorld
       , _player = defaultPlayer
       , _effectRegistry = Data.Map.Strict.empty
-      , _fieldEffectRegistry = Data.Map.Strict.empty
       , _systemEffectRegistry = Data.Map.Strict.empty
       , _triggerRegistry = Data.Map.Strict.empty
       , _evaluation = eval

@@ -15,7 +15,6 @@ import           Model.GameState               (ActionEffectKey (ObjectKey, Play
                                                 ActionManagement (DSAManagementKey, NPManagementKey, PPManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF (ConsumptionActionF),
-                                                Effect (DirectionalStimulusEffect, NegativePosturalEffect, PositivePosturalEffect),
                                                 GameComputation,
                                                 GameState (_player), Object,
                                                 Player (_playerActions),

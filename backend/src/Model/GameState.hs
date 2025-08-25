@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
-  ActionEffect (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
-  , ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
+--  ActionEffects (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
+   ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionKey (RegularEffectKey, FieldEffectKey)
   , AcquisitionF
@@ -30,7 +30,7 @@ module Model.GameState (
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  , Effect ( AcquisitionVerbEffect
+  , ActionEffect ( AcquisitionVerbEffect
                , AcquisitionPhraseEffect
                , ConsumptionEffect
                , ImplicitStimulusEffect
@@ -38,6 +38,7 @@ module Model.GameState (
                , PositivePosturalEffect
                , NegativePosturalEffect
                , SomaticAccessEffect)
+  , Effect (AEffect, FEffect)
   , EffectActionKey ( ImplicitStimulusActionKey
                       , DirectionalStimulusActionKey
                       , SomaticAccessActionKey
@@ -60,7 +61,7 @@ module Model.GameState (
   , FieldEffectRegistry
   , FinalizeAcquisitionF
   , GameComputation (GameComputation, runGameComputation)
-  , GameState (GameState, _fieldEffectRegistry, _triggerRegistry, _systemEffectRegistry , _world, _player, _narration, _evaluation, _effectRegistry,_actionSystemEffectKeys)
+  , GameState (GameState, _triggerRegistry, _systemEffectRegistry , _world, _player, _narration, _evaluation, _effectRegistry,_actionSystemEffectKeys)
   , GameStateT (GameStateT, runGameStateT)
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
@@ -355,8 +356,15 @@ data ActionKey
   | FieldEffectKey FieldEffectActionKey
   deriving stock (Show, Eq, Ord)
 
+
 type Effect :: Type
 data Effect
+  = AEffect ActionEffect
+  | FEffect FieldEffect
+  deriving stock (Show, Eq, Ord)
+
+type ActionEffect :: Type
+data ActionEffect
   = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
@@ -395,18 +403,9 @@ newtype FieldEffectMap = FieldEffectMap
   { _fieldEffectMap :: Map ActionEffectKey (Set FieldEffect)}
   deriving stock (Show, Eq, Ord)
 
-type ActionEffect :: Type
-data ActionEffect
-  = SomaticAccessActionEffect (Map (GID SomaticAccessActionF) Effect)
-  | AcquisitionActionEffect (Map (GID AcquisitionActionF) Effect)
-  | ImplicitStimulusActionEffect (Map (GID ImplicitStimulusActionF) (Map ActionEffectKey Effect))
-  | EdibleConsumptionActionEffect (Map (GID ConsumptionActionF) Effect)
-  deriving stock (Show, Eq, Ord)
-
 type SystemEffect :: Type
 data SystemEffect
   = PerceptionSystemEffect (GameComputation Identity ())
-
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
@@ -436,7 +435,6 @@ data GameState = GameState
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   , _triggerRegistry        :: TriggerRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
-  , _fieldEffectRegistry    :: FieldEffectRegistry
   }
 
 

@@ -115,9 +115,9 @@ data WorldDSL :: Type -> Type where
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 
 -- Add these after the existing LinkEffectTo* constructors:
-  LinkFieldEffectToObject :: ActionKey -> GID Object -> FieldEffect -> WorldDSL ()
-  LinkFieldEffectToLocation :: ActionKey -> GID Location -> FieldEffect -> WorldDSL ()
-  LinkFieldEffectToPlayer :: ActionKey -> PlayerKey -> FieldEffect -> WorldDSL ()
+  LinkFieldEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
+  LinkFieldEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
+  LinkFieldEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
 
   LinkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
   LinkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
@@ -304,11 +304,11 @@ updateTitle = UpdateTitle
 updateLocation :: GID Location -> PlayerKey -> WorldDSL FieldEffect
 updateLocation = UpdateLocation
 
-linkFieldEffectToObject :: ActionKey -> GID Object -> FieldEffect -> WorldDSL ()
+linkFieldEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
 linkFieldEffectToObject = LinkFieldEffectToObject
 
-linkFieldEffectToLocation :: ActionKey -> GID Location -> FieldEffect -> WorldDSL ()
+linkFieldEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
 linkFieldEffectToLocation = LinkFieldEffectToLocation
 
-linkFieldEffectToPlayer :: ActionKey -> PlayerKey -> FieldEffect -> WorldDSL ()
+linkFieldEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
 linkFieldEffectToPlayer = LinkFieldEffectToPlayer
