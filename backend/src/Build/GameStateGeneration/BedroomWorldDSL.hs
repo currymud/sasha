@@ -282,7 +282,6 @@ bedroomWorldDSL = do
   openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
 
-
   robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
@@ -357,7 +356,6 @@ bedroomWorldDSL = do
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase robeDS), [robeGID])
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase mailDS), [mailGID])
     , (DirectionalStimulusNounPhrase (SimpleNounPhrase floorDS), [floorGID])
-    , (DirectionalStimulusNounPhrase (SimpleNounPhrase pocketDS), [pocketGID])
     ]
   trace "Perception map has been set" $ pure ()
 --  displayAction <- displayVisibleObjects
