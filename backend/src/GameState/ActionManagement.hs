@@ -6,7 +6,8 @@ import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           Debug.Trace                   (trace)
-import           GameState                     (modifyLocationM, modifyObjectM)
+import           GameState                     (modifyLocationM, modifyObjectM,
+                                                modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,

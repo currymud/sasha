@@ -10,7 +10,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.GameState                                  (AcquisitionActionF (CollectedF, LosesObjectF),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                   CoordinationResult (CoordinationResult, _computation, _effectKeys, _fieldEffectKeys),
+                                                                   CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
                                                                    EffectActionKey (AcquisitionalActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
@@ -29,8 +29,8 @@ getObjectF objectGID = CollectedF getit
       let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
-        , _effectKeys = map AcquisitionalActionKey getActionGIDs
-        , _fieldEffectKeys = map AcquisitionalFieldEffectActionKey getActionGIDs
+        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -69,7 +69,7 @@ getFromSupportF supportObjGID = LosesObjectF getit
 
       pure $ CoordinationResult
         { _computation = computation
-        , _effectKeys = map (RegularEffectKey . AcquisitionalActionKey) getActionGIDs
-        , _fieldEffectKeys = map (FieldEffectKey . AcquisitionalFieldEffectActionKey) getActionGIDs
+        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
         }
 

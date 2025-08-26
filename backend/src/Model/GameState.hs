@@ -29,14 +29,11 @@ module Model.GameState (
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
   , Config (Config, _actionMaps)
-  , CoordinationResult (CoordinationResult, _computation, _effectKeys, _fieldEffectKeys)
+  , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
   , Effect (ActionManagementEffect, FieldUpdateEffect)
-  , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess
-                               , AddAcquisitionVerb, AddAcquisitionPhrase, AddConsumption
-                               , AddPositivePostural, AddNegativePostural)
   , EffectActionKey ( ImplicitStimulusActionKey
                       , DirectionalStimulusActionKey
                       , SomaticAccessActionKey
@@ -212,9 +209,9 @@ type SearchStrategy = NounKey
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
-  { _computation     :: GameComputation Identity ()
-  , _effectKeys      :: [EffectActionKey]
-  , _fieldEffectKeys :: [EffectActionKey]
+  { _computation      :: GameComputation Identity ()
+  , _actionEffectKeys :: [EffectActionKey]
+  , _fieldEffectKeys  :: [EffectActionKey]
   }
 
 type AcquisitionRes :: Type
