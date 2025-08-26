@@ -55,7 +55,7 @@ import           Model.GameState                                              (A
                                                                                _objectActionManagement,
                                                                                _playerActions,
                                                                                _world)
-import           Model.GameState.GameStateDSL                                 (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionPhraseEffect, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL                                 (WorldDSL (Apply, Bind, CreateAVManagement, CreateAcquisitionVerbEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings                                     (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                                                    (GID (GID))
 import           Model.Parser.Atomics.Nouns                                   (Consumable,
@@ -226,18 +226,17 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
-interpretDSL (UpdateShortName text oid) =
-  pure (FieldUpdateEffect (ObjectShortName text))  -- Need proper ActionGID
+interpretDSL (UpdateShortName text targetOid) =
+  pure (FieldUpdateEffect (ObjectShortName targetOid text))
 
-interpretDSL (UpdateDescription text oid) =
-  pure (FieldUpdateEffect (ObjectDescription text oid))
+interpretDSL (UpdateDescription text targetOid) =
+  pure (FieldUpdateEffect (ObjectDescription targetOid text))
 
-interpretDSL (UpdateTitle text oid) =
-  pure (FieldUpdateEffect (LocationTitle text) oid) -- Need proper ActionGID
+interpretDSL (UpdateTitle text targetLid) =
+  pure (FieldUpdateEffect (LocationTitle targetLid text))
 
-interpretDSL (UpdateLocation lid) =
-  pure (FieldUpdateEffect (PlayerLocation lid)) -- Need proper ActionGID
-
+interpretDSL (UpdateLocation targetLid) =
+  pure (FieldUpdateEffect (PlayerLocation targetLid))
 interpretDSL (RegisterObject gid objDSL) = do
   obj <- interpretDSL objDSL
   state <- get
@@ -382,9 +381,6 @@ interpretDSL DisplayVisibleObjects = pure youSeeM
 interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAcquisitionVerb verb actionGID) (AcquisitionActionGID actionGID))
 
-interpretDSL (CreateAcquisitionPhraseEffect verbPhrase actionGID) = do
-  pure (ActionManagementEffect (AddAcquisitionPhrase verbPhrase actionGID) (AcquisitionActionGID actionGID))
-
 interpretDSL (CreateConsumptionEffect verb objGID actionGID) = do
   pure (ActionManagementEffect (AddConsumption verb objGID actionGID) (ConsumptionActionGID actionGID))
 
@@ -432,9 +428,6 @@ interpretDSL (CreateDSAManagement verb actionGID) =
 
 interpretDSL (CreateSSAManagement verb actionGID) =
   pure (SSAManagementKey verb actionGID)
-
-interpretDSL (CreateAAManagement verbPhrase actionGID) =
-  pure (AAManagementKey verbPhrase actionGID)
 
 interpretDSL (CreateAVManagement verb actionGID) =
   pure (AVManagementKey verb actionGID)

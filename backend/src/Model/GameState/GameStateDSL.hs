@@ -74,7 +74,6 @@ data WorldDSL :: Type -> Type where
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
-  CreateAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL ActionManagement
   CreateAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
   CreateCAManagement :: ConsumptionVerbPhrase -> GID ConsumptionActionF -> WorldDSL ActionManagement
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
@@ -109,7 +108,6 @@ data WorldDSL :: Type -> Type where
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
   CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
-  CreateAcquisitionPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
   CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
@@ -165,9 +163,6 @@ createDSAManagement = CreateDSAManagement
 createSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
 createSSAManagement = CreateSSAManagement
 
-createAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL ActionManagement
-createAAManagement = CreateAAManagement
-
 createAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
 createAVManagement = CreateAVManagement
 
@@ -204,9 +199,6 @@ createImplicitStimulusEffect = CreateImplicitStimulusEffect
 
 createDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
 createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
-
-createAcquisitionPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
-createAcquisitionPhraseEffect = CreateAcquisitionPhraseEffect
 
 createAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
 createAcquisitionVerbEffect = CreateAcquisitionVerbEffect
