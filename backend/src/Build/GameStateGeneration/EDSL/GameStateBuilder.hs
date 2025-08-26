@@ -496,17 +496,13 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-toActionKey :: ActionEffect -> ActionKey
-toActionKey = \case
-  ImplicitStimulusEffect _ actionGID -> RegularEffectKey (ImplicitStimulusActionKey actionGID)
-  DirectionalStimulusEffect _ actionGID -> RegularEffectKey (DirectionalStimulusActionKey actionGID)
-  SomaticAccessEffect _ actionGID ->  RegularEffectKey (SomaticAccessActionKey actionGID)
-  AcquisitionVerbEffect _ actionGID -> RegularEffectKey (AcquisitionalActionKey actionGID)
-  AcquisitionPhraseEffect _ actionGID -> RegularEffectKey (AcquisitionalActionKey actionGID)
-  ConsumptionEffect _ _ actionGID -> RegularEffectKey (ConsumptionActionKey actionGID)
-  PositivePosturalEffect _ actionGID -> RegularEffectKey (PosturalActionKey actionGID)
-  NegativePosturalEffect _ actionGID -> RegularEffectKey (PosturalActionKey actionGID)
-
+actionGIDToKey :: ActionGID -> EffectActionKey
+actionGIDToKey (ImplicitActionGID gid)      = ImplicitStimulusActionKey gid
+actionGIDToKey (DirectionalActionGID gid)   = DirectionalStimulusActionKey gid
+actionGIDToKey (SomaticAccessActionGID gid) = SomaticAccessActionKey gid
+actionGIDToKey (AcquisitionActionGID gid)   = AcquisitionalActionKey gid
+actionGIDToKey (ConsumptionActionGID gid)   = ConsumptionActionKey gid
+actionGIDToKey (PosturalActionGID gid)      = PosturalActionKey gid
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
 validateObjectGIDDeclared gid = do
@@ -538,15 +534,15 @@ generateObjectGID = do
     put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
 
-buildEffectRegistryFromLinks :: [(ActionEffect, ActionEffectKey)] -> EffectRegistry
+buildEffectRegistryFromLinks :: [(Effect, ActionEffectKey)] -> EffectRegistry
 buildEffectRegistryFromLinks links =
   Data.Map.Strict.map ActionEffectMap $
   Data.Map.Strict.fromListWith (Data.Map.Strict.unionWith Data.Set.union) $
   fmap buildEntry links
   where
-    buildEntry :: (ActionEffect, ActionEffectKey) -> (ActionKey, Map ActionEffectKey (Set ActionEffect))
+    buildEntry :: (Effect, ActionEffectKey) -> (EffectActionKey, Map ActionEffectKey (Set Effect))
     buildEntry (effect, effectKey) =
-      (toActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
+      (toEffectActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
 
 generateLocationGID :: WorldBuilder (GID Location)
 generateLocationGID = do

@@ -5,7 +5,6 @@ module Model.GameState (
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionGID (ImplicitActionGID, DirectionalActionGID, SomaticAccessActionGID,
                AcquisitionActionGID, ConsumptionActionGID, PosturalActionGID)
-  , ActionKey (RegularEffectKey, FieldEffectKey)
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
@@ -310,12 +309,15 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
+type FieldUpdateOperation :: Type
 data FieldUpdateOperation
   = ObjectShortName Text
   | ObjectDescription Text
   | LocationTitle Text
   | PlayerLocation (GID Location)
+  deriving stock (Show, Eq, Ord)
 
+type ActionGID :: Type
 data ActionGID
   = ImplicitActionGID (GID ImplicitStimulusActionF)
   | DirectionalActionGID (GID DirectionalStimulusActionF)
@@ -323,6 +325,7 @@ data ActionGID
   | AcquisitionActionGID (GID AcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)
   | PosturalActionGID (GID PosturalActionF)
+  deriving stock (Show, Eq, Ord)
 
 type EffectActionKey :: Type
 data EffectActionKey
@@ -334,11 +337,13 @@ data EffectActionKey
   | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
-
+type Effect :: Type
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation ActionGID
+  deriving stock (Show, Eq, Ord)
 
+type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -348,6 +353,7 @@ data ActionManagementOperation
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
   | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
+  deriving stock (Show, Eq, Ord)
 
 type EffectRegistry :: Type
 type EffectRegistry = Map EffectActionKey ActionEffectMap
