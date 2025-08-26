@@ -5,6 +5,7 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
+import           Data.Text                     (pack)
 import           Debug.Trace                   (trace)
 import           GameState                     (modifyLocationM, modifyObjectM,
                                                 modifyPlayerM)
@@ -38,6 +39,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 SystemEffectKey, _systemEffect,
                                                 _title)
 import           Model.GID                     (GID)
+import           Model.Parser                  (ActionManagement (DirectionalStimulus))
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
@@ -139,13 +141,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddSomaticAccess verb n
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionPhrase avp newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= avp; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey avp newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (LocationKey lid) (ActionManagementEffect (AddPositivePostural verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -199,9 +194,8 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddAcquisitionPhrase avp 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
-        cvp = ConsumptionVerbPhrase verb (SimpleNounPhrase (DirectionalStimulus $ pack $ show targetOid))
         filteredActions = Data.Set.filter filterAction actionSet
-        updatedActions = Data.Set.insert (CAManagementKey cvp newActionGID) filteredActions
+        updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
   where
     filterAction (CAManagementKey (ConsumptionVerbPhrase v _) _) = v /= verb
@@ -327,10 +321,6 @@ processEffect _ (FieldUpdateEffect (LocationTitle targetLid newTitle)) = do
 
 processEffect _ (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
-
--- Catch-all for unhandled effect/key combinations
-processEffect effectKey effect = do
-  error $ "Unhandled effect combination: " ++ show effectKey ++ " -> " ++ show effect
 
 lookupDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
 lookupDirectionalStimulus verb (ActionManagementFunctions actions) =
