@@ -17,7 +17,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                ActionManagement (AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
@@ -362,6 +362,10 @@ lookupSomaticAccess verb (ActionManagementFunctions actions) =
 lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisition verb (ActionManagementFunctions actions) =
   listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupAcquisitionPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
+lookupAcquisitionPhrase phrase (ActionManagementFunctions actions) =
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == phrase]
 
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption verb (ActionManagementFunctions actions) =
