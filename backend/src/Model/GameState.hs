@@ -9,12 +9,12 @@ module Model.GameState (
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
   , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess,
-                               AddAcquisitionVerb, AddAcquisitionPhrase, AddConsumption,
+                               AddAcquisitionVerb, AddConsumption,
                                AddPositivePostural, AddNegativePostural)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AAManagementKey, AVManagementKey, CAManagementKey,
+  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey, AVManagementKey, CAManagementKey,
                      PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
@@ -310,7 +310,7 @@ type FieldUpdateOperation :: Type
 data FieldUpdateOperation
   = ObjectShortName (GID Object) Text
   | ObjectDescription (GID Object) Text
-  | LocationTitle (GID Object) Text
+  | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
   deriving stock (Show, Eq, Ord)
 
@@ -421,7 +421,7 @@ data ActionManagement
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)
-  | CAManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
+  | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
