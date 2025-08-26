@@ -12,15 +12,13 @@ import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
                                                 modifyPerceptionMapM, youSeeM)
 import           Model.GameState               (AcquisitionActionF,
-                                                ActionEffect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionKey,
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect (AEffect, FEffect),
+                                                EffectActionKey,
                                                 GameComputation,
                                                 GameState (_effectRegistry, _player, _systemEffectRegistry),
                                                 ImplicitStimulusActionF,
@@ -71,21 +69,7 @@ removeSystemEffect key effectGID = modify' $ \gs ->
   in gs { _systemEffectRegistry = updatedRegistry }
 
 
-  {-
-processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
-processEffectsFromRegistry actionKey = do
-  trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
-  maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-  case maybeEffectMap of
-    Just effectMap -> do
-      trace ("DEBUG: Found effects") $ pure ()
-      processAllEffects effectMap
-    Nothing        -> do
-      trace ("DEBUG: No effects found") $
-        pure () -- No effects registered for this action
--}
-
-processEffectsFromRegistry :: ActionKey -> GameComputation Identity ()
+processEffectsFromRegistry :: EffectActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
   gameState <- get
@@ -106,16 +90,6 @@ modifyObjectActionManagementM :: GID Object
 modifyObjectActionManagementM oid actionF = do
  modifyObjectM oid $ \obj ->
    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
-     {-
--- Updated: processAllEffects remains the same - just processes effects
-processAllEffects :: ActionEffectMap -> GameComputation Identity ()
-processAllEffects (ActionEffectMap effectMap) = do
-  mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
-  where
-    processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
-    processEffectEntry (effectKey, effects) =
-      mapM_ (processEffect effectKey) (Data.Set.toList effects)
--}
 
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
@@ -129,7 +103,6 @@ processAllEffects (ActionEffectMap effectMap) = do
 
 -- processEffect implementation remains the same as in your original code
 processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
-
 -- LOCATION EFFECTS (updating location action management)
 processEffect (LocationKey lid) (AEffect (ImplicitStimulusEffect verb newActionGID)) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
