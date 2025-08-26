@@ -71,10 +71,8 @@ import           Model.Parser.Composites.Nouns                           (Consum
 -- Import ObjectSpec builder functions
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                         (ActionKey (FieldEffectKey, RegularEffectKey),
-                                                                          ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                           EffectActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
-                                                                          FieldEffectActionKey (AcquisitionalFieldEffectActionKey),
                                                                           GameState,
                                                                           Location,
                                                                           Object,
@@ -296,7 +294,7 @@ bedroomWorldDSL = do
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
 --  linkFieldEffectToObject ((FieldEffectKey . AcquisitionalFieldEffectActionKey) getRobeFGID) robeGID robeHoldingDescriptionEffect
 
-  linkEffectToObject ((RegularEffectKey . AcquisitionalActionKey) getRobeFGID) robeGID getRobeChangesLookRobe
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
 --  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
 --  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
@@ -308,24 +306,24 @@ bedroomWorldDSL = do
 --  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
 
   getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
-  linkEffectToObject ((RegularEffectKey . AcquisitionalActionKey) getRobeFGID) robeGID getRobeEffect
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
 --  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
 --  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionPhraseEffect getRobeAVP playerGetFGID
-  linkEffectToPlayer ((RegularEffectKey . SomaticAccessActionKey) openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
+  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
   trace ("DEBUG: Created player effect: " ++ show robeOpenEyesLookChangesGetRobeForPlayer) $ pure ()
   trace ("DEBUG: Linking to player with key: " ++ show (SomaticAccessActionKey openEyesGID) ++ " and target: " ++ show (PlayerKeyObject robeGID)) $ pure ()
   -- Create the effect that changes look behavior when eyes open
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
 
   robeOpenEyesChangesGetVerb <- createAcquisitionVerbEffect get getRobeFGID
-  linkEffectToObject ((RegularEffectKey . SomaticAccessActionKey) openEyesGID) robeGID robeOpenEyesChangesGetVerb
-  linkEffectToLocation ((RegularEffectKey . SomaticAccessActionKey) openEyesGID) bedroomGID openEyesLookChangeEffect
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesChangesGetVerb
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
 
   openEyesSomaticEffect <- createSomaticAccessEffect saOpen openEyesGID
-  linkEffectToLocation ((RegularEffectKey . SomaticAccessActionKey) openEyesGID) bedroomGID openEyesSomaticEffect
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesSomaticEffect
   -- Complete spatial relationships
   registerSpatial chairGID (Supports (Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)

@@ -38,9 +38,11 @@ import           Model.GameState                                              (A
                                                                                ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                                                ActionManagementFunctions (ActionManagementFunctions),
-                                                                               Effect,
+                                                                               ActionManagementOperation (AddAcquisitionPhrase, AddAcquisitionVerb, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                               Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                EffectRegistry,
+                                                                               FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                GameState (_effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                                Location (_objectSemanticMap, _title),
                                                                                Narration (Narration),
@@ -224,17 +226,17 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
-interpretDSL (UpdateShortName text objGID) =
-  pure (ObjectShortNameFieldEffect text objGID)
+interpretDSL (UpdateShortName text actionGID) =
+  pure (FieldUpdateEffect (ObjectShortName text) actionGID)  -- Need proper ActionGID
 
-interpretDSL (UpdateDescription text objGID) =
-  pure (ObjectDescriptionFieldEffect text objGID)
+interpretDSL (UpdateDescription text actionGID) =
+  pure (FieldUpdateEffect (ObjectDescription text) actionGID)
 
-interpretDSL (UpdateTitle text locGID) =
-  pure (LocationTitleFieldEffect text locGID)
+interpretDSL (UpdateTitle text actionGID) =
+  pure (FieldUpdateEffect (LocationTitle text) actionGID) -- Need proper ActionGID
 
-interpretDSL (UpdateLocation locGID playerKey) =
-  pure (PlayerLocationFieldEffect locGID playerKey)
+interpretDSL (UpdateLocation locGID actionGID) =
+  pure (FieldUpdateEffect (PlayerLocation locGID) actionGID) -- Need proper ActionGID
 
 interpretDSL (RegisterObject gid objDSL) = do
   obj <- interpretDSL objDSL
@@ -377,32 +379,29 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
 
 interpretDSL DisplayVisibleObjects = pure youSeeM
 
-interpretDSL (CreateImplicitStimulusEffect verb actionGID) =
- pure (ImplicitStimulusEffect verb actionGID)
-
-interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
-  pure (DirectionalStimulusEffect verb actionGID)
-
--- For AcquisitionVerb (simple verb like "get")
 interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
-  pure (AcquisitionVerbEffect verb actionGID)
+  pure (ActionManagementEffect (AddAcquisitionVerb verb actionGID) (AcquisitionActionGID actionGID))
 
--- For AcquisitionVerbPhrase (complex phrase like "get the robe")
 interpretDSL (CreateAcquisitionPhraseEffect verbPhrase actionGID) = do
-  pure (AcquisitionPhraseEffect verbPhrase actionGID)
+  pure (ActionManagementEffect (AddAcquisitionPhrase verbPhrase actionGID) (AcquisitionActionGID actionGID))
 
 interpretDSL (CreateConsumptionEffect verb objGID actionGID) = do
-  pure (ConsumptionEffect verb objGID actionGID)
+  pure (ActionManagementEffect (AddConsumption verb objGID actionGID) (ConsumptionActionGID actionGID))
 
 interpretDSL (CreatePositivePosturalEffect verb actionGID) = do
-  pure (PositivePosturalEffect verb actionGID)
+  pure (ActionManagementEffect (AddPositivePostural verb actionGID) (PosturalActionGID actionGID))
 
--- For negative postural actions (like "sit down")
 interpretDSL (CreateNegativePosturalEffect verb actionGID) = do
-  pure (NegativePosturalEffect verb actionGID)
+  pure (ActionManagementEffect (AddNegativePostural verb actionGID) (PosturalActionGID actionGID))
 
 interpretDSL (CreateSomaticAccessEffect verb actionGID) = do
-  pure (SomaticAccessEffect verb actionGID)
+  pure (ActionManagementEffect (AddSomaticAccess verb actionGID) (SomaticAccessActionGID actionGID))
+
+interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddImplicitStimulus verb actionGID) (ImplicitActionGID actionGID))
+
+interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddDirectionalStimulus verb actionGID) (DirectionalActionGID actionGID))
 
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get
@@ -539,7 +538,7 @@ buildEffectRegistryFromLinks links =
   where
     buildEntry :: (Effect, ActionEffectKey) -> (EffectActionKey, Map ActionEffectKey (Set Effect))
     buildEntry (effect, effectKey) =
-      (toEffectActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
+      (EffectActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
 
 generateLocationGID :: WorldBuilder (GID Location)
 generateLocationGID = do
