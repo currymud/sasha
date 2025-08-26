@@ -14,7 +14,6 @@ import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisitionVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                ActionKey (RegularEffectKey),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
                                                 CoordinationResult (CoordinationResult),
@@ -43,7 +42,7 @@ manageAcquisitionProcess avp = do
         Just foundAction -> do
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               let actionKey = RegularEffectKey (AcquisitionalActionKey actionGID)
+               let actionKey = AcquisitionalActionKey actionGID
                actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"

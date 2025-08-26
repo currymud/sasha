@@ -10,7 +10,6 @@ import           GameState                     (getLocationObjectIDsM,
                                                 parseConsumptionPhrase)
 import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionKey (RegularEffectKey),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF),
@@ -38,7 +37,7 @@ manageConsumptionProcess cvp = do
           objectActionKeys <- getLocationObjectIDsM lid
 
           -- Build actionEffectKeys for the action function
-          let actionKey = RegularEffectKey (ConsumptionActionKey actionGID)
+          let actionKey = ConsumptionActionKey actionGID
           maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
             Nothing -> error "Programmer Error: No effects registered for consumption action"

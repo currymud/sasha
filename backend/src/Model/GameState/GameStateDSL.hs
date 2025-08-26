@@ -9,13 +9,14 @@ import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
 import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey,
-                                                ActionEffectMap, ActionKey,
+                                                ActionEffectMap,
                                                 ActionManagement,
                                                 ActionManagementFunctions,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
-                                                Effect, Evaluator, FieldEffect,
-                                                GameComputation, GameState,
+                                                Effect, EffectActionKey,
+                                                Evaluator, GameComputation,
+                                                GameState,
                                                 ImplicitStimulusActionF,
                                                 Location, Object, Player,
                                                 PlayerKey, PosturalActionF,
@@ -90,10 +91,10 @@ data WorldDSL :: Type -> Type where
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 
   -- FieldEffect management - NEW: Field effect constructors
-  UpdateShortName :: Text -> GID Object -> WorldDSL FieldEffect
-  UpdateDescription :: Text -> GID Object -> WorldDSL FieldEffect
-  UpdateTitle :: Text -> GID Location -> WorldDSL FieldEffect
-  UpdateLocation :: GID Location -> PlayerKey -> WorldDSL FieldEffect
+  UpdateShortName :: Text -> GID Object -> WorldDSL Effect
+  UpdateDescription :: Text -> GID Object -> WorldDSL Effect
+  UpdateTitle :: Text -> GID Location -> WorldDSL Effect
+  UpdateLocation :: GID Location -> PlayerKey -> WorldDSL Effect
 
 -- Map registration constructors
   RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL ()
@@ -103,7 +104,7 @@ data WorldDSL :: Type -> Type where
   RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
   RegisterSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
   -- In DSL
-  RegisterTrigger :: ActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
+  RegisterTrigger :: EffectActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
@@ -115,14 +116,14 @@ data WorldDSL :: Type -> Type where
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 
 -- Add these after the existing LinkEffectTo* constructors:
-  LinkFieldEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
-  LinkFieldEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
-  LinkFieldEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
+  LinkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
+  LinkFieldEffectToLocation :: EffectActionKey -> GID Location -> Effect -> WorldDSL ()
+  LinkFieldEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> WorldDSL ()
 
-  LinkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
-  LinkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
-  LinkEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
-  LinkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
+  LinkEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
+  LinkEffectToLocation :: EffectActionKey -> GID Location -> Effect -> WorldDSL ()
+  LinkEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> WorldDSL ()
+  LinkActionKeyToSystemEffect :: EffectActionKey -> SystemEffectKey -> WorldDSL ()
   DisplayVisibleObjects :: WorldDSL (GameComputation Identity ())
   -- Final assembly
   FinalizeGameState :: WorldDSL GameState
@@ -222,16 +223,16 @@ createNegativePosturalEffect = CreateNegativePosturalEffect
 createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 createSomaticAccessEffect = CreateSomaticAccessEffect
 
-linkEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
+linkEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
 linkEffectToObject = LinkEffectToObject
 
-linkEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
+linkEffectToLocation :: EffectActionKey -> GID Location -> Effect -> WorldDSL ()
 linkEffectToLocation = LinkEffectToLocation
 
-linkEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
+linkEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> WorldDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
 
-linkActionKeyToSystemEffect :: ActionKey -> SystemEffectKey -> WorldDSL ()
+linkActionKeyToSystemEffect :: EffectActionKey -> SystemEffectKey -> WorldDSL ()
 linkActionKeyToSystemEffect = LinkActionKeyToSystemEffect
 
 finalizeGameState :: WorldDSL GameState
@@ -285,30 +286,34 @@ registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfi
 registerSystemEffect = RegisterSystemEffect
 
 -- In DSL
-registerTrigger :: ActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
+registerTrigger :: EffectActionKey
+                     -> SystemEffectKey
+                     -> GID SystemEffect
+                     -> SystemEffectConfig
+                     -> WorldDSL ()
 registerTrigger = RegisterTrigger
 
 displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects
 
 -- FieldEffect convenience functions - parallel to effect functions
-updateShortName :: Text -> GID Object -> WorldDSL FieldEffect
+updateShortName :: Text -> GID Object -> WorldDSL Effect
 updateShortName = UpdateShortName
 
-updateDescription :: Text -> GID Object -> WorldDSL FieldEffect
+updateDescription :: Text -> GID Object -> WorldDSL Effect
 updateDescription = UpdateDescription
 
-updateTitle :: Text -> GID Location -> WorldDSL FieldEffect
+updateTitle :: Text -> GID Location -> WorldDSL Effect
 updateTitle = UpdateTitle
 
-updateLocation :: GID Location -> PlayerKey -> WorldDSL FieldEffect
+updateLocation :: GID Location -> PlayerKey -> WorldDSL Effect
 updateLocation = UpdateLocation
 
-linkFieldEffectToObject :: ActionKey -> GID Object -> Effect -> WorldDSL ()
+linkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
 linkFieldEffectToObject = LinkFieldEffectToObject
 
-linkFieldEffectToLocation :: ActionKey -> GID Location -> Effect -> WorldDSL ()
+linkFieldEffectToLocation :: EffectActionKey -> GID Location -> Effect -> WorldDSL ()
 linkFieldEffectToLocation = LinkFieldEffectToLocation
 
-linkFieldEffectToPlayer :: ActionKey -> PlayerKey -> Effect -> WorldDSL ()
+linkFieldEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> WorldDSL ()
 linkFieldEffectToPlayer = LinkFieldEffectToPlayer

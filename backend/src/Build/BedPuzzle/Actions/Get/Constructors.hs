@@ -1,6 +1,5 @@
 module Build.BedPuzzle.Actions.Get.Constructors where
 import           Control.Monad.Identity                           (Identity)
-import qualified Data.Map.Strict
 import qualified Data.Set
 import           Debug.Trace                                      (trace)
 import           GameState                                        (addToInventoryM,
@@ -9,18 +8,15 @@ import           GameState                                        (addToInventor
                                                                    modifySpatialRelationshipsForObjectM)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.GameState                                  (AcquisitionActionF (CollectedF, LosesObjectF),
-                                                                   ActionKey (FieldEffectKey, RegularEffectKey),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                    CoordinationResult (CoordinationResult, _computation, _effectKeys, _fieldEffectKeys),
                                                                    EffectActionKey (AcquisitionalActionKey),
-                                                                   FieldEffectActionKey (AcquisitionalFieldEffectActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
                                                                    SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
                                                                    updateActionConsequence)
 import           Model.GID                                        (GID)
-
 
 getObjectF :: GID Object -> AcquisitionActionF
 getObjectF objectGID = CollectedF getit
@@ -33,8 +29,8 @@ getObjectF objectGID = CollectedF getit
       let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
-        , _effectKeys = map (RegularEffectKey . AcquisitionalActionKey) getActionGIDs
-        , _fieldEffectKeys = map (FieldEffectKey . AcquisitionalFieldEffectActionKey) getActionGIDs
+        , _effectKeys = map AcquisitionalActionKey getActionGIDs
+        , _fieldEffectKeys = map AcquisitionalFieldEffectActionKey getActionGIDs
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
