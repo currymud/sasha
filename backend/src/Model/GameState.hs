@@ -8,6 +8,9 @@ module Model.GameState (
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
+  , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess,
+                               AddAcquisitionVerb, AddAcquisitionPhrase, AddConsumption,
+                               AddPositivePostural, AddNegativePostural)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
@@ -322,13 +325,19 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
-type FieldEffect :: Type
-data FieldEffect
-  = ObjectShortNameFieldEffect Text (GID Object)      -- Text field value, target object GID
-  | ObjectDescriptionFieldEffect Text (GID Object)    -- Text field value, target object GID
-  | LocationTitleFieldEffect Text (GID Location)      -- Text field value, target location GID
-  | PlayerLocationFieldEffect (GID Location) PlayerKey -- Location GID value, target player key
-  deriving stock (Show, Eq, Ord)
+data FieldUpdateOperation
+  = ObjectShortName Text
+  | ObjectDescription Text
+  | LocationTitle Text
+  | PlayerLocation (GID Location)
+
+data ActionGID
+  = ImplicitActionGID (GID ImplicitStimulusActionF)
+  | DirectionalActionGID (GID DirectionalStimulusActionF)
+  | SomaticAccessActionGID (GID SomaticAccessActionF)
+  | AcquisitionActionGID (GID AcquisitionActionF)
+  | ConsumptionActionGID (GID ConsumptionActionF)
+  | PosturalActionGID (GID PosturalActionF)
 
 type EffectActionKey :: Type
 data EffectActionKey
@@ -340,46 +349,26 @@ data EffectActionKey
   | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
-type FieldEffectActionKey :: Type
-data FieldEffectActionKey
-  = ImplicitStimulusFieldEffectActionKey (GID ImplicitStimulusActionF)
-  | DirectionalStimulusFieldEffectActionKey (GID DirectionalStimulusActionF)
-  | SomaticAccessFieldEffectActionKey (GID SomaticAccessActionF)
-  | AcquisitionalFieldEffectActionKey (GID AcquisitionActionF)
-  | ConsumptionFieldEffectActionKey (GID ConsumptionActionF)
-  | PosturalFieldEffectActionKey (GID PosturalActionF)
-  deriving stock (Show, Eq, Ord)
 
-type ActionKey :: Type
-data ActionKey
-  = RegularEffectKey EffectActionKey
-  | FieldEffectKey FieldEffectActionKey
-  deriving stock (Show, Eq, Ord)
-
-
-type Effect :: Type
 data Effect
-  = AEffect ActionEffect
-  | FEffect FieldEffect
-  deriving stock (Show, Eq, Ord)
+  = ActionManagementEffect ActionManagementOperation ActionGID
+  | FieldUpdateEffect FieldUpdateOperation ActionGID
 
-type ActionEffect :: Type
-data ActionEffect
-  = ImplicitStimulusEffect ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-  | DirectionalStimulusEffect DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  | SomaticAccessEffect SomaticAccessVerb (GID SomaticAccessActionF)
-  | AcquisitionVerbEffect AcquisitionVerb (GID AcquisitionActionF)
-  | AcquisitionPhraseEffect AcquisitionVerbPhrase (GID AcquisitionActionF)
-  | ConsumptionEffect ConsumptionVerb (GID Object) (GID ConsumptionActionF)
-  | PositivePosturalEffect PositivePosturalVerb (GID PosturalActionF)
-  | NegativePosturalEffect NegativePosturalVerb (GID PosturalActionF)
-  deriving stock (Show, Eq, Ord)
+data ActionManagementOperation
+  = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+  | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
+  | AddAcquisitionVerb AcquisitionVerb (GID AcquisitionActionF)
+  | AddAcquisitionPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
+  | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
+  | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
+  | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
 
 type EffectRegistry :: Type
-type EffectRegistry = Map ActionKey ActionEffectMap
+type EffectRegistry = Map EffectActionKey ActionEffectMap
 
 type TriggerRegistry :: Type
-type TriggerRegistry = Map ActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)]
+type TriggerRegistry = Map EffectActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)]
 
 type SystemEffectConfig :: Type
 data SystemEffectConfig = SystemEffectConfig
@@ -387,13 +376,12 @@ data SystemEffectConfig = SystemEffectConfig
   , _systemEffectManagement :: GameComputation Identity ()
   }
 
-
 -- We're punting SystemEffectRegistry for now - it will be a map from SystemEffectKey to a map of SystemEffect GIDs to SystemEffectConfig
 type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
 
 type FieldEffectRegistry :: Type
-type FieldEffectRegistry = Map ActionKey FieldEffectMap
+type FieldEffectRegistry = Map EffectActionKey FieldEffectMap
 
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
