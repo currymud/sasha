@@ -11,7 +11,7 @@ import           Data.Set                      (Set, elemAt, null, toList)
 import qualified Data.Text
 import           Debug.Trace                   (trace)
 import           GameState                     (getPlayerLocationM, getPlayerM)
-import           GameState.ActionManagement    (lookupAcquisitionVerbPhrase,
+import           GameState.ActionManagement    (lookupAcquisition,
                                                 processEffectsFromRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionMaps (_acquisitionActionMap),
@@ -27,13 +27,14 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap))
 import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
 
 -- we are removing processEffectsFromRegistry from here
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisitionVerbPhrase simpled availableActions of
+  case lookupAcquisition simpled availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
@@ -77,9 +78,9 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerbPhrase
-simplifyAcquisitionVerbPhrase unchanged@(SimpleAcquisitionVerbPhrase _ _) = unchanged
-simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb objectPhrase _ _) = SimpleAcquisitionVerbPhrase verb objectPhrase
+simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
+simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
+simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
 finalizeAcquisition :: EffectActionKey
                         -> GID Object

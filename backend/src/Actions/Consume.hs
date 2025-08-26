@@ -21,12 +21,12 @@ import           Model.GameState               (ActionEffectKey (LocationKey, Pl
 import           GameState.ActionManagement    (lookupConsumption,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
+import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 
 manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
-manageConsumptionProcess cvp = do
+manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupConsumption cvp availableActions of
+  case lookupConsumption verb availableActions of
     Nothing -> error "Programmer Error: No consumption action found for phrase"
     Just actionGID -> do
       actionMap <- asks (_consumptionActionMap . _actionMaps)

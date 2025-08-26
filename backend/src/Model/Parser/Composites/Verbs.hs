@@ -47,11 +47,13 @@ data StimulusVerbPhrase
 
 type ConsumptionVerbPhrase :: Type
 data ConsumptionVerbPhrase
-  = ConsumptionVerbPhrase ConsumptionVerb ConsumableNounPhrase
+  = SimpleConsumption ConsumptionVerb
+  | ConsumptionVerbPhrase ConsumptionVerb ConsumableNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 instance ToText ConsumptionVerbPhrase where
   toText (ConsumptionVerbPhrase verb nounPhrase) =
     toText verb <> " " <> toText nounPhrase
+  toText (SimpleConsumption verb) = toText verb
 
 type PosturalVerbPhrase :: Type
 data PosturalVerbPhrase

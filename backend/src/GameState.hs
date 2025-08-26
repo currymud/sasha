@@ -194,10 +194,13 @@ processConsumptionEffect cvp newActionGID = do
   modify' $ \gs ->
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
-        -- Remove any existing consumption action for this phrase
-        filteredActions = Data.Set.filter (\case CAManagementKey p _ -> p /= cvp; _ -> True) playerActionSet
-        -- Add the new action
-        updatedActions = Data.Set.insert (CAManagementKey cvp newActionGID) filteredActions
+        -- Extract just the verb from the phrase
+        verb = case cvp of
+          ConsumptionVerbPhrase v _ -> v
+        -- Remove any existing consumption action for this verb
+        filteredActions = Data.Set.filter (\case CAManagementKey v _ -> v /= verb; _ -> True) playerActionSet
+        -- Add the new action with just the verb
+        updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
