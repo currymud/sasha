@@ -523,16 +523,6 @@ generateObjectGID = do
     put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
 
-buildEffectRegistryFromLinks :: [(Effect, ActionEffectKey)] -> EffectRegistry
-buildEffectRegistryFromLinks links =
-  Data.Map.Strict.map ActionEffectMap $
-  Data.Map.Strict.fromListWith (Data.Map.Strict.unionWith Data.Set.union) $
-  fmap buildEntry links
-  where
-    buildEntry :: (Effect, ActionEffectKey) -> (EffectActionKey, Map ActionEffectKey (Set Effect))
-    buildEntry (effect, effectKey) =
-      (EffectActionKey effect, Data.Map.Strict.singleton effectKey (Data.Set.singleton effect))
-
 generateLocationGID :: WorldBuilder (GID Location)
 generateLocationGID = do
   state <- get

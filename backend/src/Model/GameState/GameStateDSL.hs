@@ -75,7 +75,7 @@ data WorldDSL :: Type -> Type where
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
   CreateAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
-  CreateCAManagement :: ConsumptionVerbPhrase -> GID ConsumptionActionF -> WorldDSL ActionManagement
+  CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> WorldDSL ActionManagement
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
   CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 
@@ -92,7 +92,7 @@ data WorldDSL :: Type -> Type where
   -- FieldEffect management - NEW: Field effect constructors
   UpdateShortName :: Text -> GID Object -> WorldDSL Effect
   UpdateDescription :: Text -> GID Object -> WorldDSL Effect
-  UpdateTitle :: Text -> GID Object -> WorldDSL Effect
+  UpdateTitle :: Text -> GID Location -> WorldDSL Effect
   UpdateLocation :: GID Location -> WorldDSL Effect
 
 -- Map registration constructors
@@ -166,7 +166,7 @@ createSSAManagement = CreateSSAManagement
 createAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
 createAVManagement = CreateAVManagement
 
-createCAManagement :: ConsumptionVerbPhrase -> GID ConsumptionActionF -> WorldDSL ActionManagement
+createCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> WorldDSL ActionManagement
 createCAManagement = CreateCAManagement
 
 createPPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
@@ -295,7 +295,7 @@ updateShortName = UpdateShortName
 updateDescription :: Text -> GID Object -> WorldDSL Effect
 updateDescription = UpdateDescription
 
-updateTitle :: Text -> GID Object -> WorldDSL Effect
+updateTitle :: Text -> GID Location -> WorldDSL Effect
 updateTitle = UpdateTitle
 
 updateLocation :: GID Location -> WorldDSL Effect
