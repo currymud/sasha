@@ -33,8 +33,7 @@ import qualified Data.Text
 import           Debug.Trace                                                  (trace)
 import           GameState.Perception                                         (youSeeM)
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
-import           Model.GameState                                              (ActionEffect (AcquisitionPhraseEffect, AcquisitionVerbEffect, ConsumptionEffect, DirectionalStimulusEffect, ImplicitStimulusEffect, NegativePosturalEffect, PositivePosturalEffect, SomaticAccessEffect),
-                                                                               ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+import           Model.GameState                                              (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                ActionEffectMap (ActionEffectMap),
                                                                                ActionKey (RegularEffectKey),
                                                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
