@@ -277,13 +277,13 @@ bedroomWorldDSL = do
 
   -- Create and link effects for game actions
   openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
-  linkEffectToObject ( (RegularEffectKey . SomaticAccessActionKey) openEyesGID) chairGID openEyesLookChangesLookChair
+  linkEffectToObject ( SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
 
   robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
-  linkEffectToObject ( (RegularEffectKey . SomaticAccessActionKey) openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
+  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
   robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
-  linkEffectToObject ( (RegularEffectKey . SomaticAccessActionKey) openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
+  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
   trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
   trace ("DEBUG: seeRobeWornGID = " ++ show seeRobeWornGID) $ pure ()
@@ -292,7 +292,7 @@ bedroomWorldDSL = do
 
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
---  linkFieldEffectToObject ((FieldEffectKey . AcquisitionalFieldEffectActionKey) getRobeFGID) robeGID robeHoldingDescriptionEffect
+  linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect
 
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
