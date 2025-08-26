@@ -81,13 +81,13 @@ simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerbPhrase
 simplifyAcquisitionVerbPhrase unchanged@(SimpleAcquisitionVerbPhrase _ _) = unchanged
 simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb objectPhrase _ _) = SimpleAcquisitionVerbPhrase verb objectPhrase
 
-finalizeAcquisition :: ActionKey
+finalizeAcquisition :: EffectActionKey
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult
                         -> (GID Object -> GameComputation Identity CoordinationResult)
                         -> GameComputation Identity ()
-finalizeAcquisition actionKey containerGID objectGID objectActionF containerActionF = do
+finalizeAcquisition effectActionKey containerGID objectGID objectActionF containerActionF = do
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
@@ -102,7 +102,7 @@ finalizeAcquisition actionKey containerGID objectGID objectActionF containerActi
      else  do
        (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
-       let allEffects = actionKey:(objectEffects <> containerEffects)
+       let allEffects = effectActionKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
        mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
   {-
 -- |  Search global perception map
