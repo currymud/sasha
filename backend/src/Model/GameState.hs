@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.GameState (
---  ActionEffects (SomaticAccessActionEffect,ImplicitStimulusActionEffect)
    ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
+  , ActionGID (ImplicitActionGID, DirectionalActionGID, SomaticAccessActionGID,
+               AcquisitionActionGID, ConsumptionActionGID, PosturalActionGID)
   , ActionKey (RegularEffectKey, FieldEffectKey)
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
@@ -33,35 +34,19 @@ module Model.GameState (
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
   , DisplayT (DisplayT, runDisplayT)
-  , ActionEffect ( AcquisitionVerbEffect
-               , AcquisitionPhraseEffect
-               , ConsumptionEffect
-               , ImplicitStimulusEffect
-               , DirectionalStimulusEffect
-               , PositivePosturalEffect
-               , NegativePosturalEffect
-               , SomaticAccessEffect)
-  , Effect (AEffect, FEffect)
+  , Effect (ActionManagementEffect, FieldUpdateEffect)
+  , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess
+                               , AddAcquisitionVerb, AddAcquisitionPhrase, AddConsumption
+                               , AddPositivePostural, AddNegativePostural)
   , EffectActionKey ( ImplicitStimulusActionKey
                       , DirectionalStimulusActionKey
                       , SomaticAccessActionKey
                       , AcquisitionalActionKey
                       , ConsumptionActionKey
                       , PosturalActionKey)
-  , FieldEffectActionKey ( ImplicitStimulusFieldEffectActionKey
-                         , DirectionalStimulusFieldEffectActionKey
-                         , SomaticAccessFieldEffectActionKey
-                         , AcquisitionalFieldEffectActionKey
-                         , ConsumptionFieldEffectActionKey
-                         , PosturalFieldEffectActionKey)
   , EffectRegistry
   , Evaluator
-  , FieldEffect ( ObjectShortNameFieldEffect
-                , ObjectDescriptionFieldEffect
-                , LocationTitleFieldEffect
-                , PlayerLocationFieldEffect)
-  , FieldEffectMap (FieldEffectMap, _fieldEffectMap)
-  , FieldEffectRegistry
+  , FieldUpdateOperation (ObjectShortName, ObjectDescription, LocationTitle, PlayerLocation)
   , FinalizeAcquisitionF
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _triggerRegistry, _systemEffectRegistry , _world, _player, _narration, _evaluation, _effectRegistry,_actionSystemEffectKeys)
@@ -229,8 +214,8 @@ type SearchStrategy = NounKey
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation     :: GameComputation Identity ()
-  , _effectKeys      :: [ActionKey]
-  , _fieldEffectKeys :: [ActionKey]
+  , _effectKeys      :: [EffectActionKey]
+  , _fieldEffectKeys :: [EffectActionKey]
   }
 
 type AcquisitionRes :: Type
@@ -263,15 +248,15 @@ data AcquisitionActionF
  | NotGettableF (GameComputation Identity ())
 
 type AcquisitionF :: Type
-type AcquisitionF = (ActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+type AcquisitionF = (EffectActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = ActionKey
-                               -> GID Object
-                               -> GID Object
-                               -> GameComputation Identity CoordinationResult
-                               -> (GID Object -> GameComputation Identity CoordinationResult)
-                               -> GameComputation Identity ()
+type FinalizeAcquisitionF = EffectActionKey
+                              -> GID Object
+                              -> GID Object
+                              -> GameComputation Identity CoordinationResult
+                              -> (GID Object -> GameComputation Identity CoordinationResult)
+                              -> GameComputation Identity ()
 
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
@@ -380,16 +365,9 @@ data SystemEffectConfig = SystemEffectConfig
 type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
 
-type FieldEffectRegistry :: Type
-type FieldEffectRegistry = Map EffectActionKey FieldEffectMap
-
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
 
-type FieldEffectMap :: Type
-newtype FieldEffectMap = FieldEffectMap
-  { _fieldEffectMap :: Map ActionEffectKey (Set FieldEffect)}
-  deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type
 data SystemEffect
@@ -402,7 +380,7 @@ newtype ActionEffectMap = ActionEffectMap
 
 type ActionKeyMap :: Type
 newtype ActionKeyMap = ActionKeyMap
-  { _unActionKeyMap :: Map ActionKey ActionEffectMap }
+  { _unActionKeyMap :: Map EffectActionKey ActionEffectMap }
   deriving stock (Show, Eq, Ord)
 
 type Config :: Type
@@ -411,7 +389,7 @@ data Config = Config
   }
 
 type SystemEffectKeysRegistry :: Type
-type SystemEffectKeysRegistry = Map ActionKey [SystemEffectKey]
+type SystemEffectKeysRegistry = Map EffectActionKey [SystemEffectKey]
 
 type GameState :: Type
 data GameState = GameState
