@@ -308,9 +308,9 @@ data PlayerKey
 
 type FieldUpdateOperation :: Type
 data FieldUpdateOperation
-  = ObjectShortName Text
-  | ObjectDescription Text
-  | LocationTitle Text
+  = ObjectShortName (GID Object) Text
+  | ObjectDescription (GID Object) Text
+  | LocationTitle (GID Object) Text
   | PlayerLocation (GID Location)
   deriving stock (Show, Eq, Ord)
 
@@ -337,7 +337,7 @@ data EffectActionKey
 type Effect :: Type
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
-  | FieldUpdateEffect FieldUpdateOperation ActionGID
+  | FieldUpdateEffect FieldUpdateOperation
   deriving stock (Show, Eq, Ord)
 
 type ActionManagementOperation :: Type

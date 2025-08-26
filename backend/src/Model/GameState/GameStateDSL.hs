@@ -91,10 +91,10 @@ data WorldDSL :: Type -> Type where
   WithPlayerBehavior :: Player -> ActionManagement -> WorldDSL Player
 
   -- FieldEffect management - NEW: Field effect constructors
-  UpdateShortName :: Text -> ActionGID -> WorldDSL Effect
-  UpdateDescription :: Text -> ActionGID -> WorldDSL Effect
-  UpdateTitle :: Text -> ActionGID -> WorldDSL Effect
-  UpdateLocation :: GID Location -> ActionGID -> WorldDSL Effect
+  UpdateShortName :: Text -> GID Object -> WorldDSL Effect
+  UpdateDescription :: Text -> GID Object -> WorldDSL Effect
+  UpdateTitle :: Text -> GID Object -> WorldDSL Effect
+  UpdateLocation :: GID Location -> WorldDSL Effect
 
 -- Map registration constructors
   RegisterObject :: GID Object -> WorldDSL Object -> WorldDSL ()
@@ -297,16 +297,16 @@ displayVisibleObjects :: WorldDSL (GameComputation Identity ())
 displayVisibleObjects = DisplayVisibleObjects
 
 -- FieldEffect convenience functions - parallel to effect functions
-updateShortName :: Text -> ActionGID -> WorldDSL Effect
+updateShortName :: Text -> GID Object -> WorldDSL Effect
 updateShortName = UpdateShortName
 
-updateDescription :: Text -> ActionGID -> WorldDSL Effect
+updateDescription :: Text -> GID Object -> WorldDSL Effect
 updateDescription = UpdateDescription
 
-updateTitle :: Text -> ActionGID -> WorldDSL Effect
+updateTitle :: Text -> GID Object -> WorldDSL Effect
 updateTitle = UpdateTitle
 
-updateLocation :: GID Location -> ActionGID -> WorldDSL Effect
+updateLocation :: GID Location -> WorldDSL Effect
 updateLocation = UpdateLocation
 
 linkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()

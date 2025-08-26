@@ -226,17 +226,17 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
-interpretDSL (UpdateShortName text actionGID) =
-  pure (FieldUpdateEffect (ObjectShortName text) actionGID)  -- Need proper ActionGID
+interpretDSL (UpdateShortName text oid) =
+  pure (FieldUpdateEffect (ObjectShortName text))  -- Need proper ActionGID
 
-interpretDSL (UpdateDescription text actionGID) =
-  pure (FieldUpdateEffect (ObjectDescription text) actionGID)
+interpretDSL (UpdateDescription text oid) =
+  pure (FieldUpdateEffect (ObjectDescription text oid))
 
-interpretDSL (UpdateTitle text actionGID) =
-  pure (FieldUpdateEffect (LocationTitle text) actionGID) -- Need proper ActionGID
+interpretDSL (UpdateTitle text oid) =
+  pure (FieldUpdateEffect (LocationTitle text) oid) -- Need proper ActionGID
 
-interpretDSL (UpdateLocation locGID actionGID) =
-  pure (FieldUpdateEffect (PlayerLocation locGID) actionGID) -- Need proper ActionGID
+interpretDSL (UpdateLocation lid) =
+  pure (FieldUpdateEffect (PlayerLocation lid)) -- Need proper ActionGID
 
 interpretDSL (RegisterObject gid objDSL) = do
   obj <- interpretDSL objDSL
