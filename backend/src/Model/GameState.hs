@@ -22,6 +22,7 @@ module Model.GameState (
                  , _acquisitionActionMap
                  , _implicitStimulusActionMap
                  , _directionalStimulusActionMap
+                 , _directionalStimulusContainerActionMap
                  , _posturalActionMap
                  ,_somaticStimulusActionMap
                  ,_acquisitionActionMap
@@ -432,7 +433,7 @@ data Location = Location {
 type ActionManagement :: Type
 data ActionManagement
   = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)

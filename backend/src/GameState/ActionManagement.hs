@@ -18,11 +18,12 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, ContainerDSAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
+                                                DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect),
                                                 EffectActionKey,
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
@@ -385,9 +386,9 @@ lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
     simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
     simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
-lookupContainerDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
+lookupContainerDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusContainerActionF)
 lookupContainerDirectionalStimulus verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | ContainerDSAManagementKey v gid <- Data.Set.toList actions, v == verb]
+  listToMaybe [gid | DSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption verb (ActionManagementFunctions actions) =

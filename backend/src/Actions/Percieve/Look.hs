@@ -6,6 +6,7 @@ module Actions.Percieve.Look ( lookAt
                              , agentCannotSee
                              , manageImplicitStimulusProcess
                              , manageDirectionalStimulusProcess
+                             , manageContainerDirectionalStimulusProcess
                              ) where
 
 import           Control.Monad.Identity                                  (Identity)
@@ -26,9 +27,10 @@ import           GameState.Perception                                    (findAc
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Location                                                (getLocationM,
                                                                           getPlayerLocationM)
-import           Model.GameState                                         (ActionMaps (_directionalStimulusActionMap, _implicitStimulusActionMap),
+import           Model.GameState                                         (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                                           Config (_actionMaps),
                                                                           DirectionalStimulusActionF (DirectionalStimulusActionF),
+                                                                          DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
                                                                           GameComputation,
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                                           ImplicitStimulusActionMap,
@@ -129,10 +131,10 @@ manageContainerDirectionalStimulusProcess dsv cp = do
   case lookupContainerDirectionalStimulus dsv availableActions of
     Nothing -> error "Programmer Error: No container directional stimulus action found for verb: "
     Just actionGID -> do
-      actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
+      actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (DirectionalStimulusActionF actionFunc) -> do
+        Just (DirectionalStimulusContainerActionF actionFunc) -> do
           pure ()
 
 lookable :: DirectionalStimulusActionF

@@ -48,6 +48,7 @@ config = Config
     actionMaps = ActionMaps
                    (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)
                    (Data.Map.Strict.keys directionalStimulusActionMap `deepseq` directionalStimulusActionMap)
+                   Data.Map.Strict.empty
                    (Data.Map.Strict.keys somaticAccessActionMap `deepseq` somaticAccessActionMap)
                    (Data.Map.Strict.keys acquisitionActionMap `deepseq` acquisitionActionMap)
                    (Data.Map.Strict.keys consumptionActionMap `deepseq` consumptionActionMap)
