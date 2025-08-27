@@ -39,6 +39,7 @@ import           Build.BedPuzzle.Actions.Objects.Pill.Take               (alread
                                                                           takePillF)
 import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (emptyPocket,
                                                                           notEvenPocket,
+                                                                          pocketClosedF,
                                                                           seePocketChair,
                                                                           seePocketRobeWorn,
                                                                           somethingInPocketF,
@@ -155,7 +156,8 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| somethingInPocketF|], 23)]
 
 
-makeDirectionalStimulusContainerActionGIDsAndMap [([| lookInPocketF |], 1)]
+makeDirectionalStimulusContainerActionGIDsAndMap [([| lookInPocketF |], 1),
+                                                 ([| pocketClosedF |], 2)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),

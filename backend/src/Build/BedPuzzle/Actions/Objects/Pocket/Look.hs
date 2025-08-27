@@ -1,8 +1,9 @@
-module Build.BedPuzzle.Actions.Objects.Pocket.Look (somethingInPocketF, whatPocket,notEvenPocket,seePocketChair,seePocketRobeWorn, emptyPocket) where
+module Build.BedPuzzle.Actions.Objects.Pocket.Look (somethingInPocketF, whatPocket,notEvenPocket,pocketClosedF, seePocketChair,seePocketRobeWorn, emptyPocket) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration)
 import           Model.GameState        (DirectionalStimulusActionF (DirectionalStimulusActionF),
+                                         DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
                                          GameComputation,
                                          updateActionConsequence)
 
@@ -47,6 +48,14 @@ seePocketRobeWorn = DirectionalStimulusActionF (const (const seeRobeWorn'))
     msg :: Text
     msg = "Eventually we'll have a calculation of what's in the pocket and wheather oyu can see it or not. For now, there's a pill in there you should take."
 
+
+pocketClosedF :: DirectionalStimulusContainerActionF
+pocketClosedF = DirectionalStimulusContainerActionF (const pocketClosed')
+  where
+    pocketClosed' :: GameComputation Identity ()
+    pocketClosed' = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "The pocket is velcroed shut."
 emptyPocket :: DirectionalStimulusActionF
 emptyPocket = DirectionalStimulusActionF (const (const emptyPocket'))
   where

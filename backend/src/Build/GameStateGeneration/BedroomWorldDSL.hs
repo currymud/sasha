@@ -10,6 +10,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
                                                                           createConsumptionEffect,
+                                                                          createDirectionalContainerStimulusEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
                                                                           createSomaticAccessEffect,
@@ -102,6 +103,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           pillTooFarFGID,
                                                                           pitchBlackFGID,
                                                                           playerGetFGID,
+                                                                          pocketClosedFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
                                                                           seeRobeChairGID,
@@ -293,6 +295,10 @@ bedroomWorldDSL = do
 
   getRobeChangesLookPocket <- createDirectionalStimulusEffect look somethingInPocketFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
+
+  getRobeChangesLookInPocket <- createDirectionalContainerStimulusEffect look pocketClosedFGID
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookInPocket
+
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
   linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect

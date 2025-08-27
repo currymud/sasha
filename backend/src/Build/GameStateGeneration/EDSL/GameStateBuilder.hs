@@ -35,7 +35,7 @@ import           GameState.Perception                                         (y
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
 import           Model.GameState                                              (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                ActionEffectMap (ActionEffectMap),
-                                                                               ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                               ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                                                ActionManagementFunctions (ActionManagementFunctions),
                                                                                ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
@@ -403,7 +403,7 @@ interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddDirectionalStimulus verb actionGID) (DirectionalActionGID actionGID))
 
 interpretDSL (CreateDirectionalContainerStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddDirectionalContainerStimulus verb actionGID) (DirectionalActionGID actionGID))
+  pure (ActionManagementEffect (AddDirectionalContainerStimulus verb actionGID) (DirectionalContainerActionGID actionGID))
 
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get

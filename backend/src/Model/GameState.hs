@@ -3,7 +3,7 @@
 module Model.GameState (
    ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
-  , ActionGID (ImplicitActionGID, DirectionalActionGID, SomaticAccessActionGID,
+  , ActionGID (ImplicitActionGID, DirectionalActionGID, DirectionalContainerActionGID , SomaticAccessActionGID,
                AcquisitionActionGID, ConsumptionActionGID, PosturalActionGID)
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
@@ -332,6 +332,7 @@ type ActionGID :: Type
 data ActionGID
   = ImplicitActionGID (GID ImplicitStimulusActionF)
   | DirectionalActionGID (GID DirectionalStimulusActionF)
+  | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   | AcquisitionActionGID (GID AcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)

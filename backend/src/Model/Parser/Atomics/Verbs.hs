@@ -88,7 +88,6 @@ newtype InstrumentActionVerb =
 instance HasLexeme InstrumentActionVerb where
   toLexeme = _fromInstrumentActionVerb
 
-
 type NegativePosturalVerb :: Type
 newtype NegativePosturalVerb = NegativePosturalVerb { _fromNegativePosturalVerb :: Lexeme }
   deriving stock (Show,Eq,Ord)

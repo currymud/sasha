@@ -10,6 +10,7 @@ import           Build.GameStateGeneration.EDSL.GameStateBuilder (initialBuilder
 import           Build.Identifiers.Actions                       (acquisitionActionMap,
                                                                   consumptionActionMap,
                                                                   directionalStimulusActionMap,
+                                                                  directionalStimulusContainerActionMap,
                                                                   implicitStimulusActionMap,
                                                                   posturalActionMap,
                                                                   somaticAccessActionMap)
@@ -48,7 +49,7 @@ config = Config
     actionMaps = ActionMaps
                    (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)
                    (Data.Map.Strict.keys directionalStimulusActionMap `deepseq` directionalStimulusActionMap)
-                   Data.Map.Strict.empty
+                   (Data.Map.Strict.keys directionalStimulusContainerActionMap `deepseq` directionalStimulusContainerActionMap)
                    (Data.Map.Strict.keys somaticAccessActionMap `deepseq` somaticAccessActionMap)
                    (Data.Map.Strict.keys acquisitionActionMap `deepseq` acquisitionActionMap)
                    (Data.Map.Strict.keys consumptionActionMap `deepseq` consumptionActionMap)
