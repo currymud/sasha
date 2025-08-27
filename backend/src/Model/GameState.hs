@@ -161,6 +161,7 @@ type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
+  , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
