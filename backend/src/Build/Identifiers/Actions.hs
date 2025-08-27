@@ -17,7 +17,8 @@ import           Build.BedPuzzle.Actions.Inventory                       (defaul
                                                                           notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
-import           Build.BedPuzzle.Actions.Look                            (lookAtF)
+import           Build.BedPuzzle.Actions.Look                            (lookAtF,
+                                                                          lookInF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Look              (notEvenFloorF,
@@ -67,6 +68,7 @@ import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import qualified Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (look)
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           DirectionalStimulusActionF,
+                                                                          DirectionalStimulusContainerActionF,
                                                                           ImplicitStimulusActionF,
                                                                           PlayerKey (PlayerKeyLocation),
                                                                           SystemEffectKey (SystemLocationKey, SystemPlayerKey))
@@ -100,8 +102,8 @@ lookAtRobeF = lookAtF robeGID
 lookAtPocketF :: DirectionalStimulusActionF
 lookAtPocketF = lookAtF pocketGID
 
-lookInPocketF :: DirectionalStimulusActionF
-lookInPocketF = supportLookF pocketGID flavor
+lookInPocketF :: DirectionalStimulusContainerActionF
+lookInPocketF = lookInF pocketGID flavor
   where
     flavor :: Text
     flavor = "You look in your pocket."
@@ -149,8 +151,7 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| seeRobeWorn|],22),
                                          ([| lookAtRobePossessedF |],21),
                                          ([| lookAtPocketF |],22),
-                                         ([| somethingInPocketF|], 23),
-                                         ([| lookInPocketF |],24)]
+                                         ([| somethingInPocketF|], 23)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),

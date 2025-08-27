@@ -188,7 +188,7 @@ newtype DirectionalStimulusActionF = DirectionalStimulusActionF
 
 type DirectionalStimulusContainerActionF :: Type
 newtype DirectionalStimulusContainerActionF = DirectionalStimulusContainerActionF
-  { _unDirectionalStimulusContainerActionF :: ContainerPhrase -> GID Object -> GameComputation Identity () }
+  { _unDirectionalStimulusContainerActionF :: GID Object -> GameComputation Identity () }
 
 type DirectionalStimulusContainerActionMap :: Type
 type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF

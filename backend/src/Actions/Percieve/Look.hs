@@ -46,7 +46,7 @@ import           Model.Parser.Atomics.Verbs                              (Direct
 import           Model.Parser.Composites.Nouns                           (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
                                                                           DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
-import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey))
+import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey))
 import           Relude.String.Conversion                                (ToText (toText))
 
 agentCanSee :: ImplicitStimulusActionF
@@ -134,7 +134,9 @@ manageContainerDirectionalStimulusProcess dsv cp = do
       actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (DirectionalStimulusContainerActionF actionFunc) -> do
+        Just actionFunc -> do
+          loc <- getPlayerLocationM
+          containerLookable actionFunc cp loc
           pure ()
 
 lookable :: DirectionalStimulusActionF
@@ -153,6 +155,29 @@ lookable (DirectionalStimulusActionF actionF) dsnp _loc = do
       findAccessibleObject (DirectionalStimulusKey noun) >>= \case
         Just objGID -> actionF dsnp objGID
         Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
+
+containerLookable :: DirectionalStimulusContainerActionF
+                  -> ContainerPhrase
+                  -> Location
+                  -> GameComputation Identity ()
+containerLookable (DirectionalStimulusContainerActionF actionF) cp _loc = do
+  -- Extract container noun key from ContainerPhrase
+  let containerNounKey = extractContainerNoun cp
+  -- Find the container object
+  findAccessibleObject containerNounKey >>= \case
+    Just objGID -> actionF objGID
+    Nothing -> modifyNarration $ updateActionConsequence "That container is not here."
+
+extractContainerNoun :: ContainerPhrase -> NounKey
+extractContainerNoun cp = case cp of
+  (SimpleContainerPhrase nounPhrase) -> extractContainerNounFromPhrase nounPhrase
+  (ContainerPhrase _ nounPhrase) -> extractContainerNounFromPhrase nounPhrase
+  where
+    extractContainerNounFromPhrase :: NounPhrase Container -> NounKey
+    extractContainerNounFromPhrase (SimpleNounPhrase container) = ContainerKey container
+    extractContainerNounFromPhrase (NounPhrase _ container) = ContainerKey container
+    extractContainerNounFromPhrase (DescriptiveNounPhrase _ container) = ContainerKey container
+    extractContainerNounFromPhrase (DescriptiveNounPhraseDet _ _ container) = ContainerKey container
 
 extractNoun :: DirectionalStimulusNounPhrase -> DirectionalStimulus
 extractNoun (DirectionalStimulusNounPhrase np) = case np of
