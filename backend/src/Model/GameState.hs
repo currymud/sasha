@@ -14,7 +14,7 @@ module Model.GameState (
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (ContainerDSAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
+  , ActionManagement (DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
                       AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,
                       PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
@@ -33,6 +33,8 @@ module Model.GameState (
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
   , DirectionalStimulusActionMap
+  , DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF, _unDirectionalStimulusContainerActionF)
+  , DirectionalStimulusContainerActionMap
   , DisplayT (DisplayT, runDisplayT)
   , Effect (ActionManagementEffect, FieldUpdateEffect)
   , EffectActionKey ( ImplicitStimulusActionKey
@@ -103,7 +105,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
+import           Model.Parser.Composites.Nouns (ContainerPhrase,
+                                                DirectionalStimulusNounPhrase,
                                                 ObjectPhrase, SupportPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase)
@@ -173,12 +176,20 @@ newtype ImplicitStimulusActionF
                                                             -> Location
                                                             -> GameComputation Identity () }
 
+
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
 type DirectionalStimulusActionF :: Type
 newtype DirectionalStimulusActionF = DirectionalStimulusActionF
   { _directionalStimulusAction :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity () }
+
+type DirectionalStimulusContainerActionF :: Type
+newtype DirectionalStimulusContainerActionF = DirectionalStimulusContainerActionF
+  { _unDirectionalStimulusContainerActionF :: ContainerPhrase -> GID Object -> GameComputation Identity () }
+
+type DirectionalStimulusContainerActionMap :: Type
+type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF
 
 type SomaticStimulusActionMap :: Type
 type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
@@ -420,7 +431,7 @@ data Location = Location {
 type ActionManagement :: Type
 data ActionManagement
   = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  | ContainerDSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)

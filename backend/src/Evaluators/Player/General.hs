@@ -13,7 +13,7 @@ import           Model.Parser.Atomics.Verbs            (AdministrativeVerb (Admi
 import           Model.Parser.Composites.Verbs         (AcquisitionVerbPhrase (AcquisitionVerbPhrase),
                                                         Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                         PosturalVerbPhrase,
-                                                        StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
+                                                        StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 
@@ -30,6 +30,7 @@ evalImperative (PosturalVerbPhrase postureVerbPhrase) = evalPosturalVerbPhrase p
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
 evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv _ dsp) = manageDirectionalStimulusProcess dsv dsp
+evalStimulusVerbPhrase (DirectionalStimulusContainmentPhrase dsv cp) = manageContainerDirectionalStimulusProcess dsv cp
 evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessProcess sav
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()

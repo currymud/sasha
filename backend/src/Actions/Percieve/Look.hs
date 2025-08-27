@@ -18,7 +18,8 @@ import           Data.Text                                               (Text,
 import           GameState                                               (getObjectM,
                                                                           getPlayerM,
                                                                           modifyNarration)
-import           GameState.ActionManagement                              (lookupDirectionalStimulus,
+import           GameState.ActionManagement                              (lookupContainerDirectionalStimulus,
+                                                                          lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
 import           GameState.Perception                                    (findAccessibleObject,
                                                                           queryPerceptionMap)
@@ -36,10 +37,12 @@ import           Model.GameState                                         (Action
                                                                           Player (_location, _playerActions),
                                                                           updateActionConsequence)
 import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus)
+import           Model.Parser.Atomics.Nouns                              (Container,
+                                                                          DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
                                                                           ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns                           (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+import           Model.Parser.Composites.Nouns                           (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                                          DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                           NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey))
 import           Relude.String.Conversion                                (ToText (toText))
@@ -119,6 +122,18 @@ manageDirectionalStimulusProcess dsv dsnp = do
         Just actionFunc -> do
           location <- getPlayerLocationM
           lookable actionFunc dsnp location
+
+manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ()
+manageContainerDirectionalStimulusProcess dsv cp = do
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupContainerDirectionalStimulus dsv availableActions of
+    Nothing -> error "Programmer Error: No container directional stimulus action found for verb: "
+    Just actionGID -> do
+      actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
+        Just (DirectionalStimulusActionF actionFunc) -> do
+          pure ()
 
 lookable :: DirectionalStimulusActionF
          -> DirectionalStimulusNounPhrase
