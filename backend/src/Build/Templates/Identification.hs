@@ -11,6 +11,7 @@ import           Language.Haskell.TH (Body (NormalB), Dec (SigD, ValD),
                                       mkName, nameBase, reify)
 import           Model.GameState     (AcquisitionActionF, ConsumptionActionF,
                                       DirectionalStimulusActionF,
+                                      DirectionalStimulusContainerActionF,
                                       ImplicitStimulusActionF, Location, Object,
                                       PosturalActionF,
                                       ProcessImplicitStimulusVerb,
@@ -65,6 +66,15 @@ makeDirectionalStimulusActionGIDsAndMap expGidPairs = do
 
   gidDecls <- concat <$> mapM (makeGIDForType ''DirectionalStimulusActionF) pairs
   mapDecl <- makeMapForType ''DirectionalStimulusActionF "directionalStimulusActionMap" pairs
+
+  pure (gidDecls ++ [mapDecl])
+
+makeDirectionalStimulusContainerActionGIDsAndMap :: [(ExpQ, Int)] -> Q [Dec]
+makeDirectionalStimulusContainerActionGIDsAndMap expGidPairs = do
+  pairs <- mapM (\(expQ, gid) -> (,gid) <$> expQ) expGidPairs
+
+  gidDecls <- concat <$> mapM (makeGIDForType ''DirectionalStimulusContainerActionF) pairs
+  mapDecl <- makeMapForType ''DirectionalStimulusContainerActionF "directionalStimulusContainerActionMap" pairs
 
   pure (gidDecls ++ [mapDecl])
 

@@ -60,6 +60,7 @@ import           Build.Identifiers.SupportLook                           (suppor
 import           Build.Templates.Identification                          (makeAcquisitionActionGIDsAndMap,
                                                                           makeConsumptionActionGIDsAndMap,
                                                                           makeDirectionalStimulusActionGIDsAndMap,
+                                                                          makeDirectionalStimulusContainerActionGIDsAndMap,
                                                                           makeImplicitStimulusActionGIDsAndMap,
                                                                           makePosturalActionGIDsAndMap,
                                                                           makeSomaticAccessActionGIDsAndMap)
@@ -152,6 +153,9 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| lookAtRobePossessedF |],21),
                                          ([| lookAtPocketF |],22),
                                          ([| somethingInPocketF|], 23)]
+
+
+makeDirectionalStimulusContainerActionGIDsAndMap [([| lookInPocketF |], 1)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),
