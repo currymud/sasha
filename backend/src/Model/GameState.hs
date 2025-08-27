@@ -8,7 +8,7 @@ module Model.GameState (
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
-  , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess,
+  , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddDirectionalContainerStimulus, AddSomaticAccess,
                                AddAcquisitionVerb, AddAcquisitionVerbPhrase ,AddConsumption,
                                AddPositivePostural, AddNegativePostural)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
@@ -358,6 +358,7 @@ type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AddDirectionalContainerStimulus DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddAcquisitionVerb AcquisitionVerb (GID AcquisitionActionF)
   | AddAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
