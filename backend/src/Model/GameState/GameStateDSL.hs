@@ -14,6 +14,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionManagementFunctions,
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
+                                                DirectionalStimulusContainerActionF,
                                                 Effect, EffectActionKey,
                                                 Evaluator, GameComputation,
                                                 GameState,
@@ -73,6 +74,7 @@ data WorldDSL :: Type -> Type where
   -- ActionManagement construction - returns individual management keys
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL ActionManagement
+  CreateDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> WorldDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
   CreateAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
   CreateAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL ActionManagement
@@ -108,6 +110,7 @@ data WorldDSL :: Type -> Type where
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
+  CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> WorldDSL Effect
   CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
   CreateAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
@@ -162,6 +165,9 @@ createISAManagement = CreateISAManagement
 createDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL ActionManagement
 createDSAManagement = CreateDSAManagement
 
+createDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> WorldDSL ActionManagement
+createDSAContainerManagement = CreateDSAContainerManagement
+
 createSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
 createSSAManagement = CreateSSAManagement
 
@@ -201,6 +207,9 @@ createImplicitStimulusEffect = CreateImplicitStimulusEffect
 
 createDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
 createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
+
+createDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> WorldDSL Effect
+createDirectionalContainerStimulusEffect = CreateDirectionalContainerStimulusEffect
 
 createAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
 createAcquisitionVerbEffect = CreateAcquisitionVerbEffect

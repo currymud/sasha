@@ -36,9 +36,9 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (w
 import           Model.GameState                                              (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                ActionEffectMap (ActionEffectMap),
                                                                                ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                               ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                                               ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                                                ActionManagementFunctions (ActionManagementFunctions),
-                                                                               ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                               ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                EffectRegistry,
@@ -55,7 +55,7 @@ import           Model.GameState                                              (A
                                                                                _objectActionManagement,
                                                                                _playerActions,
                                                                                _world)
-import           Model.GameState.GameStateDSL                                 (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAManagement, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL                                 (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings                                     (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                                                    (GID (GID))
 import           Model.Parser.Atomics.Nouns                                   (Consumable,
@@ -381,7 +381,6 @@ interpretDSL DisplayVisibleObjects = pure youSeeM
 interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAcquisitionVerb verb actionGID) (AcquisitionActionGID actionGID))
 
--- In GameStateDSL.hs
 interpretDSL (CreateAcquisitionVerbPhraseEffect phrase actionGID) = do
   pure (ActionManagementEffect (AddAcquisitionVerbPhrase phrase actionGID) (AcquisitionActionGID actionGID))
 
@@ -402,6 +401,9 @@ interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
 
 interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddDirectionalStimulus verb actionGID) (DirectionalActionGID actionGID))
+
+interpretDSL (CreateDirectionalContainerStimulusEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddDirectionalContainerStimulus verb actionGID) (DirectionalActionGID actionGID))
 
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get
@@ -429,6 +431,9 @@ interpretDSL (CreateISAManagement verb actionGID) =
 
 interpretDSL (CreateDSAManagement verb actionGID) =
   pure (DSAManagementKey verb actionGID)
+
+interpretDSL (CreateDSAContainerManagement verb actionGID) =
+  pure (DSAContainerManagementKey verb actionGID)
 
 interpretDSL (CreateSSAManagement verb actionGID) =
   pure (SSAManagementKey verb actionGID)
