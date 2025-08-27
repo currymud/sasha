@@ -120,7 +120,6 @@ manageDirectionalStimulusProcess dsv dsnp = do
           location <- getPlayerLocationM
           lookable actionFunc dsnp location
 
-
 lookable :: DirectionalStimulusActionF
          -> DirectionalStimulusNounPhrase
          -> Location

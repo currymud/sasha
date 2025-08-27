@@ -100,6 +100,11 @@ lookAtRobeF = lookAtF robeGID
 lookAtPocketF :: DirectionalStimulusActionF
 lookAtPocketF = lookAtF pocketGID
 
+lookInPocketF :: DirectionalStimulusActionF
+lookInPocketF = supportLookF pocketGID flavor
+  where
+    flavor :: Text
+    flavor = "You look in your pocket."
 lookAtRobePossessedF :: DirectionalStimulusActionF
 lookAtRobePossessedF = supportLookF robeGID flavor
   where
@@ -144,7 +149,8 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| seeRobeWorn|],22),
                                          ([| lookAtRobePossessedF |],21),
                                          ([| lookAtPocketF |],22),
-                                         ([| somethingInPocketF|], 23)]
+                                         ([| somethingInPocketF|], 23),
+                                         ([| lookInPocketF |],24)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),

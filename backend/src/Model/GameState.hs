@@ -14,7 +14,7 @@ module Model.GameState (
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
-  , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey,
+  , ActionManagement (ContainerDSAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
                       AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,
                       PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
@@ -420,6 +420,7 @@ data Location = Location {
 type ActionManagement :: Type
 data ActionManagement
   = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | ContainerDSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)

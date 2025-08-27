@@ -18,7 +18,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, ContainerDSAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
@@ -384,6 +384,10 @@ lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
     simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
     simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
     simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
+
+lookupContainerDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
+lookupContainerDirectionalStimulus verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | ContainerDSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption verb (ActionManagementFunctions actions) =
