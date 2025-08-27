@@ -5,7 +5,8 @@ import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Adverbs      (NegativePosturalDirection,
                                                     PositivePosturalDirection)
-import           Model.Parser.Atomics.Prepositions (DirectionalStimulusMarker,
+import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
+                                                    DirectionalStimulusMarker,
                                                     SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     AdministrativeVerb,
@@ -16,6 +17,7 @@ import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     PositivePosturalVerb,
                                                     SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (ConsumableNounPhrase,
+                                                    ContainerPhrase,
                                                     DirectionalStimulusNounPhrase,
                                                     ObjectPhrase,
                                                     SomaticStimulusNounPhrase,
@@ -42,6 +44,7 @@ type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
   | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNounPhrase
+  | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb ContainerPhrase
   | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 

@@ -11,6 +11,7 @@ import           Grammar.Parser.Lexer                                    (Lexeme
 import           Grammar.Parser.Partitions.Adjectives                    (adjectives)
 import           Grammar.Parser.Partitions.Misc                          (determiners)
 import           Grammar.Parser.Partitions.Nouns.Consumables             (consumables)
+import           Grammar.Parser.Partitions.Nouns.Containers              (containers)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (objectives)
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
@@ -28,6 +29,7 @@ import           Grammar.Parser.Rules.Atomics.Verbs                      (implic
                                                                           negativePosturalVerbRule,
                                                                           positivePosturalVerbRule)
 import           Grammar.Parser.Rules.Composites.Nouns                   (consumableNounPhraseRules,
+                                                                          containerPhraseRules,
                                                                           directionalStimulusNounPhraseRules,
                                                                           objectPhraseRules,
                                                                           somaticStimulusNounPhraseRules,
@@ -35,6 +37,7 @@ import           Grammar.Parser.Rules.Composites.Nouns                   (consum
 import           Model.Parser.Atomics.Adjectives                         (Adjective (Adjective))
 import           Model.Parser.Atomics.Misc                               (Determiner (Determiner))
 import           Model.Parser.Atomics.Nouns                              (Consumable (Consumable),
+                                                                          Container (Container),
                                                                           DirectionalStimulus (DirectionalStimulus),
                                                                           Objective (Objective),
                                                                           SomaticStimulus (SomaticStimulus))
@@ -48,7 +51,7 @@ import           Model.Parser.Composites.Verbs                           (Acquis
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                                           Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                                           PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
-                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
+                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
                                                                           rule)
@@ -62,7 +65,9 @@ stimulusVerbPhraseRules = do
   somaticAccessVerb <- parseRule somaticAccessVerbs SomaticAccessVerb
   somaticStimulus <- parseRule somaticStimulii SomaticStimulus
   determiner <- parseRule determiners Determiner
+  container <- parseRule containers Container
   adj <- parseRule adjectives Adjective
+  containerPhrase <- containerPhraseRules determiner adj container
   directionalStimulusNounPhrase <- directionalStimulusNounPhraseRules determiner adj directionalStimulusNoun
   somaticStimulusNounPhrase <- somaticStimulusNounPhraseRules determiner adj somaticStimulus
   rule $ ImplicitStimulusVerb <$> implicitStimulusVerb
@@ -70,6 +75,9 @@ stimulusVerbPhraseRules = do
              <$> directionalStimulusVerb
              <*> directionalStimulusMarker
              <*> directionalStimulusNounPhrase
+           <|> DirectionalStimulusContainmentPhrase
+                 <$> directionalStimulusVerb
+                 <*> containerPhrase
            <|> SomaticStimulusVerbPhrase
              <$> somaticAccessVerb
              <*> somaticStimulusNounPhrase

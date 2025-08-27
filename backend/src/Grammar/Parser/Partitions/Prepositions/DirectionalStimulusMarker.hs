@@ -7,7 +7,7 @@ import           Grammar.Parser.Lexer                        (Lexeme (AT))
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Prepositions           (DirectionalStimulusMarker (DirectionalStimulusMarker))
 
-makeSemanticValues [| DirectionalStimulusMarker |] [AT, IN]
+makeSemanticValues [| DirectionalStimulusMarker |] [AT]
 
 directionalStimulusMarker :: HashSet DirectionalStimulusMarker
 directionalStimulusMarker = singleton at
