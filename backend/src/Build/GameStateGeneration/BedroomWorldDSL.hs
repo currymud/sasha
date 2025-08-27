@@ -90,7 +90,10 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getRobeFGID,
                                                                           isaEnabledLookGID,
                                                                           lookAtChairFGID,
+                                                                          lookAtPocketFGID,
                                                                           lookAtRobeFGID,
+                                                                          lookAtRobePossessedF,
+                                                                          lookAtRobePossessedFGID,
                                                                           lookFGID,
                                                                           notEvenInventoryFGID,
                                                                           notEvenPillGID,
@@ -101,7 +104,6 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           playerGetFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
-                                                                          seePocketRobeWornGID,
                                                                           seeRobeChairGID,
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
@@ -217,8 +219,6 @@ floorObj =  defaultObject & floorObj'
                   >=> withDescriptives [ SimpleNounPhrase floorDS ]
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seeFloorFGID))
 
-
-
 -- =============================================================================
 -- LOCATION AND PLAYER BUILDERS
 -- =============================================================================
@@ -285,14 +285,17 @@ bedroomWorldDSL = do
 
   trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
   trace ("DEBUG: seeRobeWornGID = " ++ show seeRobeWornGID) $ pure ()
-  getRobeChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
+  getRobeChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobePossessedFGID
   trace ("DEBUG: Created getRobeChangesLookRobe effect: " ++ show getRobeChangesLookRobe) $ pure ()
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
 
+  getRobeChangesLookPocket <- createDirectionalStimulusEffect look lookAtPocketFGID
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
   linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect
 
-  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
+
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
 --  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID
 --  linkEffectToObject (DirectionalStimulusActionKey seeTableGID) tableGID tableLookEffect
@@ -306,8 +309,6 @@ bedroomWorldDSL = do
   getRobeEffect <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
---  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
---  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer

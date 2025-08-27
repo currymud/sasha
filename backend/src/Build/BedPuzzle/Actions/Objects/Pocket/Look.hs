@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Objects.Pocket.Look (whatPocket,notEvenPocket,seePocketChair,seePocketRobeWorn, emptyPocket) where
+module Build.BedPuzzle.Actions.Objects.Pocket.Look (somethingInPocketF, whatPocket,notEvenPocket,seePocketChair,seePocketRobeWorn, emptyPocket) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration)
@@ -14,6 +14,14 @@ whatPocket = DirectionalStimulusActionF (const (const whatPocket'))
 
     msg :: Text
     msg = "Pocket? What Pocket?"
+
+somethingInPocketF :: DirectionalStimulusActionF
+somethingInPocketF = DirectionalStimulusActionF (const (const somethingInPocket'))
+  where
+    somethingInPocket' :: GameComputation Identity ()
+    somethingInPocket' = modifyNarration $ updateActionConsequence msg
+    msg :: Text
+    msg = "You feel something in the pocket. Maybe you should take a look."
 
 notEvenPocket :: DirectionalStimulusActionF
 notEvenPocket = DirectionalStimulusActionF (const (const notEvenPocket'))

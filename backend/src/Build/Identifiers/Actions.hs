@@ -9,6 +9,7 @@ import qualified Build.BedPuzzle.Actions.Get
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
 import           Build.Identifiers.Objects                               (chairGID,
+                                                                          pocketGID,
                                                                           robeGID)
 
 import           Build.BedPuzzle.Actions.Get                             (getDeniedF)
@@ -39,6 +40,7 @@ import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (emptyP
                                                                           notEvenPocket,
                                                                           seePocketChair,
                                                                           seePocketRobeWorn,
+                                                                          somethingInPocketF,
                                                                           whatPocket)
 import           Build.BedPuzzle.Actions.Objects.Robe.Get                (alreadyHaveRobeF,
                                                                           getRobeDeniedF)
@@ -95,6 +97,15 @@ getFromRobeF = getFromSupportF robeGID
 lookAtRobeF :: DirectionalStimulusActionF
 lookAtRobeF = lookAtF robeGID
 
+lookAtPocketF :: DirectionalStimulusActionF
+lookAtPocketF = lookAtF pocketGID
+
+lookAtRobePossessedF :: DirectionalStimulusActionF
+lookAtRobePossessedF = supportLookF robeGID flavor
+  where
+    flavor :: Text
+    flavor = "You look at your comfey robe. You wouldn't want to leave without wearing it."
+
 lookAtChairF :: DirectionalStimulusActionF
 lookAtChairF = supportLookF chairGID flavor
   where
@@ -130,7 +141,10 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| seeFloorF |], 19),
                                          ([| notEvenFloorF |], 20),
                                          ([| lookAtChairF |],21),
-                                         ([| seeRobeWorn|],22)]
+                                         ([| seeRobeWorn|],22),
+                                         ([| lookAtRobePossessedF |],21),
+                                         ([| lookAtPocketF |],22),
+                                         ([| somethingInPocketF|], 23)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),
