@@ -107,6 +107,7 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           seeRobeChairGID,
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
+                                                                          somethingInPocketFGID,
                                                                           takePillDeniedFGID,
                                                                           takePillFGID,
                                                                           whatChairFGID,
@@ -123,6 +124,7 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
+import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (somethingInPocketF)
 import           Build.Identifiers.Effects                               (youSeeMEffectGID)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
@@ -289,7 +291,7 @@ bedroomWorldDSL = do
   trace ("DEBUG: Created getRobeChangesLookRobe effect: " ++ show getRobeChangesLookRobe) $ pure ()
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
 
-  getRobeChangesLookPocket <- createDirectionalStimulusEffect look lookAtPocketFGID
+  getRobeChangesLookPocket <- createDirectionalStimulusEffect look somethingInPocketFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
