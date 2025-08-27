@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Look (lookAtF,lookInF) where
+module Build.BedPuzzle.Actions.Look (lookAtF,lookInF,cannnotLookInF) where
 import           Control.Monad.Identity (Identity)
 import           Control.Monad.State    (gets)
 import qualified Data.Map.Strict
@@ -26,6 +26,12 @@ lookAtF oid = DirectionalStimulusActionF (const (const lookAt'))
       locationText <- getObjectLocationText oid
       let fullDescription = _description obj <> locationText
       modifyNarration $ updateActionConsequence fullDescription
+
+cannnotLookInF :: DirectionalStimulusContainerActionF
+cannnotLookInF = DirectionalStimulusContainerActionF (const cannotLookIn')
+  where
+    cannotLookIn' :: GameComputation Identity ()
+    cannotLookIn' = modifyNarration $ updateActionConsequence "You haven't even opened your eyes yet."
 
 lookInF :: GID Object -> Text -> DirectionalStimulusContainerActionF
 lookInF objGID flavorText = DirectionalStimulusContainerActionF (const containerLook')

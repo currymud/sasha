@@ -3,6 +3,7 @@
 module Build.Identifiers.Actions where
 import           Actions.Percieve.Look                                   (agentCanSee,
                                                                           dsvActionEnabled,
+                                                                          dsvContainerActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAt)
 import qualified Build.BedPuzzle.Actions.Get
@@ -17,7 +18,8 @@ import           Build.BedPuzzle.Actions.Inventory                       (defaul
                                                                           notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
-import           Build.BedPuzzle.Actions.Look                            (lookAtF,
+import           Build.BedPuzzle.Actions.Look                            (cannnotLookInF,
+                                                                          lookAtF,
                                                                           lookInF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look              (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Floor.Get               (getFloorDeniedF)
@@ -82,6 +84,10 @@ isaEnabledLook =
 dsvEnabledLook :: DirectionalStimulusActionF
 dsvEnabledLook =
   dsvActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
+
+dsvContainerEnabledLook :: DirectionalStimulusContainerActionF
+dsvContainerEnabledLook =
+  dsvContainerActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
 playerGetF :: AcquisitionActionF
 playerGetF = Build.BedPuzzle.Actions.Get.getF
@@ -157,7 +163,9 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
 
 
 makeDirectionalStimulusContainerActionGIDsAndMap [([| lookInPocketF |], 1),
-                                                 ([| pocketClosedF |], 2)]
+                                                 ([| pocketClosedF |], 2),
+                                                 ([| cannnotLookInF |], 3),
+                                                  ([| dsvContainerEnabledLook |],4)]
 
 makeAcquisitionActionGIDsAndMap [ ([| alreadyHaveMailF|], 1),
                                   ([| getMailDeniedF |], 2),

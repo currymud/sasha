@@ -416,8 +416,10 @@ lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
     simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
     simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
-lookupContainerDirectionalStimulus :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusContainerActionF)
-lookupContainerDirectionalStimulus verb (ActionManagementFunctions actions) =
+lookupDirectionalContainerStimulus :: DirectionalStimulusVerb
+                                        -> ActionManagementFunctions
+                                        -> Maybe (GID DirectionalStimulusContainerActionF)
+lookupDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
   listToMaybe [gid | DSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)

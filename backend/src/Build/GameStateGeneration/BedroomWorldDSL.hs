@@ -9,16 +9,13 @@ import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
-                                                                          createConsumptionEffect,
                                                                           createDirectionalContainerStimulusEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
                                                                           createSomaticAccessEffect,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
-                                                                          displayVisibleObjects,
                                                                           finalizeGameState,
-                                                                          linkActionKeyToSystemEffect,
                                                                           linkEffectToLocation,
                                                                           linkEffectToObject,
                                                                           linkEffectToPlayer,
@@ -28,7 +25,6 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           registerObjectToLocation,
                                                                           registerPlayer,
                                                                           registerSpatial,
-                                                                          registerSystemEffect,
                                                                           setPerceptionMap,
                                                                           updateDescription,
                                                                           withDescription,
@@ -57,7 +53,6 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroo
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
                                                                           floorOB,
                                                                           mailOB,
-                                                                          pillOB,
                                                                           robeOB,
                                                                           tableOB)
 
@@ -70,7 +65,7 @@ import           Model.Parser.Composites.Nouns                           (Consum
                                                                           ObjectPhrase (ObjectPhrase))
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CVManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                           EffectActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           GameState,
                                                                           Location,
@@ -80,9 +75,8 @@ import           Model.GameState                                         (Action
                                                                           SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 
 -- Import action GIDs
-import           Build.Identifiers.Actions                               (agentCanSeeGID,
+import           Build.Identifiers.Actions                               (cannnotLookInFGID,
                                                                           defaultInventoryLookFGID,
-                                                                          dizzyGetFGID,
                                                                           dsvEnabledLookGID,
                                                                           getDeniedFGID,
                                                                           getFromChairFGID,
@@ -91,13 +85,9 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           getRobeFGID,
                                                                           isaEnabledLookGID,
                                                                           lookAtChairFGID,
-                                                                          lookAtPocketFGID,
                                                                           lookAtRobeFGID,
-                                                                          lookAtRobePossessedF,
                                                                           lookAtRobePossessedFGID,
                                                                           lookFGID,
-                                                                          notEvenInventoryFGID,
-                                                                          notEvenPillGID,
                                                                           notEvenRobeGID,
                                                                           openEyesGID,
                                                                           pillTooFarFGID,
@@ -106,12 +96,10 @@ import           Build.Identifiers.Actions                               (agentC
                                                                           pocketClosedFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
-                                                                          seeRobeChairGID,
                                                                           seeRobeWornGID,
                                                                           seeTableGID,
                                                                           somethingInPocketFGID,
                                                                           takePillDeniedFGID,
-                                                                          takePillFGID,
                                                                           whatChairFGID,
                                                                           whatPillGID,
                                                                           whatPocketGID)
@@ -126,12 +114,9 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
-import           Build.BedPuzzle.Actions.Objects.Pocket.Look             (somethingInPocketF)
-import           Build.Identifiers.Effects                               (youSeeMEffectGID)
 import           Control.Monad                                           ((>=>))
 import           Data.Foldable                                           (traverse_)
 import           Debug.Trace                                             (trace)
-import           GameState.ActionManagement                              (removeSystemEffect)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Relude.Function                                         ((&))
@@ -246,6 +231,7 @@ buildBedroomPlayer bedroomGID =
                          [ ISAManagementKey isaLook isaEnabledLookGID
                          , ISAManagementKey inventory defaultInventoryLookFGID
                          , DSAManagementKey look dsvEnabledLookGID
+                         , DSAContainerManagementKey look cannnotLookInFGID
                          , CVManagementKey takePillCVP pillTooFarFGID
                          , AAManagementKey getRobeAVP getDeniedFGID
                          , SSAManagementKey saOpen openEyesGID
@@ -295,14 +281,13 @@ bedroomWorldDSL = do
 
   getRobeChangesLookPocket <- createDirectionalStimulusEffect look somethingInPocketFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
-
+  linkEffectToPlayer (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject robeGID) getRobeChangesLookPocket
   getRobeChangesLookInPocket <- createDirectionalContainerStimulusEffect look pocketClosedFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookInPocket
 
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
   linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect
-
 
   trace ("DEBUG: Linked effect to object " ++ show robeGID ++ " with key " ++ show (AcquisitionalActionKey getRobeFGID)) $ pure ()
 --  tableLookEffect <- createDirectionalStimulusEffect look seeTableGID

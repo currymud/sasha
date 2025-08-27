@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 module Actions.Percieve.Look ( lookAt
                              , dsvActionEnabled
+                             , dsvContainerActionEnabled
                              , isvActionEnabled
                              , agentCanSee
                              , agentCannotSee
@@ -19,7 +20,7 @@ import           Data.Text                                               (Text,
 import           GameState                                               (getObjectM,
                                                                           getPlayerM,
                                                                           modifyNarration)
-import           GameState.ActionManagement                              (lookupContainerDirectionalStimulus,
+import           GameState.ActionManagement                              (lookupDirectionalContainerStimulus,
                                                                           lookupDirectionalStimulus,
                                                                           lookupImplicitStimulus)
 import           GameState.Perception                                    (findAccessibleObject,
@@ -82,6 +83,19 @@ dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
             Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
             Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
 
+dsvContainerActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusContainerActionF
+dsvContainerActionEnabled dsv = DirectionalStimulusContainerActionF actionEnabled
+  where
+    actionEnabled oid = do
+      actionMgmt <- _objectActionManagement <$> getObjectM oid
+      case lookupDirectionalContainerStimulus dsv actionMgmt of
+        Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
+        Just actionGID -> do
+          actionMap' :: Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF <- asks (_directionalStimulusContainerActionMap . _actionMaps)
+          case Data.Map.Strict.lookup actionGID actionMap' of
+            Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
+            Just (DirectionalStimulusContainerActionF actionFunc) -> actionFunc oid
+
 lookAt :: DirectionalStimulusActionF
 lookAt = DirectionalStimulusActionF lookAt'
   where
@@ -128,7 +142,7 @@ manageDirectionalStimulusProcess dsv dsnp = do
 manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ()
 manageContainerDirectionalStimulusProcess dsv cp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupContainerDirectionalStimulus dsv availableActions of
+  case lookupDirectionalContainerStimulus dsv availableActions of
     Nothing -> error "Programmer Error: No container directional stimulus action found for verb: "
     Just actionGID -> do
       actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
