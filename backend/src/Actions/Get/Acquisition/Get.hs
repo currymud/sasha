@@ -9,9 +9,8 @@ import           Control.Monad.State           (gets)
 import qualified Data.Map.Strict
 import           Data.Set                      (Set, elemAt, null, toList)
 import qualified Data.Text
-import           Debug.Trace                   (trace)
 import           GameState                     (getPlayerLocationM, getPlayerM)
-import           GameState.ActionManagement    (lookupAcquisition,
+import           GameState.ActionManagement    (lookupAcquisitionPhrase,
                                                 processEffectsFromRegistry)
 import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionMaps (_acquisitionActionMap),
@@ -27,14 +26,13 @@ import           Model.GameState               (AcquisitionActionF (AcquisitionA
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_spatialRelationshipMap))
 import           Model.GID                     (GID)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 
 -- we are removing processEffectsFromRegistry from here
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisition simpled availableActions of
+  case lookupAcquisitionPhrase avp availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
@@ -51,8 +49,6 @@ manageAcquisitionProcess avp = do
               actionF
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
-  where
-    simpled = simplifyAcquisitionVerbPhrase avp
 -- | General case: Search current location's object semantic map
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
@@ -77,10 +73,6 @@ locationSearchStrategy targetNounKey = do
     getContainerSources relationships =
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
-
-simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
-simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
-simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
 finalizeAcquisition :: EffectActionKey
                         -> GID Object

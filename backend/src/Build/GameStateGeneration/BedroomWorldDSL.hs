@@ -7,8 +7,8 @@ import           Build.GameStateGeneration.Defaults                      (defaul
                                                                           defaultPlayer)
 import qualified Data.Set                                                as Set
 import           Model.GameState.GameStateDSL                            (WorldDSL,
-                                                                          createAcquisitionPhraseEffect,
                                                                           createAcquisitionVerbEffect,
+                                                                          createAcquisitionVerbPhraseEffect,
                                                                           createConsumptionEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
@@ -68,10 +68,8 @@ import           Model.Parser.Composites.Nouns                           (Consum
                                                                           NounPhrase (DescriptiveNounPhraseDet, SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 
--- Import ObjectSpec builder functions
-
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+import           Model.GameState                                         (ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                           EffectActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                           GameState,
                                                                           Location,
@@ -182,7 +180,7 @@ pillObj = defaultObject & pillObj'
                  >=> withDescription "A small, round pill. Probably good for headaches."
                  >=> withDescriptives [ SimpleNounPhrase pillDS ]
                  >=> (\o -> withObjectBehavior o (DSAManagementKey look whatPillGID))
-                 >=> (\o -> withObjectBehavior o (CAManagementKey takePillCVP takePillDeniedFGID))
+                 >=> (\o -> withObjectBehavior o (CVManagementKey takePillCVP takePillDeniedFGID))
 
 mailObj :: WorldDSL Object
 mailObj =  defaultObject & mailObj'
@@ -244,7 +242,7 @@ buildBedroomPlayer bedroomGID =
                          [ ISAManagementKey isaLook isaEnabledLookGID
                          , ISAManagementKey inventory defaultInventoryLookFGID
                          , DSAManagementKey look dsvEnabledLookGID
-                         , CAManagementKey takePillCVP pillTooFarFGID
+                         , CVManagementKey takePillCVP pillTooFarFGID
                          , AAManagementKey getRobeAVP getDeniedFGID
                          , SSAManagementKey saOpen openEyesGID
                          ])
@@ -282,7 +280,7 @@ bedroomWorldDSL = do
   robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
   linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
-  robeOpenEyesLookChangesGetRobe <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
+  robeOpenEyesLookChangesGetRobe <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
   linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
   trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
@@ -305,13 +303,13 @@ bedroomWorldDSL = do
 --  mailLookEffect <- createDirectionalStimulusEffect look seeMailGID
 --  linkEffectToObject (DirectionalStimulusActionKey seeMailGID) mailGID mailLookEffect
 
-  getRobeEffect <- createAcquisitionPhraseEffect getRobeAVP getRobeFGID
+  getRobeEffect <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
 --  takePillEffect <- createConsumptionEffect take pillGID takePillFGID
 --  linkEffectToPlayer (ConsumptionActionKey takePillFGID) (PlayerKeyObject pillGID) takePillEffect
 
-  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionPhraseEffect getRobeAVP playerGetFGID
+  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
   trace ("DEBUG: Created player effect: " ++ show robeOpenEyesLookChangesGetRobeForPlayer) $ pure ()
   trace ("DEBUG: Linking to player with key: " ++ show (SomaticAccessActionKey openEyesGID) ++ " and target: " ++ show (PlayerKeyObject robeGID)) $ pure ()

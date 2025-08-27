@@ -1,4 +1,5 @@
 module GameState.ActionManagement where
+import           Control.Applicative           ((<|>))
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (MonadState (get), gets, modify')
 import qualified Data.Map.Strict
@@ -19,7 +20,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionManagementOperation (AddAcquisitionVerb, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
                                                 DirectionalStimulusActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect),
@@ -111,15 +112,7 @@ processAllEffects (ActionEffectMap effectMap) = do
       trace ("DEBUG: Processing effect key: " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ pure ()
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
--- processEffect implementation remains the same as in your original code
--- Updated processEffect patterns for GameState.ActionManagement
--- Replace all the existing processEffect implementations with these:
-
--- LOCATION EFFECTS (updating location action management)
-
--- processEffect implementation for GameState.ActionManagement
 processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
--- LOCATION EFFECTS (updating location action management)
 processEffect (LocationKey lid) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -146,6 +139,13 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerb verb
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (LocationKey lid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
@@ -208,6 +208,13 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddAcquisitionVerb verb n
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
@@ -293,6 +300,13 @@ processEffect (PlayerKey pk) (ActionManagementEffect (AddAcquisitionVerb verb ne
         updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
+processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
 processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddConsumption verb _targetOid newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -359,13 +373,17 @@ lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
-lookupAcquisition :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-lookupAcquisition verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == verb]
-
 lookupAcquisitionPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-lookupAcquisitionPhrase phrase (ActionManagementFunctions actions) =
-  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == phrase]
+lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
+  -- First try exact phrase match
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+    <|>
+  -- Then try just the verb
+  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == simplifyAcquisitionVerbPhrase avp]
+  where
+    simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
+    simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
+    simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption verb (ActionManagementFunctions actions) =

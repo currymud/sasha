@@ -9,13 +9,13 @@ module Model.GameState (
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
   , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddSomaticAccess,
-                               AddAcquisitionVerb, AddConsumption,
+                               AddAcquisitionVerb, AddAcquisitionVerbPhrase ,AddConsumption,
                                AddPositivePostural, AddNegativePostural)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey,
-                      AAManagementKey,AVManagementKey, CAManagementKey,
+                      AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,
                       PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps

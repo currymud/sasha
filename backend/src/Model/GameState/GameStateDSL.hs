@@ -109,6 +109,7 @@ data WorldDSL :: Type -> Type where
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> WorldDSL Effect
   CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
+  CreateAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
   CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
@@ -203,6 +204,12 @@ createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
 
 createAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL Effect
 createAcquisitionVerbEffect = CreateAcquisitionVerbEffect
+
+createAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL Effect
+createAcquisitionVerbPhraseEffect = CreateAcquisitionVerbPhraseEffect
+-- In GameStateDSL.hs
+createAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL ActionManagement
+createAAManagement = CreateAAManagement
 
 createConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> WorldDSL Effect
 createConsumptionEffect = CreateConsumptionEffect
