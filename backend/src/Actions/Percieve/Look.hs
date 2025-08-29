@@ -1,11 +1,6 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
-module Actions.Percieve.Look ( lookAt
-                             , dsvActionEnabled
-                             , dsvContainerActionEnabled
-                             , isvActionEnabled
-                             , agentCanSee
-                             , agentCannotSee
-                             , manageImplicitStimulusProcess
+module Actions.Percieve.Look (
+                              manageImplicitStimulusProcess
                              , manageDirectionalStimulusProcess
                              , manageContainerDirectionalStimulusProcess
                              ) where
@@ -49,66 +44,6 @@ import           Model.Parser.Composites.Nouns                           (Contai
                                                                           NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey))
 import           Relude.String.Conversion                                (ToText (toText))
-
-agentCanSee :: ImplicitStimulusActionF
-agentCanSee = ImplicitStimulusActionF $ const (\loc -> modifyNarration $ updateActionConsequence ("You see: " <> toText (_title loc)))
-
-agentCannotSee :: Text -> ImplicitStimulusActionF
-agentCannotSee nosee = ImplicitStimulusActionF
-  $ const (const (modifyNarration $ updateActionConsequence nosee))
-
-isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
-isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
-  where
-    actionEnabled player loc = do
-      let actionMgmt = _locationActionManagement loc
-      case lookupImplicitStimulus isv actionMgmt of
-        Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in location map"
-        Just actionGID -> do
-          actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
-          case Data.Map.Strict.lookup actionGID actionMap' of
-            Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
-
-dsvActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusActionF
-dsvActionEnabled dsv = DirectionalStimulusActionF actionEnabled
-  where
-    actionEnabled dsnp oid = do
-      actionMgmt <- _objectActionManagement <$> getObjectM oid
-      case lookupDirectionalStimulus dsv actionMgmt of
-        Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-        Just actionGID -> do
-          actionMap' :: Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF <- asks (_directionalStimulusActionMap . _actionMaps)
-          case Data.Map.Strict.lookup actionGID actionMap' of
-            Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-            Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
-
-dsvContainerActionEnabled :: DirectionalStimulusVerb ->  DirectionalStimulusContainerActionF
-dsvContainerActionEnabled dsv = DirectionalStimulusContainerActionF actionEnabled
-  where
-    actionEnabled oid = do
-      actionMgmt <- _objectActionManagement <$> getObjectM oid
-      case lookupDirectionalContainerStimulus dsv actionMgmt of
-        Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-        Just actionGID -> do
-          actionMap' :: Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF <- asks (_directionalStimulusContainerActionMap . _actionMaps)
-          case Data.Map.Strict.lookup actionGID actionMap' of
-            Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-            Just (DirectionalStimulusContainerActionF actionFunc) -> actionFunc oid
-
-lookAt :: DirectionalStimulusActionF
-lookAt = DirectionalStimulusActionF lookAt'
-  where
-    lookAt' :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity ()
-    lookAt' dsnp oid = do
-          actionMgmt <- _objectActionManagement <$> getObjectM oid
-          case lookupDirectionalStimulus look actionMgmt of
-            Nothing -> modifyNarration $ updateActionConsequence "Programmer made a thing you can't look at"
-            Just dsaGID -> do
-              dsActionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
-              case Data.Map.Strict.lookup dsaGID dsActionMap' of
-                Nothing -> modifyNarration $ updateActionConsequence "Programmer made a key to an action that can't be found"
-                Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp oid
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do

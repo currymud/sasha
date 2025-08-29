@@ -1,14 +1,12 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-missing-exported-signatures #-}
 module Build.Identifiers.Actions where
-import           Actions.Percieve.Look                                   (agentCanSee,
-                                                                          dsvActionEnabled,
-                                                                          dsvContainerActionEnabled,
-                                                                          isvActionEnabled,
-                                                                          lookAt)
 import qualified Build.BedPuzzle.Actions.Get
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
+import           Build.BedPuzzle.Actions.Player.Look                     (dsvActionEnabled,
+                                                                          dsvContainerActionEnabled,
+                                                                          isvActionEnabled)
 import           Build.Identifiers.Objects                               (chairGID,
                                                                           pocketGID,
                                                                           robeGID)
@@ -128,12 +126,11 @@ lookAtChairF = supportLookF chairGID flavor
     flavor = "You see a chair. It is a chair. It is not a very interesting chair, but it is a chair nonetheless."
 -- Implicit Stimulus Actions with manual GID assignment
 
-makeImplicitStimulusActionGIDsAndMap [([| agentCanSee |], 1),
-                                      ([| pitchBlackF |], 2),
-                                      ([| isaEnabledLook |], 3),
-                                      ([| defaultInventoryLookF |], 4),
-                                      ([| lookF |],5),
-                                      ([| notEvenInventoryF |],6)]
+makeImplicitStimulusActionGIDsAndMap [([| pitchBlackF |], 1),
+                                      ([| isaEnabledLook |], 2),
+                                      ([| defaultInventoryLookF |], 3),
+                                      ([| lookF |],4),
+                                      ([| notEvenInventoryF |],5)]
 
 -- Directional Stimulus Actions with manual GID assignment
 makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),

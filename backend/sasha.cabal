@@ -67,6 +67,7 @@ library
       Build.BedPuzzle.Actions.Take
       Build.BedPuzzle.Actions.Utils
       Build.BedPuzzle.Actions.Locations.Look
+      Build.BedPuzzle.Actions.Player.Look
       Build.BedPuzzle.Actions.Objects.Chair.Look
       Build.BedPuzzle.Actions.Objects.Floor.Look
       Build.BedPuzzle.Actions.Objects.Floor.Get

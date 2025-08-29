@@ -1,11 +1,9 @@
 module Build.BedPuzzle.Actions.Locations.Look where
-import           Actions.Percieve.Look (agentCannotSee)
-import           Data.Text             (Text)
-import           GameState             (modifyNarration)
-import           GameState.Perception  (youSeeM)
-import           Model.GameState       (ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                        updateActionConsequence)
-
+import           Data.Text            (Text)
+import           GameState            (modifyNarration)
+import           GameState.Perception (youSeeM)
+import           Model.GameState      (ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                       updateActionConsequence)
 
 pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF = ImplicitStimulusActionF (const (const (modifyNarration $ updateActionConsequence pitchBlack))) -- agentCannotSee pitchBlack
