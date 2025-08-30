@@ -184,7 +184,7 @@ type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) Directi
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF (DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
+  = PlayerDirectionalStimulusActionF (DirectionalStimulusNounPhrase -> GameComputation Identity ())
   | ObjectDirectionalStimulusActionF (GID Object -> DirectionalStimulusVerb -> GameComputation Identity ())
   | CannotSeeF (GameComputation Identity ())
 
