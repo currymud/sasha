@@ -43,7 +43,7 @@ instance ToText AcquisitionVerbPhrase where
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
-  | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusMarker DirectionalStimulusNounPhrase
+  | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusNounPhrase
   | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb ContainerPhrase
   | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
   deriving stock (Show, Eq, Ord, Generic)

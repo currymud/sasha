@@ -28,6 +28,7 @@ import           Model.Parser.Atomics.Nouns        (Consumable, Container,
                                                     Objective, SomaticStimulus,
                                                     Surface)
 import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
+                                                    DirectionalStimulusMarker,
                                                     SurfaceMarker)
 import           Model.Parser.Lexer                (Lexeme)
 import           Prelude                           hiding (unwords)
@@ -35,13 +36,10 @@ import           Relude.String.Conversion          (ToText (toText))
 import           Text.Earley                       (Prod)
 
 type ContainerPhrase :: Type
-data ContainerPhrase
-  = SimpleContainerPhrase (NounPhrase Container)
-  | ContainerPhrase ContainmentMarker (NounPhrase Container)
+data ContainerPhrase = ContainerPhrase ContainmentMarker (NounPhrase Container)
   deriving stock (Show, Eq, Ord,Generic)
 
 instance ToText ContainerPhrase where
-  toText (SimpleContainerPhrase nounPhrase) = toText nounPhrase
   toText (ContainerPhrase marker nounPhrase) =
     unwords [toText marker, toText nounPhrase]
 
@@ -52,13 +50,19 @@ data ContainerPhraseRules r = ContainerPhraseRules
   }
 
 type DirectionalStimulusNounPhrase :: Type
-newtype DirectionalStimulusNounPhrase = DirectionalStimulusNounPhrase (NounPhrase DirectionalStimulus)
+data DirectionalStimulusNounPhrase =
+  DirectionalStimulusNounPhrase DirectionalStimulusMarker (NounPhrase DirectionalStimulus)
   deriving stock (Show, Eq, Ord,Generic)
-  deriving newtype (ToText)
+
+instance ToText DirectionalStimulusNounPhrase where
+  toText (DirectionalStimulusNounPhrase marker nounPhrase) =
+    unwords [toText marker, toText nounPhrase]
 
 type DirectionalStimulusNounRules :: (Type -> Type -> Type -> Type) -> Type
-newtype DirectionalStimulusNounRules r = DirectionalStimulusNounRules
-  { _directionalStimulusRule :: Prod r Text Lexeme (NounPhrase DirectionalStimulus)}
+data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
+  { _directionalStimulusRule :: Prod r Text Lexeme (NounPhrase DirectionalStimulus)
+  , _directionalStimulusMarkerRule :: Prod r Text Lexeme DirectionalStimulusMarker
+  }
 
 type ConsumableNounPhrase :: Type
 newtype ConsumableNounPhrase = ConsumableNounPhrase (NounPhrase Consumable)
