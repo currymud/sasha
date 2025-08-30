@@ -32,7 +32,7 @@ module Model.GameState (
   , ConsumptionActionMap
   , Config (Config, _actionMaps)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
-  , DirectionalStimulusActionF (DirectionalStimulusActionF, _directionalStimulusAction)
+  , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
   , DirectionalStimulusActionMap
   , DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF, _unDirectionalStimulusContainerActionF)
   , DirectionalStimulusContainerActionMap
@@ -183,8 +183,10 @@ type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
 type DirectionalStimulusActionF :: Type
-newtype DirectionalStimulusActionF = DirectionalStimulusActionF
-  { _directionalStimulusAction :: DirectionalStimulusNounPhrase -> GID Object -> GameComputation Identity () }
+data DirectionalStimulusActionF
+  = PlayerDirectionalStimulusActionF (DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
+  | ObjectDirectionalStimulusActionF (GID Object -> DirectionalStimulusVerb -> GameComputation Identity ())
+  | CannotSeeF (GameComputation Identity ())
 
 type DirectionalStimulusContainerActionF :: Type
 newtype DirectionalStimulusContainerActionF = DirectionalStimulusContainerActionF

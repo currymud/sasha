@@ -25,7 +25,7 @@ import           Location                                                (getLoc
                                                                           getPlayerLocationM)
 import           Model.GameState                                         (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                                           Config (_actionMaps),
-                                                                          DirectionalStimulusActionF (DirectionalStimulusActionF),
+                                                                          DirectionalStimulusActionF (CannotSeeF),
                                                                           DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
                                                                           GameComputation,
                                                                           ImplicitStimulusActionF (ImplicitStimulusActionF),
@@ -70,6 +70,8 @@ manageDirectionalStimulusProcess dsv dsnp = do
       actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
+        Just (CannotSeeF actionFunc) -> actionFunc
+        Just (
         Just actionFunc -> do
           location <- getPlayerLocationM
           lookable actionFunc dsnp location
