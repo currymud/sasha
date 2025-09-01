@@ -64,6 +64,14 @@ data WorldDSL :: Type -> Type where
   DeclareConsumableGID :: GID Object -> NounPhrase Consumable -> WorldDSL ()
   DeclareContainerGID :: GID Object -> NounPhrase Container -> WorldDSL ()
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
+-- Add these GADT constructors to WorldDSL in Model.GameState.GameStateDSL:
+  DeclareImplicitActionGID :: ImplicitStimulusActionF -> WorldDSL (GID ImplicitStimulusActionF)
+  DeclareDirectionalActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
+  DeclareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> WorldDSL (GID DirectionalStimulusContainerActionF)
+  DeclareSomaticActionGID :: SomaticAccessActionF -> WorldDSL (GID SomaticAccessActionF)
+  DeclareAcquisitionActionGID :: AcquisitionActionF -> WorldDSL (GID AcquisitionActionF)
+  DeclareConsumptionActionGID :: ConsumptionActionF -> WorldDSL (GID ConsumptionActionF)
+  DeclarePosturalActionGID :: PosturalActionF -> WorldDSL (GID PosturalActionF)
 
   WithShortName :: Text -> Object -> WorldDSL Object
   WithDescription :: Text -> Object -> WorldDSL Object
@@ -105,7 +113,6 @@ data WorldDSL :: Type -> Type where
   RegisterSpatial :: GID Object -> SpatialRelationship -> WorldDSL ()
   RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> WorldDSL ()
   RegisterSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
-  -- In DSL
   RegisterTrigger :: EffectActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> WorldDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL Effect
@@ -157,6 +164,27 @@ declareContainerGID = DeclareContainerGID
 
 declareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 declareLocationGID = DeclareLocationGID
+
+declareImplicitActionGID :: ImplicitStimulusActionF -> WorldDSL (GID ImplicitStimulusActionF)
+declareImplicitActionGID = DeclareImplicitActionGID
+
+declareDirectionalActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
+declareDirectionalActionGID = DeclareDirectionalActionGID
+
+declareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> WorldDSL (GID DirectionalStimulusContainerActionF)
+declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
+
+declareSomaticActionGID :: SomaticAccessActionF -> WorldDSL (GID SomaticAccessActionF)
+declareSomaticActionGID = DeclareSomaticActionGID
+
+declareAcquisitionActionGID :: AcquisitionActionF -> WorldDSL (GID AcquisitionActionF)
+declareAcquisitionActionGID = DeclareAcquisitionActionGID
+
+declareConsumptionActionGID :: ConsumptionActionF -> WorldDSL (GID ConsumptionActionF)
+declareConsumptionActionGID = DeclareConsumptionActionGID
+
+declarePosturalActionGID :: PosturalActionF -> WorldDSL (GID PosturalActionF)
+declarePosturalActionGID = DeclarePosturalActionGID
 
 -- ActionManagement construction - FIXED: now returns ActionManagementFunctions
 createISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement

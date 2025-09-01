@@ -79,6 +79,13 @@ data BuilderState = BuilderState
   , _declaredConsumableGIDs :: Map (NounPhrase Consumable) (GID Object)
   , _declaredContainerGIDs :: Map (NounPhrase Container) (GID Object)
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
+  , _nextImplicitActionGID :: Int
+  , _nextDirectionalActionGID :: Int
+  , _nextDirectionalContainerActionGID :: Int
+  , _nextSomaticActionGID :: Int
+  , _nextAcquisitionActionGID :: Int
+  , _nextConsumptionActionGID :: Int
+  , _nextPosturalActionGID :: Int
   , _actionMaps :: ActionMaps
   }
 
