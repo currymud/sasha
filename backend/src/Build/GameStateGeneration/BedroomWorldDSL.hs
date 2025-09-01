@@ -74,33 +74,6 @@ import           Model.GameState                                         (Action
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 
--- Import action GIDs
-import           Build.Identifiers.Actions                               (cannnotLookInFGID,
-                                                                          defaultInventoryLookFGID,
-                                                                          dsvEnabledLookGID,
-                                                                          getDeniedFGID,
-                                                                          getFromChairFGID,
-                                                                          getMailDeniedFGID,
-                                                                          getRobeDeniedFGID,
-                                                                          getRobeFGID,
-                                                                          isaEnabledLookGID,
-                                                                          lookAtChairFGID,
-                                                                          lookAtRobeFGID,
-                                                                          lookFGID,
-                                                                          notEvenRobeGID,
-                                                                          openEyesGID,
-                                                                          pillTooFarFGID,
-                                                                          pitchBlackFGID,
-                                                                          playerGetFGID,
-                                                                          pocketClosedFGID,
-                                                                          seeFloorFGID,
-                                                                          seeMailGID,
-                                                                          seeTableGID,
-                                                                          takePillDeniedFGID,
-                                                                          whatChairFGID,
-                                                                          whatPillGID,
-                                                                          whatPocketGID)
-
 -- Import verb functions
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pill)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
@@ -136,7 +109,7 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 -- =============================================================================
 -- OBJECT BUILDERS
 -- =============================================================================
-
+  {-
 chairObj :: WorldDSL Object
 chairObj =
   defaultObject & chairObj'
@@ -357,3 +330,4 @@ bedroomWorldDSL = do
   registerPlayer player
 
   finalizeGameState
+  -}

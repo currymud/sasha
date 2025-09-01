@@ -1,19 +1,11 @@
 module Build.GameState where
 
-import           Build.GameStateGeneration.BedroomWorldDSL       (bedroomWorldDSL)
 import           Build.GameStateGeneration.Defaults              (defaultNarration,
                                                                   defaultPlayer,
                                                                   defaultWorld)
 import           Build.GameStateGeneration.EDSL.GameStateBuilder (initialBuilderState,
                                                                   interpretDSL,
                                                                   runWorldBuilder)
-import           Build.Identifiers.Actions                       (acquisitionActionMap,
-                                                                  consumptionActionMap,
-                                                                  directionalStimulusActionMap,
-                                                                  directionalStimulusContainerActionMap,
-                                                                  implicitStimulusActionMap,
-                                                                  posturalActionMap,
-                                                                  somaticAccessActionMap)
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
@@ -22,6 +14,7 @@ import           Model.GameState                                 (ActionMaps (Ac
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
 -- Build GameState using the DSL!
+  {-
 gameState :: GameState
 gameState = case runWorldBuilder (interpretDSL bedroomWorldDSL) (initialBuilderState defaultGameState) of
   Left err             -> error $ "Failed to build game state: " ++ show err
@@ -47,6 +40,15 @@ config = Config
   where
     actionMaps :: ActionMaps
     actionMaps = ActionMaps
+      { implicitStimulusActionMap = Data.Map.Strict.empty
+      , directionalStimulusActionMap = Data.Map.Strict.empty
+      , directionalStimulusContainerActionMap = Data.Map.Strict.empty
+      , somaticAccessActionMap = Data.Map.Strict.empty
+      , acquisitionActionMap = Data.Map.Strict.empty
+      , consumptionActionMap = Data.Map.Strict.empty
+      , posturalActionMap = Data.Map.Strict.empty
+      }
+      {-
                    (Data.Map.Strict.keys implicitStimulusActionMap `deepseq` implicitStimulusActionMap)
                    (Data.Map.Strict.keys directionalStimulusActionMap `deepseq` directionalStimulusActionMap)
                    (Data.Map.Strict.keys directionalStimulusContainerActionMap `deepseq` directionalStimulusContainerActionMap)
@@ -54,4 +56,5 @@ config = Config
                    (Data.Map.Strict.keys acquisitionActionMap `deepseq` acquisitionActionMap)
                    (Data.Map.Strict.keys consumptionActionMap `deepseq` consumptionActionMap)
                    (Data.Map.Strict.keys posturalActionMap `deepseq` posturalActionMap)
-
+-}
+-}

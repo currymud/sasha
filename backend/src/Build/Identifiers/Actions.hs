@@ -118,11 +118,9 @@ lookInPocketF = lookInF pocketGID flavor
   where
     flavor :: Text
     flavor = "You look in your pocket."
-lookAtRobePossessedF :: DirectionalStimulusActionF
-lookAtRobePossessedF = supportLookF robeGID flavor
-  where
-    flavor :: Text
-    flavor = "You look at your comfey robe. You wouldn't want to leave without wearing it."
+
+seePillF :: DirectionalStimulusActionF
+seePillF = ObjectDirectionalStimulusActionF
 
 lookAtChairF :: DirectionalStimulusActionF
 lookAtChairF = supportLookF chairGID flavor
