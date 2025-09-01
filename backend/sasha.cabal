@@ -83,6 +83,7 @@ library
       Build.BedPuzzle.Effects.Perception.Look
       Build.GameStateGeneration.BedroomWorldDSL
       Build.GameStateGeneration.EDSL.GameStateBuilder
+      Build.GameStateGeneration.EDSL.ActionCombinators
       Build.Identifiers.Effects
       Build.Identifiers.SentenceProcessing
       Build.Templates.Identification
