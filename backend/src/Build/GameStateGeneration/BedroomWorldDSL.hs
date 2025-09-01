@@ -86,7 +86,6 @@ import           Build.Identifiers.Actions                               (cannno
                                                                           isaEnabledLookGID,
                                                                           lookAtChairFGID,
                                                                           lookAtRobeFGID,
-                                                                          lookAtRobePossessedFGID,
                                                                           lookFGID,
                                                                           notEvenRobeGID,
                                                                           openEyesGID,
@@ -96,9 +95,7 @@ import           Build.Identifiers.Actions                               (cannno
                                                                           pocketClosedFGID,
                                                                           seeFloorFGID,
                                                                           seeMailGID,
-                                                                          seeRobeWornGID,
                                                                           seeTableGID,
-                                                                          somethingInPocketFGID,
                                                                           takePillDeniedFGID,
                                                                           whatChairFGID,
                                                                           whatPillGID,
@@ -168,7 +165,7 @@ pillObj :: WorldDSL Object
 pillObj = defaultObject & pillObj'
   where
     pillObj' = withShortName "pill"
-                 >=> withDescription "A small, round pill. Probably good for headaches."
+                 >=> withDescription "Your salvation in pill form! Cure your headache and get out of bed!"
                  >=> withDescriptives [ SimpleNounPhrase pillDS ]
                  >=> (\o -> withObjectBehavior o (DSAManagementKey look whatPillGID))
                  >=> (\o -> withObjectBehavior o (CVManagementKey takePillCVP takePillDeniedFGID))
@@ -177,7 +174,7 @@ mailObj :: WorldDSL Object
 mailObj =  defaultObject & mailObj'
  where
    mailObj' = withShortName "mail"
-                >=> withDescription "Some mail on the table"
+                >=> withDescription "It's junk mail, nothing important. However, you have a suspicion that you should GET MAIL before leaving the room."
                 >=> withDescriptives [ SimpleNounPhrase mailDS ]
                 >=> (\o -> withObjectBehavior o (DSAManagementKey look seeMailGID))
                 >=> (\o -> withObjectBehavior o (AAManagementKey getMailAVP getMailDeniedFGID))
@@ -185,12 +182,15 @@ mailObj =  defaultObject & mailObj'
 robeObj :: WorldDSL Object
 robeObj =  defaultObject & robeObj'
   where
-    robeObj' = withShortName "robe"
-                 >=> withDescription "A comfortable robe"
+    robeObj' = withShortName "A comfortable robe"
+                 >=> withDescription "The robe is on the chair. It's the only thing you can pick up in your current dizzy state."
                  >=> withDescriptives [ SimpleNounPhrase robeDS ]
                  >=> (\o -> withObjectBehavior o (DSAManagementKey look notEvenRobeGID))
                  >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP getRobeDeniedFGID))
                  >=> (\o -> withObjectBehavior o (AVManagementKey  get        getRobeDeniedFGID))
+
+seeRobeWornMsg :: Text
+seeRobeWornMsg = "You're wearing your ratty bathrobe. It's got a pocket you can put a ridiulous amount of stuff in. There's something in it."
 
 pocketObj :: WorldDSL Object
 pocketObj =  defaultObject & pocketObj'
@@ -263,27 +263,26 @@ bedroomWorldDSL = do
   registerObject pocketGID pocketObj
   registerObject floorGID floorObj
 
+-- seeing things like seeRobeWornGID is obsolete. From now on, we change the description to do things like this
+
   -- Create and link effects for game actions
   openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
   linkEffectToObject ( SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
 
-  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
-  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
+--  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
+--  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
 
-  robeOpenEyesLookChangesGetRobe <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
-  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
+--  robeOpenEyesLookChangesGetRobe <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
+--  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobe
 
-  trace ("DEBUG: getRobeFGID = " ++ show getRobeFGID) $ pure ()
-  trace ("DEBUG: seeRobeWornGID = " ++ show seeRobeWornGID) $ pure ()
-  getRobeChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobePossessedFGID
-  trace ("DEBUG: Created getRobeChangesLookRobe effect: " ++ show getRobeChangesLookRobe) $ pure ()
-  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
+--  getRobeChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobePossessedFGID
+--  linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeChangesLookRobe
 
-  getRobeChangesLookPocket <- createDirectionalStimulusEffect look somethingInPocketFGID
-  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
-  linkEffectToPlayer (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject robeGID) getRobeChangesLookPocket
-  getRobeChangesLookInPocket <- createDirectionalContainerStimulusEffect look pocketClosedFGID
-  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookInPocket
+--  getRobeChangesLookPocket <- createDirectionalStimulusEffect look somethingInPocketFGID
+--  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookPocket
+--  linkEffectToPlayer (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject robeGID) getRobeChangesLookPocket
+--  getRobeChangesLookInPocket <- createDirectionalContainerStimulusEffect look pocketClosedFGID
+--  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookInPocket
 
 -- Create field effect to change robe description when acquired
   robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding" robeGID
@@ -303,10 +302,8 @@ bedroomWorldDSL = do
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID getRobeEffect
 
 
-  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
-  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
-  trace ("DEBUG: Created player effect: " ++ show robeOpenEyesLookChangesGetRobeForPlayer) $ pure ()
-  trace ("DEBUG: Linking to player with key: " ++ show (SomaticAccessActionKey openEyesGID) ++ " and target: " ++ show (PlayerKeyObject robeGID)) $ pure ()
+--  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
+--  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
   -- Create the effect that changes look behavior when eyes open
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
 

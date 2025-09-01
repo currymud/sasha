@@ -27,7 +27,6 @@ import           Build.BedPuzzle.Actions.Objects.Mail.Get                (alread
                                                                           getMailDeniedF,
                                                                           getMailDizzyF)
 import           Build.BedPuzzle.Actions.Objects.Mail.Look               (notEvenMail,
-                                                                          seeMail,
                                                                           whatMail)
 import           Build.BedPuzzle.Actions.Objects.Pill.Get                (getPillDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look               (notEvenPill,
@@ -87,6 +86,12 @@ dsvContainerEnabledLook :: DirectionalStimulusContainerActionF
 dsvContainerEnabledLook =
   dsvContainerActionEnabled Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb.look
 
+seeMail :: DirectionalStimulusActionF
+seeMail = lookAtF mailGID
+
+seeRobeF :: DirectionalStimulusActionF
+seeRobeF =  lookAtF robeGID
+
 playerGetF :: AcquisitionActionF
 playerGetF = Build.BedPuzzle.Actions.Get.getF
 
@@ -145,18 +150,11 @@ makeDirectionalStimulusActionGIDsAndMap [([| seePill |], 1),
                                          ([| notEvenRobe|], 11),
                                          ([| whatPocket |], 12),
                                          ([| notEvenPocket |], 13),
-                                         ([| seePocketChair |], 14),
-                                         ([| seePocketRobeWorn |], 15),
-                                         ([| seeRobeChair |], 16),
+                                         ([| seeRobeF |], 16),
                                          ([| seeMail |], 17),
                                          ([| whatMail |], 18),
                                          ([| seeFloorF |], 19),
-                                         ([| notEvenFloorF |], 20),
-                                         ([| lookAtChairF |],21),
-                                         ([| seeRobeWorn|],22),
-                                         ([| lookAtRobePossessedF |],21),
-                                         ([| lookAtPocketF |],22),
-                                         ([| somethingInPocketF|], 23)]
+                                         ([| notEvenFloorF |], 20)]
 
 
 makeDirectionalStimulusContainerActionGIDsAndMap [([| lookInPocketF |], 1),
