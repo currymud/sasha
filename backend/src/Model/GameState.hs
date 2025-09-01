@@ -185,16 +185,15 @@ type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) Directi
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF (DirectionalStimulusNounPhrase -> GameComputation Identity ())
+  = PlayerDirectionalStimulusActionF (DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
   | ObjectDirectionalStimulusActionF (GameComputation Identity ())
   | CannotSeeF (GameComputation Identity ())
 
 type DirectionalStimulusContainerActionF :: Type
 data DirectionalStimulusContainerActionF
-  = PlayerDirectionalStimulusContainerActionF (ContainerPhrase -> GameComputation Identity ())
+  = PlayerDirectionalStimulusContainerActionF (DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ())
   | ObjectDirectionalStimulusContainerActionF (GameComputation Identity ())
   | CannotSeeInF (GameComputation Identity ())
-
 
 type DirectionalStimulusContainerActionMap :: Type
 type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF

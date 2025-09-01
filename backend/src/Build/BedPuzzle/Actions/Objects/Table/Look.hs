@@ -2,12 +2,12 @@ module Build.BedPuzzle.Actions.Objects.Table.Look where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (DirectionalStimulusActionF),
+import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
                                          GameComputation (GameComputation),
                                          Location, updateActionConsequence)
-
+-- ToDo naming convention fix
 whatTable :: DirectionalStimulusActionF
-whatTable = DirectionalStimulusActionF (const (const whatTable'))
+whatTable = CannotSeeF whatTable'
   where
     whatTable' :: GameComputation Identity ()
     whatTable' = modifyNarration $ updateActionConsequence msg
@@ -16,7 +16,7 @@ whatTable = DirectionalStimulusActionF (const (const whatTable'))
     msg = "It would be alot easier to see the table if you would open your eyes. Literally."
 
 seeTable :: DirectionalStimulusActionF
-seeTable = DirectionalStimulusActionF (const (const seeTable'))
+seeTable = CannotSeeF seeTable'
   where
     seeTable' :: GameComputation Identity ()
     seeTable' = modifyNarration $ updateActionConsequence msg

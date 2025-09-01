@@ -10,7 +10,7 @@ import           Data.Text              (Text, intercalate)
 import           GameState              (getObjectM, modifyNarration)
 import           GameState.Perception   (isObjectPerceivable)
 import           Model.GameState        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
-                                         DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
+                                         DirectionalStimulusContainerActionF (ObjectDirectionalStimulusContainerActionF),
                                          GameComputation, GameState (_world),
                                          Object,
                                          SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
@@ -22,7 +22,7 @@ import           Model.GID              (GID)
 
 
 lookAtF :: GID Object -> DirectionalStimulusActionF
-lookAtF objGID = ObjectDirectionalStimulusActionF $ \_ _ -> lookAction
+lookAtF objGID = ObjectDirectionalStimulusActionF lookAction
   where
     lookAction = do
       -- Get object info
@@ -34,11 +34,11 @@ lookAtF objGID = ObjectDirectionalStimulusActionF $ \_ _ -> lookAction
         Just relationships -> do
           generateLocationNarration obj relationships
           -- Also check what's on/in this object
-          generateContentsNarration objGID relationships
+          generateContentsNarration objGID
         Nothing -> do
           modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
           -- Still check for contents even if object has no spatial relationships
-          generateContentsNarration objGID Data.Set.empty
+          generateContentsNarration objGID
 
 generateLocationNarration :: Object
                                -> Data.Set.Set SpatialRelationship
@@ -89,20 +89,17 @@ findContainer relationships =
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
 lookInF :: GID Object -> Text -> DirectionalStimulusContainerActionF
-lookInF containerGID flavorText = DirectionalStimulusContainerActionF lookInAction
+lookInF containerGID flavorText = ObjectDirectionalStimulusContainerActionF lookInAction
   where
-    lookInAction :: GID Object -> GameComputation Identity ()
-    lookInAction containerObjGID = do
+    lookInAction :: GameComputation Identity ()
+    lookInAction = do
       -- First add the flavor text
       modifyNarration $ updateActionConsequence flavorText
-
       -- Get the contained objects
-      world <- gets _world
-      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
       containedObjects <- getContainedObjects containerGID
 
       if null containedObjects
-        then modifyNarration $ updateActionConsequence $ "It's empty."
+        then modifyNarration $ updateActionConsequence "It's empty."
         else do
           -- Get descriptions of contained objects
           descriptions <- mapM getObjectDescription containedObjects

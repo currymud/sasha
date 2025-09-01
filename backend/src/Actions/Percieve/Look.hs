@@ -5,45 +5,26 @@ module Actions.Percieve.Look (
                              , manageContainerDirectionalStimulusProcess
                              ) where
 
-import           Control.Monad.Identity                                  (Identity)
-import           Control.Monad.Reader.Class                              (asks)
-import           Data.Map.Strict                                         (Map)
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
-import qualified Data.Set
-import           Data.Text                                               (Text,
-                                                                          pack)
-import           GameState                                               (getObjectM,
-                                                                          getPlayerM,
-                                                                          modifyNarration)
-import           GameState.ActionManagement                              (lookupDirectionalContainerStimulus,
-                                                                          lookupDirectionalStimulus,
-                                                                          lookupImplicitStimulus)
-import           GameState.Perception                                    (findAccessibleObject,
-                                                                          queryPerceptionMap)
-import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
-import           Location                                                (getLocationM,
-                                                                          getPlayerLocationM)
-import           Model.GameState                                         (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
-                                                                          Config (_actionMaps),
-                                                                          DirectionalStimulusActionF (CannotSeeF),
-                                                                          DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
-                                                                          GameComputation,
-                                                                          ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                                                          ImplicitStimulusActionMap,
-                                                                          Location (_locationActionManagement, _objectSemanticMap, _title),
-                                                                          Object (_descriptives, _objectActionManagement),
-                                                                          Player (_location, _playerActions),
-                                                                          updateActionConsequence)
-import           Model.GID                                               (GID)
-import           Model.Parser.Atomics.Nouns                              (Container,
-                                                                          DirectionalStimulus)
-import           Model.Parser.Atomics.Verbs                              (DirectionalStimulusVerb,
-                                                                          ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns                           (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
-                                                                          DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                                          NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
-import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey))
-import           Relude.String.Conversion                                (ToText (toText))
+import           GameState                     (getPlayerM)
+import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
+                                                lookupDirectionalStimulus,
+                                                lookupImplicitStimulus)
+import           Location                      (getLocationM)
+import           Model.GameState               (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+                                                Config (_actionMaps),
+                                                DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
+                                                DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
+                                                GameComputation,
+                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                                ImplicitStimulusActionMap,
+                                                Player (_location, _playerActions))
+import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb)
+import           Model.Parser.Composites.Nouns (ContainerPhrase,
+                                                DirectionalStimulusNounPhrase)
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
@@ -71,10 +52,8 @@ manageDirectionalStimulusProcess dsv dsnp = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
         Just (CannotSeeF actionFunc) -> actionFunc
-        Just (
-        Just actionFunc -> do
-          location <- getPlayerLocationM
-          lookable actionFunc dsnp location
+        Just (ObjectDirectionalStimulusActionF _) -> error "Programmer Error: ObjectDirectionalStimulusActionF found in players action map"
+        Just (PlayerDirectionalStimulusActionF actionFunc) -> actionFunc dsv dsnp
 
 manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ()
 manageContainerDirectionalStimulusProcess dsv cp = do
@@ -85,54 +64,7 @@ manageContainerDirectionalStimulusProcess dsv cp = do
       actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just actionFunc -> do
-          loc <- getPlayerLocationM
-          containerLookable actionFunc cp loc
-          pure ()
-
-lookable :: DirectionalStimulusActionF
-         -> DirectionalStimulusNounPhrase
-         -> Location
-         -> GameComputation Identity ()
-lookable (DirectionalStimulusActionF actionF) dsnp _loc = do
-  -- Try direct perception map first
-  queryPerceptionMap dsnp >>= \case
-    objGIDSet | not (Data.Set.null objGIDSet) -> do
-      let firstObjGID = Data.Set.elemAt 0 objGIDSet
-      actionF dsnp firstObjGID
-    _ -> do
-      -- Try accessible objects (containers, surfaces, etc.)
-      let noun = extractNoun dsnp
-      findAccessibleObject (DirectionalStimulusKey noun) >>= \case
-        Just objGID -> actionF dsnp objGID
-        Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
-
-containerLookable :: DirectionalStimulusContainerActionF
-                  -> ContainerPhrase
-                  -> Location
-                  -> GameComputation Identity ()
-containerLookable (DirectionalStimulusContainerActionF actionF) cp _loc = do
-  -- Extract container noun key from ContainerPhrase
-  let containerNounKey = extractContainerNoun cp
-  -- Find the container object
-  findAccessibleObject containerNounKey >>= \case
-    Just objGID -> actionF objGID
-    Nothing -> modifyNarration $ updateActionConsequence "That container is not here."
-
-extractContainerNoun :: ContainerPhrase -> NounKey
-extractContainerNoun cp = case cp of
-  (SimpleContainerPhrase nounPhrase) -> extractContainerNounFromPhrase nounPhrase
-  (ContainerPhrase _ nounPhrase) -> extractContainerNounFromPhrase nounPhrase
-  where
-    extractContainerNounFromPhrase :: NounPhrase Container -> NounKey
-    extractContainerNounFromPhrase (SimpleNounPhrase container) = ContainerKey container
-    extractContainerNounFromPhrase (NounPhrase _ container) = ContainerKey container
-    extractContainerNounFromPhrase (DescriptiveNounPhrase _ container) = ContainerKey container
-    extractContainerNounFromPhrase (DescriptiveNounPhraseDet _ _ container) = ContainerKey container
-
-extractNoun :: DirectionalStimulusNounPhrase -> DirectionalStimulus
-extractNoun (DirectionalStimulusNounPhrase np) = case np of
-  SimpleNounPhrase noun             -> noun
-  NounPhrase _ noun                 -> noun
-  DescriptiveNounPhrase _ noun      -> noun
-  DescriptiveNounPhraseDet _ _ noun -> noun
+        Just (PlayerDirectionalStimulusContainerActionF actionFunc) -> do
+          actionFunc dsv cp
+        Just (CannotSeeInF actionF)-> actionF
+        Just _ -> error "Programmer Error: object action found in players action map"
