@@ -59,7 +59,7 @@ import           Model.GameState                                                
                                                                                    _objectActionManagement,
                                                                                    _playerActions,
                                                                                    _world)
-import           Model.GameState.GameStateDSL                                     (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL                                     (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareAcquisitionActionGID, DeclareConsumableGID, DeclareConsumptionActionGID, DeclareContainerGID, DeclareDirectionalActionGID, DeclareDirectionalContainerActionGID, DeclareImplicitActionGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DeclarePosturalActionGID, DeclareSomaticActionGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings                                         (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                                                        (GID (GID))
 import           Model.Parser.Atomics.Nouns                                       (Consumable,
@@ -106,6 +106,13 @@ initialBuilderState gs = BuilderState
   , _declaredConsumableGIDs = mempty
   , _declaredContainerGIDs = mempty
   , _declaredLocationGIDs = mempty
+  , _nextImplicitActionGID = 1000
+  , _nextDirectionalActionGID = 1000
+  , _nextDirectionalContainerActionGID = 1000
+  , _nextSomaticActionGID = 1000
+  , _nextAcquisitionActionGID = 1000
+  , _nextConsumptionActionGID = 1000
+  , _nextPosturalActionGID = 1000
   , _actionMaps = ActionMaps
         { _implicitStimulusActionMap = Data.Map.Strict.empty
       , _directionalStimulusActionMap = Data.Map.Strict.empty
@@ -266,6 +273,90 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       newGID <- generateLocationGID
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
+
+interpretDSL (DeclareImplicitActionGID actionF) = do
+  state <- get
+  let gidValue = _nextImplicitActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_implicitStimulusActionMap currentMaps)
+      updatedMaps = currentMaps { _implicitStimulusActionMap = updatedMap }
+  put state { _nextImplicitActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareDirectionalActionGID actionF) = do
+  state <- get
+  let gidValue = _nextDirectionalActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_directionalStimulusActionMap currentMaps)
+      updatedMaps = currentMaps { _directionalStimulusActionMap = updatedMap }
+  put state { _nextDirectionalActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareDirectionalContainerActionGID actionF) = do
+  state <- get
+  let gidValue = _nextDirectionalContainerActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_directionalStimulusContainerActionMap currentMaps)
+      updatedMaps = currentMaps { _directionalStimulusContainerActionMap = updatedMap }
+  put state { _nextDirectionalContainerActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareSomaticActionGID actionF) = do
+  state <- get
+  let gidValue = _nextSomaticActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_somaticStimulusActionMap currentMaps)
+      updatedMaps = currentMaps { _somaticStimulusActionMap = updatedMap }
+  put state { _nextSomaticActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareAcquisitionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextAcquisitionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_acquisitionActionMap currentMaps)
+      updatedMaps = currentMaps { _acquisitionActionMap = updatedMap }
+  put state { _nextAcquisitionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareConsumptionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextConsumptionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_consumptionActionMap currentMaps)
+      updatedMaps = currentMaps { _consumptionActionMap = updatedMap }
+  put state { _nextConsumptionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclarePosturalActionGID actionF) = do
+  state <- get
+  let gidValue = _nextPosturalActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_posturalActionMap currentMaps)
+      updatedMaps = currentMaps { _posturalActionMap = updatedMap }
+  put state { _nextPosturalActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
 
 interpretDSL (UpdateShortName text targetOid) =
   pure (FieldUpdateEffect (ObjectShortName targetOid text))
