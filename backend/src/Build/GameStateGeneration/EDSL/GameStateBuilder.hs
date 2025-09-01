@@ -10,6 +10,7 @@ import           Control.Monad.Except                                           
 import           Control.Monad.State.Strict                                       (MonadState,
                                                                                    State,
                                                                                    evalState,
+                                                                                   execState,
                                                                                    get,
                                                                                    gets,
                                                                                    put)
@@ -17,6 +18,7 @@ import           Data.Kind                                                      
 import qualified Data.List
 import           Data.Map.Strict                                                  (Map,
                                                                                    elems,
+                                                                                   empty,
                                                                                    findWithDefault,
                                                                                    fromList,
                                                                                    fromListWith,
@@ -40,6 +42,7 @@ import           Model.GameState                                                
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    EffectRegistry,
@@ -76,6 +79,13 @@ data BuilderState = BuilderState
   , _declaredConsumableGIDs :: Map (NounPhrase Consumable) (GID Object)
   , _declaredContainerGIDs :: Map (NounPhrase Container) (GID Object)
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
+  , _actionMaps :: ActionMaps
+  }
+
+type WorldBuilderResult :: Type
+data WorldBuilderResult = WorldBuilderResult
+  { resultGameState  :: GameState
+  , resultActionMaps :: ActionMaps
   }
 
 -- Update initial builder state
@@ -89,8 +99,31 @@ initialBuilderState gs = BuilderState
   , _declaredConsumableGIDs = mempty
   , _declaredContainerGIDs = mempty
   , _declaredLocationGIDs = mempty
+  , _actionMaps = ActionMaps
+        { _implicitStimulusActionMap = Data.Map.Strict.empty
+      , _directionalStimulusActionMap = Data.Map.Strict.empty
+      , _directionalStimulusContainerActionMap = Data.Map.Strict.empty
+      , _somaticStimulusActionMap = Data.Map.Strict.empty
+      , _acquisitionActionMap = Data.Map.Strict.empty
+      , _consumptionActionMap = Data.Map.Strict.empty
+      , _posturalActionMap = Data.Map.Strict.empty
+      }
   }
+
+getActionMaps :: BuilderState -> ActionMaps
+getActionMaps = _actionMaps
 -- Initial builder state
+
+runWorldBuilderWithMaps :: WorldBuilder a -> BuilderState -> Either WorldBuilderError WorldBuilderResult
+runWorldBuilderWithMaps (WorldBuilder computation) initialState =
+  case evalState (runExceptT computation) initialState of
+    Left err -> Left err
+    Right _ ->
+      let finalState = execState (runExceptT computation) initialState
+      in Right $ WorldBuilderResult
+           { resultGameState = _gameState finalState
+           , resultActionMaps = _actionMaps finalState
+           }
 
 type WorldBuilderError :: Type
 data WorldBuilderError
