@@ -68,12 +68,11 @@ stimulusVerbPhraseRules = do
   container <- parseRule containers Container
   adj <- parseRule adjectives Adjective
   containerPhrase <- containerPhraseRules determiner adj container
-  directionalStimulusNounPhrase <- directionalStimulusNounPhraseRules determiner adj directionalStimulusNoun
+  directionalStimulusNounPhrase <- directionalStimulusNounPhraseRules determiner adj directionalStimulusMarker directionalStimulusNoun
   somaticStimulusNounPhrase <- somaticStimulusNounPhraseRules determiner adj somaticStimulus
   rule $ ImplicitStimulusVerb <$> implicitStimulusVerb
            <|> DirectStimulusVerbPhrase
              <$> directionalStimulusVerb
-             <*> directionalStimulusMarker
              <*> directionalStimulusNounPhrase
            <|> DirectionalStimulusContainmentPhrase
                  <$> directionalStimulusVerb

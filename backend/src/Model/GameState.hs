@@ -34,12 +34,13 @@ module Model.GameState (
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
   , DirectionalStimulusActionMap
-  , DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF, _unDirectionalStimulusContainerActionF)
+  , DirectionalStimulusContainerActionF (PlayerDirectionalStimulusContainerActionF,ObjectDirectionalStimulusContainerActionF,CannotSeeInF)
   , DirectionalStimulusContainerActionMap
   , DisplayT (DisplayT, runDisplayT)
   , Effect (ActionManagementEffect, FieldUpdateEffect)
   , EffectActionKey ( ImplicitStimulusActionKey
                       , DirectionalStimulusActionKey
+                      , DirectionalStimulusContainerActionKey
                       , SomaticAccessActionKey
                       , AcquisitionalActionKey
                       , ConsumptionActionKey
@@ -190,7 +191,7 @@ data DirectionalStimulusActionF
 
 type DirectionalStimulusContainerActionF :: Type
 data DirectionalStimulusContainerActionF
-  = PlayerDirectionalStimulusContainerActionF (DirectionContainerPhrase -> GameComputation Identity ())
+  = PlayerDirectionalStimulusContainerActionF (ContainerPhrase -> GameComputation Identity ())
   | ObjectDirectionalStimulusContainerActionF (GameComputation Identity ())
   | CannotSeeInF (GameComputation Identity ())
 
@@ -348,6 +349,7 @@ type EffectActionKey :: Type
 data EffectActionKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
+  | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)

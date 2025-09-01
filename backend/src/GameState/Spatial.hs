@@ -143,7 +143,7 @@ objectMatchesNounKey nounKey oid = do
 
 -- | Helper: Check if a descriptive phrase matches a noun key
 descriptiveMatchesNounKey :: NounKey -> DirectionalStimulusNounPhrase -> Bool
-descriptiveMatchesNounKey (DirectionalStimulusKey targetNoun) (DirectionalStimulusNounPhrase np) =
+descriptiveMatchesNounKey (DirectionalStimulusKey targetNoun) (DirectionalStimulusNounPhrase _ np) =
   let nounFromPhrase = case np of
         SimpleNounPhrase dsn             -> dsn
         NounPhrase _ dsn                 -> dsn

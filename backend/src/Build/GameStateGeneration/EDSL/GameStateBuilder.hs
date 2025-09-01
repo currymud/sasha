@@ -1,69 +1,70 @@
 {-# LANGUAGE GADTs      #-}
 {-# LANGUAGE LambdaCase #-}
 module Build.GameStateGeneration.EDSL.GameStateBuilder where
-import           Control.Monad                                                (unless,
-                                                                               when)
-import           Control.Monad.Except                                         (ExceptT,
-                                                                               MonadError,
-                                                                               runExceptT,
-                                                                               throwError)
-import           Control.Monad.State.Strict                                   (MonadState,
-                                                                               State,
-                                                                               evalState,
-                                                                               get,
-                                                                               gets,
-                                                                               put)
-import           Data.Kind                                                    (Type)
+import           Control.Monad                                                    (unless,
+                                                                                   when)
+import           Control.Monad.Except                                             (ExceptT,
+                                                                                   MonadError,
+                                                                                   runExceptT,
+                                                                                   throwError)
+import           Control.Monad.State.Strict                                       (MonadState,
+                                                                                   State,
+                                                                                   evalState,
+                                                                                   get,
+                                                                                   gets,
+                                                                                   put)
+import           Data.Kind                                                        (Type)
 import qualified Data.List
-import           Data.Map.Strict                                              (Map,
-                                                                               elems,
-                                                                               findWithDefault,
-                                                                               fromList,
-                                                                               fromListWith,
-                                                                               insert,
-                                                                               insertWith,
-                                                                               lookup,
-                                                                               map,
-                                                                               member,
-                                                                               singleton,
-                                                                               unionWith)
-import           Data.Set                                                     (Set)
+import           Data.Map.Strict                                                  (Map,
+                                                                                   elems,
+                                                                                   findWithDefault,
+                                                                                   fromList,
+                                                                                   fromListWith,
+                                                                                   insert,
+                                                                                   insertWith,
+                                                                                   lookup,
+                                                                                   map,
+                                                                                   member,
+                                                                                   singleton,
+                                                                                   unionWith)
+import           Data.Set                                                         (Set)
 import qualified Data.Set
 import qualified Data.Text
-import           Debug.Trace                                                  (trace)
-import           GameState.Perception                                         (youSeeM)
-import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb (wait)
-import           Model.GameState                                              (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
-                                                                               ActionEffectMap (ActionEffectMap),
-                                                                               ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                               ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
-                                                                               ActionManagementFunctions (ActionManagementFunctions),
-                                                                               ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
-                                                                               Effect (ActionManagementEffect, FieldUpdateEffect),
-                                                                               EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
-                                                                               EffectRegistry,
-                                                                               FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
-                                                                               GameState (_effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
-                                                                               Location (_objectSemanticMap, _title),
-                                                                               Narration (Narration),
-                                                                               Object (_description, _descriptives, _shortName),
-                                                                               Player (_location),
-                                                                               SpatialRelationshipMap (SpatialRelationshipMap),
-                                                                               World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
-                                                                               _actionSystemEffectKeys,
-                                                                               _locationActionManagement,
-                                                                               _objectActionManagement,
-                                                                               _playerActions,
-                                                                               _world)
-import           Model.GameState.GameStateDSL                                 (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
-import           Model.GameState.Mappings                                     (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
-import           Model.GID                                                    (GID (GID))
-import           Model.Parser.Atomics.Nouns                                   (Consumable,
-                                                                               Container,
-                                                                               DirectionalStimulus,
-                                                                               Objective)
-import           Model.Parser.Composites.Nouns                                (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                                               NounPhrase)
+import           Debug.Trace                                                      (trace)
+import           GameState.Perception                                             (youSeeM)
+import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
+import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb     (wait)
+import           Model.GameState                                                  (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+                                                                                   ActionEffectMap (ActionEffectMap),
+                                                                                   ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                                                   ActionManagementFunctions (ActionManagementFunctions),
+                                                                                   ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                                   Effect (ActionManagementEffect, FieldUpdateEffect),
+                                                                                   EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                                   EffectRegistry,
+                                                                                   FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
+                                                                                   GameState (_effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
+                                                                                   Location (_objectSemanticMap, _title),
+                                                                                   Narration (Narration),
+                                                                                   Object (_description, _descriptives, _shortName),
+                                                                                   Player (_location),
+                                                                                   SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                                   World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                                                   _actionSystemEffectKeys,
+                                                                                   _locationActionManagement,
+                                                                                   _objectActionManagement,
+                                                                                   _playerActions,
+                                                                                   _world)
+import           Model.GameState.GameStateDSL                                     (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareConsumableGID, DeclareContainerGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.Mappings                                         (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
+import           Model.GID                                                        (GID (GID))
+import           Model.Parser.Atomics.Nouns                                       (Consumable,
+                                                                                   Container,
+                                                                                   DirectionalStimulus,
+                                                                                   Objective)
+import           Model.Parser.Composites.Nouns                                    (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                                                   NounPhrase)
 
 type BuilderState :: Type
 data BuilderState = BuilderState
@@ -484,7 +485,7 @@ interpretDSL (WithDescription text obj) = do
   pure updatedObj
 
 interpretDSL (WithDescriptives descriptives obj) = do
-  let updatedObj = obj { _descriptives = Data.Set.fromList $ fmap DirectionalStimulusNounPhrase descriptives }
+  let updatedObj = obj { _descriptives = Data.Set.fromList $ fmap (DirectionalStimulusNounPhrase at) descriptives }
   pure updatedObj
 
 -- Location field setter
@@ -498,12 +499,13 @@ interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
 actionGIDToKey :: ActionGID -> EffectActionKey
-actionGIDToKey (ImplicitActionGID gid)      = ImplicitStimulusActionKey gid
-actionGIDToKey (DirectionalActionGID gid)   = DirectionalStimulusActionKey gid
-actionGIDToKey (SomaticAccessActionGID gid) = SomaticAccessActionKey gid
-actionGIDToKey (AcquisitionActionGID gid)   = AcquisitionalActionKey gid
-actionGIDToKey (ConsumptionActionGID gid)   = ConsumptionActionKey gid
-actionGIDToKey (PosturalActionGID gid)      = PosturalActionKey gid
+actionGIDToKey (ImplicitActionGID gid)             = ImplicitStimulusActionKey gid
+actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKey gid
+actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid
+actionGIDToKey (SomaticAccessActionGID gid)        = SomaticAccessActionKey gid
+actionGIDToKey (AcquisitionActionGID gid)          = AcquisitionalActionKey gid
+actionGIDToKey (ConsumptionActionGID gid)          = ConsumptionActionKey gid
+actionGIDToKey (PosturalActionGID gid)             = PosturalActionKey gid
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
 validateObjectGIDDeclared gid = do

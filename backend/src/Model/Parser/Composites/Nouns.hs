@@ -1,5 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Model.Parser.Composites.Nouns (ContainerPhrase (SimpleContainerPhrase, ContainerPhrase ),
+module Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase ),
                                       ContainerPhraseRules (ContainerPhraseRules, _containerRule, _containerMarkerRule),
                                       DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                       DirectionalStimulusNounRules (DirectionalStimulusNounRules, _directionalStimulusRule),

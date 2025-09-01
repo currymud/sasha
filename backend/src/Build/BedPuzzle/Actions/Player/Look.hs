@@ -17,8 +17,8 @@ import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.GameState               (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
-                                                DirectionalStimulusActionF (DirectionalStimulusActionF),
-                                                DirectionalStimulusContainerActionF (DirectionalStimulusContainerActionF),
+                                                DirectionalStimulusActionF (ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
+                                                DirectionalStimulusContainerActionF (PlayerDirectionalStimulusContainerActionF),
                                                 ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
                                                 Object (_objectActionManagement),
@@ -27,7 +27,7 @@ import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
-import           Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+import           Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase),
                                                 DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
 import           Model.Parser.GCase            (NounKey (ContainerKey, DirectionalStimulusKey))
@@ -46,7 +46,7 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
             Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
 
 dsvActionEnabled :: DirectionalStimulusActionF
-dsvActionEnabled = DirectionalStimulusActionF actionEnabled
+dsvActionEnabled = PlayerDirectionalStimulusActionF actionEnabled
   where
     actionEnabled dsv dsnp = do
       -- Handle availability question here (like getF does)
@@ -62,8 +62,8 @@ dsvActionEnabled = DirectionalStimulusActionF actionEnabled
               actionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap' of
                 Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-                Just (ObjectDirectionalStimulusActionF actionFunc) -> actionFunc dsnp firstObjGID
-                Just (PlayerDirectionalStimulusActionF _) -> error "Programmer Error: PlayerDirectionalStimulusActionF found in object action map"
+                Just (ObjectDirectionalStimulusActionF actionFunc) -> actionFunc dsnp
+                Just _ -> error "Programmer Error: PlayerDirectionalStimulusActionF found in object action map"
         _ -> do
           -- Try accessible objects (containers, surfaces, etc.)
           let noun = extractNoun dsnp
@@ -76,14 +76,15 @@ dsvActionEnabled = DirectionalStimulusActionF actionEnabled
                 Just actionGID -> do
                   actionMap' <- asks (_directionalStimulusActionMap . _actionMaps)
                   case Data.Map.Strict.lookup actionGID actionMap' of
+                    Just (PlayerDirectionalStimulusActionF actionFunc) -> actionFunc dsnp
+                    Just _ -> error "Programmer Error: player action must be PlayerDirectionalStimulusActionF found in player action map"
                     Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-                    Just (DirectionalStimulusActionF actionFunc) -> actionFunc dsnp objGID
             Nothing -> modifyNarration $ updateActionConsequence "That's not here. Try something else."
 
 dsvContainerActionEnabled :: DirectionalStimulusVerb
                                -> ContainerPhrase
                                -> DirectionalStimulusContainerActionF
-dsvContainerActionEnabled dsv cp = DirectionalStimulusContainerActionF actionEnabled
+dsvContainerActionEnabled dsv cp = PlayerDirectionalStimulusContainerActionF actionEnabled
   where
     actionEnabled _oid = do
       -- This needs to be reworked since we need the ContainerPhrase, not just the oid
@@ -98,14 +99,13 @@ dsvContainerActionEnabled dsv cp = DirectionalStimulusContainerActionF actionEna
             Just actionGID -> do
               actionMap' <- asks (_directionalStimulusContainerActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap' of
+                Just (PlayerDirectionalStimulusContainerActionF actionFunc) -> actionFunc cp
+                Just _ -> error "Programmer Error: player action must be PlayerDirectionalStimulusContainerActionF found in player action map"
                 Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-                Just (DirectionalStimulusContainerActionF actionFunc) -> actionFunc objGID
         Nothing -> modifyNarration $ updateActionConsequence "That container is not here."
 
 extractContainerNoun :: ContainerPhrase -> NounKey
-extractContainerNoun cp = case cp of
-  (SimpleContainerPhrase nounPhrase) -> extractContainerNounFromPhrase nounPhrase
-  (ContainerPhrase _ nounPhrase) -> extractContainerNounFromPhrase nounPhrase
+extractContainerNoun (ContainerPhrase _ nounPhrase) = extractContainerNounFromPhrase nounPhrase
   where
     extractContainerNounFromPhrase :: NounPhrase Container -> NounKey
     extractContainerNounFromPhrase (SimpleNounPhrase container) = ContainerKey container
@@ -114,8 +114,9 @@ extractContainerNoun cp = case cp of
     extractContainerNounFromPhrase (DescriptiveNounPhraseDet _ _ container) = ContainerKey container
 
 extractNoun :: DirectionalStimulusNounPhrase -> DirectionalStimulus
-extractNoun (DirectionalStimulusNounPhrase np) = case np of
+extractNoun (DirectionalStimulusNounPhrase _ np) = case np of
   SimpleNounPhrase noun             -> noun
   NounPhrase _ noun                 -> noun
   DescriptiveNounPhrase _ noun      -> noun
   DescriptiveNounPhraseDet _ _ noun -> noun
+

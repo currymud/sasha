@@ -22,9 +22,10 @@ import           Model.Parser.Atomics.Nouns                            (Consumab
                                                                         SomaticStimulus,
                                                                         Surface (Surface))
 import           Model.Parser.Atomics.Prepositions                     (ContainmentMarker (ContainmentMarker),
+                                                                        DirectionalStimulusMarker,
                                                                         SurfaceMarker (SurfaceMarker))
 import           Model.Parser.Composites.Nouns                         (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                                        ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                                        ContainerPhrase (ContainerPhrase),
                                                                         DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                         NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                                         NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
@@ -44,8 +45,7 @@ containerPhraseRules :: Prod r Text Lexeme Determiner
 containerPhraseRules determinerRule adjRule containerRule = do
   containmentMarker <- parseRule containmentMarkers ContainmentMarker
   nounPhraseRule rules >>= \nounPhrase ->
-    rule $ SimpleContainerPhrase <$> nounPhrase
-             <|> ContainerPhrase <$> containmentMarker <*> nounPhrase
+    rule $ ContainerPhrase <$> containmentMarker <*> nounPhrase
   where
    rules
       = NounPhraseRules
@@ -53,14 +53,16 @@ containerPhraseRules determinerRule adjRule containerRule = do
           , _adjRule = adjRule
           , _nounRule = containerRule
           }
+--  DirectionalStimulusNounPhrase DirectionalStimulusMarker (NounPhrase DirectionalStimulus)
 
 directionalStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
+                                       -> Prod r Text Lexeme DirectionalStimulusMarker
                                        -> Prod r Text Lexeme DirectionalStimulus
                                        -> Grammar r (Prod r Text Lexeme DirectionalStimulusNounPhrase)
-directionalStimulusNounPhraseRules determinerRule adjRule directionalStimulusRule =
+directionalStimulusNounPhraseRules determinerRule adjRule directionalStimulusMarker directionalStimulusRule =
   nounPhraseRule rules >>= \nounPhrase ->
-    rule $ DirectionalStimulusNounPhrase <$> nounPhrase
+    rule $ DirectionalStimulusNounPhrase <$> directionalStimulusMarker <*> nounPhrase
   where
    rules
       = NounPhraseRules

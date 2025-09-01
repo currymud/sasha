@@ -80,7 +80,7 @@ import           Model.Parser.Atomics.Verbs     (AcquisitionVerb,
                                                  NegativePosturalVerb (NegativePosturalVerb),
                                                  PositivePosturalVerb (PositivePosturalVerb))
 import           Model.Parser.Composites.Nouns  (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                 ContainerPhrase (ContainerPhrase, SimpleContainerPhrase),
+                                                 ContainerPhrase (ContainerPhrase),
                                                  DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                  NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                  ObjectPhrase (ObjectPhrase),
@@ -108,8 +108,7 @@ parseAcquisitionPhrase avp =  case avp of
     in Complete $ CompleteAcquisitionRes okey ophrase skey sphrase
 
 parseConsumptionPhrase :: ConsumptionVerbPhrase -> (ConsumableNounPhrase,NounKey)
-parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp of
-  ConsumptionVerbPhrase _ ophrase ->
+parseConsumptionPhrase (ConsumptionVerbPhrase _ ophrase) = Data.Bifunctor.second ConsumableNounKey $
     let obj = case ophrase of
                (ConsumableNounPhrase (SimpleNounPhrase obj'))             -> obj'
                (ConsumableNounPhrase (NounPhrase _ obj'))                 -> obj'
@@ -120,7 +119,7 @@ parseConsumptionPhrase avp = Data.Bifunctor.second ConsumableNounKey $ case avp 
 
 
 parseDirectionalStimulusNounPhrase :: DirectionalStimulusNounPhrase -> NounKey
-parseDirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase nounPhrase) =
+parseDirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase _ nounPhrase) =
   let noun = case nounPhrase of
                SimpleNounPhrase obj             -> obj
                NounPhrase _ obj                 -> obj
@@ -152,10 +151,7 @@ parseSupportPhrase supportPhrase = case supportPhrase of
     case surfacePhrase of
       SimpleSurfacePhrase nounPhrase -> extractSurfaceNoun nounPhrase
       SurfacePhrase _ nounPhrase     -> extractSurfaceNoun nounPhrase
-  ContainerSupport containerPhrase ->
-    case containerPhrase of
-      SimpleContainerPhrase nounPhrase -> extractContainerNoun nounPhrase
-      ContainerPhrase _ nounPhrase     -> extractContainerNoun nounPhrase
+  ContainerSupport (ContainerPhrase _ nounPhrase) -> extractContainerNoun nounPhrase
   where
     extractSurfaceNoun :: NounPhrase Surface -> NounKey
     extractSurfaceNoun nounPhrase = case nounPhrase of

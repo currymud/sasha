@@ -5,9 +5,7 @@ import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Adverbs      (NegativePosturalDirection,
                                                     PositivePosturalDirection)
-import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
-                                                    DirectionalStimulusMarker,
-                                                    SourceMarker)
+import           Model.Parser.Atomics.Prepositions (SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     AdministrativeVerb,
                                                     ConsumptionVerb,
@@ -50,13 +48,12 @@ data StimulusVerbPhrase
 
 type ConsumptionVerbPhrase :: Type
 data ConsumptionVerbPhrase
-  = SimpleConsumption ConsumptionVerb
-  | ConsumptionVerbPhrase ConsumptionVerb ConsumableNounPhrase
+  = ConsumptionVerbPhrase ConsumptionVerb ConsumableNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
+
 instance ToText ConsumptionVerbPhrase where
   toText (ConsumptionVerbPhrase verb nounPhrase) =
     toText verb <> " " <> toText nounPhrase
-  toText (SimpleConsumption verb) = toText verb
 
 type PosturalVerbPhrase :: Type
 data PosturalVerbPhrase
@@ -73,8 +70,10 @@ instance ToText PosturalVerbPhrase where
 instance ToText StimulusVerbPhrase where
   toText (ImplicitStimulusVerb verb) =
     toText verb
-  toText (DirectStimulusVerbPhrase verb marker nounPhrase) =
-    toText verb <> " " <> toText marker <> " " <> toText nounPhrase
+  toText (DirectStimulusVerbPhrase verb nounPhrase) =
+    toText verb <> " " <> toText nounPhrase
+  toText (DirectionalStimulusContainmentPhrase verb containerPhrase) =
+    toText verb <> " " <> toText containerPhrase
   toText (SomaticStimulusVerbPhrase verb nounPhrase) =
     toText verb <> " " <> toText nounPhrase
 

@@ -7,7 +7,7 @@ import qualified Data.Set               as Set
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import           GameState              (getObjectM, modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (DirectionalStimulusActionF),
+import           Model.GameState        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                          GameComputation,
                                          Object (_description, _shortName),
                                          SpatialRelationship (Contains, Supports),
@@ -16,14 +16,14 @@ import           Model.GameState        (DirectionalStimulusActionF (Directional
                                          _world, updateActionConsequence)
 import           Model.GID              (GID)
 
--- | Template function for looking at objects that support or contain other objects
+-- | function for looking at objects that support or contain other objects
 -- Dynamically builds description based on current spatial relationships
 -- Takes flavor text to add personality to the base object description
 supportLookF :: GID Object -> Text -> DirectionalStimulusActionF
-supportLookF objGID flavorText = DirectionalStimulusActionF (const (const supportLook'))
+supportLookF objGID flavorText = ObjectDirectionalStimulusActionF supportLook
   where
-    supportLook' :: GameComputation Identity ()
-    supportLook' = do
+    supportLook :: GameComputation Identity ()
+    supportLook = do
       obj <- getObjectM objGID
       world <- gets _world
       let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
