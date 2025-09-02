@@ -2,54 +2,64 @@
 
 module Build.GameStateGeneration.TestDynamicActions where
 
-import           Build.GameStateGeneration.Defaults                   (defaultLocation,
-                                                                       defaultPlayer)
-import           Prelude                                              hiding
-                                                                      (take)
+import           Build.GameStateGeneration.Defaults                      (defaultLocation,
+                                                                          defaultObject,
+                                                                          defaultPlayer)
+import           Prelude                                                 hiding
+                                                                         (take)
 
 -- Import semantic wrappers - DirectionalStimulus versions
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus  (bedroomDS,
-                                                                       chairDS)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroomDS,
+                                                                          chairDS)
 
 -- Import adjectives and determiners
-import           Model.Parser.Composites.Nouns                        (NounPhrase (SimpleNounPhrase))
+import           Model.Parser.Composites.Nouns                           (NounPhrase (SimpleNounPhrase))
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                      (ActionManagement (ISAManagementKey, SSAManagementKey),
-                                                                       EffectActionKey (SomaticAccessActionKey),
-                                                                       GameState,
-                                                                       ImplicitStimulusActionF,
-                                                                       Location,
-                                                                       Player,
-                                                                       SomaticAccessActionF)
-import           Model.GameState.GameStateDSL                         (WorldDSL,
-                                                                       createImplicitStimulusEffect,
-                                                                       declareImplicitStimulusActionGID,
-                                                                       declareLocationGID,
-                                                                       declareObjectGID,
-                                                                       declareSomaticActionGID,
-                                                                       finalizeGameState,
-                                                                       linkEffectToLocation,
-                                                                       registerLocation,
-                                                                       registerPlayer,
-                                                                       withLocationBehavior,
-                                                                       withPlayerBehavior,
-                                                                       withPlayerLocation,
-                                                                       withTitle)
+import           Model.GameState                                         (ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                          DirectionalStimulusActionF,
+                                                                          EffectActionKey (SomaticAccessActionKey),
+                                                                          GameState,
+                                                                          ImplicitStimulusActionF,
+                                                                          Location,
+                                                                          Object,
+                                                                          Player,
+                                                                          SomaticAccessActionF)
+import           Model.GameState.GameStateDSL                            (WorldDSL,
+                                                                          createImplicitStimulusEffect,
+                                                                          declareDirectionalStimulusActionGID,
+                                                                          declareImplicitStimulusActionGID,
+                                                                          declareLocationGID,
+                                                                          declareObjectGID,
+                                                                          declareSomaticActionGID,
+                                                                          finalizeGameState,
+                                                                          linkEffectToLocation,
+                                                                          registerLocation,
+                                                                          registerPlayer,
+                                                                          withDescription,
+                                                                          withDescriptives,
+                                                                          withLocationBehavior,
+                                                                          withObjectBehavior,
+                                                                          withPlayerBehavior,
+                                                                          withPlayerLocation,
+                                                                          withShortName,
+                                                                          withTitle)
 -- Import verb functions
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb (isaLook)
-import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs   (saOpen)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (isaLook)
+import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
-import           Relude.Function                                      ((&))
+import           Relude.Function                                         ((&))
 
 -- Import action functions from BedPuzzle
-import           Build.BedPuzzle.Actions.Locations.Look               (lookF,
-                                                                       pitchBlackF)
-import           Build.BedPuzzle.Actions.Open                         (openEyes)
-import           Build.BedPuzzle.Actions.Player.Look                  (isvActionEnabled)
-import           Control.Monad                                        ((>=>))
-import           Model.GID                                            (GID)
+import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
+                                                                          pitchBlackF)
+import           Build.BedPuzzle.Actions.Look                            (lookAtF)
+import           Build.BedPuzzle.Actions.Open                            (openEyes)
+import           Build.BedPuzzle.Actions.Player.Look                     (isvActionEnabled)
+import           Control.Monad                                           ((>=>))
+import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
+import           Model.GID                                               (GID)
 
 
 testDynamicActionsDSL :: WorldDSL GameState
@@ -59,7 +69,7 @@ testDynamicActionsDSL = do
 
 -- Object GIDs
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
-
+  seeChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
 
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
@@ -86,3 +96,11 @@ buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+
+chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
+chairObj seeChairGID = defaultObject & chairObj'
+  where
+    chairObj' = withShortName "chair"
+                  >=> withDescription "A simple wooden chair"
+                  >=> withDescriptives [SimpleNounPhrase chairDS]
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeChairGID))

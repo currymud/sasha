@@ -66,7 +66,7 @@ data WorldDSL :: Type -> Type where
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> WorldDSL (GID Location)
 -- Add these GADT constructors to WorldDSL in Model.GameState.GameStateDSL:
   DeclareImplicitStimulusActionGID :: ImplicitStimulusActionF -> WorldDSL (GID ImplicitStimulusActionF)
-  DeclareDirectionalActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
+  DeclareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
   DeclareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> WorldDSL (GID DirectionalStimulusContainerActionF)
   DeclareSomaticActionGID :: SomaticAccessActionF -> WorldDSL (GID SomaticAccessActionF)
   DeclareAcquisitionActionGID :: AcquisitionActionF -> WorldDSL (GID AcquisitionActionF)
@@ -168,8 +168,8 @@ declareLocationGID = DeclareLocationGID
 declareImplicitStimulusActionGID :: ImplicitStimulusActionF -> WorldDSL (GID ImplicitStimulusActionF)
 declareImplicitStimulusActionGID = DeclareImplicitStimulusActionGID
 
-declareDirectionalActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
-declareDirectionalActionGID = DeclareDirectionalActionGID
+declareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> WorldDSL (GID DirectionalStimulusActionF)
+declareDirectionalStimulusActionGID = DeclareDirectionalStimulusActionGID
 
 declareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> WorldDSL (GID DirectionalStimulusContainerActionF)
 declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
