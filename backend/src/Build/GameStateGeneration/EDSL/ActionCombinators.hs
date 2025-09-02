@@ -22,8 +22,8 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb as DSV
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           declareAcquisitionActionGID,
-                                                                          declareDirectionalActionGID,
                                                                           declareDirectionalContainerActionGID,
+                                                                          declareDirectionalStimulusActionGID,
                                                                           withObjectBehavior)
 
 -- Helper
@@ -37,14 +37,14 @@ addNarration msg = modifyNarration (updateActionConsequence msg)
 -- Look AT an object (uses existing lookAtF)
 lookable :: GID Object -> Object -> WorldDSL Object
 lookable objGID obj = do
-  actionGID <- declareDirectionalActionGID (lookAtF objGID)
+  actionGID <- declareDirectionalStimulusActionGID (lookAtF objGID)
   withObjectBehavior obj (DSAManagementKey DSV.look actionGID)
 
 -- Can't look at
 notLookable :: Text -> Object -> WorldDSL Object
 notLookable denialMsg obj = do
   let action = CannotSeeF (addNarration denialMsg)
-  actionGID <- declareDirectionalActionGID action
+  actionGID <- declareDirectionalStimulusActionGID action
   withObjectBehavior obj (DSAManagementKey DSV.look actionGID)
 
 -- Look IN a container (uses existing lookInF)
