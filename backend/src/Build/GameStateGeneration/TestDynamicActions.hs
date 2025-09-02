@@ -65,6 +65,7 @@ import           Relude.Function                                                
 
 -- Import action functions from BedPuzzle
 import           Build.BedPuzzle.Actions.Get                                      (getF)
+import           Build.BedPuzzle.Actions.Get.Constructors                         (getFromSupportF)
 import           Build.BedPuzzle.Actions.Locations.Look                           (lookF,
                                                                                    pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                                     (lookAtF)
@@ -78,7 +79,8 @@ import           Build.BedPuzzle.Actions.Player.Look                            
 import           Control.Monad                                                    ((>=>))
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
-                                                                                   floorOB)
+                                                                                   floorOB,
+                                                                                   robeOB)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook,
@@ -105,7 +107,7 @@ testDynamicActionsDSL = do
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedFGID <- declareAcquisitionActionGID getRobeDeniedF
-  getRobeFGID <- declareAcquisitionActionGID (getF robeGID)
+  getRobeFGID <- declareAcquisitionActionGID (getFromSupportF robeGID)
 
   lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
 
@@ -113,6 +115,7 @@ testDynamicActionsDSL = do
 
   registerObject chairGID (chairObj whatChairGID)
   registerObject floorGID (floorObj lookFloorGID)
+  registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedFGID)
 
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
@@ -120,14 +123,16 @@ testDynamicActionsDSL = do
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
+
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
   placeObject bedroomGID chairGID chairDS chairOB
   placeObject bedroomGID floorGID floorDS floorOB
+  placeObject bedroomGID robeGID robeDS robeOB
 
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
-
+  registerSpatial robeGID (SupportedBy chairGID)
 --  registerObject floorGID (floorObj id)
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID
 
@@ -137,11 +142,15 @@ testDynamicActionsDSL = do
   openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
 
+  robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
+  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
+
+
   registerPlayer player
   setPerceptionMap
     [ (DirectionalStimulusNounPhrase at (SimpleNounPhrase chairDS), [chairGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase tableDS), [tableGID])
---    , (DirectionalStimulusNounPhrase (SimpleNounPhrase robeDS), [robeGID])
+    , (DirectionalStimulusNounPhrase at (SimpleNounPhrase robeDS), [robeGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase mailDS), [mailGID])
     , (DirectionalStimulusNounPhrase at (SimpleNounPhrase floorDS), [floorGID])
     ]
