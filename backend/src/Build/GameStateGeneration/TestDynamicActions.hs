@@ -35,6 +35,8 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           finalizeGameState,
                                                                           linkEffectToLocation,
                                                                           registerLocation,
+                                                                          registerObject,
+                                                                          registerObjectToLocation,
                                                                           registerPlayer,
                                                                           withDescription,
                                                                           withDescriptives,
@@ -60,6 +62,9 @@ import           Build.BedPuzzle.Actions.Player.Look                     (isvAct
 import           Control.Monad                                           ((>=>))
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look)
 import           Model.GID                                               (GID)
+import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus,
+                                                                          Objective)
+import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey))
 
 
 testDynamicActionsDSL :: WorldDSL GameState
@@ -82,6 +87,7 @@ testDynamicActionsDSL = do
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
   registerPlayer player
   registerLocation bedroomGID (buildLocation pitchBlackGID)
+  registerObject chairGID (chairObj seeChairGID)
 
   finalizeGameState
 
@@ -104,3 +110,8 @@ chairObj seeChairGID = defaultObject & chairObj'
                   >=> withDescription "A simple wooden chair"
                   >=> withDescriptives [SimpleNounPhrase chairDS]
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look seeChairGID))
+
+placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
+placeObject lid oid ds obj = do
+  registerObjectToLocation lid oid (DirectionalStimulusKey ds)
+  registerObjectToLocation lid oid (ObjectiveKey obj)
