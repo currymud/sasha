@@ -48,13 +48,21 @@ testDynamicActionsDSL = do
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
+
+  let bedroomLoc' loc = withTitle "bedroom in bed" loc
+                        >>= \l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID)
+  registerLocation bedroomGID (bedroomLoc' defaultLocation)
+
   -- Build and register location
+    {-
   registerLocation bedroomGID (defaultLocation
                                 & withTitle "bedroom in bed"
                                 >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackGID)))
+                                -}
   -- Build and register player with the open eyes action
+    {-
   player <- withPlayerLocation defaultPlayer bedroomGID
               >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
   registerPlayer player
-
+-}
   finalizeGameState
