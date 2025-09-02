@@ -82,6 +82,7 @@ library
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.Effects.Perception.Look
       Build.GameStateGeneration.BedroomWorldDSL
+      Build.GameStateGeneration.TestDynamicActions
       Build.GameStateGeneration.EDSL.GameStateBuilder
       Build.GameStateGeneration.EDSL.ActionCombinators
       Build.Identifiers.Effects
