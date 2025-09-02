@@ -11,14 +11,16 @@ import           Prelude                                                        
 -- Import semantic wrappers - DirectionalStimulus versions
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus              (bedroomDS,
                                                                                    chairDS,
-                                                                                   floorDS)
+                                                                                   floorDS,
+                                                                                   robeDS)
 
 -- Import adjectives and determiners
 import           Model.Parser.Composites.Nouns                                    (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                                    NounPhrase (SimpleNounPhrase))
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                                  (ActionManagement (DSAManagementKey, ISAManagementKey, SSAManagementKey),
+import           Model.GameState                                                  (AcquisitionActionF,
+                                                                                   ActionManagement (AVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                                    DirectionalStimulusActionF,
                                                                                    EffectActionKey (SomaticAccessActionKey),
                                                                                    GameState,
@@ -31,6 +33,7 @@ import           Model.GameState                                                
 import           Model.GameState.GameStateDSL                                     (WorldDSL,
                                                                                    createDirectionalStimulusEffect,
                                                                                    createImplicitStimulusEffect,
+                                                                                   declareAcquisitionActionGID,
                                                                                    declareDirectionalStimulusActionGID,
                                                                                    declareImplicitStimulusActionGID,
                                                                                    declareLocationGID,
@@ -61,11 +64,14 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs             
 import           Relude.Function                                                  ((&))
 
 -- Import action functions from BedPuzzle
+import           Build.BedPuzzle.Actions.Get                                      (getF)
 import           Build.BedPuzzle.Actions.Locations.Look                           (lookF,
                                                                                    pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                                     (lookAtF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look                       (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look                        (whatPill)
+import           Build.BedPuzzle.Actions.Objects.Robe.Get                         (getRobeDeniedF)
+import           Build.BedPuzzle.Actions.Objects.Robe.Look                        (notEvenRobeF)
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                              (dsvActionEnabled,
                                                                                    isvActionEnabled)
@@ -74,6 +80,7 @@ import qualified Data.Set
 import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
                                                                                    floorOB)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook,
                                                                                    look)
 import           Model.GID                                                        (GID)
@@ -90,9 +97,18 @@ testDynamicActionsDSL = do
 -- Object GIDs
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
+  robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
+
   lookAtChairFGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
   whatChairGID <- declareDirectionalStimulusActionGID whatChairF
+
+  lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
+  notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
+  getRobeDeniedFGID <- declareAcquisitionActionGID getRobeDeniedF
+  getRobeFGID <- declareAcquisitionActionGID (getF robeGID)
+
   lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
+
   whatPillFGID <- declareDirectionalStimulusActionGID whatPill
 
   registerObject chairGID (chairObj whatChairGID)
@@ -148,6 +164,19 @@ buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID =
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (DSAManagementKey look dsaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+
+robeObj :: GID DirectionalStimulusActionF  -- Eyes closed look response
+        -> GID AcquisitionActionF          -- Can't get (eyes closed/not standing)
+        -> WorldDSL Object
+robeObj cannotSeeRobeGID cannotGetRobeGID =
+  defaultObject & robeObj'
+  where
+    robeObj' = withShortName "comfortable robe"
+                 >=> withDescription "The robe is draped on the chair"
+                 >=> withDescriptives [SimpleNounPhrase robeDS]
+                 >=> (\o -> withObjectBehavior o (DSAManagementKey look cannotSeeRobeGID))
+                 >=> (\o -> withObjectBehavior o (AVManagementKey get cannotGetRobeGID))
+
 
 chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
 chairObj lookResponseGID = defaultObject & chairObj'
