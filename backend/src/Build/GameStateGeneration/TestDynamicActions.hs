@@ -29,6 +29,7 @@ import           Model.GameState                                                
                                                                                    SomaticAccessActionF,
                                                                                    SpatialRelationship (SupportedBy, Supports))
 import           Model.GameState.GameStateDSL                                     (WorldDSL,
+                                                                                   createDirectionalStimulusEffect,
                                                                                    createImplicitStimulusEffect,
                                                                                    declareDirectionalStimulusActionGID,
                                                                                    declareImplicitStimulusActionGID,
@@ -37,6 +38,7 @@ import           Model.GameState.GameStateDSL                                   
                                                                                    declareSomaticActionGID,
                                                                                    finalizeGameState,
                                                                                    linkEffectToLocation,
+                                                                                   linkEffectToObject,
                                                                                    registerLocation,
                                                                                    registerObject,
                                                                                    registerObjectToLocation,
@@ -62,6 +64,8 @@ import           Relude.Function                                                
 import           Build.BedPuzzle.Actions.Locations.Look                           (lookF,
                                                                                    pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                                     (lookAtF)
+import           Build.BedPuzzle.Actions.Objects.Chair.Look                       (whatChairF)
+import           Build.BedPuzzle.Actions.Objects.Pill.Look                        (whatPill)
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                              (isvActionEnabled)
 import           Control.Monad                                                    ((>=>))
@@ -84,9 +88,12 @@ testDynamicActionsDSL = do
 -- Object GIDs
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
-  seeChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
+  lookAtChairFGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
+  whatChairGID <- declareDirectionalStimulusActionGID whatChairF
   lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
-  registerObject chairGID (chairObj seeChairGID)
+  whatPillFGID <- declareDirectionalStimulusActionGID whatPill
+
+  registerObject chairGID (chairObj whatChairGID)
   registerObject floorGID (floorObj lookFloorGID)
 
   -- Generate open eyes action GIDs dynamically
@@ -94,6 +101,7 @@ testDynamicActionsDSL = do
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
+  registerLocation bedroomGID (buildLocation pitchBlackGID)
 
   placeObject bedroomGID chairGID chairDS chairOB
   placeObject bedroomGID floorGID floorDS floorOB
@@ -106,8 +114,11 @@ testDynamicActionsDSL = do
 
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
+
+  openEyesLookChangesLookChair <- createDirectionalStimulusEffect look lookAtChairFGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) chairGID openEyesLookChangesLookChair
+
   registerPlayer player
-  registerLocation bedroomGID (buildLocation pitchBlackGID)
   setPerceptionMap
     [ (DirectionalStimulusNounPhrase at (SimpleNounPhrase chairDS), [chairGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase tableDS), [tableGID])
@@ -131,12 +142,12 @@ buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID =
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
 
 chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
-chairObj seeChairGID = defaultObject & chairObj'
+chairObj lookResponseGID = defaultObject & chairObj'
   where
     chairObj' = withShortName "chair"
                   >=> withDescription "A simple wooden chair"
                   >=> withDescriptives [SimpleNounPhrase chairDS]
-                  >=> (\o -> withObjectBehavior o (DSAManagementKey look seeChairGID))
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look lookResponseGID))
 
 placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
 placeObject lid oid ds obj = do
