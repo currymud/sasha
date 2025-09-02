@@ -15,16 +15,19 @@ import           Model.Parser.Composites.Nouns                        (NounPhras
 
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                      (ActionManagement (ISAManagementKey, SSAManagementKey),
+                                                                       EffectActionKey (SomaticAccessActionKey),
                                                                        GameState,
                                                                        ImplicitStimulusActionF,
                                                                        Location,
                                                                        Player,
                                                                        SomaticAccessActionF)
 import           Model.GameState.GameStateDSL                         (WorldDSL,
+                                                                       createImplicitStimulusEffect,
                                                                        declareImplicitStimulusActionGID,
                                                                        declareLocationGID,
                                                                        declareSomaticActionGID,
                                                                        finalizeGameState,
+                                                                       linkEffectToLocation,
                                                                        registerLocation,
                                                                        registerPlayer,
                                                                        withLocationBehavior,
@@ -55,18 +58,14 @@ testDynamicActionsDSL = do
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
-
-  let bedroomLoc' loc = withTitle "bedroom in bed" loc
-                        >>= \l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID)
--- You need to declare an enabled look action for the player
+  lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook) -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
-
--- Build the player with look capability
-
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID
 
+  openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
   registerPlayer player
-  registerLocation bedroomGID (bedroomLoc' defaultLocation)
+  registerLocation bedroomGID (buildLocation pitchBlackGID)
 
   finalizeGameState
 
