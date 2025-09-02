@@ -53,7 +53,6 @@ testDynamicActionsDSL = do
 
   let bedroomLoc' loc = withTitle "bedroom in bed" loc
                         >>= \l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID)
-  registerLocation bedroomGID (bedroomLoc' defaultLocation)
 -- You need to declare an enabled look action for the player
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook) -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
 
@@ -61,6 +60,8 @@ testDynamicActionsDSL = do
   player <- withPlayerLocation defaultPlayer bedroomGID
             >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
             >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+
   registerPlayer player
+  registerLocation bedroomGID (bedroomLoc' defaultLocation)
 
   finalizeGameState
