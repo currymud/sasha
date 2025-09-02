@@ -35,7 +35,8 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs   (saOpen)
 import           Relude.Function                                      ((&))
 
 -- Import action functions from BedPuzzle
-import           Build.BedPuzzle.Actions.Locations.Look               (pitchBlackF)
+import           Build.BedPuzzle.Actions.Locations.Look               (lookF,
+                                                                       pitchBlackF)
 import           Build.BedPuzzle.Actions.Open                         (openEyes)
 import           Control.Monad                                        ((>=>))
 
@@ -52,17 +53,13 @@ testDynamicActionsDSL = do
   let bedroomLoc' loc = withTitle "bedroom in bed" loc
                         >>= \l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID)
   registerLocation bedroomGID (bedroomLoc' defaultLocation)
+-- You need to declare an enabled look action for the player
+  isaEnabledLookGID <- declareImplicitStimulusActionGID lookF  -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
 
-  -- Build and register location
-    {-
-  registerLocation bedroomGID (defaultLocation
-                                & withTitle "bedroom in bed"
-                                >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook pitchBlackGID)))
-                                -}
-  -- Build and register player with the open eyes action
-    {-
+-- Build the player with look capability
   player <- withPlayerLocation defaultPlayer bedroomGID
-              >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+            >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+            >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
   registerPlayer player
--}
+
   finalizeGameState
