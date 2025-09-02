@@ -10,7 +10,8 @@ import           Prelude                                                        
 
 -- Import semantic wrappers - DirectionalStimulus versions
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus              (bedroomDS,
-                                                                                   chairDS)
+                                                                                   chairDS,
+                                                                                   floorDS)
 
 -- Import adjectives and determiners
 import           Model.Parser.Composites.Nouns                                    (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -25,7 +26,8 @@ import           Model.GameState                                                
                                                                                    Location,
                                                                                    Object,
                                                                                    Player,
-                                                                                   SomaticAccessActionF)
+                                                                                   SomaticAccessActionF,
+                                                                                   SpatialRelationship (SupportedBy, Supports))
 import           Model.GameState.GameStateDSL                                     (WorldDSL,
                                                                                    createImplicitStimulusEffect,
                                                                                    declareDirectionalStimulusActionGID,
@@ -39,6 +41,7 @@ import           Model.GameState.GameStateDSL                                   
                                                                                    registerObject,
                                                                                    registerObjectToLocation,
                                                                                    registerPlayer,
+                                                                                   registerSpatial,
                                                                                    setPerceptionMap,
                                                                                    withDescription,
                                                                                    withDescriptives,
@@ -62,7 +65,9 @@ import           Build.BedPuzzle.Actions.Look                                   
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                              (isvActionEnabled)
 import           Control.Monad                                                    ((>=>))
-import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB)
+import qualified Data.Set
+import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
+                                                                                   floorOB)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (look)
 import           Model.GID                                                        (GID)
@@ -77,28 +82,38 @@ testDynamicActionsDSL = do
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
 
 -- Object GIDs
+  floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   seeChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
+  lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
+  registerObject chairGID (chairObj seeChairGID)
+  registerObject floorGID (floorObj lookFloorGID)
 
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookFGID <- declareImplicitStimulusActionGID lookF
-  isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook) -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
+  isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
+
+  placeObject bedroomGID chairGID chairDS chairOB
+  placeObject bedroomGID floorGID floorDS floorOB
+
+  registerSpatial chairGID (SupportedBy floorGID)
+  registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
+
+--  registerObject floorGID (floorObj id)
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID
 
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
   registerPlayer player
   registerLocation bedroomGID (buildLocation pitchBlackGID)
-  registerObject chairGID (chairObj seeChairGID)
-  placeObject bedroomGID chairGID chairDS chairOB  -- ADD THIS LINE
   setPerceptionMap
     [ (DirectionalStimulusNounPhrase at (SimpleNounPhrase chairDS), [chairGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase tableDS), [tableGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase robeDS), [robeGID])
 --    , (DirectionalStimulusNounPhrase (SimpleNounPhrase mailDS), [mailGID])
---    , (DirectionalStimulusNounPhrase (SimpleNounPhrase floorDS), [floorGID])
+    , (DirectionalStimulusNounPhrase at (SimpleNounPhrase floorDS), [floorGID])
     ]
 
   finalizeGameState
@@ -127,3 +142,11 @@ placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective ->
 placeObject lid oid ds obj = do
   registerObjectToLocation lid oid (DirectionalStimulusKey ds)
   registerObjectToLocation lid oid (ObjectiveKey obj)
+
+floorObj :: GID DirectionalStimulusActionF -> WorldDSL Object
+floorObj lookFloorGID = defaultObject & floorObj'
+  where
+    floorObj' = withShortName "floor"
+                  >=> withDescription "The bedroom floor"
+                  >=> withDescriptives [SimpleNounPhrase floorDS]
+                  >=> (\o -> withObjectBehavior o (DSAManagementKey look lookFloorGID))
