@@ -15,7 +15,11 @@ import           Model.Parser.Composites.Nouns                        (NounPhras
 
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                      (ActionManagement (ISAManagementKey, SSAManagementKey),
-                                                                       GameState)
+                                                                       GameState,
+                                                                       ImplicitStimulusActionF,
+                                                                       Location,
+                                                                       Player,
+                                                                       SomaticAccessActionF)
 import           Model.GameState.GameStateDSL                         (WorldDSL,
                                                                        declareImplicitStimulusActionGID,
                                                                        declareLocationGID,
@@ -40,6 +44,7 @@ import           Build.BedPuzzle.Actions.Locations.Look               (lookF,
 import           Build.BedPuzzle.Actions.Open                         (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                  (isvActionEnabled)
 import           Control.Monad                                        ((>=>))
+import           Model.GID                                            (GID)
 
 
 testDynamicActionsDSL :: WorldDSL GameState
@@ -57,11 +62,22 @@ testDynamicActionsDSL = do
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook) -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
 
 -- Build the player with look capability
-  player <- withPlayerLocation defaultPlayer bedroomGID
-            >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
-            >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID
 
   registerPlayer player
   registerLocation bedroomGID (bedroomLoc' defaultLocation)
 
   finalizeGameState
+
+buildLocation :: GID ImplicitStimulusActionF -> WorldDSL Location
+buildLocation pitchBlackGID = defaultLocation & bedroomLoc'
+  where
+    bedroomLoc' = withTitle "bedroom in bed"
+                    >=> (\l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID))
+
+buildBedroomPlayer :: GID Location -> GID ImplicitStimulusActionF -> GID SomaticAccessActionF -> WorldDSL Player
+buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID =
+  withPlayerLocation defaultPlayer bedroomGID
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
