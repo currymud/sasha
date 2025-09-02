@@ -11,7 +11,7 @@ import           Build.GameStateGeneration.EDSL.GameStateBuilder (WorldBuilderRe
 import           Build.GameStateGeneration.TestDynamicActions    (testDynamicActionsDSL)
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
-import           Model.GameState                                 (ActionMaps (ActionMaps),
+import           Model.GameState                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                   Config (Config, _actionMaps),
                                                                   GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)
@@ -37,7 +37,19 @@ gameState :: GameState
 gameState = resultGameState buildResult
 
 config :: Config
-config = Config { _actionMaps = resultActionMaps buildResult }
+config = Config { _actionMaps = forcedMaps }
+  where
+    maps = resultActionMaps buildResult
+    forcedMaps = ActionMaps
+      { _implicitStimulusActionMap = Data.Map.Strict.keys (_implicitStimulusActionMap maps) `deepseq` _implicitStimulusActionMap maps
+      , _directionalStimulusActionMap = Data.Map.Strict.keys (_directionalStimulusActionMap maps) `deepseq` _directionalStimulusActionMap maps
+      , _directionalStimulusContainerActionMap = Data.Map.Strict.keys (_directionalStimulusContainerActionMap maps) `deepseq` _directionalStimulusContainerActionMap maps
+      , _somaticStimulusActionMap = Data.Map.Strict.keys (_somaticStimulusActionMap maps) `deepseq` _somaticStimulusActionMap maps
+      , _acquisitionActionMap = Data.Map.Strict.keys (_acquisitionActionMap maps) `deepseq` _acquisitionActionMap maps
+      , _consumptionActionMap = Data.Map.Strict.keys (_consumptionActionMap maps) `deepseq` _consumptionActionMap maps
+      , _posturalActionMap = Data.Map.Strict.keys (_posturalActionMap maps) `deepseq` _posturalActionMap maps
+      }
+
 -- Build GameState using the DSL!
   {-
 gameState :: GameState
