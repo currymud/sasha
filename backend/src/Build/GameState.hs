@@ -10,6 +10,7 @@ import           Build.GameStateGeneration.EDSL.GameStateBuilder (WorldBuilderRe
                                                                   runWorldBuilderWithMaps)
 import           Build.GameStateGeneration.TestDynamicActions    (testDynamicActionsDSL)
 import qualified Data.Map.Strict
+import           Debug.Trace                                     (trace)
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                   Config (Config, _actionMaps),
@@ -36,8 +37,12 @@ buildResult = case runWorldBuilderWithMaps (interpretDSL testDynamicActionsDSL) 
 gameState :: GameState
 gameState = resultGameState buildResult
 
+  {-
 config :: Config
 config = Config { _actionMaps = forcedMaps }
+-}
+config :: Config
+config = Config { _actionMaps = trace ("Config maps size: " ++ show (Data.Map.Strict.size (_directionalStimulusActionMap forcedMaps))) forcedMaps }
   where
     maps = resultActionMaps buildResult
     forcedMaps = ActionMaps
