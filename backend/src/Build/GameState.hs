@@ -3,9 +3,12 @@ module Build.GameState where
 import           Build.GameStateGeneration.Defaults              (defaultNarration,
                                                                   defaultPlayer,
                                                                   defaultWorld)
-import           Build.GameStateGeneration.EDSL.GameStateBuilder (initialBuilderState,
+import           Build.GameStateGeneration.EDSL.GameStateBuilder (WorldBuilderResult (resultActionMaps, resultGameState),
+                                                                  initialBuilderState,
                                                                   interpretDSL,
-                                                                  runWorldBuilder)
+                                                                  runWorldBuilder,
+                                                                  runWorldBuilderWithMaps)
+import           Build.GameStateGeneration.TestDynamicActions    (testDynamicActionsDSL)
 import qualified Data.Map.Strict
 import           Evaluators.Player.General                       (eval)
 import           Model.GameState                                 (ActionMaps (ActionMaps),
@@ -13,6 +16,28 @@ import           Model.GameState                                 (ActionMaps (Ac
                                                                   GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
+
+buildResult :: WorldBuilderResult
+buildResult = case runWorldBuilderWithMaps (interpretDSL testDynamicActionsDSL) (initialBuilderState defaultGameState) of
+  Left err     -> error $ "Failed to build game state: " ++ show err
+  Right result -> result
+  where
+    defaultGameState = GameState
+      { _world = defaultWorld
+      , _player = defaultPlayer
+      , _effectRegistry = Data.Map.Strict.empty
+      , _systemEffectRegistry = Data.Map.Strict.empty
+      , _triggerRegistry = Data.Map.Strict.empty
+      , _evaluation = eval
+      , _narration = defaultNarration
+      , _actionSystemEffectKeys = mempty
+      }
+
+gameState :: GameState
+gameState = resultGameState buildResult
+
+config :: Config
+config = Config { _actionMaps = resultActionMaps buildResult }
 -- Build GameState using the DSL!
   {-
 gameState :: GameState
