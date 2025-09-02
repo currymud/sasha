@@ -8,7 +8,8 @@ import           Prelude                                              hiding
                                                                       (take)
 
 -- Import semantic wrappers - DirectionalStimulus versions
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus  (bedroomDS)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus  (bedroomDS,
+                                                                       chairDS)
 
 -- Import adjectives and determiners
 import           Model.Parser.Composites.Nouns                        (NounPhrase (SimpleNounPhrase))
@@ -25,6 +26,7 @@ import           Model.GameState.GameStateDSL                         (WorldDSL,
                                                                        createImplicitStimulusEffect,
                                                                        declareImplicitStimulusActionGID,
                                                                        declareLocationGID,
+                                                                       declareObjectGID,
                                                                        declareSomaticActionGID,
                                                                        finalizeGameState,
                                                                        linkEffectToLocation,
@@ -54,6 +56,10 @@ testDynamicActionsDSL :: WorldDSL GameState
 testDynamicActionsDSL = do
   -- Declare location GID
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
+
+-- Object GIDs
+  chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
+
 
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
