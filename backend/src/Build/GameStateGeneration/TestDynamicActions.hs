@@ -15,12 +15,14 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus            
                                                                                    robeDS)
 
 -- Import adjectives and determiners
-import           Model.Parser.Composites.Nouns                                    (DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                                                   NounPhrase (SimpleNounPhrase))
+import           Model.Parser.Composites.Nouns                                    (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                                   DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                                                   NounPhrase (SimpleNounPhrase),
+                                                                                   ObjectPhrase (ObjectPhrase))
 
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                                  (AcquisitionActionF,
-                                                                                   ActionManagement (AVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                                   ActionManagement (AAManagementKey, AVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                                    DirectionalStimulusActionF,
                                                                                    EffectActionKey (SomaticAccessActionKey),
                                                                                    GameState,
@@ -28,9 +30,11 @@ import           Model.GameState                                                
                                                                                    Location,
                                                                                    Object,
                                                                                    Player,
+                                                                                   PlayerKey (PlayerKeyObject),
                                                                                    SomaticAccessActionF,
                                                                                    SpatialRelationship (SupportedBy, Supports))
 import           Model.GameState.GameStateDSL                                     (WorldDSL,
+                                                                                   createAcquisitionVerbPhraseEffect,
                                                                                    createDirectionalStimulusEffect,
                                                                                    createImplicitStimulusEffect,
                                                                                    declareAcquisitionActionGID,
@@ -42,6 +46,7 @@ import           Model.GameState.GameStateDSL                                   
                                                                                    finalizeGameState,
                                                                                    linkEffectToLocation,
                                                                                    linkEffectToObject,
+                                                                                   linkEffectToPlayer,
                                                                                    registerLocation,
                                                                                    registerObject,
                                                                                    registerObjectToLocation,
@@ -64,7 +69,8 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs             
 import           Relude.Function                                                  ((&))
 
 -- Import action functions from BedPuzzle
-import           Build.BedPuzzle.Actions.Get                                      (getF)
+import           Build.BedPuzzle.Actions.Get                                      (getDeniedF,
+                                                                                   getF)
 import           Build.BedPuzzle.Actions.Get.Constructors                         (getFromSupportF)
 import           Build.BedPuzzle.Actions.Locations.Look                           (lookF,
                                                                                    pitchBlackF)
@@ -78,18 +84,38 @@ import           Build.BedPuzzle.Actions.Player.Look                            
                                                                                    isvActionEnabled)
 import           Control.Monad                                                    ((>=>))
 import qualified Data.Set
+import           Grammar.Parser.Partitions.Nouns.Consumables                      (pill,
+                                                                                   pillCS)
 import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
                                                                                    floorOB,
+                                                                                   mailOB,
+                                                                                   pillOB,
                                                                                    robeOB)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
-import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get,
+                                                                                   take)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs                 (takeCV)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook,
                                                                                    look)
 import           Model.GID                                                        (GID)
 import           Model.Parser.Atomics.Nouns                                       (DirectionalStimulus,
                                                                                    Objective)
+import           Model.Parser.Composites.Verbs                                    (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                                   ConsumptionVerbPhrase (ConsumptionVerbPhrase))
 import           Model.Parser.GCase                                               (NounKey (DirectionalStimulusKey, ObjectiveKey))
 
+-- =============================================================================
+-- VERB PHRASES
+-- =============================================================================
+
+takePillCVP :: ConsumptionVerbPhrase
+takePillCVP = ConsumptionVerbPhrase takeCV (ConsumableNounPhrase (SimpleNounPhrase pillCS))
+
+getMailAVP :: AcquisitionVerbPhrase
+getMailAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase mailOB))
+
+getRobeAVP :: AcquisitionVerbPhrase
+getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase robeOB))
 
 testDynamicActionsDSL :: WorldDSL GameState
 testDynamicActionsDSL = do
@@ -119,6 +145,8 @@ testDynamicActionsDSL = do
 
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
+  getDeniedFGID <- declareAcquisitionActionGID getDeniedF
+  playerGetFGID <- declareAcquisitionActionGID getF
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
@@ -132,9 +160,10 @@ testDynamicActionsDSL = do
 
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
+  registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial robeGID (SupportedBy chairGID)
 --  registerObject floorGID (floorObj id)
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
 
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
@@ -144,6 +173,12 @@ testDynamicActionsDSL = do
 
   robeOpenEyesLookChangesLookRobe <- createDirectionalStimulusEffect look lookAtRobeFGID
   linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesLookRobe
+
+  openEyesLookChangesGetRobe <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
+  linkEffectToObject ( SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangesGetRobe
+
+  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
+  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
 
 
   registerPlayer player
@@ -167,12 +202,15 @@ buildBedroomPlayer :: GID Location
                         -> GID ImplicitStimulusActionF
                         -> GID SomaticAccessActionF
                         -> GID DirectionalStimulusActionF
+                        -> GID AcquisitionActionF
                         -> WorldDSL Player
-buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID =
+buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID getRobeFGID =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (DSAManagementKey look dsaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
 
 robeObj :: GID DirectionalStimulusActionF  -- Eyes closed look response
         -> GID AcquisitionActionF          -- Can't get (eyes closed/not standing)
