@@ -67,13 +67,15 @@ import           Build.BedPuzzle.Actions.Look                                   
 import           Build.BedPuzzle.Actions.Objects.Chair.Look                       (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look                        (whatPill)
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
-import           Build.BedPuzzle.Actions.Player.Look                              (isvActionEnabled)
+import           Build.BedPuzzle.Actions.Player.Look                              (dsvActionEnabled,
+                                                                                   isvActionEnabled)
 import           Control.Monad                                                    ((>=>))
 import qualified Data.Set
 import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
                                                                                    floorOB)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
-import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (look)
+import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook,
+                                                                                   look)
 import           Model.GID                                                        (GID)
 import           Model.Parser.Atomics.Nouns                                       (DirectionalStimulus,
                                                                                    Objective)
@@ -101,6 +103,7 @@ testDynamicActionsDSL = do
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
+  dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
   placeObject bedroomGID chairGID chairDS chairOB
@@ -110,7 +113,7 @@ testDynamicActionsDSL = do
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
 
 --  registerObject floorGID (floorObj id)
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID
 
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
@@ -135,10 +138,15 @@ buildLocation pitchBlackGID = defaultLocation & bedroomLoc'
     bedroomLoc' = withTitle "bedroom in bed"
                     >=> (\l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID))
 
-buildBedroomPlayer :: GID Location -> GID ImplicitStimulusActionF -> GID SomaticAccessActionF -> WorldDSL Player
-buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID =
+buildBedroomPlayer :: GID Location
+                        -> GID ImplicitStimulusActionF
+                        -> GID SomaticAccessActionF
+                        -> GID DirectionalStimulusActionF
+                        -> WorldDSL Player
+buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (DSAManagementKey look dsaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
 
 chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
