@@ -38,6 +38,7 @@ import           Relude.Function                                      ((&))
 import           Build.BedPuzzle.Actions.Locations.Look               (lookF,
                                                                        pitchBlackF)
 import           Build.BedPuzzle.Actions.Open                         (openEyes)
+import           Build.BedPuzzle.Actions.Player.Look                  (isvActionEnabled)
 import           Control.Monad                                        ((>=>))
 
 
@@ -54,7 +55,7 @@ testDynamicActionsDSL = do
                         >>= \l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID)
   registerLocation bedroomGID (bedroomLoc' defaultLocation)
 -- You need to declare an enabled look action for the player
-  isaEnabledLookGID <- declareImplicitStimulusActionGID lookF  -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
+  isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook) -- Import lookF from Build.BedPuzzle.Actions.Locations.Look
 
 -- Build the player with look capability
   player <- withPlayerLocation defaultPlayer bedroomGID
