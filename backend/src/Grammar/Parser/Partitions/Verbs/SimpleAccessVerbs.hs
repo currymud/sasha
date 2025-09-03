@@ -19,6 +19,12 @@ makeSemanticValues [| SimpleAccessVerb |] [OPEN, CLOSE]
 simpleAccessVerbs :: HashSet SimpleAccessVerb
 simpleAccessVerbs = fromList [open,close]
 
+openSA :: SimpleAccessVerb
+openSA = open
+
+closeSA :: SimpleAccessVerb
+closeSA = close
+
 #ifdef TESTING
 
 instance Arbitrary SimpleAccessVerb where

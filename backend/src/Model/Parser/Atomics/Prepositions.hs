@@ -1,7 +1,9 @@
 module Model.Parser.Atomics.Prepositions ( ContainmentMarker (ContainmentMarker)
-                                          ,DirectionalStimulusMarker (DirectionalStimulusMarker)
+                                         , DirectionalStimulusMarker (DirectionalStimulusMarker)
+                                         , InstrumentMarker (InstrumentMarker)
                                          , SourceMarker (SourceMarker)
                                          , SurfaceMarker (SurfaceMarker)) where
+
 import           Data.Hashable            (Hashable)
 import           Data.Kind                (Type)
 import           GHC.Generics             (Generic)
@@ -41,4 +43,12 @@ newtype SurfaceMarker = SurfaceMarker { _fromSurfaceMarker :: Lexeme }
 
 instance HasLexeme SurfaceMarker where
   toLexeme = _fromSurfaceMarker
+
+type InstrumentMarker :: Type
+newtype InstrumentMarker = InstrumentMarker { _fromInstrumentMarker :: Lexeme }
+  deriving stock (Show,Eq,Ord,Generic)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme InstrumentMarker where
+  toLexeme = _fromInstrumentMarker
 
