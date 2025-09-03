@@ -72,7 +72,8 @@ import           Relude.Function                                                
 -- Import action functions from BedPuzzle
 import           Build.BedPuzzle.Actions.Get                                      (getDeniedF,
                                                                                    getF)
-import           Build.BedPuzzle.Actions.Get.Constructors                         (getFromSupportF)
+import           Build.BedPuzzle.Actions.Get.Constructors                         (getFromSupportF,
+                                                                                   getObjectF)
 import           Build.BedPuzzle.Actions.Locations.Look                           (lookF,
                                                                                    pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                                     (lookAtF)
@@ -134,13 +135,13 @@ testDynamicActionsDSL = do
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedFGID <- declareAcquisitionActionGID getRobeDeniedF
-  getRobeFGID <- declareAcquisitionActionGID (getFromSupportF robeGID)
-
+  getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
+  getFromChairFGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
   lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
 
   whatPillFGID <- declareDirectionalStimulusActionGID whatPill
 
-  registerObject chairGID (chairObj whatChairGID)
+  registerObject chairGID (chairObj whatChairGID getFromChairFGID)
   registerObject floorGID (floorObj lookFloorGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedFGID)
 
@@ -229,13 +230,17 @@ robeObj cannotSeeRobeGID cannotGetRobeGID =
                  >=> (\o -> withObjectBehavior o (AVManagementKey get cannotGetRobeGID))
                  >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP cannotGetRobeGID))
 
-chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
-chairObj lookResponseGID = defaultObject & chairObj'
+chairObj :: GID DirectionalStimulusActionF
+              -> GID AcquisitionActionF
+              -> WorldDSL Object
+chairObj lookResponseGID getResponseFGID = defaultObject & chairObj'
   where
     chairObj' = withShortName "chair"
                   >=> withDescription "A simple wooden chair"
                   >=> withDescriptives [SimpleNounPhrase chairDS]
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look lookResponseGID))
+                  >=> (\o -> withObjectBehavior o (AVManagementKey  get  getResponseFGID))
+
 
 placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
 placeObject lid oid ds obj = do
