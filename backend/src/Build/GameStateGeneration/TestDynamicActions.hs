@@ -12,6 +12,7 @@ import           Prelude                                                        
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus              (bedroomDS,
                                                                                    chairDS,
                                                                                    floorDS,
+                                                                                   pocketDS,
                                                                                    robeDS)
 
 -- Import adjectives and determiners
@@ -79,6 +80,7 @@ import           Build.BedPuzzle.Actions.Locations.Look                         
 import           Build.BedPuzzle.Actions.Look                                     (lookAtF)
 import           Build.BedPuzzle.Actions.Objects.Chair.Look                       (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look                        (whatPill)
+import           Build.BedPuzzle.Actions.Objects.Pocket.Look                      (whatPocket)
 import           Build.BedPuzzle.Actions.Objects.Robe.Get                         (getRobeDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Robe.Look                        (notEvenRobeF)
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
@@ -128,15 +130,20 @@ testDynamicActionsDSL = do
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
+  pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
   lookAtChairFGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
   whatChairGID <- declareDirectionalStimulusActionGID whatChairF
+  getFromChairFGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
+
+  whatPocketFGID <- declareDirectionalStimulusActionGID whatPocket
+  lookAtPocketFGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
 
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedFGID <- declareAcquisitionActionGID getRobeDeniedF
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
-  getFromChairFGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
+
   lookFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
 
   whatPillFGID <- declareDirectionalStimulusActionGID whatPill
