@@ -34,6 +34,7 @@ import           Model.GameState                                                
                                                                                    SomaticAccessActionF,
                                                                                    SpatialRelationship (SupportedBy, Supports))
 import           Model.GameState.GameStateDSL                                     (WorldDSL,
+                                                                                   createAcquisitionVerbEffect,
                                                                                    createAcquisitionVerbPhraseEffect,
                                                                                    createDirectionalStimulusEffect,
                                                                                    createImplicitStimulusEffect,
@@ -180,6 +181,8 @@ testDynamicActionsDSL = do
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
 
+  openEyesChangeGetVerb <- createAcquisitionVerbEffect get getRobeFGID
+  linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID openEyesChangeGetVerb
 
   registerPlayer player
   setPerceptionMap
@@ -211,6 +214,7 @@ buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID ge
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
+    >>= (\p -> withPlayerBehavior p (AVManagementKey get getRobeFGID))
 
 robeObj :: GID DirectionalStimulusActionF  -- Eyes closed look response
         -> GID AcquisitionActionF          -- Can't get (eyes closed/not standing)
@@ -223,7 +227,7 @@ robeObj cannotSeeRobeGID cannotGetRobeGID =
                  >=> withDescriptives [SimpleNounPhrase robeDS]
                  >=> (\o -> withObjectBehavior o (DSAManagementKey look cannotSeeRobeGID))
                  >=> (\o -> withObjectBehavior o (AVManagementKey get cannotGetRobeGID))
-
+                 >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP cannotGetRobeGID))
 
 chairObj :: GID DirectionalStimulusActionF -> WorldDSL Object
 chairObj lookResponseGID = defaultObject & chairObj'
