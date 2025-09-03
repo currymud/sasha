@@ -150,16 +150,16 @@ data ObjectBuildError
   deriving stock (Show,Ord, Eq)
 
 buildObject :: NounPhrase DirectionalStimulus
-                 -> (ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object))
-                 -> ActionManagementFunctions
-                 -> WorldDSL (Either ObjectBuildError (GID Object, Object))
+            -> (ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object))
+            -> ActionManagementFunctions
+            -> WorldDSL (GID Object, Object)
 buildObject nounPhrase objBuilder actions =
   case objBuilder actions of
-    Left err -> return (Left err)
+    Left err -> error $ "Object build failed: " ++ show err  -- Crash here!
     Right objDSL -> do
       gid <- declareObjectGID nounPhrase
       obj <- objDSL
-      return $ Right (gid, obj)
+      return (gid, obj)
 
 chairObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
 chairObj actions = do  -- Either monad
@@ -169,7 +169,9 @@ chairObj actions = do  -- Either monad
                          (findAVKey get actions)
   return $ defaultObject & chairBuilder lookGID getGID
 
-chairBuilder :: GID DirectionalStimulusActionF -> GID AcquisitionActionF -> WorldDSL Object
+chairBuilder :: GID DirectionalStimulusActionF
+                  -> GID AcquisitionActionF
+                  -> Object -> WorldDSL Object
 chairBuilder lookGID getGID = withShortName "chair"
   >=> withDescription "A simple wooden chair"
   >=> withDescriptives [SimpleNounPhrase chairDS]
