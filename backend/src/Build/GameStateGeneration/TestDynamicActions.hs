@@ -25,7 +25,7 @@ import           Model.Parser.Composites.Nouns                                  
 import           Model.GameState                                                  (AcquisitionActionF,
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
                                                                                    DirectionalStimulusActionF,
-                                                                                   EffectActionKey (SomaticAccessActionKey),
+                                                                                   EffectActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
                                                                                    GameState,
                                                                                    ImplicitStimulusActionF,
                                                                                    Location,
@@ -151,7 +151,7 @@ testDynamicActionsDSL = do
   registerObject chairGID (chairObj whatChairGID getFromChairFGID)
   registerObject floorGID (floorObj lookFloorGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedFGID)
-
+  registerObject pocketGID (pocketObj whatPocketFGID)
   -- Generate open eyes action GIDs dynamically
   openEyesGID <- declareSomaticActionGID openEyes
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
@@ -193,6 +193,9 @@ testDynamicActionsDSL = do
 
   openEyesChangeGetVerb <- createAcquisitionVerbEffect get getRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID openEyesChangeGetVerb
+
+  getRobeChangesLookAtPocket <- createDirectionalStimulusEffect look lookAtPocketFGID
+  linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookAtPocket
 
   registerPlayer player
   setPerceptionMap
@@ -249,6 +252,14 @@ chairObj lookResponseGID getResponseFGID = defaultObject & chairObj'
                   >=> withDescriptives [SimpleNounPhrase chairDS]
                   >=> (\o -> withObjectBehavior o (DSAManagementKey look lookResponseGID))
                   >=> (\o -> withObjectBehavior o (AVManagementKey  get  getResponseFGID))
+
+pocketObj :: GID DirectionalStimulusActionF -> WorldDSL Object
+pocketObj lookResponseGID = defaultObject & pocketObj'
+  where
+    pocketObj' = withShortName "pocket"
+                   >=> withDescription "There's something in the pocket"
+                   >=> withDescriptives [SimpleNounPhrase pocketDS]
+                   >=> (\o -> withObjectBehavior o (DSAManagementKey look lookResponseGID))
 
 
 placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
