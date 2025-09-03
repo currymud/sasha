@@ -170,7 +170,9 @@ testDynamicActionsDSL = do
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
+  registerSpatial robeGID (Supports (Data.Set.singleton pocketGID))
   registerSpatial robeGID (SupportedBy chairGID)
+  registerSpatial pocketGID (SupportedBy robeGID)
 --  registerObject floorGID (floorObj id)
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
 
