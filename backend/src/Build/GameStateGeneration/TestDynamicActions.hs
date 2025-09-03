@@ -49,12 +49,14 @@ import           Model.GameState.GameStateDSL                                   
                                                                                    linkEffectToLocation,
                                                                                    linkEffectToObject,
                                                                                    linkEffectToPlayer,
+                                                                                   linkFieldEffectToObject,
                                                                                    registerLocation,
                                                                                    registerObject,
                                                                                    registerObjectToLocation,
                                                                                    registerPlayer,
                                                                                    registerSpatial,
                                                                                    setPerceptionMap,
+                                                                                   updateDescription,
                                                                                    withDescription,
                                                                                    withDescriptives,
                                                                                    withLocationBehavior,
@@ -196,6 +198,9 @@ testDynamicActionsDSL = do
 
   getRobeChangesLookAtPocket <- createDirectionalStimulusEffect look lookAtPocketFGID
   linkEffectToObject (AcquisitionalActionKey getRobeFGID) pocketGID getRobeChangesLookAtPocket
+
+  robeHoldingDescriptionEffect <- updateDescription "A comfortable robe you are holding. You notice it has a pocket - that seems important for some reason." robeGID
+  linkFieldEffectToObject (AcquisitionalActionKey getRobeFGID) robeGID robeHoldingDescriptionEffect
 
   registerPlayer player
   setPerceptionMap

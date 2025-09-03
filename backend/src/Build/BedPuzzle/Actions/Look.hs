@@ -12,11 +12,11 @@ import           GameState.Perception   (isObjectPerceivable)
 import           Model.GameState        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                          DirectionalStimulusContainerActionF (ObjectDirectionalStimulusContainerActionF),
                                          GameComputation, GameState (_world),
-                                         Object,
+                                         Object (_description, _shortName),
                                          SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                          SpatialRelationshipMap (SpatialRelationshipMap),
                                          World (_spatialRelationshipMap),
-                                         _shortName, updateActionConsequence)
+                                         updateActionConsequence)
 import           Model.GID              (GID)
 
 
@@ -76,10 +76,10 @@ generateLocationNarration obj objGID spatialMap =
   case Data.Map.Strict.lookup objGID spatialMap of
     Just relationships
       | Inventory `Data.Set.member` relationships ->
-          modifyNarration $ updateActionConsequence $ "You're holding the " <> _shortName obj
+          modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
       | Just containerGID <- findContainer relationships -> do
           container <- getObjectM containerGID
-          modifyNarration $ updateActionConsequence $ "The " <> _shortName obj <> " is in/on the " <> _shortName container
+          modifyNarration $ updateActionConsequence $  _description obj
       | otherwise ->
           modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
     Nothing ->
