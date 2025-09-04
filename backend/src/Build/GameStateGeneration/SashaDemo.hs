@@ -181,6 +181,7 @@ sashaBedroomDemo = do
   let robeActions = ActionManagementFunctions $ Data.Set.fromList
         [ DSAManagementKey look lookAtRobeGID
         , AVManagementKey get getRobeDeniedGID
+        , AAManagementKey getRobeAVP getRobeDeniedGID
         ]
       robe = buildObjectWithGID robeGID robeObj robeActions
   registerObject robeGID robe
@@ -200,8 +201,17 @@ sashaBedroomDemo = do
 
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getRobeDeniedGID
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
   registerPlayer player
+
+
+  -- Effects
+  openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
+  linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
+
+  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
+  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
+
 --  registerSpatial tableGID (Supports (Set.singleton mailGID))
 --  registerSpatial tableGID (SupportedBy floorGID)
 --  registerSpatial mailGID (SupportedBy tableGID)
