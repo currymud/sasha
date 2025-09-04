@@ -9,7 +9,11 @@ import           Model.GameState               (ActionMaps (_containerAccessActi
                                                 ContainerAccessActionF (CannotAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                 GameComputation,
                                                 Player (_playerActions),
+                                                SearchStrategy,
+                                                SpatialRelationship,
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
                                                 updateActionConsequence)
+import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
 
 manageContainerAccessProcess :: ContainerAccessVerbPhrase -> GameComputation Identity ()
@@ -27,6 +31,7 @@ manageContainerAccessProcess cavp  = do
           -- PlayerContainerAccessF would contain the full player-level action
           -- This is where the actual player open action would be stored
           error "PlayerContainerAccessF not yet implemented - this will be Build.BedPuzzle.Actions.Player.Open"
+
 {-
 
 do

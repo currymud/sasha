@@ -53,6 +53,7 @@ library
       Actions.Administrative
       Actions.Consume
       Actions.Get.Acquisition.Get
+      Actions.Manipulate.ContainerAccess.Open
       Actions.Manipulate.SomaticAccess.Open
       Actions.Movement.Postural.SitStand
       Actions.Percieve.Look

@@ -26,10 +26,12 @@ module GameState ( addToInventoryM
                  , removeObjectFromLocationSemanticMapM
                  , parseObjectPhrase
                  , parseConsumablePhrase
+                 , parseContainerPhrase
                  , parseDirectionalStimulusNounPhrase
                  , parseSupportPhrase
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
+                 , processSimpleContainerAccessEffect
                  , processAcquisitionEffect
                  , processPositivePosturalEffect
                  , processNegativePosturalEffect
@@ -53,10 +55,11 @@ import           Grammar.Parser.Partitions.Misc (a)
 import           Model.GameState                (AcquisitionActionF,
                                                  AcquisitionRes (Complete, Simple),
                                                  ActionEffectKey (ObjectKey),
-                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey),
+                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                  ActionManagementFunctions (ActionManagementFunctions),
                                                  CompleteAcquisitionRes (CompleteAcquisitionRes),
                                                  ConsumptionActionF (_consumptionAction),
+                                                 ContainerAccessActionF,
                                                  GameComputation,
                                                  GameState (_narration, _player, _world),
                                                  ImplicitStimulusActionF,
@@ -78,7 +81,8 @@ import           Model.Parser.Atomics.Verbs     (AcquisitionVerb,
                                                  ConsumptionVerb,
                                                  ImplicitStimulusVerb,
                                                  NegativePosturalVerb (NegativePosturalVerb),
-                                                 PositivePosturalVerb (PositivePosturalVerb))
+                                                 PositivePosturalVerb (PositivePosturalVerb),
+                                                 SimpleAccessVerb)
 import           Model.Parser.Composites.Nouns  (ConsumableNounPhrase (ConsumableNounPhrase),
                                                  ContainerPhrase (ContainerPhrase),
                                                  DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
@@ -88,6 +92,7 @@ import           Model.Parser.Composites.Nouns  (ConsumableNounPhrase (Consumabl
                                                  SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
 import           Model.Parser.Composites.Verbs  (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                  ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                 ContainerAccessVerbPhrase,
                                                  PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
 import           Model.Parser.GCase             (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
@@ -145,6 +150,15 @@ parseConsumablePhrase (ConsumableNounPhrase phrase) =
                      DescriptiveNounPhraseDet _ _ noun' -> noun'
   in ConsumableNounKey noun
 
+parseContainerPhrase :: ContainerPhrase -> NounKey
+parseContainerPhrase (ContainerPhrase _ nounPhrase) =
+  let noun = case nounPhrase of
+               SimpleNounPhrase container             -> container
+               NounPhrase _ container                 -> container
+               DescriptiveNounPhrase _ container      -> container
+               DescriptiveNounPhraseDet _ _ container -> container
+  in ContainerKey noun
+
 parseSupportPhrase :: SupportPhrase -> NounKey
 parseSupportPhrase supportPhrase = case supportPhrase of
   SurfaceSupport surfacePhrase ->
@@ -182,6 +196,23 @@ processAcquisitionEffect avp newActionGID = do
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
+
+processSimpleContainerAccessEffect :: SimpleAccessVerb
+                         -> GID ContainerAccessActionF
+                         -> GameComputation Identity ()
+processSimpleContainerAccessEffect sav newActionGID = do
+  modify' $ \gs ->
+    let player = gs._player
+        ActionManagementFunctions playerActionSet = _playerActions player
+        -- Remove any existing acquisition action for this phrase
+        filteredActions = Data.Set.filter (\case SAConManagementKey p _ -> p /= sav; _ -> True) playerActionSet
+        -- Add the new action
+        updatedActions = Data.Set.insert (SAConManagementKey sav newActionGID) filteredActions
+        updatedPlayerActions = ActionManagementFunctions updatedActions
+        updatedPlayer = player { _playerActions = updatedPlayerActions }
+    in gs { _player = updatedPlayer }
+
+
 
 processConsumptionEffect :: ConsumptionVerbPhrase
                          -> GID ConsumptionActionF

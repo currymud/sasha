@@ -6,11 +6,13 @@ import           Data.Kind                     (Type)
 import           GHC.Generics                  (Generic)
 import           Model.Parser                  (Sentence (Imperative))
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
-                                                DirectionalStimulus, Objective,
-                                                SimpleAccessNoun, Supportive,
-                                                Surface, ToggleNoun)
+                                                DirectionalStimulus,
+                                                InstrumentalAccessNoun,
+                                                Objective, SimpleAccessNoun,
+                                                Supportive, Surface, ToggleNoun)
 import           Model.Parser.Atomics.Verbs    (CardinalMovementVerb,
                                                 ConsumptionVerb,
+                                                ContainerAccessVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitBoundaryVerb,
                                                 ImplicitRegionalStimulusVerb,
@@ -33,6 +35,7 @@ data VerbKey
   | ImplicitRegionalStimulusKey ImplicitRegionalStimulusVerb
   | PositivePosturalVerbKey     PositivePosturalVerb
   | NegativePosturalVerbKey     NegativePosturalVerb
+  | ContainerAccessKey          ContainerAccessVerb
   deriving stock (Show, Eq, Ord, Generic)
 
 mkVerbKey :: Sentence -> VerbKey
@@ -58,4 +61,5 @@ data NounKey
   | ModToggleNounKey ToggleNoun
   | SimpleAccessNounKey SimpleAccessNoun
   | ConsumableNounKey Consumable
+  | InstrumentAccessNounKey InstrumentalAccessNoun
   deriving stock (Show, Eq, Ord, Generic)

@@ -13,6 +13,7 @@ module Model.GameState (
                                AddPositivePostural, AddNegativePostural, AddContainerAccess,AddContainerAccessVerb)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
+  , AccessRes (CompleteAR, SimpleAR)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
                       AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,CONManagementKey,SAConManagementKey,
@@ -35,6 +36,8 @@ module Model.GameState (
   , ContainerAccessActionMap
   , ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys)
   , Config (Config, _actionMaps)
+  , CompleteAccessRes (_containerKey, _ContainerPhrase, _instrumentKey, _instrumentPhrase)
+  , SimpleAccessRes (_saContainerKey, _saContainerPhrase)
   , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF,InstrumentContainerAccessF)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
@@ -55,6 +58,7 @@ module Model.GameState (
   , Evaluator
   , FieldUpdateOperation (ObjectShortName, ObjectDescription, LocationTitle, PlayerLocation)
   , FinalizeAcquisitionF
+  , FinalizeAccessNotInstrumentF
   , GameComputation (GameComputation, runGameComputation)
   , GameState (GameState, _triggerRegistry, _systemEffectRegistry , _world, _player, _narration, _evaluation, _effectRegistry,_actionSystemEffectKeys)
   , GameStateT (GameStateT, runGameStateT)
@@ -117,6 +121,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 DirectionalStimulusNounPhrase,
+                                                InstrumentalAccessNounPhrase,
                                                 ObjectPhrase, SupportPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase,
@@ -219,6 +224,12 @@ data ContainerAccessActionF
   | InstrumentContainerAccessF (GID Object -> GameComputation Identity InstrumentAccessResult)
   | CannotAccessF          (GameComputation Identity ())
 
+type FinalizeAccessNotInstrumentF :: Type
+type FinalizeAccessNotInstrumentF = EffectActionKey
+                                      -> GID Object
+                                      -> GameComputation Identity ContainerAccessResult
+                                      -> GameComputation Identity ()
+
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
 
@@ -274,6 +285,28 @@ data InstrumentAccessResult = InstrumentAccessResult
   }
   deriving stock (Show, Eq, Ord)
 
+type CompleteAccessRes :: Type
+data CompleteAccessRes = CompleteAccessRes
+  { _containerKey     :: NounKey
+  , _ContainerPhrase  :: ContainerPhrase
+  , _instrumentKey    :: NounKey
+  , _instrumentPhrase :: InstrumentalAccessNounPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+type SimpleAccessRes :: Type
+data SimpleAccessRes = SimpleAccessRes
+  { _saContainerKey    :: NounKey
+  , _saContainerPhrase :: ContainerPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+type AccessRes :: Type
+data AccessRes
+  = CompleteAR CompleteAccessRes
+  | SimpleAR SimpleAccessRes
+  deriving stock (Show, Eq, Ord)
+
 type AcquisitionRes :: Type
 data AcquisitionRes
   = Complete CompleteAcquisitionRes
@@ -313,7 +346,6 @@ type FinalizeAcquisitionF = EffectActionKey
                               -> GameComputation Identity CoordinationResult
                               -> (GID Object -> GameComputation Identity CoordinationResult)
                               -> GameComputation Identity ()
-
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
   { _consumptionAction :: GID Object
