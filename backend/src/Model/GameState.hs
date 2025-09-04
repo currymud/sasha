@@ -31,6 +31,7 @@ module Model.GameState (
   , AcquisitionActionF (AcquisitionActionF,CollectedF,LosesObjectF,NotGettableF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
+  , ContainerAccessF
   , ContainerAccessActionMap
   , ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys)
   , Config (Config, _actionMaps)
@@ -203,9 +204,15 @@ data DirectionalStimulusContainerActionF
   | ObjectDirectionalStimulusContainerActionF (GameComputation Identity ())
   | CannotSeeInF (GameComputation Identity ())
 
+type ContainerAccessF :: Type
+type ContainerAccessF = (EffectActionKey
+                           -> ContainerAccessActionMap
+                           -> ContainerAccessVerbPhrase
+                           -> GameComputation Identity ())
+
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
-  = PlayerContainerAccessF (ContainerAccessVerbPhrase -> GameComputation Identity ())
+  = PlayerContainerAccessF ContainerAccessF
   | ObjectContainerAccessF (GameComputation Identity ContainerAccessResult)
   | CannotAccessF          (GameComputation Identity ())
 

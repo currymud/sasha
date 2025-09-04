@@ -1,10 +1,33 @@
 module Actions.Manipulate.ContainerAccess.Open where
 import           Control.Monad.Identity        (Identity)
-import           Model.GameState               (GameComputation)
+import           Control.Monad.Reader          (asks)
+import qualified Data.Map.Strict
+import           GameState                     (getPlayerM, modifyNarration)
+import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase)
+import           Model.GameState               (ActionMaps (_containerAccessActionMap),
+                                                Config (_actionMaps),
+                                                ContainerAccessActionF (CannotAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
+                                                GameComputation,
+                                                Player (_playerActions),
+                                                updateActionConsequence)
 import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
 
 manageContainerAccessProcess :: ContainerAccessVerbPhrase -> GameComputation Identity ()
-manageContainerAccessProcess cavp  = pure () {-
+manageContainerAccessProcess cavp  = do
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupContainerAccessVerbPhrase cavp availableActions of
+    Nothing -> modifyNarration $ updateActionConsequence "This container cannot be opened."
+    Just actionGID -> do
+      actionMap <- asks (_containerAccessActionMap . _actionMaps)
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
+        Just (CannotAccessF actionF) -> actionF  -- Execute the failure action
+        Just (ObjectContainerAccessF actionF) -> error "ObjectContainerAccessF is not a player constructor"
+        Just (PlayerContainerAccessF actionFunc) ->
+          -- PlayerContainerAccessF would contain the full player-level action
+          -- This is where the actual player open action would be stored
+          error "PlayerContainerAccessF not yet implemented - this will be Build.BedPuzzle.Actions.Player.Open"
+{-
 
 do
   availableActions <- _playerActions <$> getPlayerM
