@@ -35,7 +35,7 @@ module Model.GameState (
   , ContainerAccessActionMap
   , ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys)
   , Config (Config, _actionMaps)
-  , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF)
+  , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF,InstrumentContainerAccessF)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
   , DirectionalStimulusActionMap
@@ -61,6 +61,7 @@ module Model.GameState (
   , GameT (GameT, runGameT)
   , ImplicitStimulusActionF (ImplicitStimulusActionF, _implicitStimulusAction)
   , ImplicitStimulusActionMap
+  , InstrumentAccessResult (InstrumentAccessResult, _instrumentActionEffectKeys, _instrumentFieldEffectKeys)
   , Location (Location, _title, _objectSemanticMap, _locationActionManagement)
   , Narration (Narration, _playerAction, _actionConsequence)
   , Object (Object, _shortName, _description, _descriptives, _objectActionManagement)
@@ -206,6 +207,7 @@ data DirectionalStimulusContainerActionF
 
 type ContainerAccessF :: Type
 type ContainerAccessF = (EffectActionKey
+                           -> SearchStrategy
                            -> ContainerAccessActionMap
                            -> ContainerAccessVerbPhrase
                            -> GameComputation Identity ())
@@ -214,6 +216,7 @@ type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
   | ObjectContainerAccessF (GameComputation Identity ContainerAccessResult)
+  | InstrumentContainerAccessF (GID Object -> GameComputation Identity InstrumentAccessResult)
   | CannotAccessF          (GameComputation Identity ())
 
 type ContainerAccessActionMap :: Type
@@ -261,6 +264,13 @@ type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [EffectActionKey]
   , _containerFieldEffectKeys  :: [EffectActionKey]
+  }
+  deriving stock (Show, Eq, Ord)
+
+type InstrumentAccessResult :: Type
+data InstrumentAccessResult = InstrumentAccessResult
+  { _instrumentActionEffectKeys :: [EffectActionKey]
+  , _instrumentFieldEffectKeys  :: [EffectActionKey]
   }
   deriving stock (Show, Eq, Ord)
 
