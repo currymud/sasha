@@ -464,6 +464,7 @@ data ActionManagement
   | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
+  | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
