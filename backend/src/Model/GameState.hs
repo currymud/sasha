@@ -15,7 +15,7 @@ module Model.GameState (
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
-                      AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,
+                      AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,CONManagementKey,
                       PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
