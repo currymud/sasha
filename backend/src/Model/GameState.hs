@@ -15,7 +15,7 @@ module Model.GameState (
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
   , ActionManagement (DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey,
-                      AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,CONManagementKey,
+                      AAManagementKey,AVManagementKey, CAManagementKey,CVManagementKey,CONManagementKey,SAConManagementKey,
                       PPManagementKey, NPManagementKey)
   , ActionManagementFunctions (ActionManagementFunctions, _actionManagementFunctions)
   , ActionMaps (ActionMaps
@@ -32,6 +32,7 @@ module Model.GameState (
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
   , ContainerAccessActionMap
+  , ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys)
   , Config (Config, _actionMaps)
   , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
@@ -110,6 +111,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ImplicitStimulusVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
+                                                SimpleAccessVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 DirectionalStimulusNounPhrase,
@@ -248,6 +250,13 @@ data CoordinationResult = CoordinationResult
   , _fieldEffectKeys  :: [EffectActionKey]
   }
 
+type ContainerAccessResult :: Type
+data ContainerAccessResult = ContainerAccessResult
+  { _containerActionEffectKeys :: [EffectActionKey]
+  , _containerFieldEffectKeys  :: [EffectActionKey]
+  }
+  deriving stock (Show, Eq, Ord)
+
 type AcquisitionRes :: Type
 data AcquisitionRes
   = Complete CompleteAcquisitionRes
@@ -385,6 +394,7 @@ data ActionManagementOperation
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddAcquisitionVerb AcquisitionVerb (GID AcquisitionActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
+  | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
@@ -465,6 +475,7 @@ data ActionManagement
   | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
+  | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
   | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)

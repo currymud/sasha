@@ -77,6 +77,7 @@ library
       Build.BedPuzzle.Actions.Objects.Pill.Look
       Build.BedPuzzle.Actions.Objects.Pill.Take
       Build.BedPuzzle.Actions.Objects.Pocket.Look
+      Build.BedPuzzle.Actions.Objects.Pocket.Open
       Build.BedPuzzle.Actions.Objects.Robe.Get
       Build.BedPuzzle.Actions.Objects.Robe.Look
       Build.BedPuzzle.Actions.Objects.Table.Look

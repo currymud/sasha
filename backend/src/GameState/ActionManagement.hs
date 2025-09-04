@@ -18,7 +18,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
@@ -49,6 +49,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ImplicitStimulusVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
+                                                SimpleAccessVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (NounPhrase (SimpleNounPhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
@@ -503,4 +504,8 @@ findCONManagementKey :: ContainerAccessVerbPhrase
                           -> Maybe (GID ContainerAccessActionF)
 findCONManagementKey cavp (ActionManagementFunctions actionSet) =
   listToMaybe [gid | CONManagementKey p gid <- Data.Set.toList actionSet, p == cavp]
+
+findSAForContainersKey :: SimpleAccessVerb -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
+findSAForContainersKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | SAConManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
