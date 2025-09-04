@@ -10,7 +10,7 @@ module Model.GameState (
   , AcquisitionVerbActionMap
   , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddDirectionalContainerStimulus, AddSomaticAccess,
                                AddAcquisitionVerb, AddAcquisitionVerbPhrase ,AddConsumption,
-                               AddPositivePostural, AddNegativePostural, AddContainerAccess)
+                               AddPositivePostural, AddNegativePostural, AddContainerAccess,AddContainerAccessVerb)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
@@ -205,9 +205,9 @@ data DirectionalStimulusContainerActionF
 
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
-  = PlayerContainerAccessF  (ContainerAccessVerbPhrase -> GameComputation Identity ())
-  | ObjectContainerAccessF  (GameComputation Identity ())
-  | CannotAccessF           (GameComputation Identity ())
+  = PlayerContainerAccessF (ContainerAccessVerbPhrase -> GameComputation Identity ())
+  | ObjectContainerAccessF (GameComputation Identity ContainerAccessResult)
+  | CannotAccessF          (GameComputation Identity ())
 
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
