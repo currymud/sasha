@@ -97,6 +97,7 @@ import           Control.Monad                                                  
 import           Data.Kind                                                        (Type)
 import qualified Data.Set
 import           Data.Text                                                        (Text)
+import           Debug.Trace                                                      (trace)
 import           GameState.ActionManagement                                       (findAVKey,
                                                                                    findDSAKey)
 import           Grammar.Parser.Partitions.Nouns.Consumables                      (pill,
@@ -204,7 +205,10 @@ sashaBedroomDemo = do
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
   registerPlayer player
 
-
+  trace ("DEBUG: getRobeDeniedGID = " ++ show getRobeDeniedGID) $ pure ()
+  getRobeGID <- declareAcquisitionActionGID (getObjectF robeGID)
+  trace ("DEBUG: getRobeGID = " ++ show getRobeGID) $ pure ()
+  trace ("DEBUG: getFromChairGID = " ++ show getFromChairGID) $ pure ()
   -- Effects
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect

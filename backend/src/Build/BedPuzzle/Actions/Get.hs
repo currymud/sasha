@@ -6,6 +6,7 @@ import           Build.BedPuzzle.Actions.Utils                    (AcquisitionEr
 import           Control.Monad.Identity                           (Identity)
 import qualified Data.Map.Strict
 import           Data.Text                                        (Text, pack)
+import           Debug.Trace                                      (trace)
 import           GameState                                        (getObjectM,
                                                                    modifyNarration,
                                                                    parseAcquisitionPhrase)
@@ -52,6 +53,7 @@ getF = AcquisitionActionF getit
             Left err' -> handleAcquisitionError err'
             Right (objectGID, containerGID) -> do
               objectActionLookup <- lookupAcquisitionAction objectGID actionMap ("Object " <> (Data.Text.pack . show) objectGID <> ":")
+              trace ("DEBUG: getF - objectGID=" ++ show objectGID ++ " lookup result: ") $ pure ()
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
                 Right (NotGettableF objectNotGettableF) -> objectNotGettableF
@@ -98,7 +100,15 @@ lookupAcquisitionAction objectGID actionMap contextDescription = do
   actionMgmt <- _objectActionManagement <$> getObjectM objectGID
   case findAVKey get actionMgmt of
     Nothing -> pure $ Left $ ContainerMissingAction $ contextDescription <> " " <> (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
-    Just actionGID ->
+    Just actionGID -> do
+      trace ("DEBUG: lookupAcquisitionAction - Object " ++ show objectGID ++ " has get action GID: " ++ show actionGID) $ pure ()
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> pure $ Left $ InvalidActionType $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
-        Just action -> pure $ Right action
+        Just action -> do
+         trace ("DEBUG: lookupAcquisitionAction - GID " ++ show actionGID ++ " found: " ++ case action of
+            NotGettableF _ -> "NotGettableF"
+            CollectedF _   -> "CollectedF"
+            LosesObjectF _ -> "LosesObjectF"
+            _              -> "Other") $ pure ()
+
+         pure $ Right action
