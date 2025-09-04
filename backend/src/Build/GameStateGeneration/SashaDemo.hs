@@ -190,6 +190,18 @@ sashaBedroomDemo = do
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
 
+  openEyesGID <- declareSomaticActionGID openEyes
+  getDeniedFGID <- declareAcquisitionActionGID getDeniedF
+  playerGetFGID <- declareAcquisitionActionGID getF
+  pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
+  lookFGID <- declareImplicitStimulusActionGID lookF
+  isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
+  dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
+
+  registerLocation bedroomGID (buildLocation pitchBlackGID)
+
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getRobeDeniedGID
+  registerPlayer player
 --  registerSpatial tableGID (Supports (Set.singleton mailGID))
 --  registerSpatial tableGID (SupportedBy floorGID)
 --  registerSpatial mailGID (SupportedBy tableGID)
@@ -202,10 +214,10 @@ sashaBedroomDemo = do
   finalizeGameState
 
 buildLocation :: GID ImplicitStimulusActionF -> WorldDSL Location
-buildLocation pitchBlackGID = defaultLocation & bedroomLoc'
+buildLocation implicitLookResponseGID = defaultLocation & bedroomLoc'
   where
     bedroomLoc' = withTitle "bedroom in bed"
-                    >=> (\l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID))
+                    >=> (\l -> withLocationBehavior l (ISAManagementKey isaLook implicitLookResponseGID))
 
 buildBedroomPlayer :: GID Location
                         -> GID ImplicitStimulusActionF
@@ -213,15 +225,19 @@ buildBedroomPlayer :: GID Location
                         -> GID DirectionalStimulusActionF
                         -> GID AcquisitionActionF
                         -> WorldDSL Player
-buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID getRobeFGID =
+buildBedroomPlayer bedroomGID implicitLookResponseGID openEyesGID directLookResponseGID getRobeFGID =
   withPlayerLocation defaultPlayer bedroomGID
-    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
-    >>= (\p -> withPlayerBehavior p (DSAManagementKey look dsaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook implicitLookResponseGID))
+    >>= (\p -> withPlayerBehavior p (DSAManagementKey look directLookResponseGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
-    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
     >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
     >>= (\p -> withPlayerBehavior p (AVManagementKey get getRobeFGID))
 
+bedroomLoc :: GID ImplicitStimulusActionF ->  WorldDSL Location
+bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
+  where
+    bedroomLoc' = withTitle "bedroom in bed"
+                    >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook lookResponseGID))
 
 floorObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
 floorObj actions = do  -- Either monad
