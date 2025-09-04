@@ -170,7 +170,7 @@ sashaBedroomDemo = do
         [ DSAManagementKey look lookAtChairGID
         , AVManagementKey get getFromChairGID
         ]
-  let chair = buildObjectWithGID chairGID chairObj chairActions
+      chair = buildObjectWithGID chairGID chairObj chairActions
   registerObject chairGID chair
   placeObject bedroomGID chairGID chairDS chairOB
 
@@ -186,8 +186,42 @@ sashaBedroomDemo = do
   registerObject robeGID robe
   placeObject bedroomGID robeGID robeDS robeOB
 
+  registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
+  registerSpatial chairGID (SupportedBy floorGID)
+  registerSpatial robeGID (SupportedBy chairGID)
+
+--  registerSpatial tableGID (Supports (Set.singleton mailGID))
+--  registerSpatial tableGID (SupportedBy floorGID)
+--  registerSpatial mailGID (SupportedBy tableGID)
+--  registerSpatial robeGID (Contains (Data.Set.singleton pocketGID))
+--  registerSpatial pocketGID (ContainedIn robeGID)
+--  registerSpatial pocketGID (Contains (Set.singleton pillGID))
+--  registerSpatial pillGID (ContainedIn pocketGID)
+--  registerSpatial floorGID (Supports (Data.Set.fromList [chairGID, tableGID]))
 
   finalizeGameState
+
+buildLocation :: GID ImplicitStimulusActionF -> WorldDSL Location
+buildLocation pitchBlackGID = defaultLocation & bedroomLoc'
+  where
+    bedroomLoc' = withTitle "bedroom in bed"
+                    >=> (\l -> withLocationBehavior l (ISAManagementKey isaLook pitchBlackGID))
+
+buildBedroomPlayer :: GID Location
+                        -> GID ImplicitStimulusActionF
+                        -> GID SomaticAccessActionF
+                        -> GID DirectionalStimulusActionF
+                        -> GID AcquisitionActionF
+                        -> WorldDSL Player
+buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsaEnabledLookGID getRobeFGID =
+  withPlayerLocation defaultPlayer bedroomGID
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (DSAManagementKey look dsaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook isaEnabledLookGID))
+    >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
+    >>= (\p -> withPlayerBehavior p (AVManagementKey get getRobeFGID))
+
 
 floorObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
 floorObj actions = do  -- Either monad
