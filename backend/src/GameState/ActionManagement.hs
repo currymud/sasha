@@ -470,3 +470,9 @@ findNPKey :: NegativePosturalVerb -> ActionManagementFunctions -> Maybe (GID Pos
 findNPKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
+findCONManagementKey :: ContainerAccessVerbPhrase
+                          -> ActionManagementFunctions
+                          -> Maybe (GID ContainerAccessActionF)
+findCONManagementKey cavp (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | CONManagementKey p gid <- Data.Set.toList actionSet, p == cavp]
+

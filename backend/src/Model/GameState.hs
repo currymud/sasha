@@ -384,6 +384,7 @@ data ActionManagementOperation
   | AddDirectionalContainerStimulus DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddAcquisitionVerb AcquisitionVerb (GID AcquisitionActionF)
+  | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | AddAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
