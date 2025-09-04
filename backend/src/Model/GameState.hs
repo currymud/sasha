@@ -23,6 +23,7 @@ module Model.GameState (
                  , _implicitStimulusActionMap
                  , _directionalStimulusActionMap
                  , _directionalStimulusContainerActionMap
+                 , _containerAccessActionMap
                  , _posturalActionMap
                  ,_somaticStimulusActionMap
                  ,_acquisitionActionMap
@@ -30,7 +31,9 @@ module Model.GameState (
   , AcquisitionActionF (AcquisitionActionF,CollectedF,LosesObjectF,NotGettableF)
   , ConsumptionActionF (ConsumptionActionF, _consumptionAction)
   , ConsumptionActionMap
+  , ContainerAccessActionMap
   , Config (Config, _actionMaps)
+  , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
   , DirectionalStimulusActionMap
@@ -41,6 +44,7 @@ module Model.GameState (
   , EffectActionKey ( ImplicitStimulusActionKey
                       , DirectionalStimulusActionKey
                       , DirectionalStimulusContainerActionKey
+                      , ContainerAccessActionKey
                       , SomaticAccessActionKey
                       , AcquisitionalActionKey
                       , ConsumptionActionKey
@@ -110,7 +114,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 DirectionalStimulusNounPhrase,
                                                 ObjectPhrase, SupportPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+import           Model.Parser.Composites.Verbs (AccessVerbPhrase,
+                                                AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
 
@@ -164,6 +169,7 @@ data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
+  , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
@@ -194,6 +200,15 @@ data DirectionalStimulusContainerActionF
   = PlayerDirectionalStimulusContainerActionF (DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ())
   | ObjectDirectionalStimulusContainerActionF (GameComputation Identity ())
   | CannotSeeInF (GameComputation Identity ())
+
+type ContainerAccessActionF :: Type
+data ContainerAccessActionF
+  = PlayerContainerAccessF  (AccessVerbPhrase -> GameComputation Identity ())
+  | ObjectContainerAccessF  (GameComputation Identity ())
+  | CannotAccessF           (GameComputation Identity ())
+
+type ContainerAccessActionMap :: Type
+type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
 
 type DirectionalStimulusContainerActionMap :: Type
 type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF
@@ -350,6 +365,7 @@ data EffectActionKey
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
+  | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
   | PosturalActionKey (GID PosturalActionF)

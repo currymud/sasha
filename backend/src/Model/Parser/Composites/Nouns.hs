@@ -5,6 +5,8 @@ module Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase ),
                                       DirectionalStimulusNounRules (DirectionalStimulusNounRules, _directionalStimulusRule),
                                       ConsumableNounPhrase (ConsumableNounPhrase),
                                       ConsumableNounPhraseRules (ConsumableNounPhraseRules, _consumableNounPhraseRule),
+                                      InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
+                                      InstrumentalNounPhraseRules (InstrumentalNounPhraseRules, _instrumentNounRule, _instrumentMarkerRule),
                                       NounPhrase (SimpleNounPhrase,
                                                   NounPhrase,
                                                   DescriptiveNounPhrase,
@@ -25,10 +27,12 @@ import           Model.Parser.Atomics.Adjectives   (Adjective)
 import           Model.Parser.Atomics.Misc         (Determiner)
 import           Model.Parser.Atomics.Nouns        (Consumable, Container,
                                                     DirectionalStimulus,
+                                                    InstrumentalAccessNoun,
                                                     Objective, SomaticStimulus,
                                                     Surface)
 import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
                                                     DirectionalStimulusMarker,
+                                                    InstrumentMarker,
                                                     SurfaceMarker)
 import           Model.Parser.Lexer                (Lexeme)
 import           Prelude                           hiding (unwords)
@@ -47,6 +51,20 @@ type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
 data ContainerPhraseRules r = ContainerPhraseRules
   { _containerRule       :: Prod r Text Lexeme (NounPhrase Container)
   , _containerMarkerRule :: Prod r Text Lexeme ContainmentMarker
+  }
+
+type InstrumentalAccessNounPhrase :: Type
+data InstrumentalAccessNounPhrase = InstrumentalAccessNounPhrase InstrumentMarker (NounPhrase InstrumentalAccessNoun)
+  deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText InstrumentalAccessNounPhrase where
+  toText (InstrumentalAccessNounPhrase marker nounPhrase) =
+    unwords [toText marker, toText nounPhrase]
+
+type InstrumentalNounPhraseRules :: (Type -> Type -> Type -> Type) -> Type
+data InstrumentalNounPhraseRules r = InstrumentalNounPhraseRules
+  { _instrumentMarkerRule :: Prod r Text Lexeme InstrumentMarker
+  , _instrumentNounRule   :: Prod r Text Lexeme (NounPhrase Objective)
   }
 
 type DirectionalStimulusNounPhrase :: Type

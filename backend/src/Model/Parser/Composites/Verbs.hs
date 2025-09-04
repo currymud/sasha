@@ -5,7 +5,8 @@ import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)
 import           Model.Parser.Atomics.Adverbs      (NegativePosturalDirection,
                                                     PositivePosturalDirection)
-import           Model.Parser.Atomics.Prepositions (SourceMarker)
+import           Model.Parser.Atomics.Prepositions (InstrumentMarker,
+                                                    SourceMarker)
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     AdministrativeVerb,
                                                     ConsumptionVerb,
@@ -13,10 +14,12 @@ import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     ImplicitStimulusVerb,
                                                     NegativePosturalVerb,
                                                     PositivePosturalVerb,
+                                                    SimpleAccessVerb,
                                                     SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (ConsumableNounPhrase,
                                                     ContainerPhrase,
                                                     DirectionalStimulusNounPhrase,
+                                                    InstrumentalAccessNounPhrase,
                                                     ObjectPhrase,
                                                     SomaticStimulusNounPhrase,
                                                     SupportPhrase)
@@ -37,6 +40,18 @@ instance ToText AcquisitionVerbPhrase where
     toText verb <> " " <> toText nounPhrase
   toText (AcquisitionVerbPhrase verb nounPhrase marker supportPhrase) =
     toText verb <> " " <> toText nounPhrase <> " " <> toText marker <> " " <> toText supportPhrase
+
+type AccessVerbPhrase :: Type
+data AccessVerbPhrase
+  = SimpleAccessVerbPhrase SimpleAccessVerb ContainerPhrase
+  | AccessVerbPhrase SimpleAccessVerb ContainerPhrase InstrumentalAccessNounPhrase
+  deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText AccessVerbPhrase where
+  toText (SimpleAccessVerbPhrase verb containerPhrase) =
+    toText verb <> " " <> toText containerPhrase
+  toText (AccessVerbPhrase verb containerPhrase instrumentalNounPhrase) =
+    toText verb <> " " <> toText containerPhrase <> " with " <> toText instrumentalNounPhrase
 
 type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
@@ -80,6 +95,7 @@ instance ToText StimulusVerbPhrase where
 type Imperative :: Type
 data Imperative
   = Administrative AdministrativeVerb
+  | AccessVerbPhrase' AccessVerbPhrase
   | StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
@@ -89,6 +105,8 @@ data Imperative
 instance ToText Imperative where
   toText (Administrative verb) =
     toText verb
+  toText (AccessVerbPhrase' verbPhrase) =
+    toText verbPhrase
   toText (StimulusVerbPhrase verbPhrase) =
     toText verbPhrase
   toText (ConsumptionVerbPhrase' verbPhrase) =

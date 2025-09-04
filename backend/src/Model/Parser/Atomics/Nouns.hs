@@ -93,6 +93,14 @@ newtype Surface = Surface { _fromSurface :: Lexeme }
 instance HasLexeme Surface where
   toLexeme = _fromSurface
 
+type InstrumentalAccessNoun :: Type
+newtype InstrumentalAccessNoun = InstrumentalAccessNoun { _fromInstrumentalAccessNoun :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme InstrumentalAccessNoun where
+  toLexeme = _fromInstrumentalAccessNoun
+
 type ToggleNoun :: Type
 newtype ToggleNoun = ToggleNoun { _fromToggleNoun :: Lexeme }
   deriving stock (Show,Eq,Ord)
