@@ -114,9 +114,9 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 DirectionalStimulusNounPhrase,
                                                 ObjectPhrase, SupportPhrase)
-import           Model.Parser.Composites.Verbs (AccessVerbPhrase,
-                                                AcquisitionVerbPhrase,
-                                                ConsumptionVerbPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ConsumptionVerbPhrase,
+                                                ContainerAccessVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
 
 -- Game Transformers
@@ -203,7 +203,7 @@ data DirectionalStimulusContainerActionF
 
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
-  = PlayerContainerAccessF  (AccessVerbPhrase -> GameComputation Identity ())
+  = PlayerContainerAccessF  (ContainerAccessVerbPhrase -> GameComputation Identity ())
   | ObjectContainerAccessF  (GameComputation Identity ())
   | CannotAccessF           (GameComputation Identity ())
 

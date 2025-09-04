@@ -1,7 +1,13 @@
-module Grammar.Parser.Partitions.Nouns.Utils (lexemes,objectives', containers', consumables',supportives',surfaces') where
+module Grammar.Parser.Partitions.Nouns.Utils (lexemes,
+                                              objectives',
+                                              containers',
+                                              consumables',
+                                              instrumentals',
+                                              supportives',
+                                              surfaces') where
 
 import           Data.List            (nub)
-import           Grammar.Parser.Lexer (Lexeme (BEDROOM, CHAIR, FLOOR, MAIL, PILL, POCKET, ROBE, SATCHEL, TABLE, TOWEL))
+import           Grammar.Parser.Lexer (Lexeme (BEDROOM, CHAIR, FLOOR, KEY, MAIL, PILL, POCKET, ROBE, SATCHEL, TABLE, TOWEL))
 
 lexemes :: [Lexeme]
 lexemes = nub $
@@ -10,9 +16,10 @@ lexemes = nub $
     <> consumables'
     <> supportives'
     <> surfaces'
+    <> instrumentals'
 
 objectives' :: [Lexeme]
-objectives' = [FLOOR,POCKET,TABLE,CHAIR,PILL,MAIL,SATCHEL,TOWEL,ROBE,BEDROOM]
+objectives' = [FLOOR,POCKET,TABLE,CHAIR,PILL,MAIL,SATCHEL,TOWEL,ROBE,BEDROOM,KEY]
 
 containers' :: [Lexeme]
 containers' = [POCKET,SATCHEL,ROBE]
@@ -25,3 +32,6 @@ surfaces' = [CHAIR,TABLE,SATCHEL,FLOOR]
 
 consumables' :: [Lexeme]
 consumables' = [PILL]
+
+instrumentals' :: [Lexeme]
+instrumentals' = [KEY]

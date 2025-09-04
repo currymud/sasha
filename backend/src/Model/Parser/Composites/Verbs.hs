@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{- OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 module Model.Parser.Composites.Verbs where
 import           Data.Kind                         (Type)
@@ -10,6 +10,7 @@ import           Model.Parser.Atomics.Prepositions (InstrumentMarker,
 import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     AdministrativeVerb,
                                                     ConsumptionVerb,
+                                                    ContainerAccessVerb,
                                                     DirectionalStimulusVerb,
                                                     ImplicitStimulusVerb,
                                                     NegativePosturalVerb,
@@ -41,16 +42,16 @@ instance ToText AcquisitionVerbPhrase where
   toText (AcquisitionVerbPhrase verb nounPhrase marker supportPhrase) =
     toText verb <> " " <> toText nounPhrase <> " " <> toText marker <> " " <> toText supportPhrase
 
-type AccessVerbPhrase :: Type
-data AccessVerbPhrase
-  = SimpleAccessVerbPhrase SimpleAccessVerb ContainerPhrase
-  | AccessVerbPhrase SimpleAccessVerb ContainerPhrase InstrumentalAccessNounPhrase
+type ContainerAccessVerbPhrase :: Type
+data ContainerAccessVerbPhrase
+  = SimpleAccessContainerVerbPhrase SimpleAccessVerb ContainerPhrase
+  | ContainerAccessVerbPhrase SimpleAccessVerb ContainerPhrase InstrumentalAccessNounPhrase
   deriving stock (Show, Eq, Ord,Generic)
 
-instance ToText AccessVerbPhrase where
-  toText (SimpleAccessVerbPhrase verb containerPhrase) =
+instance ToText ContainerAccessVerbPhrase where
+  toText (SimpleAccessContainerVerbPhrase verb containerPhrase) =
     toText verb <> " " <> toText containerPhrase
-  toText (AccessVerbPhrase verb containerPhrase instrumentalNounPhrase) =
+  toText (ContainerAccessVerbPhrase verb containerPhrase instrumentalNounPhrase) =
     toText verb <> " " <> toText containerPhrase <> " with " <> toText instrumentalNounPhrase
 
 type StimulusVerbPhrase :: Type
@@ -95,7 +96,7 @@ instance ToText StimulusVerbPhrase where
 type Imperative :: Type
 data Imperative
   = Administrative AdministrativeVerb
-  | AccessVerbPhrase' AccessVerbPhrase
+  | ContainerAccessVerbPhrase' ContainerAccessVerbPhrase
   | StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
@@ -105,7 +106,7 @@ data Imperative
 instance ToText Imperative where
   toText (Administrative verb) =
     toText verb
-  toText (AccessVerbPhrase' verbPhrase) =
+  toText (ContainerAccessVerbPhrase' verbPhrase) =
     toText verbPhrase
   toText (StimulusVerbPhrase verbPhrase) =
     toText verbPhrase

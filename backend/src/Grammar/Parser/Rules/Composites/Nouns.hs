@@ -1,6 +1,7 @@
 module Grammar.Parser.Rules.Composites.Nouns (containerPhraseRules,
                                               directionalStimulusNounPhraseRules,
                                               consumableNounPhraseRules,
+                                              instrumentalAccessNounPhraseRules,
                                               nounPhraseRule,
                                               objectPhraseRules,
                                               somaticStimulusNounPhraseRules,
@@ -18,15 +19,18 @@ import           Model.Parser.Atomics.Misc                             (Determin
 import           Model.Parser.Atomics.Nouns                            (Consumable (Consumable),
                                                                         Container (Container),
                                                                         DirectionalStimulus,
+                                                                        InstrumentalAccessNoun,
                                                                         Objective,
                                                                         SomaticStimulus,
                                                                         Surface (Surface))
 import           Model.Parser.Atomics.Prepositions                     (ContainmentMarker (ContainmentMarker),
                                                                         DirectionalStimulusMarker,
+                                                                        InstrumentMarker,
                                                                         SurfaceMarker (SurfaceMarker))
 import           Model.Parser.Composites.Nouns                         (ConsumableNounPhrase (ConsumableNounPhrase),
                                                                         ContainerPhrase (ContainerPhrase),
                                                                         DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                                        InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
                                                                         NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
                                                                         NounPhraseRules (NounPhraseRules, _adjRule, _determinerRule, _nounRule),
                                                                         ObjectPhrase (ObjectPhrase),
@@ -54,7 +58,21 @@ containerPhraseRules determinerRule adjRule containerRule = do
           , _nounRule = containerRule
           }
 --  DirectionalStimulusNounPhrase DirectionalStimulusMarker (NounPhrase DirectionalStimulus)
-
+instrumentalAccessNounPhraseRules :: Prod r Text Lexeme Determiner
+                                       -> Prod r Text Lexeme Adjective
+                                       -> Prod r Text Lexeme InstrumentMarker
+                                       -> Prod r Text Lexeme InstrumentalAccessNoun
+                                       -> Grammar r (Prod r Text Lexeme InstrumentalAccessNounPhrase)
+instrumentalAccessNounPhraseRules determinerRule adjRule instrumentMarkerRule instrumentalAccessNounRule =
+ nounPhraseRule rules >>= \nounPhrase ->
+    rule $ InstrumentalAccessNounPhrase <$> instrumentMarkerRule <*> nounPhrase
+  where
+   rules
+      = NounPhraseRules
+          { _determinerRule = determinerRule
+          , _adjRule = adjRule
+          , _nounRule = instrumentalAccessNounRule
+          }
 directionalStimulusNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective
                                        -> Prod r Text Lexeme DirectionalStimulusMarker

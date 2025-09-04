@@ -1,6 +1,7 @@
 module Grammar.Parser.Rules.Composites.Verbs
   (stimulusVerbPhraseRules
   , acquisitionVerbPhraseRules
+  , containerVerbPhraseRules
   , imperativeRules
   , consumptionVerbPhraseRules
   , posturalVerbPhraseRules
@@ -13,6 +14,7 @@ import           Grammar.Parser.Partitions.Misc                          (determ
 import           Grammar.Parser.Partitions.Nouns.Consumables             (consumables)
 import           Grammar.Parser.Partitions.Nouns.Containers              (containers)
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (directionalStimulii)
+import           Grammar.Parser.Partitions.Nouns.Instruments             (instruments)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (objectives)
 import           Grammar.Parser.Partitions.Nouns.SomaticStimulus         (somaticStimulii)
 import           Grammar.Parser.Partitions.Prepositions.SourceMarkers    (sourceMarkers)
@@ -23,14 +25,17 @@ import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (direct
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (somaticAccessVerbs)
 import           Grammar.Parser.Rules.Atomics.Adverbs                    (negativePosturalDirectionRule,
                                                                           positivePosturalDirectionRule)
-import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule)
+import           Grammar.Parser.Rules.Atomics.Prepositions               (directionalStimulusMarkerRule,
+                                                                          instrumentMarkerRule)
 import           Grammar.Parser.Rules.Atomics.Utils                      (parseRule)
 import           Grammar.Parser.Rules.Atomics.Verbs                      (implicitStimulusVerbRule,
                                                                           negativePosturalVerbRule,
-                                                                          positivePosturalVerbRule)
+                                                                          positivePosturalVerbRule,
+                                                                          simpleAccessVerbRule)
 import           Grammar.Parser.Rules.Composites.Nouns                   (consumableNounPhraseRules,
                                                                           containerPhraseRules,
                                                                           directionalStimulusNounPhraseRules,
+                                                                          instrumentalAccessNounPhraseRules,
                                                                           objectPhraseRules,
                                                                           somaticStimulusNounPhraseRules,
                                                                           supportPhraseRules)
@@ -39,6 +44,7 @@ import           Model.Parser.Atomics.Misc                               (Determ
 import           Model.Parser.Atomics.Nouns                              (Consumable (Consumable),
                                                                           Container (Container),
                                                                           DirectionalStimulus (DirectionalStimulus),
+                                                                          InstrumentalAccessNoun (InstrumentalAccessNoun),
                                                                           Objective (Objective),
                                                                           SomaticStimulus (SomaticStimulus))
 import           Model.Parser.Atomics.Prepositions                       (SourceMarker (SourceMarker))
@@ -49,7 +55,8 @@ import           Model.Parser.Atomics.Verbs                              (Acquis
                                                                           SomaticAccessVerb (SomaticAccessVerb))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                                          ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase),
+                                                                          Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                                           PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
                                                                           StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                     (Grammar,
@@ -80,6 +87,27 @@ stimulusVerbPhraseRules = do
            <|> SomaticStimulusVerbPhrase
              <$> somaticAccessVerb
              <*> somaticStimulusNounPhrase
+
+containerVerbPhraseRules :: Grammar r (Prod r Text Lexeme ContainerAccessVerbPhrase)
+containerVerbPhraseRules = do
+  determiner <- parseRule determiners Determiner
+  adj <- parseRule adjectives Adjective
+  container <- parseRule containers Container
+  simpleAccessVerb <- simpleAccessVerbRule
+  containerPhrase <- containerPhraseRules determiner adj container
+  instrumentMarker <- instrumentMarkerRule
+  instrumentDeterminer <- parseRule determiners Determiner
+  instrumentAdj <- parseRule adjectives Adjective
+  instumentAccessNoun <- parseRule instruments InstrumentalAccessNoun
+  instrumentNounPhrase <- instrumentalAccessNounPhraseRules instrumentDeterminer instrumentAdj instrumentMarker instumentAccessNoun
+  rule $ SimpleAccessContainerVerbPhrase
+           <$> simpleAccessVerb
+           <*> containerPhrase
+         <|> ContainerAccessVerbPhrase
+           <$> simpleAccessVerb
+           <*> containerPhrase
+           <*> instrumentNounPhrase
+
 
 acquisitionVerbPhraseRules :: Grammar r (Prod r Text Lexeme AcquisitionVerbPhrase)
 acquisitionVerbPhraseRules = do
@@ -121,13 +149,14 @@ posturalVerbPhraseRules = do
 imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do
   administrativeVerb <- parseRule administrativeVerbs AdministrativeVerb
+  containerVerbPhrase <- containerVerbPhraseRules
   stimulusVerbPhrase <- stimulusVerbPhraseRules
   consumptionVerbPhrase <- consumptionVerbPhraseRules
   acquisitionVerbPhrase <- acquisitionVerbPhraseRules
   posturalVerbPhrase <- posturalVerbPhraseRules
   rule $ Administrative <$> administrativeVerb
+           <|> ContainerAccessVerbPhrase' <$> containerVerbPhrase
            <|> StimulusVerbPhrase <$> stimulusVerbPhrase
            <|> ConsumptionVerbPhrase' <$> consumptionVerbPhrase
            <|> AcquisitionVerbPhrase' <$> acquisitionVerbPhrase
            <|> PosturalVerbPhrase <$> posturalVerbPhrase
-

@@ -10,9 +10,8 @@ import           Actions.Percieve.Look                 (manageContainerDirection
 import           Control.Monad.Identity                (Identity)
 import           Model.GameState                       (GameComputation)
 import           Model.Parser                          (Sentence (Imperative))
-import           Model.Parser.Composites.Verbs         (AccessVerbPhrase,
-                                                        AcquisitionVerbPhrase,
-                                                        Imperative (AccessVerbPhrase', AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+import           Model.Parser.Composites.Verbs         (AcquisitionVerbPhrase,
+                                                        Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                         PosturalVerbPhrase,
                                                         StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 eval :: Sentence -> GameComputation Identity ()
@@ -20,7 +19,7 @@ eval (Imperative imperative) = evalImperative imperative
 
 evalImperative :: Imperative -> GameComputation Identity ()
 evalImperative (Administrative av) = manageAdministration av
-evalImperative (AccessVerbPhrase' avp) =  pure () -- manageSomaticAccessProcess avp
+evalImperative (ContainerAccessVerbPhrase' avp) =  pure () -- manageSomaticAccessProcess avp
 evalImperative (ConsumptionVerbPhrase' consumptionVerbPhrase) =  -- NEW
   manageConsumptionProcess consumptionVerbPhrase
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =

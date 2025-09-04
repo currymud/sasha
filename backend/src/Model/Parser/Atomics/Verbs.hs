@@ -1,4 +1,5 @@
 module Model.Parser.Atomics.Verbs ( AdministrativeVerb (AdministrativeVerb), AcquisitionVerb (AcquisitionVerb, _fromAcquisitionVerb)
+                                  , ContainerAccessVerb (ContainerAccessVerb, _fromContainerAccessVerb)
                                   , CardinalMovementVerb (CardinalMovementVerb, _fromCardinalMovementVerb )
                                   , DirectionalStimulusVerb (DirectionalStimulusVerb, _fromDirectionalStimulusVerb)
                                   , ConsumptionVerb (ConsumptionVerb, _fromConsumptionVerb)
@@ -111,6 +112,14 @@ newtype SimpleAccessVerb = SimpleAccessVerb { _fromSimpleAccessVerb :: Lexeme }
 
 instance HasLexeme SimpleAccessVerb where
   toLexeme = _fromSimpleAccessVerb
+
+type ContainerAccessVerb :: Type
+newtype ContainerAccessVerb = ContainerAccessVerb { _fromContainerAccessVerb :: Lexeme }
+  deriving stock (Show,Eq,Ord)
+  deriving newtype (Hashable,ToText)
+
+instance HasLexeme ContainerAccessVerb where
+  toLexeme = _fromContainerAccessVerb
 
 type SomaticAccessVerb :: Type
 newtype SomaticAccessVerb =
