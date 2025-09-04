@@ -1,4 +1,4 @@
-module Build.BedPuzzle.Actions.Open where
+module Build.BedPuzzle.Actions.Objects.Open where
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Set
 import           GameState                                         (getObjectM)
