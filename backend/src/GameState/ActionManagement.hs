@@ -20,7 +20,7 @@ import           Model.GameState               (AcquisitionActionF,
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
@@ -116,6 +116,13 @@ processAllEffects (ActionEffectMap effectMap) = do
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
+processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccess cavp newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
 processEffect (LocationKey lid) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -192,6 +199,14 @@ processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
 -- OBJECT EFFECTS (updating object action management)
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccess cavp newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
 processEffect (ObjectKey oid) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -269,6 +284,19 @@ processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
 -- PLAYER EFFECTS (updating player action management)
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccess cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddContainerAccess cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt

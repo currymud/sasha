@@ -10,7 +10,7 @@ module Model.GameState (
   , AcquisitionVerbActionMap
   , ActionManagementOperation (AddImplicitStimulus, AddDirectionalStimulus, AddDirectionalContainerStimulus, AddSomaticAccess,
                                AddAcquisitionVerb, AddAcquisitionVerbPhrase ,AddConsumption,
-                               AddPositivePostural, AddNegativePostural)
+                               AddPositivePostural, AddNegativePostural, AddContainerAccess)
   , SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase)
   , CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase)
   , ActionKeyMap (ActionKeyMap, _unActionKeyMap)
