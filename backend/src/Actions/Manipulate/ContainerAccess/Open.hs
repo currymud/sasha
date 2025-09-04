@@ -1,26 +1,12 @@
 module Actions.Manipulate.ContainerAccess.Open where
-import           Control.Monad.Identity     (Identity)
-import           Control.Monad.Reader       (asks)
-import           Control.Monad.State        (get)
-import           Control.Monad.State.Strict (gets)
-import qualified Data.Map.Strict
-import qualified Data.Set
-import           GameState                  (getLocationObjectIDsM, getPlayerM)
-import           GameState.ActionManagement (lookupSomaticAccess,
-                                             processEffectsFromRegistry)
-import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
-import           Model.GameState            (ActionEffectKey (LocationKey, PlayerKey),
-                                             ActionEffectMap (ActionEffectMap),
-                                             ActionMaps (_containerAccessActionMap),
-                                             Config (_actionMaps),
-                                             ContainerAccessActionF (CannotAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
-                                             EffectActionKey (ContainerAccessActionKey, SomaticAccessActionKey),
-                                             GameComputation, GameState (..),
-                                             Player (_location, _playerActions))
-import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
+import           Control.Monad.Identity        (Identity)
+import           Model.GameState               (GameComputation)
+import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
 
-manageContainerAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
-manageContainerAccessProcess sav = do
+manageContainerAccessProcess :: ContainerAccessVerbPhrase -> GameComputation Identity ()
+manageContainerAccessProcess cavp  = pure () {-
+
+do
   availableActions <- _playerActions <$> getPlayerM
   case lookupSomaticAccess sav availableActions of
     Nothing -> error "Programmer Error: No somatic access action found for verb: "
@@ -55,3 +41,4 @@ manageContainerAccessProcess sav = do
 
               actionFunc allActionKeys systemEffectKeysForAction (ActionEffectMap effectMap) systemEffectRegistry
               processEffectsFromRegistry actionKey
+              -}
