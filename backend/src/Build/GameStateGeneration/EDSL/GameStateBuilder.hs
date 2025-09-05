@@ -38,11 +38,11 @@ import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarke
 import           Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb     (wait)
 import           Model.GameState                                                  (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    ActionEffectMap (ActionEffectMap),
-                                                                                   ActionGID (AcquisitionActionGID, ConsumptionActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                                   ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SSAManagementKey),
+                                                                                   ActionGID (AcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                                   ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
-                                                                                   ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                                                                   ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    EffectRegistry,
@@ -59,7 +59,7 @@ import           Model.GameState                                                
                                                                                    _objectActionManagement,
                                                                                    _playerActions,
                                                                                    _world)
-import           Model.GameState.GameStateDSL                                     (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSSAManagement, CreateSomaticAccessEffect, DeclareAcquisitionActionGID, DeclareConsumableGID, DeclareConsumptionActionGID, DeclareContainerGID, DeclareDirectionalContainerActionGID, DeclareDirectionalStimulusActionGID, DeclareImplicitStimulusActionGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DeclarePosturalActionGID, DeclareSomaticActionGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
+import           Model.GameState.GameStateDSL                                     (WorldDSL (Apply, Bind, CreateAAManagement, CreateAVManagement, CreateAcquisitionVerbEffect, CreateAcquisitionVerbPhraseEffect, CreateCAManagement, CreateConsumptionEffect, CreateContainerAccessEffect, CreateDSAContainerManagement, CreateDSAManagement, CreateDirectionalContainerStimulusEffect, CreateDirectionalStimulusEffect, CreateISAManagement, CreateImplicitStimulusEffect, CreateNPManagement, CreateNegativePosturalEffect, CreatePPManagement, CreatePositivePosturalEffect, CreateSAConManagement, CreateSSAManagement, CreateSomaticAccessEffect, DeclareAcquisitionActionGID, DeclareConsumableGID, DeclareConsumptionActionGID, DeclareContainerAccessActionGID, DeclareContainerGID, DeclareDirectionalContainerActionGID, DeclareDirectionalStimulusActionGID, DeclareImplicitStimulusActionGID, DeclareLocationGID, DeclareObjectGID, DeclareObjectiveGID, DeclarePosturalActionGID, DeclareSomaticActionGID, DisplayVisibleObjects, FinalizeGameState, LinkActionKeyToSystemEffect, LinkEffectToLocation, LinkEffectToObject, LinkEffectToPlayer, LinkFieldEffectToLocation, LinkFieldEffectToObject, LinkFieldEffectToPlayer, Map, Pure, RegisterLocation, RegisterObject, RegisterObjectToLocation, RegisterPlayer, RegisterSpatial, RegisterSystemEffect, RegisterTrigger, Sequence, SetEvaluator, SetInitialNarration, SetPerceptionMap, UpdateDescription, UpdateLocation, UpdateShortName, UpdateTitle, WithDescription, WithDescriptives, WithLocationBehavior, WithObjectBehavior, WithPlayerBehavior, WithPlayerLocation, WithShortName, WithTitle))
 import           Model.GameState.Mappings                                         (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.GID                                                        (GID (GID))
 import           Model.Parser.Atomics.Nouns                                       (Consumable,
@@ -85,6 +85,7 @@ data BuilderState = BuilderState
   , _nextSomaticActionGID :: Int
   , _nextAcquisitionActionGID :: Int
   , _nextConsumptionActionGID :: Int
+  , _nextContainerAccessActionGID :: Int
   , _nextPosturalActionGID :: Int
   , _actionMaps :: ActionMaps
   }
@@ -112,11 +113,13 @@ initialBuilderState gs = BuilderState
   , _nextSomaticActionGID = 1000
   , _nextAcquisitionActionGID = 1000
   , _nextConsumptionActionGID = 1000
+  , _nextContainerAccessActionGID = 1000
   , _nextPosturalActionGID = 1000
   , _actionMaps = ActionMaps
         { _implicitStimulusActionMap = Data.Map.Strict.empty
       , _directionalStimulusActionMap = Data.Map.Strict.empty
       , _directionalStimulusContainerActionMap = Data.Map.Strict.empty
+      , _containerAccessActionMap = Data.Map.Strict.empty
       , _somaticStimulusActionMap = Data.Map.Strict.empty
       , _acquisitionActionMap = Data.Map.Strict.empty
       , _consumptionActionMap = Data.Map.Strict.empty
@@ -307,6 +310,18 @@ interpretDSL (DeclareDirectionalContainerActionGID actionF) = do
                    (_directionalStimulusContainerActionMap currentMaps)
       updatedMaps = currentMaps { _directionalStimulusContainerActionMap = updatedMap }
   put state { _nextDirectionalContainerActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareContainerAccessActionGID actionF) = do
+  state <- get
+  let gidValue = _nextContainerAccessActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_containerAccessActionMap currentMaps)
+      updatedMaps = currentMaps { _containerAccessActionMap = updatedMap }
+  put state { _nextContainerAccessActionGID = gidValue + 1
             , _actionMaps = updatedMaps }
   pure newGID
 
@@ -537,6 +552,9 @@ interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
 interpretDSL (CreateDirectionalContainerStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddDirectionalContainerStimulus verb actionGID) (DirectionalContainerActionGID actionGID))
 
+interpretDSL (CreateContainerAccessEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddContainerAccessVerb verb actionGID) (ContainerAccessActionGID actionGID))
+
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get
   let perceptionMap = Data.Map.Strict.fromListWith Data.Set.union
@@ -584,6 +602,9 @@ interpretDSL (CreatePPManagement verb actionGID) =
 
 interpretDSL (CreateNPManagement verb actionGID) =
   pure (NPManagementKey verb actionGID)
+
+interpretDSL (CreateSAConManagement verb actionGID) =
+  pure (SAConManagementKey verb actionGID)
 
 interpretDSL (WithObjectBehavior obj actionMgmt) = do
   let ActionManagementFunctions currentSet = _objectActionManagement obj

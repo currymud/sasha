@@ -4,7 +4,7 @@ module Model.GameState (
    ActionEffectKey (LocationKey, ObjectKey, PlayerKey)
   , ActionEffectMap (ActionEffectMap, _actionEffectMap)
   , ActionGID (ImplicitActionGID, DirectionalActionGID, DirectionalContainerActionGID , SomaticAccessActionGID,
-               AcquisitionActionGID, ConsumptionActionGID, PosturalActionGID)
+               AcquisitionActionGID, ConsumptionActionGID, PosturalActionGID, ContainerAccessActionGID)
   , AcquisitionF
   , AcquisitionRes (Complete, Simple)
   , AcquisitionVerbActionMap
@@ -417,6 +417,7 @@ data ActionGID
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   | AcquisitionActionGID (GID AcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)
+  | ContainerAccessActionGID (GID ContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
