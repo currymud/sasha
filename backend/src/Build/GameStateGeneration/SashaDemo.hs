@@ -164,44 +164,27 @@ sashaBedroomDemo = do
 
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   lookAtFloorGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
-  let floorActions = ActionManagementFunctions $ Data.Set.fromList
-        [ DSAManagementKey look lookAtFloorGID]
-      floor = buildObjectWithGID floorGID floorObj floorActions
-  registerObject floorGID floor
+  registerObject floorGID (floorObj lookAtFloorGID)
   placeObject bedroomGID floorGID floorDS floorOB
+
   -- Chair
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   lookAtChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
-  let chairActions = ActionManagementFunctions $ Data.Set.fromList
-        [ DSAManagementKey look lookAtChairGID
-        , AVManagementKey get getFromChairGID
-        ]
-      chair = buildObjectWithGID chairGID chairObj chairActions
-  registerObject chairGID chair
+  registerObject chairGID (chairObj lookAtChairGID getFromChairGID)
   placeObject bedroomGID chairGID chairDS chairOB
 
   -- Robe
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   lookAtRobeGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
-  let robeActions = ActionManagementFunctions $ Data.Set.fromList
-        [ DSAManagementKey look lookAtRobeGID
-        , AVManagementKey get getRobeDeniedGID
-        , AAManagementKey getRobeAVP getRobeDeniedGID
-        ]
-      robe = buildObjectWithGID robeGID robeObj robeActions
-  registerObject robeGID robe
+  registerObject robeGID (robeObj lookAtRobeGID getRobeDeniedGID)
   placeObject bedroomGID robeGID robeDS robeOB
 
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
-  let pocketActions = ActionManagementFunctions $ Data.Set.fromList
-        [ DSAManagementKey look lookAtPocketGID
-        , SAConManagementKey openSA openPocketNoReachGID
-        ]
-      pocket = buildObjectWithGID pocketGID pocketObj pocketActions
+  registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
 
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
@@ -266,87 +249,49 @@ bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
     bedroomLoc' = withTitle "bedroom in bed"
                     >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook lookResponseGID))
 
-floorObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
-floorObj actions = do  -- Either monad
-  lookGID <- maybeToEither (MissingAction "Missing look action for floor")
-                          (findDSAKey look actions)
-  return $ defaultObject & floorBuilder lookGID
+floorObj :: GID DirectionalStimulusActionF
+         -> WorldDSL Object
+floorObj lookGID =  defaultObject & floor
+  where
+    floor =
+      withShortName "floor"
+        >=> withDescription "The bedroom floor"
+        >=> withDescriptives [SimpleNounPhrase floorDS]
+        >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
 
-floorBuilder :: GID DirectionalStimulusActionF
-             -> Object
-             -> WorldDSL Object
-floorBuilder lookGID =
-  withShortName "floor"
-    >=> withDescription "The bedroom floor"
-    >=> withDescriptives [SimpleNounPhrase floorDS]
-    >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
+chairObj :: GID DirectionalStimulusActionF
+         -> GID AcquisitionActionF
+         -> WorldDSL Object
+chairObj lookGID getGID =  defaultObject & chair
+  where
+    chair =
+      withShortName "chair"
+        >=> withDescription "A simple wooden chair"
+        >=> withDescriptives [SimpleNounPhrase chairDS]
+        >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
+        >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
 
-buildObjectWithGID :: GID Object
-                   -> (ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object))
-                   -> ActionManagementFunctions
-                   -> WorldDSL Object
-buildObjectWithGID gid objBuilder actions =
-  case objBuilder actions of
-    Left err -> error $ "Object build failed for GID " ++ show gid ++ ": " ++ show err
-    Right objDSL -> objDSL
+robeObj :: GID DirectionalStimulusActionF
+        -> GID AcquisitionActionF
+        -> WorldDSL Object
+robeObj lookGID getGID = defaultObject & robe
+  where
+    robe =
+      withShortName "comfortable robe"
+        >=> withDescription "The robe is draped on the chair"
+        >=> withDescriptives [SimpleNounPhrase robeDS]
+        >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
+        >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
+        >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP getGID))
 
-
-chairObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
-chairObj actions = do  -- Either monad
-  lookGID <- maybeToEither (MissingAction "Missing look action for chair")
-                          (findDSAKey look actions)
-  getGID <- maybeToEither (MissingAction "Missing get action for chair")
-                         (findAVKey get actions)
-  return $ defaultObject & chairBuilder lookGID getGID
-
-chairBuilder :: GID DirectionalStimulusActionF
-                  -> GID AcquisitionActionF
-                  -> Object -> WorldDSL Object
-chairBuilder lookGID getGID = withShortName "chair"
-  >=> withDescription "A simple wooden chair"
-  >=> withDescriptives [SimpleNounPhrase chairDS]
-  >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
-  >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
-
-robeObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
-robeObj actions = do  -- Either monad
-  lookGID <- maybeToEither (MissingAction "Missing look action for robe")
-                          (findDSAKey look actions)
-  getGID <- maybeToEither (MissingAction "Missing get action for robe")
-                         (findAVKey get actions)
-  pure $ defaultObject & robeBuilder lookGID getGID
-
-robeBuilder :: GID DirectionalStimulusActionF
-            -> GID AcquisitionActionF
-            -> Object
-            -> WorldDSL Object
-robeBuilder lookGID getGID =
-  withShortName "comfortable robe"
-    >=> withDescription "The robe is draped on the chair"
-    >=> withDescriptives [SimpleNounPhrase robeDS]
-    >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
-    >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
-
-pocketObj :: ActionManagementFunctions -> Either ObjectBuildError (WorldDSL Object)
-pocketObj actions = do  -- Either monad
-  lookGID <- maybeToEither (MissingAction "Missing look action for pocket")
-                          (findDSAKey look actions)
-  openGID <- maybeToEither (MissingAction "Missing open action for pocket")
-                          (findSAForContainersKey openSA actions)
-  pure $ defaultObject & pocketBuilder lookGID openGID
-
-pocketBuilder :: GID DirectionalStimulusActionF
-              -> GID ContainerAccessActionF
-              -> Object
-              -> WorldDSL Object
-pocketBuilder lookGID openGID =
-  withShortName "pocket"
-    >=> withDescription "A pocket sewn into the robe"
-    >=> withDescriptives [SimpleNounPhrase pocketDS]
-    >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
-    >=> (\o -> withObjectBehavior o (SAConManagementKey openSA openGID))
-
-
-maybeToEither :: e -> Maybe a -> Either e a
-maybeToEither err Nothing = Left err
-maybeToEither _ (Just a)  = Right a
+pocketObj :: GID DirectionalStimulusActionF
+          -> GID ContainerAccessActionF
+          -> WorldDSL Object
+pocketObj lookGID openGID = defaultObject & pocket
+  where
+    pocket =
+      withShortName "pocket"
+        >=> withDescription "A pocket sewn into the robe"
+        >=> withDescriptives [SimpleNounPhrase pocketDS]
+        >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
+        >=> (\o -> withObjectBehavior o (SAConManagementKey openSA openGID))
