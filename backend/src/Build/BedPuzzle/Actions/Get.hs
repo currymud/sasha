@@ -46,6 +46,7 @@ getF = AcquisitionActionF getit
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
     getit actionKey actionMap searchStrategy avp finalize = do
+      trace ("DEBUG: getF called with actionKey=" ++ show actionKey) $ pure ()
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saObjectKey

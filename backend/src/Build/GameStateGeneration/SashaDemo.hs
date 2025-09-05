@@ -178,6 +178,7 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   lookAtRobeGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
+  getRobeDeniedGID `seq` trace ("DEBUG: getRobeDeniedGID = " ++ show getRobeDeniedGID) $ pure ()
   registerObject robeGID (robeObj lookAtRobeGID getRobeDeniedGID)
   placeObject bedroomGID robeGID robeDS robeOB
 
@@ -204,7 +205,6 @@ sashaBedroomDemo = do
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
-  getRobeGID <- declareAcquisitionActionGID (getObjectF robeGID)
   -- Effects
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect
@@ -270,7 +270,7 @@ chairObj lookGID getGID =  defaultObject & chair
         >=> withDescriptives [SimpleNounPhrase chairDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
         >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
-
+          {-
 robeObj :: GID DirectionalStimulusActionF
         -> GID AcquisitionActionF
         -> WorldDSL Object
@@ -283,6 +283,18 @@ robeObj lookGID getGID = defaultObject & robe
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
         >=> (\o -> withObjectBehavior o (AVManagementKey get getGID))
         >=> (\o -> withObjectBehavior o (AAManagementKey getRobeAVP getGID))
+-}
+robeObj lookGID getGID = defaultObject & robe
+  where
+    robe =
+      withShortName "comfortable robe"
+        >=> withDescription "The robe is draped on the chair"
+        >=> withDescriptives [SimpleNounPhrase robeDS]
+        >=> (\o -> trace ("DEBUG: robeObj setting DSAManagementKey with lookGID=" ++ show lookGID) $
+                   withObjectBehavior o (DSAManagementKey look lookGID))
+        >=> (\o -> trace ("DEBUG: robeObj setting AVManagementKey with getGID=" ++ show getGID) $
+                   withObjectBehavior o (AVManagementKey get getGID))
+
 
 pocketObj :: GID DirectionalStimulusActionF
           -> GID ContainerAccessActionF
