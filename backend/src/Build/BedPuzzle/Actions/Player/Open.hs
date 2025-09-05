@@ -68,7 +68,10 @@ openF = PlayerContainerAccessF openit
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp
-lookupAccessAction :: GID Object -> ContainerAccessActionMap -> GameComputation Identity (Either (GameComputation Identity ()) (ContainerAccessActionF))
+
+lookupAccessAction :: GID Object
+                        -> ContainerAccessActionMap
+                        -> GameComputation Identity (Either (GameComputation Identity ()) ContainerAccessActionF)
 lookupAccessAction objectGID actionMap = do
   actionMgmt <- _objectActionManagement <$> getObjectM objectGID
   case findSAForContainersKey open actionMgmt of

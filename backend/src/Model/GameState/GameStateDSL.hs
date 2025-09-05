@@ -8,11 +8,9 @@ import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
 import           Model.GameState               (AcquisitionActionF,
-                                                ActionEffectKey,
-                                                ActionEffectMap, ActionGID,
                                                 ActionManagement,
-                                                ActionManagementFunctions,
                                                 ConsumptionActionF,
+                                                ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect, EffectActionKey,
@@ -35,11 +33,11 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ImplicitStimulusVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
+                                                SimpleAccessVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
                                                 NounPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
-                                                ConsumptionVerbPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
 
 -- | World building DSL
@@ -72,7 +70,7 @@ data WorldDSL :: Type -> Type where
   DeclareAcquisitionActionGID :: AcquisitionActionF -> WorldDSL (GID AcquisitionActionF)
   DeclareConsumptionActionGID :: ConsumptionActionF -> WorldDSL (GID ConsumptionActionF)
   DeclarePosturalActionGID :: PosturalActionF -> WorldDSL (GID PosturalActionF)
-
+  DeclareContainerAccessActionGID :: ContainerAccessActionF -> WorldDSL (GID ContainerAccessActionF)
   WithShortName :: Text -> Object -> WorldDSL Object
   WithDescription :: Text -> Object -> WorldDSL Object
   WithDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> WorldDSL Object
@@ -87,6 +85,7 @@ data WorldDSL :: Type -> Type where
   CreateAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
   CreateAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> WorldDSL ActionManagement
   CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> WorldDSL ActionManagement
+  CreateSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> WorldDSL ActionManagement
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
   CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL ActionManagement
 
@@ -124,6 +123,7 @@ data WorldDSL :: Type -> Type where
   CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> WorldDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
+  CreateContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> WorldDSL Effect
 
 -- Add these after the existing LinkEffectTo* constructors:
   LinkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
@@ -186,6 +186,9 @@ declareConsumptionActionGID = DeclareConsumptionActionGID
 declarePosturalActionGID :: PosturalActionF -> WorldDSL (GID PosturalActionF)
 declarePosturalActionGID = DeclarePosturalActionGID
 
+declareContainerAccessActionGID :: ContainerAccessActionF -> WorldDSL (GID ContainerAccessActionF)
+declareContainerAccessActionGID = DeclareContainerAccessActionGID
+
 -- ActionManagement construction - FIXED: now returns ActionManagementFunctions
 createISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> WorldDSL ActionManagement
 createISAManagement = CreateISAManagement
@@ -198,6 +201,9 @@ createDSAContainerManagement = CreateDSAContainerManagement
 
 createSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL ActionManagement
 createSSAManagement = CreateSSAManagement
+
+createSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> WorldDSL ActionManagement
+createSAConManagement = CreateSAConManagement
 
 createAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> WorldDSL ActionManagement
 createAVManagement = CreateAVManagement
@@ -259,6 +265,9 @@ createNegativePosturalEffect = CreateNegativePosturalEffect
 
 createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> WorldDSL Effect
 createSomaticAccessEffect = CreateSomaticAccessEffect
+
+createContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> WorldDSL Effect
+createContainerAccessEffect = CreateContainerAccessEffect
 
 linkEffectToObject :: EffectActionKey -> GID Object -> Effect -> WorldDSL ()
 linkEffectToObject = LinkEffectToObject

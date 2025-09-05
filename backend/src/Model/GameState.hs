@@ -195,7 +195,6 @@ newtype ImplicitStimulusActionF
                                                             -> Location
                                                             -> GameComputation Identity () }
 
-
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
