@@ -24,11 +24,14 @@ module GameState ( addToInventoryM
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
+                 , parseAccessPhrase
                  , parseObjectPhrase
                  , parseConsumablePhrase
                  , parseContainerPhrase
                  , parseDirectionalStimulusNounPhrase
                  , parseSupportPhrase
+                 , parseInstrumentalAccessNounPhrase
+                 , parseAccessPhrase
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processSimpleContainerAccessEffect
@@ -38,63 +41,61 @@ module GameState ( addToInventoryM
                  , processConsumptionEffect
                  , removeFromInventoryM
                  ) where
-import           Control.Monad.Identity         (Identity)
-import           Control.Monad.State            (gets, modify')
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
-import           Data.Kind                      (Type)
-import           Data.Map.Strict                (Map, elems)
+import           Data.Map.Strict               (elems)
 import qualified Data.Map.Strict
-import           Data.Set                       (Set, delete, empty, fromList,
-                                                 insert, member, null, toList)
-import qualified Data.Set                       (filter, foldl', insert,
-                                                 singleton)
-import           Data.Text                      (Text, intercalate, null, pack)
-import           Debug.Trace                    (trace)
-import           Error                          (throwMaybeM)
-import           Grammar.Parser.Partitions.Misc (a)
-import           Model.GameState                (AcquisitionActionF,
-                                                 AcquisitionRes (Complete, Simple),
-                                                 ActionEffectKey (ObjectKey),
-                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
-                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
-                                                 ConsumptionActionF (_consumptionAction),
-                                                 ContainerAccessActionF,
-                                                 GameComputation,
-                                                 GameState (_narration, _player, _world),
-                                                 ImplicitStimulusActionF,
-                                                 Location (_locationActionManagement),
-                                                 Narration (Narration),
-                                                 Object (_description, _descriptives, _objectActionManagement),
-                                                 Player (_location, _playerActions),
-                                                 PosturalActionF,
-                                                 SimpleAcquisitionRes (SimpleAcquisitionRes),
-                                                 SpatialRelationship (Inventory),
-                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
-                                                 _objectSemanticMap)
-import           Model.GameState.Mappings       (GIDToDataMap, _getGIDToDataMap)
-import           Model.GID                      (GID)
-import           Model.Parser.Atomics.Nouns     (Consumable, Container,
-                                                 PosturalVerb, Surface)
-import           Model.Parser.Atomics.Verbs     (AcquisitionVerb,
-                                                 ConsumptionVerb,
-                                                 ImplicitStimulusVerb,
-                                                 NegativePosturalVerb (NegativePosturalVerb),
-                                                 PositivePosturalVerb (PositivePosturalVerb),
-                                                 SimpleAccessVerb)
-import           Model.Parser.Composites.Nouns  (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                 ContainerPhrase (ContainerPhrase),
-                                                 DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
-                                                 ObjectPhrase (ObjectPhrase),
-                                                 SupportPhrase (ContainerSupport, SurfaceSupport),
-                                                 SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
-import           Model.Parser.Composites.Verbs  (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                 ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                 ContainerAccessVerbPhrase,
-                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
-import           Model.Parser.GCase             (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
+import           Data.Set                      (Set, delete, empty, fromList,
+                                                insert, member, null, toList)
+import qualified Data.Set                      (filter)
+import           Data.Text                     (Text, pack)
+import           Debug.Trace                   (trace)
+import           Error                         (throwMaybeM)
+import           Model.GameState               (AccessRes (CompleteAR, SimpleAR),
+                                                AcquisitionActionF,
+                                                AcquisitionRes (Complete, Simple),
+                                                ActionEffectKey (ObjectKey),
+                                                ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
+                                                ActionManagementFunctions (ActionManagementFunctions),
+                                                CompleteAccessRes (CompleteAccessRes),
+                                                CompleteAcquisitionRes (CompleteAcquisitionRes),
+                                                ConsumptionActionF (_consumptionAction),
+                                                ContainerAccessActionF,
+                                                GameComputation,
+                                                GameState (_narration, _player, _world),
+                                                ImplicitStimulusActionF,
+                                                Location (_locationActionManagement),
+                                                Narration (Narration),
+                                                Object (_description, _descriptives, _objectActionManagement),
+                                                Player (_location, _playerActions),
+                                                PosturalActionF,
+                                                SimpleAccessRes (SimpleAccessRes),
+                                                SimpleAcquisitionRes (SimpleAcquisitionRes),
+                                                SpatialRelationship (Inventory),
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
+                                                World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                _objectSemanticMap)
+import           Model.GameState.Mappings      (GIDToDataMap, _getGIDToDataMap)
+import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Nouns    (Container, Surface)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                ImplicitStimulusVerb,
+                                                NegativePosturalVerb,
+                                                PositivePosturalVerb,
+                                                SimpleAccessVerb)
+import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                ContainerPhrase (ContainerPhrase),
+                                                DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
+                                                InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
+                                                NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
+                                                ObjectPhrase (ObjectPhrase),
+                                                SupportPhrase (ContainerSupport, SurfaceSupport),
+                                                SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase))
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
+                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase))
+import           Model.Parser.GCase            (NounKey (ConsumableNounKey, ContainerKey, DirectionalStimulusKey, InstrumentAccessNounKey, ObjectiveKey, SurfaceKey))
 
 
 getDescriptionM :: GID Object -> GameComputation Identity Text
@@ -120,8 +121,16 @@ parseConsumptionPhrase (ConsumptionVerbPhrase _ ophrase) = Data.Bifunctor.second
                (ConsumableNounPhrase (DescriptiveNounPhrase _ obj'))      -> obj'
                (ConsumableNounPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
     in (ophrase, obj)
--- GameState.hs - Updated effect processing functions
 
+parseAccessPhrase :: ContainerAccessVerbPhrase -> AccessRes
+parseAccessPhrase cavp = case cavp of
+  SimpleAccessContainerVerbPhrase _ cphrase ->
+    let ckey = parseContainerPhrase cphrase
+    in SimpleAR $ SimpleAccessRes ckey cphrase
+  ContainerAccessVerbPhrase _ cphrase iphrase ->
+    let ckey = parseContainerPhrase cphrase
+        ikey = parseInstrumentalAccessNounPhrase iphrase
+    in CompleteAR $ CompleteAccessRes ckey cphrase ikey iphrase
 
 parseDirectionalStimulusNounPhrase :: DirectionalStimulusNounPhrase -> NounKey
 parseDirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase _ nounPhrase) =
@@ -140,6 +149,15 @@ parseObjectPhrase (ObjectPhrase nounPhrase) =
                DescriptiveNounPhrase _ obj      -> obj
                DescriptiveNounPhraseDet _ _ obj -> obj
   in ObjectiveKey noun
+
+parseInstrumentalAccessNounPhrase :: InstrumentalAccessNounPhrase -> NounKey
+parseInstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase _ nounPhrase) =
+  let noun = case nounPhrase of
+               SimpleNounPhrase instrument             -> instrument
+               NounPhrase _ instrument                 -> instrument
+               DescriptiveNounPhrase _ instrument      -> instrument
+               DescriptiveNounPhraseDet _ _ instrument -> instrument
+  in InstrumentAccessNounKey noun
 
 parseConsumablePhrase :: ConsumableNounPhrase -> NounKey
 parseConsumablePhrase (ConsumableNounPhrase phrase) =

@@ -9,7 +9,7 @@ import           Data.Text                                        (Text, pack)
 import           Debug.Trace                                      (trace)
 import           GameState                                        (getObjectM,
                                                                    modifyNarration,
-                                                                   parseAcquisitionPhrase)
+                                                                   parseAccessPhrase)
 import           GameState.ActionManagement                       (findAVKey)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.GameState                                  (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
@@ -50,7 +50,7 @@ openF = PlayerContainerAccessF openit
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
     openit actionKey actionMap searchStrategy avp finalize = do
-      case ares of
+      case caRes of
         Simple (SimpleAcquisitionRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saObjectKey
           case osValidation of
@@ -87,7 +87,7 @@ openF = PlayerContainerAccessF openit
                     Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
                 Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
       where
-        ares = parseAcquisitionPhrase avp
+        caRes = parseAccessPhrase avp
 
 validateObjectSearch :: SearchStrategy -> NounKey -> GameComputation Identity (Either AcquisitionError (GID Object, GID Object))
 validateObjectSearch searchStrategy nounKey = do

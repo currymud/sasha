@@ -36,8 +36,8 @@ module Model.GameState (
   , ContainerAccessActionMap
   , ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys)
   , Config (Config, _actionMaps)
-  , CompleteAccessRes (_containerKey, _ContainerPhrase, _instrumentKey, _instrumentPhrase)
-  , SimpleAccessRes (_saContainerKey, _saContainerPhrase)
+  , CompleteAccessRes (CompleteAccessRes, _containerKey, _ContainerPhrase, _instrumentKey, _instrumentPhrase)
+  , SimpleAccessRes (SimpleAccessRes,  _saContainerKey, _saContainerPhrase)
   , ContainerAccessActionF (PlayerContainerAccessF,ObjectContainerAccessF,CannotAccessF,InstrumentContainerAccessF)
   , CoordinationResult (CoordinationResult, _computation, _actionEffectKeys, _fieldEffectKeys)
   , DirectionalStimulusActionF (PlayerDirectionalStimulusActionF,ObjectDirectionalStimulusActionF,CannotSeeF)
