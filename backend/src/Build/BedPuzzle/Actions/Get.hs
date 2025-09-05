@@ -52,13 +52,13 @@ getF = AcquisitionActionF getit
           case osValidation of
             Left err' -> handleAcquisitionError err'
             Right (objectGID, containerGID) -> do
-              objectActionLookup <- lookupAcquisitionAction objectGID actionMap ("Object " <> (Data.Text.pack . show) objectGID <> ":")
+              objectActionLookup <- lookupAcquisitionAction objectGID actionMap
               trace ("DEBUG: getF - objectGID=" ++ show objectGID ++ " lookup result: ") $ pure ()
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
                 Right (NotGettableF objectNotGettableF) -> objectNotGettableF
                 Right (CollectedF objectActionF) -> do
-                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap ("Container " <> (Data.Text.pack . show) containerGID <> ":")
+                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap
                   case containerActionLookup of
                     Left err' -> handleAcquisitionError err'
                     Right (NotGettableF cannotGetFromF) -> cannotGetFromF
@@ -70,12 +70,12 @@ getF = AcquisitionActionF getit
           case osValidation of
             Left err' -> handleAcquisitionError err'
             Right (objectGID, containerGID) -> do
-              objectActionLookup <- lookupAcquisitionAction objectGID actionMap ("Object " <> (Data.Text.pack . show) objectGID <> ":")
+              objectActionLookup <- lookupAcquisitionAction objectGID actionMap
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
                 Right (NotGettableF objectNotGettableF) -> objectNotGettableF
                 Right (CollectedF objectActionF)-> do
-                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap ("Container : " <> (Data.Text.pack . show) containerGID <> ":")
+                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap
                   case containerActionLookup of
                     Left err' -> handleAcquisitionError err'
                     Right (NotGettableF cannotGetFromF) -> cannotGetFromF
@@ -94,12 +94,11 @@ validateObjectSearch searchStrategy nounKey = do
 
 lookupAcquisitionAction :: GID Object
                              -> AcquisitionVerbActionMap
-                             -> Text
                              -> GameComputation Identity (Either AcquisitionError AcquisitionActionF)
-lookupAcquisitionAction objectGID actionMap contextDescription = do
+lookupAcquisitionAction objectGID actionMap = do
   actionMgmt <- _objectActionManagement <$> getObjectM objectGID
   case findAVKey get actionMgmt of
-    Nothing -> pure $ Left $ ContainerMissingAction $ contextDescription <> " " <> (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
+    Nothing -> pure $ Left $ ContainerMissingAction $ (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
     Just actionGID -> do
       trace ("DEBUG: lookupAcquisitionAction - Object " ++ show objectGID ++ " has get action GID: " ++ show actionGID) $ pure ()
       case Data.Map.Strict.lookup actionGID actionMap of

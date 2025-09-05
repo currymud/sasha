@@ -82,6 +82,7 @@ module Model.GameState (
   , ProcessImplicitVerbMap
   , ProcessImplicitVerbMaps
   , SearchStrategy
+  , SimpleAccessSearchStrategy
   , SomaticAccessActionF (SomaticAccessActionF, _somaticAccessAction)
   , SomaticStimulusActionMap
   , SpatialRelationship (ContainedIn, Contains, Inventory, Supports, SupportedBy)
@@ -212,7 +213,7 @@ data DirectionalStimulusContainerActionF
 
 type ContainerAccessF :: Type
 type ContainerAccessF = (EffectActionKey
-                           -> SearchStrategy
+                           -> SimpleAccessSearchStrategy
                            -> ContainerAccessActionMap
                            -> ContainerAccessVerbPhrase
                            -> GameComputation Identity ())
@@ -264,6 +265,9 @@ type SearchStrategy :: Type
 type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
+type SimpleAccessSearchStrategy :: Type
+type SimpleAccessSearchStrategy = NounKey
+                                    -> GameComputation Identity (Maybe (GID Object))
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
