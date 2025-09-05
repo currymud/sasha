@@ -2,18 +2,21 @@ module Actions.Manipulate.ContainerAccess.Open where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import qualified Data.Map.Strict
+import qualified Data.Set
 import           GameState                     (getPlayerM, modifyNarration)
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
+import           Location                      (getPlayerLocationM)
 import           Model.GameState               (ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                 ContainerAccessResult (ContainerAccessResult),
-                                                EffectActionKey,
-                                                GameComputation, Object,
+                                                EffectActionKey (ContainerAccessActionKey),
+                                                GameComputation,
+                                                Location (_objectSemanticMap),
                                                 Player (_playerActions),
+                                                SimpleAccessSearchStrategy,
                                                 updateActionConsequence)
-import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
 
 manageContainerAccessProcess :: ContainerAccessVerbPhrase -> GameComputation Identity ()
@@ -27,12 +30,19 @@ manageContainerAccessProcess cavp  = do
         Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
         Just (InstrumentContainerAccessF _) -> error "InstrumentContainerAccessF is not a player constructor"
         Just (CannotAccessF actionF) -> actionF  -- Execute the failure action
-        Just (ObjectContainerAccessF actionF) -> error "ObjectContainerAccessF is not a player constructor"
-        Just (PlayerContainerAccessF actionFunc) ->
-          -- PlayerContainerAccessF would contain the full player-level action
-          -- This is where the actual player open action would be stored
-          error "PlayerContainerAccessF not yet implemented - this will be Build.BedPuzzle.Actions.Player.Open"
+        Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
+        Just (PlayerContainerAccessF actionF) -> do
+          let effectActionKey = ContainerAccessActionKey actionGID
+          actionF effectActionKey objectSearchStrategy actionMap cavp finalizeContainerAccess
 
+-- | ToDo Clarification system. object identification assumes only one object in location matches nounkey.
+objectSearchStrategy :: SimpleAccessSearchStrategy
+objectSearchStrategy nounkey = do
+  objectSemanticMap <- _objectSemanticMap <$> getPlayerLocationM
+  case Data.Map.Strict.lookup nounkey objectSemanticMap of
+    Just objSet
+      | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
+    _ -> pure Nothing
 finalizeContainerAccess :: EffectActionKey
                         -> GameComputation Identity ContainerAccessResult
                         -> GameComputation Identity ()
