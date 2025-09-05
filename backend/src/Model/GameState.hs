@@ -216,6 +216,7 @@ type ContainerAccessF = (EffectActionKey
                            -> SimpleAccessSearchStrategy
                            -> ContainerAccessActionMap
                            -> ContainerAccessVerbPhrase
+                           -> FinalizeAccessNotInstrumentF
                            -> GameComputation Identity ())
 
 type ContainerAccessActionF :: Type
@@ -227,7 +228,6 @@ data ContainerAccessActionF
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = EffectActionKey
-                                      -> GID Object
                                       -> GameComputation Identity ContainerAccessResult
                                       -> GameComputation Identity ()
 

@@ -83,7 +83,6 @@ removeSystemEffect key effectGID = modify' $ \gs ->
       updatedRegistry = Data.Map.Strict.adjust (Data.Map.Strict.delete effectGID) key currentRegistry
   in gs { _systemEffectRegistry = updatedRegistry }
 
-
 processEffectsFromRegistry :: EffectActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
