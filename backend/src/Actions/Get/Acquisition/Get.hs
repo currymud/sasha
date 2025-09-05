@@ -7,7 +7,8 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import           Control.Monad.State           (gets)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, elemAt, null, toList)
+import           Data.Set                      (Set, elemAt, fromList, null,
+                                                toList)
 import qualified Data.Text
 import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisitionPhrase,
@@ -96,39 +97,6 @@ finalizeAcquisition effectActionKey containerGID objectGID objectActionF contain
        (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
        let allEffects = effectActionKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
-       mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
-  {-
--- |  Search global perception map
-perceptionSearchStrategy :: SearchStrategy
-perceptionSearchStrategy targetNounKey = do
-  world <- gets _world
-  let perceptionMap = _perceptionMap world
+           uniqueEffects = Data.Set.toList $ Data.Set.fromList allEffects
+       mapM_ processEffectsFromRegistry uniqueEffects >> containerRemoveObjectF >> playerGetObjectF
 
-  -- Convert NounKey to DirectionalStimulusNounPhrase for perception map lookup
-  case nounKeyToDirectionalStimulus targetNounKey of
-    Just dsnp -> case Data.Map.Strict.lookup dsnp perceptionMap of
-      Just objSet | not (Data.Set.null objSet) -> do
-        let targetGID = Data.Set.elemAt 0 objSet
-        -- Find what contains/supports this object
-        let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-        case Data.Map.Strict.lookup targetGID spatialMap of
-          Just relationships -> do
-            let sources = getContainerSources relationships
-            case sources of
-              (sourceGID:_) -> pure $ Just (targetGID, sourceGID)
-              []            -> pure Nothing
-          Nothing -> pure Nothing
-      _ -> pure Nothing
-    Nothing -> pure Nothing
-  where
-    getContainerSources :: Set SpatialRelationship -> [GID Object]
-    getContainerSources relationships =
-      [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
-      [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
-
-    -- Helper to convert NounKey to DirectionalStimulusNounPhrase
-    nounKeyToDirectionalStimulus :: NounKey -> DirectionalStimulusNounPhrase
-    nounKeyToDirectionalStimulus (DirectionalStimulusKey dsn) =
-      DirectionalStimulusNounPhrase (SimpleNounPhrase dsn)
---    nounKeyToDirectionalStimulus (ObjectiveKey obj) =
--}
