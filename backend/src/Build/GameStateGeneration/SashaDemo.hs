@@ -25,8 +25,9 @@ import           Model.Parser.Composites.Nouns                                  
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                                  (AcquisitionActionF,
                                                                                    ActionEffectKey,
-                                                                                   ActionManagement (AAManagementKey, AVManagementKey, DSAManagementKey, ISAManagementKey, SSAManagementKey),
+                                                                                   ActionManagement (AAManagementKey, AVManagementKey, DSAManagementKey, ISAManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
+                                                                                   ContainerAccessActionF,
                                                                                    DirectionalStimulusActionF,
                                                                                    Effect,
                                                                                    EffectActionKey (AcquisitionalActionKey, SomaticAccessActionKey),
@@ -44,6 +45,7 @@ import           Model.GameState.GameStateDSL                                   
                                                                                    createDirectionalStimulusEffect,
                                                                                    createImplicitStimulusEffect,
                                                                                    declareAcquisitionActionGID,
+                                                                                   declareContainerAccessActionGID,
                                                                                    declareDirectionalStimulusActionGID,
                                                                                    declareImplicitStimulusActionGID,
                                                                                    declareLocationGID,
@@ -87,11 +89,13 @@ import           Build.BedPuzzle.Actions.Look                                   
 import           Build.BedPuzzle.Actions.Objects.Chair.Look                       (whatChairF)
 import           Build.BedPuzzle.Actions.Objects.Pill.Look                        (whatPill)
 import           Build.BedPuzzle.Actions.Objects.Pocket.Look                      (whatPocket)
+import           Build.BedPuzzle.Actions.Objects.Pocket.Open                      (pocketOutOfReachF)
 import           Build.BedPuzzle.Actions.Objects.Robe.Get                         (getRobeDeniedF)
 import           Build.BedPuzzle.Actions.Objects.Robe.Look                        (notEvenRobeF)
 import           Build.BedPuzzle.Actions.Open                                     (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                              (dsvActionEnabled,
                                                                                    isvActionEnabled)
+import           Build.BedPuzzle.Actions.Player.Open                              (openDeniedF)
 import           Build.GameStateGeneration.TestDynamicActions                     (placeObject)
 import           Control.Monad                                                    ((>=>))
 import           Data.Kind                                                        (Type)
@@ -113,6 +117,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs               
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs                 (takeCV)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook,
                                                                                    look)
+import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs                (openSA)
 import           Model.GID                                                        (GID)
 import           Model.Parser.Atomics.Nouns                                       (DirectionalStimulus,
                                                                                    Objective)
@@ -188,6 +193,15 @@ sashaBedroomDemo = do
   registerObject robeGID robe
   placeObject bedroomGID robeGID robeDS robeOB
 
+  pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
+  lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
+  openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
+  let pocketActions = ActionManagementFunctions $ Data.Set.fromList
+        [ DSAManagementKey look lookAtPocketGID
+        , SAConManagementKey openSA openPocketNoReachGID
+        ]
+      pocket = buildObjectWithGID pocketGID pocketObj pocketActions
+
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
@@ -199,10 +213,10 @@ sashaBedroomDemo = do
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
-
+  containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
   trace ("DEBUG: getRobeDeniedGID = " ++ show getRobeDeniedGID) $ pure ()
@@ -238,14 +252,16 @@ buildBedroomPlayer :: GID Location
                         -> GID SomaticAccessActionF
                         -> GID DirectionalStimulusActionF
                         -> GID AcquisitionActionF
+                        -> GID ContainerAccessActionF
                         -> WorldDSL Player
-buildBedroomPlayer bedroomGID implicitLookResponseGID openEyesGID directLookResponseGID getRobeFGID =
+buildBedroomPlayer bedroomGID implicitLookResponseGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook implicitLookResponseGID))
     >>= (\p -> withPlayerBehavior p (DSAManagementKey look directLookResponseGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
     >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
     >>= (\p -> withPlayerBehavior p (AVManagementKey get getRobeFGID))
+    >>= (\p -> withPlayerBehavior p (SAConManagementKey openSA containerAccessDeniedF))
 
 bedroomLoc :: GID ImplicitStimulusActionF ->  WorldDSL Location
 bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
@@ -352,7 +368,7 @@ testDynamicActionsDSL = do
   registerObject floorGID (floorObj lookFloorGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedFGID)
   registerObject pocketGID (pocketObj whatPocketFGID)
-  -- Generate open eyes action GIDs dynamically
+
   openEyesGID <- declareSomaticActionGID openEyes
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
   playerGetFGID <- declareAcquisitionActionGID getF
@@ -360,6 +376,7 @@ testDynamicActionsDSL = do
   lookFGID <- declareImplicitStimulusActionGID lookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
+  accessContainerDeniedFGID <- declareContainerAccessActionGID openDeniedF
 
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
@@ -374,7 +391,7 @@ testDynamicActionsDSL = do
   registerSpatial robeGID (SupportedBy chairGID)
   registerSpatial pocketGID (SupportedBy robeGID)
 --  registerObject floorGID (floorObj id)
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID
+  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID accessContainerDeniedFGID
 
   openEyesLookChangeEffect <- createImplicitStimulusEffect isaLook lookFGID
   linkEffectToLocation (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffect

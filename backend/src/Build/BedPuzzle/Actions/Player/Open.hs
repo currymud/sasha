@@ -40,7 +40,7 @@ openDeniedF = CannotAccessF denied
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
     msg :: Text
-    msg = "You are in position ot be opening anything but your eyes."
+    msg = "You are in position to not be opening anything but your eyes."
 
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
