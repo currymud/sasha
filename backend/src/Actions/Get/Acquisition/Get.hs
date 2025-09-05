@@ -97,6 +97,5 @@ finalizeAcquisition effectActionKey containerGID objectGID objectActionF contain
        (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
        let allEffects = effectActionKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
-           uniqueEffects = Data.Set.toList $ Data.Set.fromList allEffects
-       mapM_ processEffectsFromRegistry uniqueEffects >> containerRemoveObjectF >> playerGetObjectF
+       mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
 
