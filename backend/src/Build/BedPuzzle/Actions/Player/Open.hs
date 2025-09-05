@@ -1,12 +1,11 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module Build.BedPuzzle.Actions.Player.Open () where
+module Build.BedPuzzle.Actions.Player.Open (openF,openDeniedF) where
 import           Build.BedPuzzle.Actions.Utils                     (AcquisitionError (ContainerMissingAction, InvalidActionType, ObjectNotFound, ObjectNotGettable),
                                                                     handleAcquisitionError)
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
 import           Data.Text                                         (Text, pack)
-import           Debug.Trace                                       (trace)
 import           GameState                                         (getObjectM,
                                                                     modifyNarration,
                                                                     parseAccessPhrase)
@@ -35,8 +34,8 @@ import           Model.Parser.Composites.Verbs                     (AcquisitionV
                                                                     ContainerAccessVerbPhrase)
 import           Model.Parser.GCase                                (NounKey)
 
-getDeniedF :: ContainerAccessActionF
-getDeniedF = CannotAccessF denied
+openDeniedF :: ContainerAccessActionF
+openDeniedF = CannotAccessF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
