@@ -79,7 +79,8 @@ import           Build.BedPuzzle.Actions.Get                             (getDen
                                                                           getF)
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
-import           Build.BedPuzzle.Actions.Inventory                       (notEvenInventoryF)
+import           Build.BedPuzzle.Actions.Inventory                       (defaultInventoryLookF,
+                                                                          notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                            (lookAtF)
@@ -190,7 +191,7 @@ sashaBedroomDemo = do
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
   playerGetFGID <- declareAcquisitionActionGID getF
   lookFGID <- declareImplicitStimulusActionGID lookF
-  inventoryFGID <- declareImplicitStimulusActionGID notEvenInventoryF
+  inventoryFGID <- declareImplicitStimulusActionGID defaultInventoryLookF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF

@@ -629,7 +629,7 @@ interpretDSL (WithLocationBehavior loc actionMgmt) = do
 
 -- Object field setters
 interpretDSL (WithShortName text obj) = do
-  let updatedObj = obj { _shortName = Data.Text.take 10 text }
+  let updatedObj = obj { _shortName = text }
   pure updatedObj
 
 interpretDSL (WithDescription text obj) = do
