@@ -169,7 +169,7 @@ parseConsumablePhrase (ConsumableNounPhrase phrase) =
   in ConsumableNounKey noun
 
 parseContainerPhrase :: ContainerPhrase -> NounKey
-parseContainerPhrase (ContainerPhrase _ nounPhrase) =
+parseContainerPhrase (ContainerPhrase nounPhrase) =
   let noun = case nounPhrase of
                SimpleNounPhrase container             -> container
                NounPhrase _ container                 -> container
@@ -183,7 +183,7 @@ parseSupportPhrase supportPhrase = case supportPhrase of
     case surfacePhrase of
       SimpleSurfacePhrase nounPhrase -> extractSurfaceNoun nounPhrase
       SurfacePhrase _ nounPhrase     -> extractSurfaceNoun nounPhrase
-  ContainerSupport (ContainerPhrase _ nounPhrase) -> extractContainerNoun nounPhrase
+  ContainerSupport (ContainerPhrase nounPhrase) -> extractContainerNoun nounPhrase
   where
     extractSurfaceNoun :: NounPhrase Surface -> NounKey
     extractSurfaceNoun nounPhrase = case nounPhrase of

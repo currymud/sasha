@@ -1,12 +1,11 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
 module Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase ),
-                                      ContainerPhraseRules (ContainerPhraseRules, _containerRule, _containerMarkerRule),
+                                      ContainerPhraseRules (ContainerPhraseRules, _containerRule),
                                       DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                       DirectionalStimulusNounRules (DirectionalStimulusNounRules, _directionalStimulusRule),
                                       ConsumableNounPhrase (ConsumableNounPhrase),
                                       ConsumableNounPhraseRules (ConsumableNounPhraseRules, _consumableNounPhraseRule),
                                       InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
-                                      InstrumentalNounPhraseRules (InstrumentalNounPhraseRules, _instrumentNounRule, _instrumentMarkerRule),
                                       NounPhrase (SimpleNounPhrase,
                                                   NounPhrase,
                                                   DescriptiveNounPhrase,
@@ -40,18 +39,14 @@ import           Relude.String.Conversion          (ToText (toText))
 import           Text.Earley                       (Prod)
 
 type ContainerPhrase :: Type
-data ContainerPhrase = ContainerPhrase ContainmentMarker (NounPhrase Container)
+newtype ContainerPhrase = ContainerPhrase (NounPhrase Container)
   deriving stock (Show, Eq, Ord,Generic)
 
 instance ToText ContainerPhrase where
-  toText (ContainerPhrase marker nounPhrase) =
-    unwords [toText marker, toText nounPhrase]
+  toText (ContainerPhrase nounPhrase) = toText nounPhrase
 
 type ContainerPhraseRules :: (Type -> Type -> Type -> Type) -> Type
-data ContainerPhraseRules r = ContainerPhraseRules
-  { _containerRule       :: Prod r Text Lexeme (NounPhrase Container)
-  , _containerMarkerRule :: Prod r Text Lexeme ContainmentMarker
-  }
+newtype ContainerPhraseRules r = ContainerPhraseRules { _containerRule :: Prod r Text Lexeme (NounPhrase Container)}
 
 type InstrumentalAccessNounPhrase :: Type
 data InstrumentalAccessNounPhrase = InstrumentalAccessNounPhrase InstrumentMarker (NounPhrase InstrumentalAccessNoun)

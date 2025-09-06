@@ -1,5 +1,3 @@
-{- OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use newtype instead of data" #-}
 module Model.Parser.Composites.Verbs where
 import           Data.Kind                         (Type)
 import           GHC.Generics                      (Generic)

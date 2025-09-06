@@ -107,7 +107,7 @@ dsvContainerActionEnabled = PlayerDirectionalStimulusContainerActionF lookinit
                     error "Programmer Error: PlayerDirectionalStimulusContainerActionF found in object action map"
 
 extractContainerNoun :: ContainerPhrase -> NounKey
-extractContainerNoun (ContainerPhrase _ nounPhrase) = extractContainerNounFromPhrase nounPhrase
+extractContainerNoun (ContainerPhrase nounPhrase) = extractContainerNounFromPhrase nounPhrase
   where
     extractContainerNounFromPhrase :: NounPhrase Container -> NounKey
     extractContainerNounFromPhrase (SimpleNounPhrase container) = ContainerKey container

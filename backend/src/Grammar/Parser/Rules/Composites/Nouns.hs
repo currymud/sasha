@@ -47,9 +47,8 @@ containerPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Container
                                        -> Grammar r (Prod r Text Lexeme ContainerPhrase)
 containerPhraseRules determinerRule adjRule containerRule = do
-  containmentMarker <- parseRule containmentMarkers ContainmentMarker
   nounPhraseRule rules >>= \nounPhrase ->
-    rule $ ContainerPhrase <$> containmentMarker <*> nounPhrase
+    rule $ ContainerPhrase <$> nounPhrase
   where
    rules
       = NounPhraseRules
