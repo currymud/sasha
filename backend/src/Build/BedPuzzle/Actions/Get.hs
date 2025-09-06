@@ -42,7 +42,6 @@ getDeniedF = NotGettableF denied
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
-
 -- ToDo: refactor to remove dead code.
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit

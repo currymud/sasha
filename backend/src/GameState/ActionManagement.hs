@@ -389,12 +389,20 @@ processEffect (PlayerKey pk) (ActionManagementEffect (AddAcquisitionVerb verb ne
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
+  trace ("DEBUG: Processing AddAcquisitionVerbPhrase effect for player - phrase: " ++ show phrase ++ " newGID: " ++ show newActionGID) $ pure ()
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
         updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-
+      {-
+processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+-}
 processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddConsumption verb _targetOid newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -464,7 +472,7 @@ lookupImplicitStimulus verb (ActionManagementFunctions actions) =
 lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (GID SomaticAccessActionF)
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
-
+    {-
 lookupAcquisitionPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
   -- First try exact phrase match
@@ -476,6 +484,18 @@ lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
     simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
     simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
     simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
+-}
+lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
+  trace ("DEBUG: lookupAcquisitionPhrase - looking for " ++ show avp ++ " in actions: " ++ show [p | AAManagementKey p _ <- Data.Set.toList actions]) $
+  -- First try exact phrase match
+  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+    <|>
+  -- Then try just the verb
+  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == simplifyAcquisitionVerbPhrase avp]
+
+simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
+simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
+simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
 lookupDirectionalContainerStimulus :: DirectionalStimulusVerb
                                         -> ActionManagementFunctions
