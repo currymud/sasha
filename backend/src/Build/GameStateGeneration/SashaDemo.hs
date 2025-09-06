@@ -55,6 +55,7 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           linkEffectToPlayer,
                                                                           registerLocation,
                                                                           registerObject,
+                                                                          registerObjectToLocation,
                                                                           registerPlayer,
                                                                           registerSpatial,
                                                                           withDescription,
@@ -66,7 +67,8 @@ import           Model.GameState.GameStateDSL                            (WorldD
                                                                           withShortName,
                                                                           withTitle)
 -- Import verb functions
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (isaLook)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory,
+                                                                          isaLook)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 
 -- Import verb phrases
@@ -77,6 +79,7 @@ import           Build.BedPuzzle.Actions.Get                             (getDen
                                                                           getF)
 import           Build.BedPuzzle.Actions.Get.Constructors                (getFromSupportF,
                                                                           getObjectF)
+import           Build.BedPuzzle.Actions.Inventory                       (notEvenInventoryF)
 import           Build.BedPuzzle.Actions.Locations.Look                  (lookF,
                                                                           pitchBlackF)
 import           Build.BedPuzzle.Actions.Look                            (lookAtF)
@@ -88,7 +91,6 @@ import           Build.BedPuzzle.Actions.Open                            (openEy
 import           Build.BedPuzzle.Actions.Player.Look                     (dsvActionEnabled,
                                                                           isvActionEnabled)
 import           Build.BedPuzzle.Actions.Player.Open                     (openDeniedF)
-import           Build.GameStateGeneration.TestDynamicActions            (placeObject)
 import           Control.Monad                                           ((>=>))
 import           Data.Kind                                               (Type)
 import qualified Data.Set
@@ -98,14 +100,19 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (chairO
                                                                           floorOB,
                                                                           mailOB,
                                                                           robeOB)
+import           Grammar.Parser.Partitions.Nouns.Surfaces                (chairSF)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook,
                                                                           look)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs       (openSA)
 import           Model.GID                                               (GID)
+import           Model.Parser.Atomics.Nouns                              (DirectionalStimulus,
+                                                                          Objective,
+                                                                          Surface)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 -- =============================================================================
 -- VERB PHRASES
 -- =============================================================================
@@ -158,6 +165,7 @@ sashaBedroomDemo = do
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   placeObject bedroomGID chairGID chairDS chairOB
+  placeSurface bedroomGID chairGID chairSF
 
   -- Robe
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
@@ -182,11 +190,19 @@ sashaBedroomDemo = do
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
   playerGetFGID <- declareAcquisitionActionGID getF
   lookFGID <- declareImplicitStimulusActionGID lookF
+  inventoryFGID <- declareImplicitStimulusActionGID notEvenInventoryF
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
 
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID openEyesGID dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
+  player <- buildBedroomPlayer
+              bedroomGID
+              isaEnabledLookGID
+              inventoryFGID
+              openEyesGID
+              dsvEnabledLookGID
+              getDeniedFGID
+              containerAccessDeniedFGID
   registerPlayer player
 
   -- Effects
@@ -235,14 +251,16 @@ buildLocation implicitLookResponseGID = defaultLocation & bedroomLoc'
 
 buildBedroomPlayer :: GID Location
                         -> GID ImplicitStimulusActionF
+                        -> GID ImplicitStimulusActionF
                         -> GID SomaticAccessActionF
                         -> GID DirectionalStimulusActionF
                         -> GID AcquisitionActionF
                         -> GID ContainerAccessActionF
                         -> WorldDSL Player
-buildBedroomPlayer bedroomGID implicitLookResponseGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
+buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook implicitLookResponseGID))
+    >>= (\p -> withPlayerBehavior p (ISAManagementKey inventory inventoryFGID))
     >>= (\p -> withPlayerBehavior p (DSAManagementKey look directLookResponseGID))
     >>= (\p -> withPlayerBehavior p (SSAManagementKey saOpen openEyesGID))
     >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
@@ -304,3 +322,13 @@ pocketObj lookGID openGID = defaultObject & pocket
         >=> withDescriptives [SimpleNounPhrase pocketDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
         >=> (\o -> withObjectBehavior o (SAConManagementKey openSA openGID))
+
+placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
+placeObject lid oid ds obj = do
+  registerObjectToLocation lid oid (DirectionalStimulusKey ds)
+  registerObjectToLocation lid oid (ObjectiveKey obj)
+
+placeSurface :: GID Location -> GID Object -> Surface -> WorldDSL ()
+placeSurface lid oid surface = do
+  registerObjectToLocation lid oid (SurfaceKey surface)
+

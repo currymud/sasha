@@ -97,6 +97,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives                     
                                                                                    mailOB,
                                                                                    pillOB,
                                                                                    robeOB)
+import           Grammar.Parser.Partitions.Nouns.Surfaces                         (chairSF)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (at)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get,
                                                                                    take)
@@ -105,10 +106,11 @@ import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb        
                                                                                    look)
 import           Model.GID                                                        (GID)
 import           Model.Parser.Atomics.Nouns                                       (DirectionalStimulus,
-                                                                                   Objective)
+                                                                                   Objective,
+                                                                                   Surface)
 import           Model.Parser.Composites.Verbs                                    (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                                    ConsumptionVerbPhrase (ConsumptionVerbPhrase))
-import           Model.Parser.GCase                                               (NounKey (DirectionalStimulusKey, ObjectiveKey))
+import           Model.Parser.GCase                                               (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- =============================================================================
 -- VERB PHRASES
@@ -166,6 +168,8 @@ testDynamicActionsDSL = do
   registerLocation bedroomGID (buildLocation pitchBlackGID)
 
   placeObject bedroomGID chairGID chairDS chairOB
+  placeSurface bedroomGID chairGID chairSF
+
   placeObject bedroomGID floorGID floorDS floorOB
   placeObject bedroomGID robeGID robeDS robeOB
 
@@ -266,11 +270,14 @@ pocketObj lookResponseGID = defaultObject & pocketObj'
                    >=> withDescriptives [SimpleNounPhrase pocketDS]
                    >=> (\o -> withObjectBehavior o (DSAManagementKey look lookResponseGID))
 
-
 placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
 placeObject lid oid ds obj = do
   registerObjectToLocation lid oid (DirectionalStimulusKey ds)
   registerObjectToLocation lid oid (ObjectiveKey obj)
+
+placeSurface :: GID Location -> GID Object -> Surface -> WorldDSL ()
+placeSurface lid oid surface = do
+  registerObjectToLocation lid oid (SurfaceKey surface)
 
 floorObj :: GID DirectionalStimulusActionF -> WorldDSL Object
 floorObj lookFloorGID = defaultObject & floorObj'

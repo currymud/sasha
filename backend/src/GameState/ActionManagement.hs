@@ -472,23 +472,18 @@ lookupImplicitStimulus verb (ActionManagementFunctions actions) =
 lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (GID SomaticAccessActionF)
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
-    {-
+
 lookupAcquisitionPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
   -- First try exact phrase match
   listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
     <|>
-  -- Then try just the verb
-  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == simplifyAcquisitionVerbPhrase avp]
-  where
-    simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
-    simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
-    simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
--}
-lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
-  trace ("DEBUG: lookupAcquisitionPhrase - looking for " ++ show avp ++ " in actions: " ++ show [p | AAManagementKey p _ <- Data.Set.toList actions]) $
-  -- First try exact phrase match
-  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
+  -- Try simplified phrase match (new!)
+  (case avp of
+    AcquisitionVerbPhrase verb objPhrase _ _ ->
+      listToMaybe [gid | AAManagementKey (SimpleAcquisitionVerbPhrase v op) gid <- Data.Set.toList actions,
+                         v == verb && op == objPhrase]
+    _ -> Nothing)
     <|>
   -- Then try just the verb
   listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == simplifyAcquisitionVerbPhrase avp]
