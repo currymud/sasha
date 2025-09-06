@@ -8,18 +8,18 @@ import           Build.GameStateGeneration.EDSL.GameStateBuilder (WorldBuilderRe
                                                                   interpretDSL,
                                                                   runWorldBuilder,
                                                                   runWorldBuilderWithMaps)
-import           Build.GameStateGeneration.TestDynamicActions    (testDynamicActionsDSL)
+import           Build.GameStateGeneration.SashaDemo             (sashaBedroomDemo)
 import qualified Data.Map.Strict
 import           Debug.Trace                                     (trace)
 import           Evaluators.Player.General                       (eval)
-import           Model.GameState                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+import           Model.GameState                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                   Config (Config, _actionMaps),
                                                                   GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)
 import           Relude.DeepSeq                                  (deepseq)
 
 buildResult :: WorldBuilderResult
-buildResult = case runWorldBuilderWithMaps (interpretDSL testDynamicActionsDSL) (initialBuilderState defaultGameState) of
+buildResult = case runWorldBuilderWithMaps (interpretDSL sashaBedroomDemo) (initialBuilderState defaultGameState) of
   Left err     -> error $ "Failed to build game state: " ++ show err
   Right result -> result
   where
@@ -53,6 +53,7 @@ config = Config { _actionMaps = trace ("Config maps size: " ++ show (Data.Map.St
       , _acquisitionActionMap = Data.Map.Strict.keys (_acquisitionActionMap maps) `deepseq` _acquisitionActionMap maps
       , _consumptionActionMap = Data.Map.Strict.keys (_consumptionActionMap maps) `deepseq` _consumptionActionMap maps
       , _posturalActionMap = Data.Map.Strict.keys (_posturalActionMap maps) `deepseq` _posturalActionMap maps
+      , _containerAccessActionMap = Data.Map.Strict.keys (_containerAccessActionMap maps) `deepseq` _containerAccessActionMap maps
       }
 
 -- Build GameState using the DSL!
