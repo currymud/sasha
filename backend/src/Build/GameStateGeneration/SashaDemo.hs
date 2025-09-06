@@ -100,6 +100,7 @@ import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
                                                                           floorOB,
                                                                           mailOB,
+                                                                          pocketOB,
                                                                           robeOB)
 import           Grammar.Parser.Partitions.Nouns.Surfaces                (chairSF)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
@@ -181,7 +182,8 @@ sashaBedroomDemo = do
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
-
+  placeObject bedroomGID pocketGID pocketDS pocketOB
+  -- registerSpatial
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
