@@ -18,13 +18,14 @@ import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroo
 
 -- Import adjectives and determiners
 import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                          ContainerPhrase (ContainerPhrase),
                                                                           NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 
 -- Import behavior management constructors and spatial relationships
 import           Model.GameState                                         (AcquisitionActionF,
                                                                           ActionEffectKey,
-                                                                          ActionManagement (AAManagementKey, AVManagementKey, DSAManagementKey, ISAManagementKey, SAConManagementKey, SSAManagementKey),
+                                                                          ActionManagement (AAManagementKey, AVManagementKey, CONManagementKey, DSAManagementKey, ISAManagementKey, SAConManagementKey, SSAManagementKey),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect,
@@ -40,6 +41,7 @@ import           Model.GameState                                         (Acquis
 import           Model.GameState.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
+                                                                          createContainerAccessEffect,
                                                                           createDirectionalStimulusEffect,
                                                                           createImplicitStimulusEffect,
                                                                           declareAcquisitionActionGID,
@@ -91,12 +93,15 @@ import           Build.BedPuzzle.Actions.Objects.Robe.Look               (notEve
 import           Build.BedPuzzle.Actions.Open                            (openEyes)
 import           Build.BedPuzzle.Actions.Player.Look                     (dsvActionEnabled,
                                                                           isvActionEnabled)
-import           Build.BedPuzzle.Actions.Player.Open                     (openDeniedF)
+import           Build.BedPuzzle.Actions.Player.Open                     (openDeniedF,
+                                                                          openF)
 import           Control.Monad                                           ((>=>))
 import           Data.Kind                                               (Type)
 import qualified Data.Set
 import           Data.Text                                               (Text)
+import           Grammar.Parser.Partitions.Misc                          (a)
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
+import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
                                                                           floorOB,
                                                                           mailOB,
@@ -113,7 +118,8 @@ import           Model.Parser.Atomics.Nouns                              (Direct
                                                                           Objective,
                                                                           Surface)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase))
+                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                                          ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase))
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 -- =============================================================================
 -- VERB PHRASES
@@ -128,24 +134,9 @@ getMailAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase mai
 getRobeAVP :: AcquisitionVerbPhrase-- Objects are built and contribute their actions to ActionMaps
 getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase robeOB))
 
-type ObjectSpec :: Type
-type ObjectSpec =
-  ( GID Object                     -- The object's GID
-  , WorldDSL Object                -- Builder with behaviors
-  )
+openPocketCVP :: ContainerAccessVerbPhrase
+openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
 
-type EffectSpec :: Type
-type EffectSpec =
-  ( EffectActionKey      -- Trigger: what action causes this
-  , ActionEffectKey      -- Target: LocationKey | ObjectKey | PlayerKey
-  , WorldDSL Effect      -- The effect builder
-  )
-
-type ObjectBuildError :: Type
-data ObjectBuildError
-  = MissingAction Text
-  | InvalidActionGID Text
-  deriving stock (Show,Ord, Eq)
 
 sashaBedroomDemo :: WorldDSL GameState
 sashaBedroomDemo = do
@@ -197,7 +188,7 @@ sashaBedroomDemo = do
   isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
-
+  accessContainerFGID <- declareContainerAccessActionGID openF
   player <- buildBedroomPlayer
               bedroomGID
               isaEnabledLookGID
@@ -224,6 +215,9 @@ sashaBedroomDemo = do
   openEyesLookChangeEffectRobe <- createDirectionalStimulusEffect dsaLook lookAtRobeFGID
   linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe
 
+  -- change open pocket for Player
+  openEyesOpenPocketChangesForPlayer <- createContainerAccessEffect openSA accessContainerFGID
+  linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer
   -- change get robe for Player
   robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
   linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
@@ -269,6 +263,8 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
     >>= (\p -> withPlayerBehavior p (AAManagementKey getRobeAVP getRobeFGID))
     >>= (\p -> withPlayerBehavior p (AVManagementKey get getRobeFGID))
     >>= (\p -> withPlayerBehavior p (SAConManagementKey openSA containerAccessDeniedF))
+    >>= (\p -> withPlayerBehavior p (CONManagementKey openPocketCVP containerAccessDeniedF))
+-- CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
 
 bedroomLoc :: GID ImplicitStimulusActionF ->  WorldDSL Location
 bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
@@ -325,6 +321,9 @@ pocketObj lookGID openGID = defaultObject & pocket
         >=> withDescriptives [SimpleNounPhrase pocketDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
         >=> (\o -> withObjectBehavior o (SAConManagementKey openSA openGID))
+
+--CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
+
 
 placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
 placeObject lid oid ds obj = do
