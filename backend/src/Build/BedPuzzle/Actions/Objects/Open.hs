@@ -3,7 +3,7 @@ import           Control.Monad.Identity                            (Identity)
 import qualified Data.Set
 import           GameState                                         (getObjectM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
-import           Model.GameState                                   (ActionManagement (SAConManagementKey),
+import           Model.Core                                   (ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
                                                                     ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys),

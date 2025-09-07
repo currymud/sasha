@@ -12,13 +12,15 @@ import           Debug.Trace                                      (trace)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM,
                                                                    modifyNarration,
-                                                                   parseAcquisitionPhrase)
+                                                                   parseAcquisitionPhrase,
+                                                                   updateActionConsequence)
 import           GameState.ActionManagement                       (findAVKey)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.GameState                                  (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                                   AcquisitionRes (Complete, Simple),
+import           Model.Actions.Results                            (AcquisitionRes (Complete, Simple),
+                                                                   CompleteAcquisitionRes (CompleteAcquisitionRes),
+                                                                   SimpleAcquisitionRes (SimpleAcquisitionRes))
+import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
-                                                                   CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
                                                                    EffectActionKey,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
@@ -26,14 +28,13 @@ import           Model.GameState                                  (AcquisitionAc
                                                                    Location (_objectSemanticMap),
                                                                    Object (_objectActionManagement),
                                                                    SearchStrategy,
-                                                                   SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey, _saObjectPhrase),
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
-                                                                   World (_spatialRelationshipMap),
-                                                                   updateActionConsequence)
+                                                                   World (_spatialRelationshipMap))
 import           Model.GID                                        (GID)
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                               (NounKey)
+
 getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
   where

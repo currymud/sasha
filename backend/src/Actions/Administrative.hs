@@ -1,36 +1,19 @@
 {-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 module Actions.Administrative (manageAdministration) where
 
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.Reader.Class    (asks)
+import           Control.Monad.Identity     (Identity)
 import qualified Data.Map.Strict
-import qualified Data.Set
-import           GameState                     (getLocationObjectIDsM,
-                                                getPlayerLocationM, getPlayerM,
-                                                modifyNarration,
-                                                parseConsumptionPhrase)
-import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
-                                                ActionEffectMap (ActionEffectMap),
-                                                ActionMaps (_consumptionActionMap),
-                                                Config (_actionMaps),
-                                                ConsumptionActionF (ConsumptionActionF),
-                                                GameComputation,
-                                                GameState (_effectRegistry, _world),
-                                                Location (_objectSemanticMap),
-                                                Player (_location, _playerActions),
-                                                World (..),
-                                                updateActionConsequence)
+import           GameState                  (getPlayerM, modifyNarration,
+                                             updateActionConsequence)
+import           Model.Core                 (GameComputation,
+                                             GameState (_effectRegistry, _world),
+                                             World (..))
 
-import           Control.Monad.State           (gets)
-import qualified Data.Text
-import           Debug.Trace                   (trace)
-import           GameState.ActionManagement    (lookupConsumption,
-                                                processEffectsFromRegistry)
-import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Grammar.Parser.Lexer          (Lexeme (DEBUG, QUIT))
-import           Model.GameState.Mappings      (GIDToDataMap (GIDToDataMap))
-import           Model.Parser.Atomics.Verbs    (AdministrativeVerb (AdministrativeVerb))
-import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
+import           Control.Monad.State        (gets)
+import           Debug.Trace                (trace)
+import           Grammar.Parser.Lexer       (Lexeme (DEBUG))
+import           Model.Core.Mappings        (GIDToDataMap (GIDToDataMap))
+import           Model.Parser.Atomics.Verbs (AdministrativeVerb (AdministrativeVerb))
 
 manageAdministration :: AdministrativeVerb -> GameComputation Identity ()
 manageAdministration (AdministrativeVerb  DEBUG) = do

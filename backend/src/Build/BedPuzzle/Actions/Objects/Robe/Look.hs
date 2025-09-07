@@ -1,10 +1,9 @@
 module Build.BedPuzzle.Actions.Objects.Robe.Look (notEvenRobeF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
+                                         GameComputation)
 
 notEvenRobeF :: DirectionalStimulusActionF
 notEvenRobeF = CannotSeeF notEvenPill'

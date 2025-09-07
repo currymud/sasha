@@ -6,14 +6,14 @@ import qualified Data.Map.Strict        as Map
 import qualified Data.Set               as Set
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
-import           GameState              (getObjectM, modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
+import           GameState              (getObjectM, modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                          GameComputation,
                                          Object (_description, _shortName),
                                          SpatialRelationship (Contains, Supports),
                                          SpatialRelationshipMap (SpatialRelationshipMap),
                                          World (_spatialRelationshipMap),
-                                         _world, updateActionConsequence)
+                                         _world)
 import           Model.GID              (GID)
 
 -- | function for looking at objects that support or contain other objects

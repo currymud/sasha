@@ -7,7 +7,7 @@ import           GameState                     (getPlayerM, modifyNarration)
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Location                      (getPlayerLocationM)
-import           Model.GameState               (ActionMaps (_containerAccessActionMap),
+import           Model.Core               (ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                 ContainerAccessResult (ContainerAccessResult),

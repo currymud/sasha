@@ -2,7 +2,7 @@ module GameState.EffectRegistry where
 import           Control.Monad.Identity (Identity)
 import           Control.Monad.State    (gets, modify')
 import qualified Data.Map.Strict
-import           Model.GameState        (ActionEffectMap, EffectActionKey,
+import           Model.Core             (ActionEffectMap, EffectActionKey,
                                          EffectRegistry, GameComputation,
                                          GameState (_effectRegistry))
 

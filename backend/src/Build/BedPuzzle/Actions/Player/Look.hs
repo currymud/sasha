@@ -11,21 +11,21 @@ import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           Data.Text                     (Text)
-import           GameState                     (getObjectM, modifyNarration)
+import           GameState                     (getObjectM, modifyNarration,
+                                                updateActionConsequence)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
                                                 lookupImplicitStimulus)
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
-import           Model.GameState               (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core                    (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
                                                 GameComputation,
                                                 ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
-                                                Object (_objectActionManagement),
-                                                updateActionConsequence)
+                                                Object (_objectActionManagement))
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,

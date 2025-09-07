@@ -4,9 +4,8 @@ module Build.BedPuzzle.Actions.Utils where
 import           Control.Monad.Identity (Identity)
 import           Data.Kind              (Type)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (GameComputation)
 
 type AcquisitionError :: Type
 data AcquisitionError

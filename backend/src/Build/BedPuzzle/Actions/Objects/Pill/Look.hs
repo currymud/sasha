@@ -1,10 +1,10 @@
 module Build.BedPuzzle.Actions.Objects.Pill.Look where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
                                          GameComputation (GameComputation),
-                                         Location, updateActionConsequence)
+                                         Location)
 
 whatPill :: DirectionalStimulusActionF
 whatPill = CannotSeeF whatPill'

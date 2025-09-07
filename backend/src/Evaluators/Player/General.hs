@@ -9,7 +9,7 @@ import           Actions.Percieve.Look                   (manageContainerDirecti
                                                           manageDirectionalStimulusProcess,
                                                           manageImplicitStimulusProcess)
 import           Control.Monad.Identity                  (Identity)
-import           Model.GameState                         (GameComputation)
+import           Model.Core                         (GameComputation)
 import           Model.Parser                            (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs           (AcquisitionVerbPhrase,
                                                           Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),

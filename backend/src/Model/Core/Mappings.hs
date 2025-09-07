@@ -1,4 +1,4 @@
-module Model.GameState.Mappings where
+module Model.Core.Mappings where
 
 import           Data.Kind          (Type)
 import           Data.List.NonEmpty (NonEmpty)
@@ -11,7 +11,7 @@ type role GIDToDataMap nominal representational
 type GIDToDataMap :: Type -> Type -> Type
 newtype GIDToDataMap a b
   = GIDToDataMap {_getGIDToDataMap :: Map (GID a) b}
-      deriving stock Show
+      deriving stock (Show, Eq, Ord)
 
 type role GIDList phantom
 type GIDList :: Type -> Type

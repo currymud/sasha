@@ -14,7 +14,7 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (buildPerceptionMapFromObjects,
                                                 computePerceivableObjects,
                                                 modifyPerceptionMapM, youSeeM)
-import           Model.GameState               (AcquisitionActionF,
+import           Model.Core               (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),

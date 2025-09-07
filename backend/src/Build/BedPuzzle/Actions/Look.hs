@@ -9,7 +9,7 @@ import qualified Data.Set
 import           Data.Text              (Text, intercalate)
 import           GameState              (getObjectM, modifyNarration)
 import           GameState.Perception   (isObjectPerceivable)
-import           Model.GameState        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
+import           Model.Core        (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                          DirectionalStimulusContainerActionF (ObjectDirectionalStimulusContainerActionF),
                                          GameComputation, GameState (_world),
                                          Object (_description, _shortName),

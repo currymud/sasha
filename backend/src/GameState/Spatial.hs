@@ -13,7 +13,7 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (getInventoryObjectsM,
                                                 getObjectM, getPlayerM)
-import           Model.GameState               (GameComputation,
+import           Model.Core               (GameComputation,
                                                 GameState (_world),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),

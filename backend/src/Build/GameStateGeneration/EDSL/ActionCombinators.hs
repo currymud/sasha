@@ -3,7 +3,7 @@ module Build.GameStateGeneration.EDSL.ActionCombinators where
 import           Control.Monad.Identity                                  (Identity)
 import           Data.Text                                               (Text)
 import           GameState                                               (modifyNarration)
-import           Model.GameState                                         (AcquisitionActionF (NotGettableF),
+import           Model.Core                                              (AcquisitionActionF (NotGettableF),
                                                                           ActionManagement (AVManagementKey, DSAContainerManagementKey, DSAManagementKey),
                                                                           DirectionalStimulusActionF (CannotSeeF),
                                                                           DirectionalStimulusContainerActionF (CannotSeeInF),
@@ -20,11 +20,6 @@ import           Build.BedPuzzle.Actions.Look                            (lookAt
 -- Import verbs (disambiguated)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import qualified Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb as DSV
-import           Model.GameState.GameStateDSL                            (WorldDSL,
-                                                                          declareAcquisitionActionGID,
-                                                                          declareDirectionalContainerActionGID,
-                                                                          declareDirectionalStimulusActionGID,
-                                                                          withObjectBehavior)
 
 -- Helper
 addNarration :: Text -> GameComputation Identity ()

@@ -3,10 +3,9 @@
 module Build.BedPuzzle.Actions.Objects.Pill.Get (getPillDeniedF,alreadyHavePillF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (AcquisitionActionF (NotGettableF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (AcquisitionActionF (NotGettableF),
+                                         GameComputation)
 
 alreadyHavePillF :: AcquisitionActionF
 alreadyHavePillF = NotGettableF havePill

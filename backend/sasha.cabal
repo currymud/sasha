@@ -85,15 +85,11 @@ library
       Build.BedPuzzle.Actions.Objects.Robe.Look
       Build.BedPuzzle.Actions.Objects.Table.Look
       Build.BedPuzzle.Effects.Perception.Look
-      Build.GameStateGeneration.BedroomWorldDSL
       Build.GameStateGeneration.SashaDemo
       Build.GameStateGeneration.TestDynamicActions
       Build.GameStateGeneration.EDSL.GameStateBuilder
       Build.GameStateGeneration.EDSL.ActionCombinators
-      Build.Identifiers.Effects
       Build.Identifiers.SentenceProcessing
-      Build.Templates.Identification
-      Build.Templates.Sentence
       Build.Identifiers.SupportLook
       Error
       Evaluators.Player.General
@@ -144,11 +140,12 @@ library
       Grammar.Parser.Rules.Composites.Nouns
       Grammar.Parser.Rules.Composites.Verbs
       Location
-      Model.Action.LocationAction
-      Model.GameState
+      Model.Actions.Results
+      Model.Core
+      Model.Core.Mappings
       Model.GameState.GameStateDSL
-      Model.GameState.Mappings
       Model.GID
+      Model.Processing
       Model.Label
       Model.Parser
       Model.Parser.Atomics.Adjectives

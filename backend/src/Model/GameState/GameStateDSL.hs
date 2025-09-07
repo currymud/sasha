@@ -7,7 +7,7 @@ import           Control.Monad                 (foldM)
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
-import           Model.GameState               (AcquisitionActionF,
+import           Model.Core               (AcquisitionActionF,
                                                 ActionManagement,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,

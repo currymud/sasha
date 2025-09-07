@@ -1,10 +1,9 @@
 module Build.BedPuzzle.Actions.Objects.Chair.Look (whatChairF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
+                                         GameComputation)
 
 whatChairF :: DirectionalStimulusActionF
 whatChairF = CannotSeeF whatChair'

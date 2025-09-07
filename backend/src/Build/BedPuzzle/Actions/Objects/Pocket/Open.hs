@@ -1,10 +1,9 @@
 module Build.BedPuzzle.Actions.Objects.Pocket.Open (notEvenOpenF, pocketOutOfReachF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (ContainerAccessActionF (CannotAccessF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (ContainerAccessActionF (CannotAccessF),
+                                         GameComputation)
 
 notEvenOpenF :: ContainerAccessActionF
 notEvenOpenF = CannotAccessF notEvenOpen

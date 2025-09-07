@@ -1,36 +1,30 @@
 module TopLevel where
 import           Control.Monad.Identity    (Identity)
 import           Control.Monad.IO.Class    (MonadIO (liftIO))
-import           Control.Monad.State       (get, modify')
-import           Control.Monad.State.Class (gets, put)
-import           Data.Kind                 (Type)
+import           Control.Monad.State.Class (gets)
 import qualified Data.Map.Strict
-import           Data.Text                 (Text, empty, pack, unpack)
+import           Data.Text                 (Text, pack, unpack)
 import           Debug.Trace               (trace)
-import           GameState                 (clearNarration, modifyNarration)
+import           GameState                 (clearNarration, modifyNarration,
+                                            updateActionConsequence)
 import           Grammar.Parser            (parseTokens)
 import           Grammar.Parser.Lexer      (Lexeme, lexify, tokens)
-import           Model.GameState           (DisplayT, GameComputation,
-                                            GameState (_evaluation, _narration, _systemEffectRegistry, _world),
-                                            GameT, Object (..),
-                                            SystemEffect (PerceptionSystemEffect),
-                                            SystemEffectConfig (SystemEffectConfig, _systemEffect, _systemEffectManagement),
-                                            World (..), _actionConsequence,
-                                            _playerAction, liftDisplay,
-                                            transformToIO,
-                                            updateActionConsequence)
-import           Model.GameState.Mappings
+import           Model.Core                (DisplayT, GameComputation, GameT,
+                                            _actionConsequence, _evaluation,
+                                            _evaluator, _narration, _objectMap,
+                                            _playerAction, _shortName, _world,
+                                            liftDisplay, transformToIO)
+import           Model.Core.Mappings       (_getGIDToDataMap)
 import           Model.Parser              (Sentence)
 import           Relude.String.Conversion  (ToText (toText))
 import           System.Console.Haskeline  (InputT, defaultSettings,
                                             getInputLine, runInputT)
-
 debugObjectMap :: GameComputation Identity ()
 debugObjectMap = do
   world <- gets _world
   let objectMap = _getGIDToDataMap $ _objectMap world
       objectEntries = Data.Map.Strict.toList objectMap
-  trace ("=== OBJECT MAP DEBUG ===") $ pure ()
+  trace "=== OBJECT MAP DEBUG ===" $ pure ()
   mapM_ (\(gid, obj) -> trace ("Object GID " ++ show gid ++ ": " ++ (Data.Text.unpack $ _shortName obj)) $ pure ()) objectEntries
   trace ("=== END OBJECT MAP ===") $ pure ()
 
@@ -67,7 +61,7 @@ processWithSystemEffects sentence = do
   --
 toGameComputation :: Sentence -> GameComputation Identity ()
 toGameComputation sentence = do
-  evaluator <- gets _evaluation
+  evaluator <- gets (_evaluator . _evaluation)
   evaluator sentence
 
 displayResult :: DisplayT IO ()

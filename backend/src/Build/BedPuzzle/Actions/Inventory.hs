@@ -5,17 +5,12 @@ import           Data.Kind              (Type)
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
 import           GameState              (getInventoryObjectsM, getObjectM,
-                                         modifyNarration)
-import           Model.GameState        (GameComputation,
-                                         ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                         Object (_shortName),
+                                         modifyNarration,
                                          updateActionConsequence)
+import           Model.Core             (GameComputation,
+                                         ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                         Object (_shortName))
 import           Model.GID              (GID)
-
--- | Template function for looking at player inventory
--- Takes flavor text for both empty and non-empty cases
--- Always queries current inventory state dynamically
-
 
 type InventoryFlavorText :: Type
 data InventoryFlavorText = InventoryFlavorText
@@ -40,7 +35,6 @@ defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
 
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
-
 inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
   where
     inventoryLook' :: a -> b -> GameComputation Identity ()

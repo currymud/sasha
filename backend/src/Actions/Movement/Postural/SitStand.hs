@@ -9,7 +9,7 @@ import           GameState                     (getLocationObjectIDsM,
 import           GameState.ActionManagement    (lookupPostural,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
+import           Model.Core               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKeyMap (_unActionKeyMap),
                                                 ActionMaps (_posturalActionMap),

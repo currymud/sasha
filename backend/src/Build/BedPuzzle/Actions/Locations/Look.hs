@@ -2,7 +2,7 @@ module Build.BedPuzzle.Actions.Locations.Look where
 import           Data.Text            (Text)
 import           GameState            (modifyNarration)
 import           GameState.Perception (youSeeM)
-import           Model.GameState      (ImplicitStimulusActionF (ImplicitStimulusActionF),
+import           Model.Core      (ImplicitStimulusActionF (ImplicitStimulusActionF),
                                        updateActionConsequence)
 
 pitchBlackF :: ImplicitStimulusActionF

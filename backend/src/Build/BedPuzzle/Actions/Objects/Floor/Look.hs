@@ -2,10 +2,9 @@ module Build.BedPuzzle.Actions.Objects.Floor.Look
     (notEvenFloorF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
+                                         GameComputation)
 
 notEvenFloorF :: DirectionalStimulusActionF
 notEvenFloorF = CannotSeeF notEvenFloor

@@ -4,10 +4,9 @@
 module Build.BedPuzzle.Actions.Take (takeDenied) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (ConsumptionActionF (ConsumptionActionF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (ConsumptionActionF (ConsumptionActionF),
+                                         GameComputation)
 import           Prelude                hiding (take)
 
 takeDenied :: ConsumptionActionF

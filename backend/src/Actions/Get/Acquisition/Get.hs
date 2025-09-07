@@ -13,7 +13,7 @@ import qualified Data.Text
 import           GameState                     (getPlayerLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupAcquisitionPhrase,
                                                 processEffectsFromRegistry)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+import           Model.Core               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 ActionMaps (_acquisitionActionMap),
                                                 Config (_actionMaps),
                                                 CoordinationResult (CoordinationResult),

@@ -3,10 +3,9 @@
 module Build.BedPuzzle.Actions.Objects.Floor.Get (getFloorDeniedF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (AcquisitionActionF (NotGettableF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (AcquisitionActionF (NotGettableF),
+                                         GameComputation)
 getFloorDeniedF :: AcquisitionActionF
 getFloorDeniedF = NotGettableF denied
   where

@@ -5,12 +5,12 @@ import           Data.Functor               ((<&>))
 import qualified Data.Map.Strict            (lookup)
 import           Data.Text                  (Text, pack)
 import           Error                      (throwMaybeM)
-import           Model.GameState            (ActionManagementFunctions,
+import           Model.Core            (ActionManagementFunctions,
                                              GameComputation,
                                              Location (_locationActionManagement),
                                              _location, _locationMap, _player,
                                              _world)
-import           Model.GameState.Mappings   (_getGIDToDataMap)
+import           Model.Core.Mappings   (_getGIDToDataMap)
 import           Model.GID                  (GID)
 
 getLocationIdM :: GameComputation Identity (GID Location)

@@ -31,7 +31,6 @@ module GameState ( addToInventoryM
                  , parseDirectionalStimulusNounPhrase
                  , parseSupportPhrase
                  , parseInstrumentalAccessNounPhrase
-                 , parseAccessPhrase
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processSimpleContainerAccessEffect
@@ -40,6 +39,7 @@ module GameState ( addToInventoryM
                  , processNegativePosturalEffect
                  , processConsumptionEffect
                  , removeFromInventoryM
+                 , updateActionConsequence
                  ) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
@@ -52,31 +52,31 @@ import qualified Data.Set                      (filter)
 import           Data.Text                     (Text, pack)
 import           Debug.Trace                   (trace)
 import           Error                         (throwMaybeM)
-import           Model.GameState               (AccessRes (CompleteAR, SimpleAR),
-                                                AcquisitionActionF,
+import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
+                                                CompleteAccessRes (CompleteAccessRes),
+                                                CompleteAcquisitionRes (CompleteAcquisitionRes),
+                                                SimpleAccessRes (SimpleAccessRes),
+                                                SimpleAcquisitionRes (SimpleAcquisitionRes))
+import           Model.Core                    (AcquisitionActionF,
                                                 ActionEffectKey (ObjectKey),
                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                CompleteAccessRes (CompleteAccessRes),
-                                                CompleteAcquisitionRes (CompleteAcquisitionRes),
                                                 ConsumptionActionF (_consumptionAction),
                                                 ContainerAccessActionF,
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
-                                                Narration (Narration),
+                                                Narration (Narration, _actionConsequence),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_location, _playerActions),
                                                 PosturalActionF,
-                                                SimpleAccessRes (SimpleAccessRes),
-                                                SimpleAcquisitionRes (SimpleAcquisitionRes),
                                                 SpatialRelationship (Inventory),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
-import           Model.GameState.Mappings      (GIDToDataMap, _getGIDToDataMap)
+import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, Surface)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
@@ -230,8 +230,6 @@ processSimpleContainerAccessEffect sav newActionGID = do
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
 
-
-
 processConsumptionEffect :: ConsumptionVerbPhrase
                          -> GID ConsumptionActionF
                          -> GameComputation Identity ()
@@ -279,7 +277,6 @@ processNegativePosturalEffect verb newActionGID = do
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
-
 
 -- General function to get objects by spatial relationship
 getObjectsBySpatialRelationship :: SpatialRelationship -> GameComputation Identity [GID Object]
@@ -423,7 +420,6 @@ modifyObjectM oid objectF = do
             Data.Map.Strict.lookup oid objectMap
   trace ("modifyObjectM: Found object " ++ show oid ++ ", applying function") $ pure ()
   let updatedObject = objectF object
-  trace ("modifyObjectM: Applied function, updating map") $ pure ()
   let updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
   modify' (\gs -> gs { _world = updatedWorld })
@@ -501,6 +497,9 @@ clearNarration = modifyNarration (const emptyNarration)
     emptyNarration :: Narration
     emptyNarration = Narration mempty mempty
 
+updateActionConsequence :: Text -> Narration -> Narration
+updateActionConsequence consequence narration =
+  narration { _actionConsequence = consequence : _actionConsequence narration }
 -- Add object to inventory (replaces current inventory insertion)
 addToInventoryM :: GID Object -> GameComputation Identity ()
 addToInventoryM oid = do

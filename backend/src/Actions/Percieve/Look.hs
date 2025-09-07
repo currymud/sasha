@@ -13,7 +13,7 @@ import           GameState.ActionManagement    (lookupDirectionalContainerStimul
                                                 lookupDirectionalStimulus,
                                                 lookupImplicitStimulus)
 import           Location                      (getLocationM)
-import           Model.GameState               (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core               (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),

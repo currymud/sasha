@@ -12,7 +12,7 @@ import           Build.GameStateGeneration.SashaDemo             (sashaBedroomDe
 import qualified Data.Map.Strict
 import           Debug.Trace                                     (trace)
 import           Evaluators.Player.General                       (eval)
-import           Model.GameState                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+import           Model.Core                                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                   Config (Config, _actionMaps),
                                                                   GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry),
                                                                   _world)

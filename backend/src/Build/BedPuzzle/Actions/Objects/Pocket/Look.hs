@@ -1,11 +1,10 @@
 module Build.BedPuzzle.Actions.Objects.Pocket.Look (whatPocket,notEvenPocket,pocketClosedF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
                                          DirectionalStimulusContainerActionF (CannotSeeInF),
-                                         GameComputation,
-                                         updateActionConsequence)
+                                         GameComputation)
 
 whatPocket :: DirectionalStimulusActionF
 whatPocket = CannotSeeF whatPocket'

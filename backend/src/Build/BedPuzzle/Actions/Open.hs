@@ -7,7 +7,7 @@ import           Data.Text                  (Text)
 import           GameState                  (modifyNarration)
 import           GameState.ActionManagement (registerSystemEffect)
 import           GameState.Perception       (youSeeM)
-import           Model.GameState            (ActionEffectKey (PlayerKey),
+import           Model.Core            (ActionEffectKey (PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
                                              GameComputation,
                                              SomaticAccessActionF (SomaticAccessActionF),

@@ -10,7 +10,7 @@ import           Data.Text                     (Text)
 import           GameState                     (modifyNarration,
                                                 modifySpatialRelationshipsForObjectM)
 import           GameState.ActionManagement    (processAllEffects)
-import           Model.GameState               (ActionEffectKey (ObjectKey, PlayerKey),
+import           Model.Core               (ActionEffectKey (ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionManagement (DSAManagementKey, NPManagementKey, PPManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),

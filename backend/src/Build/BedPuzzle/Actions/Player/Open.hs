@@ -8,16 +8,16 @@ import qualified Data.Map.Strict
 import           Data.Text                                         (Text, pack)
 import           GameState                                         (getObjectM,
                                                                     modifyNarration,
-                                                                    parseAccessPhrase)
+                                                                    parseAccessPhrase,
+                                                                    updateActionConsequence)
 import           GameState.ActionManagement                        (findSAForContainersKey)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs  (get)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
-import           Model.GameState                                   (AccessRes (CompleteAR, SimpleAR),
-                                                                    AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                                    AcquisitionRes (Complete, Simple),
-                                                                    AcquisitionVerbActionMap,
+import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
                                                                     CompleteAccessRes (CompleteAccessRes),
-                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
+                                                                    SimpleAccessRes (SimpleAccessRes))
+import           Model.Core                                        (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                                    AcquisitionVerbActionMap,
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
                                                                     EffectActionKey,
@@ -26,9 +26,7 @@ import           Model.GameState                                   (AccessRes (C
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
                                                                     SearchStrategy,
-                                                                    SimpleAccessRes (SimpleAccessRes, _saContainerKey, _saContainerPhrase),
-                                                                    SimpleAccessSearchStrategy,
-                                                                    updateActionConsequence)
+                                                                    SimpleAccessSearchStrategy)
 import           Model.GID                                         (GID)
 import           Model.Parser.Composites.Verbs                     (AcquisitionVerbPhrase,
                                                                     ContainerAccessVerbPhrase)

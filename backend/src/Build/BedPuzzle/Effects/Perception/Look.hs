@@ -1,6 +1,6 @@
 module Build.BedPuzzle.Effects.Perception.Look where
 import           GameState.Perception (youSeeM)
-import           Model.GameState      (SystemEffect (PerceptionSystemEffect))
+import           Model.Core      (SystemEffect (PerceptionSystemEffect))
 
 
 

@@ -8,7 +8,7 @@ import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
                                                 getPlayerLocationM, getPlayerM,
                                                 parseConsumptionPhrase)
-import           Model.GameState               (ActionEffectKey (LocationKey, PlayerKey),
+import           Model.Core               (ActionEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),

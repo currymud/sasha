@@ -3,10 +3,9 @@
 module Build.BedPuzzle.Actions.Objects.Mail.Get (getMailDeniedF,alreadyHaveMailF,getMailDizzyF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (AcquisitionActionF (CollectedF, NotGettableF),
-                                         GameComputation,
-                                         updateActionConsequence)
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (AcquisitionActionF (CollectedF, NotGettableF),
+                                         GameComputation)
 
 
 alreadyHaveMailF :: AcquisitionActionF

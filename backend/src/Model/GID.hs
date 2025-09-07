@@ -17,13 +17,3 @@ instance ToText (GID a) where
 instance NFData (GID a) where
  rnf (GID i) = rnf i
 
-type role ActionId phantom
-type ActionId :: Type -> Type
-newtype ActionId a = ActionId {unActionId :: GID a}
-  deriving newtype (Show, Ord, Eq)
-
-actionIdToGID :: ActionId a -> GID a
-actionIdToGID (ActionId gid) = gid
-
-gidToActionId :: GID a -> ActionId a
-gidToActionId = ActionId

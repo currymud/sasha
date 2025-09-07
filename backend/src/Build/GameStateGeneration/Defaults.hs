@@ -5,16 +5,16 @@ module Build.GameStateGeneration.Defaults  (defaultLocation
                                              ,defaultWorld) where
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           Data.Text                (Text)
-import           Model.GameState          (ActionManagementFunctions (ActionManagementFunctions),
-                                           Location (Location, _locationActionManagement, _objectSemanticMap, _title),
-                                           Narration (Narration),
-                                           Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
-                                           Player (Player, _location, _playerActions),
-                                           SpatialRelationshipMap (SpatialRelationshipMap),
-                                           World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
-import           Model.GameState.Mappings (GIDToDataMap (GIDToDataMap))
-import           Model.GID                (GID (GID))
+import           Data.Text           (Text)
+import           Model.Core          (ActionManagementFunctions (ActionManagementFunctions),
+                                      Location (Location, _locationActionManagement, _objectSemanticMap, _title),
+                                      Narration (Narration),
+                                      Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
+                                      Player (Player, _location, _playerActions),
+                                      SpatialRelationshipMap (SpatialRelationshipMap),
+                                      World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+import           Model.Core.Mappings (GIDToDataMap (GIDToDataMap))
+import           Model.GID           (GID (GID))
 
 
 defaultObject :: Object

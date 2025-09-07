@@ -5,17 +5,17 @@ import           Debug.Trace                                      (trace)
 import           GameState                                        (addToInventoryM,
                                                                    getObjectM,
                                                                    modifyNarration,
-                                                                   modifySpatialRelationshipsForObjectM)
+                                                                   modifySpatialRelationshipsForObjectM,
+                                                                   updateActionConsequence)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.GameState                                  (AcquisitionActionF (CollectedF, LosesObjectF),
+import           Model.Core                                       (AcquisitionActionF (CollectedF, LosesObjectF),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                    CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
                                                                    EffectActionKey (AcquisitionalActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
-                                                                   SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports),
-                                                                   updateActionConsequence)
+                                                                   SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 import           Model.GID                                        (GID)
 
 getObjectF :: GID Object -> AcquisitionActionF

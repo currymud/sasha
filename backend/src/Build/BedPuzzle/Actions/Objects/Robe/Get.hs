@@ -8,13 +8,12 @@ import qualified Data.Set
 import           Data.Text                     (Text)
 import           GameState                     (addToInventoryM, getObjectM,
                                                 modifyNarration,
-                                                parseAcquisitionPhrase)
-import           Model.GameState               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                parseAcquisitionPhrase, updateActionConsequence)
+import           Model.Core               (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                 GameComputation (GameComputation),
                                                 GameState (_player),
                                                 Location (_locationActionManagement, _objectSemanticMap),
-                                                Object (_description),
-                                                updateActionConsequence)
+                                                Object (_description))
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
 import           Model.Parser.GCase            (NounKey)

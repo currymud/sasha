@@ -23,7 +23,7 @@ import           Model.Parser.Composites.Nouns                           (Consum
                                                                           ObjectPhrase (ObjectPhrase))
 
 -- Import behavior management constructors and spatial relationships
-import           Model.GameState                                         (AcquisitionActionF,
+import           Model.Core                                         (AcquisitionActionF,
                                                                           ActionEffectKey,
                                                                           ActionManagement (AAManagementKey, AVManagementKey, CONManagementKey, DSAManagementKey, ISAManagementKey, SAConManagementKey, SSAManagementKey),
                                                                           ContainerAccessActionF,
@@ -38,7 +38,7 @@ import           Model.GameState                                         (Acquis
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (ContainedIn, SupportedBy, Supports))
-import           Model.GameState.GameStateDSL                            (WorldDSL,
+import           Model.Core.GameStateDSL                            (WorldDSL,
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
                                                                           createContainerAccessEffect,

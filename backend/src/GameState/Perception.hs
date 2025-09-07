@@ -12,17 +12,16 @@ import qualified Data.Text
 import           Debug.Trace                   (trace)
 import           GameState                     (getDescriptionM, getObjectM,
                                                 getPlayerLocationGID,
-                                                modifyNarration)
+                                                modifyNarration, updateActionConsequence)
 import           GameState.Spatial             (findObjectInInventoryContainers)
 import           Location                      (getLocationM)
-import           Model.GameState               (GameComputation,
+import           Model.Core               (GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_perceptionMap, _spatialRelationshipMap),
-                                                updateActionConsequence)
+                                                World (_perceptionMap, _spatialRelationshipMap))
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey)

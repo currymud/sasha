@@ -1,10 +1,10 @@
 module Build.BedPuzzle.Actions.Objects.Table.Look where
 import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
-import           GameState              (modifyNarration)
-import           Model.GameState        (DirectionalStimulusActionF (CannotSeeF),
+import           GameState              (modifyNarration, updateActionConsequence)
+import           Model.Core        (DirectionalStimulusActionF (CannotSeeF),
                                          GameComputation (GameComputation),
-                                         Location, updateActionConsequence)
+                                         Location)
 -- ToDo naming convention fix
 whatTable :: DirectionalStimulusActionF
 whatTable = CannotSeeF whatTable'
