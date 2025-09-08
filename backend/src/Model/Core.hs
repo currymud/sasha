@@ -116,6 +116,12 @@ import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase,
                                                 ContainerAccessVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
+#ifdef TESTING
+import           Data.Text                     (pack)
+import           Model.GID                     (GID (GID))
+import           Test.QuickCheck               (Arbitrary (arbitrary), choose,
+                                                listOf, oneof, resize)
+#endif
 
 -- | State monad transformer for game state
 type GameStateT :: (Type -> Type) -> Type -> Type
@@ -563,3 +569,16 @@ data GameState = GameState
   , _triggerRegistry        :: TriggerRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
   }
+
+#ifdef TESTING
+
+-- Simple Arbitrary instance for GID (just use Int)
+instance Arbitrary a => Arbitrary (GID a) where
+  arbitrary = GID <$> choose (1, 1000)
+
+-- Small Text generator for testing
+newtype SmallText = SmallText Text
+instance Arbitrary SmallText where
+  arbitrary = SmallText . pack <$> resize 20 (listOf (choose ('a', 'z')))
+
+#endif

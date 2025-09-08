@@ -10,8 +10,8 @@ import           Model.Parser.Atomics.Nouns                  (Objective (Objecti
 import           Prelude                                     hiding (floor)
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| Objective |] objectives'
@@ -48,5 +48,5 @@ pocketOB = pocket
 
 #ifdef TESTING
 instance Arbitrary Objective  where
-  arbitary = elements $ HS.toList objectives
+  arbitrary = elements $ HS.toList objectives
 #endif

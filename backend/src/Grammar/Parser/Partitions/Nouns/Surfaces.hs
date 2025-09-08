@@ -9,8 +9,8 @@ import           Model.Parser.Atomics.Nouns                  (Surface (Surface))
 import           Prelude                                     hiding (floor)
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| Surface |] surfaces'
@@ -27,8 +27,7 @@ tableSF = table
 floorSF :: Surface
 floorSF = floor
 
-
 #ifdef TESTING
-instance Arbitrary Supportive where
-  arbitary = elements $ HS.toList supportives
+instance Arbitrary Surface where
+  arbitrary = elements $ HS.toList surfaces
 #endif

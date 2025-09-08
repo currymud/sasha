@@ -6,7 +6,8 @@ import           Model.Parser.Lexer                          (Lexeme (PLANT, POT
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary))
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| Adjective |] [PLANT,POT,WHITE,SMALL]

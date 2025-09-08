@@ -25,6 +25,5 @@ instrumentActionVerb = singleton push
 #ifdef TESTING
 
 instance Arbitrary InstrumentActionVerb where
-  arbitrary = elements instrumentActionVerb
-
+  arbitrary = elements  $ HS.toList instrumentActionVerb
 #endif

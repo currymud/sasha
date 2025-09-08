@@ -8,8 +8,8 @@ import           Model.Parser.Atomics.Nouns                  (Container (Contain
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| Container |] containers'
@@ -25,5 +25,5 @@ pocketCT = pocket
 
 #ifdef TESTING
 instance Arbitrary Container where
-  arbitary = elements $ HS.toList containers
+  arbitrary = elements $ HS.toList containers
 #endif

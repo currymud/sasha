@@ -6,6 +6,12 @@ import           Model.Parser.Atomics.Adverbs                (NegativePosturalDi
                                                               PositivePosturalDirection (PositivePosturalDirection))
 import           Model.Parser.Lexer                          (Lexeme (DOWN, UP))
 
+#ifdef TESTING
+import qualified Data.HashSet                                as HS
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
+#endif
+
 makeSemanticValues [| PositivePosturalDirection |] [UP]
 makeSemanticValues [| NegativePosturalDirection |] [DOWN]
 

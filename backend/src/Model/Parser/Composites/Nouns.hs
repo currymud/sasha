@@ -19,24 +19,30 @@ module Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase ),
                                       SupportPhrase (SurfaceSupport, ContainerSupport),
                                       SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase),
                                       SurfacePhraseRules (SurfacePhraseRules,_surfaceRule,_surfaceMarkerRule)) where
-import           Data.Kind                         (Type)
-import           Data.Text                         (Text, unwords)
-import           GHC.Generics                      (Generic)
-import           Model.Parser.Atomics.Adjectives   (Adjective)
-import           Model.Parser.Atomics.Misc         (Determiner)
-import           Model.Parser.Atomics.Nouns        (Consumable, Container,
-                                                    DirectionalStimulus,
-                                                    InstrumentalAccessNoun,
-                                                    Objective, SomaticStimulus,
-                                                    Surface)
-import           Model.Parser.Atomics.Prepositions (ContainmentMarker,
-                                                    DirectionalStimulusMarker,
-                                                    InstrumentMarker,
-                                                    SurfaceMarker)
-import           Model.Parser.Lexer                (Lexeme)
-import           Prelude                           hiding (unwords)
-import           Relude.String.Conversion          (ToText (toText))
-import           Text.Earley                       (Prod)
+import           Data.Kind                            (Type)
+import           Data.Text                            (Text, unwords)
+import           GHC.Generics                         (Generic)
+import           Model.Parser.Atomics.Adjectives      (Adjective)
+import           Model.Parser.Atomics.Misc            (Determiner)
+import           Model.Parser.Atomics.Nouns           (Consumable, Container,
+                                                       DirectionalStimulus,
+                                                       InstrumentalAccessNoun,
+                                                       Objective,
+                                                       SomaticStimulus, Surface)
+import           Model.Parser.Atomics.Prepositions    (ContainmentMarker,
+                                                       DirectionalStimulusMarker,
+                                                       InstrumentMarker,
+                                                       SurfaceMarker)
+import           Model.Parser.Lexer                   (Lexeme)
+import           Prelude                              hiding (unwords)
+import           Relude.String.Conversion             (ToText (toText))
+import           Text.Earley                          (Prod)
+#ifdef TESTING
+import           Grammar.Parser.Partitions.Adjectives ()
+import           Grammar.Parser.Partitions.Misc       ()
+import           Test.QuickCheck                      (Arbitrary (arbitrary),
+                                                       oneof)
+#endif
 
 type ContainerPhrase :: Type
 newtype ContainerPhrase = ContainerPhrase (NounPhrase Container)
@@ -158,3 +164,14 @@ data SupportPhraseRules r = SupportPhraseRules
   { _surfacePhraseRule   :: Prod r Text Lexeme SurfacePhrase
   , _containerPhraseRule :: Prod r Text Lexeme ContainerPhrase
   }
+
+#ifdef TESTING
+-- Arbitrary instance for NounPhrase (parameterized type)
+instance Arbitrary a => Arbitrary (NounPhrase a) where
+  arbitrary = oneof
+    [ SimpleNounPhrase <$> arbitrary
+    , NounPhrase <$> arbitrary <*> arbitrary
+    , DescriptiveNounPhrase <$> arbitrary <*> arbitrary
+    , DescriptiveNounPhraseDet <$> arbitrary <*> arbitrary <*> arbitrary
+    ]
+#endif

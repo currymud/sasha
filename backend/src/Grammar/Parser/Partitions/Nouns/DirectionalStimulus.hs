@@ -9,8 +9,8 @@ import           Model.Parser.Lexer                          (Lexeme (BEDROOM, C
 import           Prelude                                     hiding (floor)
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| DirectionalStimulus |] lexemes
@@ -44,7 +44,8 @@ pocketDS = pocket
 
 floorDS :: DirectionalStimulus
 floorDS = floor
+
 #ifdef TESTING
 instance Arbitrary DirectionalStimulus where
-  arbitary = elements $ HS.toList directionalStimulii
+  arbitrary = elements $ HS.toList directionalStimulii
 #endif

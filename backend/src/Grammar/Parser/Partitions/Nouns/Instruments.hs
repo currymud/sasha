@@ -8,8 +8,8 @@ import           Model.Parser.Atomics.Nouns                  (InstrumentalAccess
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| InstrumentalAccessNoun |] instrumentals'
@@ -22,5 +22,5 @@ keyInstrument = key
 
 #ifdef TESTING
 instance Arbitrary InstrumentalAccessNoun where
-  arbitary = elements $ HS.toList instrumentals'
+  arbitrary = elements $ HS.toList instruments
 #endif

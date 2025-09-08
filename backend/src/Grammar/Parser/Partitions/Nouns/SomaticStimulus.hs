@@ -7,8 +7,8 @@ import           Model.Parser.Lexer                          (Lexeme (EYES))
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| SomaticStimulus |] [EYES]
@@ -18,5 +18,5 @@ somaticStimulii = fromList [eyes]
 
 #ifdef TESTING
 instance Arbitrary SomaticStimulus where
-  arbitary = elements $ HS.toList somaticStimulii
+  arbitrary = elements $ HS.toList somaticStimulii
 #endif

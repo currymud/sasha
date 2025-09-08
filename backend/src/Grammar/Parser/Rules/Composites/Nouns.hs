@@ -11,7 +11,6 @@ import           Control.Applicative                                   (Alternat
 import           Data.Text                                             (Text)
 import           Grammar.Parser.Partitions.Nouns.Containers            (containers)
 import           Grammar.Parser.Partitions.Nouns.Surfaces              (surfaces)
-import           Grammar.Parser.Partitions.Prepositions                (containmentMarkers)
 import           Grammar.Parser.Partitions.Prepositions.SurfaceMarkers (surfaceMarkers)
 import           Grammar.Parser.Rules.Atomics.Utils                    (parseRule)
 import           Model.Parser.Atomics.Adjectives                       (Adjective)

@@ -9,8 +9,7 @@ import           Model.Parser.Lexer                          (Lexeme (CLOSE, OPE
 import qualified Data.HashSet                                as HS
 import           Data.Text                                   (Text)
 import           Relude.String.Conversion                    (ToText (toText))
-import           Test.QuickCheck                             (Arbitrary,
-                                                              elements)
+import           Test.QuickCheck                             (elements)
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 

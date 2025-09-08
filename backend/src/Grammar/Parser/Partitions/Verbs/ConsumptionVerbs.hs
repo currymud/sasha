@@ -28,6 +28,6 @@ takeCV = Grammar.Parser.Partitions.Verbs.ConsumptionVerbs.take
 #ifdef TESTING
 
 instance Arbitrary ConsumptionVerb where
-  arbitrary = elements consumptionVerbs
+  arbitrary = elements $ HS.toList consumptionVerbs
 
 #endif

@@ -109,7 +109,6 @@ library
       Grammar.Parser.Partitions.Nouns.Instruments
       Grammar.Parser.Partitions.Nouns.Surfaces
       Grammar.Parser.Partitions.Nouns.Utils
-      Grammar.Parser.Partitions.Prepositions
       Grammar.Parser.Partitions.Prepositions.ContainmentMarkers
       Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker
       Grammar.Parser.Partitions.Prepositions.InstrumentMarkers
@@ -176,7 +175,7 @@ library
 
 library sasha-testing
   import:         shared, tests
-  hs-source-dirs: test
+  hs-source-dirs: src, test
   build-depends:
     , aeson
     , base
@@ -185,6 +184,7 @@ library sasha-testing
     , hashable
     , hspec
     , megaparsec
+    , mmorph
     , mtl
     , QuickCheck
     , quickcheck-instances
@@ -192,13 +192,38 @@ library sasha-testing
     , safe
     , template-haskell
     , text
-    , sasha
  exposed-modules:
       Test.Arbitrary.Verbs
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
+      -- Grammar modules with Arbitrary instances
+      Grammar.Parser.Partitions.Adjectives
+      Grammar.Parser.Partitions.Adverbs.ImplicitPaths
+      Grammar.Parser.Partitions.Adverbs.PosturalDirections
+      Grammar.Parser.Partitions.Misc
+      Grammar.Parser.Partitions.Nouns.Consumables
+      Grammar.Parser.Partitions.Nouns.Containers
+      Grammar.Parser.Partitions.Nouns.DirectionalStimulus
+      Grammar.Parser.Partitions.Nouns.Instruments
+      Grammar.Parser.Partitions.Nouns.Objectives
+      Grammar.Parser.Partitions.Nouns.SomaticStimulus
+      Grammar.Parser.Partitions.Nouns.Surfaces
+      Grammar.Parser.Partitions.Verbs.AcquisitionVerbs
+      Grammar.Parser.Partitions.Verbs.AdministrativeVerbs
+      Grammar.Parser.Partitions.Verbs.CardinalMovementVerbs
+      Grammar.Parser.Partitions.Verbs.ConsumptionVerbs
+      Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb
+      Grammar.Parser.Partitions.Verbs.ImplicitBoundaryVerb
+      Grammar.Parser.Partitions.Verbs.ImplicitRegionalStimulusVerb
+      Grammar.Parser.Partitions.Verbs.InstrumentActionVerbs
+      Grammar.Parser.Partitions.Verbs.PosturalVerbs
+      Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs
+      Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs
+      -- Core modules with Arbitrary instances
+      Model.Core
+      Model.Parser.Composites.Nouns
  default-language: GHC2021
 
 executable sasha-tests
@@ -211,8 +236,8 @@ executable sasha-tests
      , hashable
      , hspec
      , megaparsec
+     , mmorph
      , QuickCheck
      , relude
      , template-haskell
      , text
-     , sasha-testing

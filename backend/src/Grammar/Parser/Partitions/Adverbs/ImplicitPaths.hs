@@ -14,8 +14,8 @@ import           Model.Parser.Atomics.Adverbs                (ImplicitPath (Impl
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| ImplicitPath |] [NORTH, EAST, SOUTH, WEST, UP, DOWN, LEFT,RIGHT]

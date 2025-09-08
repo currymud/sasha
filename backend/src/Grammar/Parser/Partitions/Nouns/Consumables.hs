@@ -9,8 +9,8 @@ import           Model.Parser.Atomics.Nouns                  (Consumable (Consum
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (Arbitrary, arbitrary),
-                                                              elements)
+import           Test.QuickCheck                             (elements)
+import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
 makeSemanticValues [| Consumable |] consumables'
@@ -23,6 +23,6 @@ pillCS :: Consumable
 pillCS = pill
 
 #ifdef TESTING
-instance Arbitrary Edible where
-  arbitary = elements $ HS.toList consumables
+instance Arbitrary Consumable where
+  arbitrary = elements $ HS.toList consumables
 #endif
