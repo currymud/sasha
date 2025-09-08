@@ -15,16 +15,17 @@ module Model.Actions.Results
   ) where
 
 import           Control.Monad.Identity        (Identity)
-import           Data.Text                     (Text)
+import           Data.Kind                     (Type)
 import           Model.Core                    (EffectActionKey,
                                                 GameComputation)
-import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 InstrumentalAccessNounPhrase,
                                                 ObjectPhrase, SupportPhrase)
 import           Model.Parser.GCase            (NounKey)
 
 -- | Coordination result - bundles computation with effects after constraint solving
+
+type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
   , _actionEffectKeys :: [EffectActionKey]
@@ -32,6 +33,7 @@ data CoordinationResult = CoordinationResult
   }
 
 -- | Container access coordination result
+type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [EffectActionKey]
   , _containerFieldEffectKeys  :: [EffectActionKey]
@@ -39,6 +41,7 @@ data ContainerAccessResult = ContainerAccessResult
   deriving stock (Show, Eq, Ord)
 
 -- | Instrument access coordination result
+type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
   { _instrumentActionEffectKeys :: [EffectActionKey]
   , _instrumentFieldEffectKeys  :: [EffectActionKey]
@@ -46,12 +49,14 @@ data InstrumentAccessResult = InstrumentAccessResult
   deriving stock (Show, Eq, Ord)
 
 -- | Acquisition parsing result - Simple vs Complete acquisition commands
+type AcquisitionRes :: Type
 data AcquisitionRes
   = Complete CompleteAcquisitionRes
   | Simple SimpleAcquisitionRes
   deriving stock (Show, Eq, Ord)
 
 -- | Complete acquisition: "get X from Y"
+type CompleteAcquisitionRes :: Type
 data CompleteAcquisitionRes = CompleteAcquisitionRes
   { _caObjectKey     :: NounKey
   , _caObjectPhrase  :: ObjectPhrase
@@ -61,6 +66,7 @@ data CompleteAcquisitionRes = CompleteAcquisitionRes
   deriving stock (Show, Eq, Ord)
 
 -- | Simple acquisition: "get X"
+type SimpleAcquisitionRes :: Type
 data SimpleAcquisitionRes = SimpleAcquisitionRes
   { _saObjectKey    :: NounKey
   , _saObjectPhrase :: ObjectPhrase
@@ -68,12 +74,14 @@ data SimpleAcquisitionRes = SimpleAcquisitionRes
   deriving stock (Show, Eq, Ord)
 
 -- | Access parsing result - Simple vs Complete access commands
+type AccessRes :: Type
 data AccessRes
   = CompleteAR CompleteAccessRes
   | SimpleAR SimpleAccessRes
   deriving stock (Show, Eq, Ord)
 
 -- | Complete access: "open X with Y"
+type CompleteAccessRes :: Type
 data CompleteAccessRes = CompleteAccessRes
   { _containerKey     :: NounKey
   , _ContainerPhrase  :: ContainerPhrase
@@ -83,6 +91,7 @@ data CompleteAccessRes = CompleteAccessRes
   deriving stock (Show, Eq, Ord)
 
 -- | Simple access: "open X"
+type SimpleAccessRes :: Type
 data SimpleAccessRes = SimpleAccessRes
   { _saContainerKey    :: NounKey
   , _saContainerPhrase :: ContainerPhrase

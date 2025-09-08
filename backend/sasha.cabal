@@ -50,47 +50,43 @@ common tests
 library
   import: shared
   exposed-modules:
-      Actions.Administrative
-      Actions.Consume
-      Actions.Get.Acquisition.Get
-      Actions.Manipulate.ContainerAccess.Open
-      Actions.Manipulate.SomaticAccess.Open
-      Actions.Movement.Postural.SitStand
-      Actions.Percieve.Look
-      Build.GameState
-      Build.GameStateGeneration.Defaults
-      Build.BedPuzzle.Actions.Inventory
-      Build.BedPuzzle.Actions.Open
-      Build.BedPuzzle.Actions.Get
-      Build.BedPuzzle.Actions.Get.Constructors
-      Build.BedPuzzle.Actions.Look
-      Build.BedPuzzle.Actions.Stand
-      Build.BedPuzzle.Actions.Take
-      Build.BedPuzzle.Actions.Utils
-      Build.BedPuzzle.Actions.Locations.Look
-      Build.BedPuzzle.Actions.Player.Look
-      Build.BedPuzzle.Actions.Player.Open
-      Build.BedPuzzle.Actions.Objects.Open
-      Build.BedPuzzle.Actions.Objects.Chair.Look
-      Build.BedPuzzle.Actions.Objects.Floor.Look
-      Build.BedPuzzle.Actions.Objects.Floor.Get
-      Build.BedPuzzle.Actions.Objects.Mail.Get
-      Build.BedPuzzle.Actions.Objects.Mail.Look
-      Build.BedPuzzle.Actions.Objects.Pill.Get
-      Build.BedPuzzle.Actions.Objects.Pill.Look
-      Build.BedPuzzle.Actions.Objects.Pill.Take
-      Build.BedPuzzle.Actions.Objects.Pocket.Look
-      Build.BedPuzzle.Actions.Objects.Pocket.Open
-      Build.BedPuzzle.Actions.Objects.Robe.Get
-      Build.BedPuzzle.Actions.Objects.Robe.Look
-      Build.BedPuzzle.Actions.Objects.Table.Look
-      Build.BedPuzzle.Effects.Perception.Look
-      Build.GameStateGeneration.SashaDemo
-      Build.GameStateGeneration.TestDynamicActions
-      Build.GameStateGeneration.EDSL.GameStateBuilder
-      Build.GameStateGeneration.EDSL.ActionCombinators
-      Build.Identifiers.SentenceProcessing
-      Build.Identifiers.SupportLook
+      ActionDiscovery.Administrative
+      ActionDiscovery.Consume
+      ActionDiscovery.Get.Acquisition.Get
+      ActionDiscovery.Manipulate.ContainerAccess.Open
+      ActionDiscovery.Manipulate.SomaticAccess.Open
+      ActionDiscovery.Movement.Postural.SitStand
+      ActionDiscovery.Percieve.Look
+      Examples.BedroomDemo.GameState
+      GameConstruction.Defaults
+      ConstraintRefinement.Actions.Player.Inventory
+      ConstraintRefinement.Actions.Utils
+      ConstraintRefinement.Actions.Locations.Look
+      ConstraintRefinement.Actions.Player.Get
+      ConstraintRefinement.Actions.Player.Get.Constructors
+      ConstraintRefinement.Actions.Player.Look
+      ConstraintRefinement.Actions.Player.Open
+      ConstraintRefinement.Actions.Player.Stand
+      ConstraintRefinement.Actions.Player.Take
+      ConstraintRefinement.Actions.Objects.Open
+      ConstraintRefinement.Actions.Objects.SupportLook
+      ConstraintRefinement.Actions.Objects.Chair.Look
+      ConstraintRefinement.Actions.Objects.Floor.Look
+      ConstraintRefinement.Actions.Objects.Floor.Get
+      ConstraintRefinement.Actions.Objects.Mail.Get
+      ConstraintRefinement.Actions.Objects.Mail.Look
+      ConstraintRefinement.Actions.Objects.Pill.Get
+      ConstraintRefinement.Actions.Objects.Pill.Look
+      ConstraintRefinement.Actions.Objects.Pill.Take
+      ConstraintRefinement.Actions.Objects.Pocket.Look
+      ConstraintRefinement.Actions.Objects.Pocket.Open
+      ConstraintRefinement.Actions.Objects.Robe.Get
+      ConstraintRefinement.Actions.Objects.Robe.Look
+      ConstraintRefinement.Actions.Objects.Table.Look
+      ConstraintRefinement.Effects.Perception.Look
+      GameConstruction.SashaDemo
+      EDSL.GameStateBuilder
+      EDSL.ActionCombinators
       Error
       Evaluators.Player.General
       GameState
@@ -139,13 +135,11 @@ library
       Grammar.Parser.Rules.Atomics.Utils
       Grammar.Parser.Rules.Composites.Nouns
       Grammar.Parser.Rules.Composites.Verbs
-      Location
       Model.Actions.Results
       Model.Core
       Model.Core.Mappings
       Model.GameState.GameStateDSL
       Model.GID
-      Model.Processing
       Model.Label
       Model.Parser
       Model.Parser.Atomics.Adjectives

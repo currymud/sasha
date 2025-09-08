@@ -1,20 +1,20 @@
 module Evaluators.Player.General where
-import           Actions.Administrative                  (manageAdministration)
-import           Actions.Consume                         (manageConsumptionProcess)
-import           Actions.Get.Acquisition.Get             (manageAcquisitionProcess)
-import           Actions.Manipulate.ContainerAccess.Open (manageContainerAccessProcess)
-import           Actions.Manipulate.SomaticAccess.Open   (manageSomaticAccessProcess)
-import           Actions.Movement.Postural.SitStand      (managePosturalProcess)
-import           Actions.Percieve.Look                   (manageContainerDirectionalStimulusProcess,
-                                                          manageDirectionalStimulusProcess,
-                                                          manageImplicitStimulusProcess)
-import           Control.Monad.Identity                  (Identity)
-import           Model.Core                         (GameComputation)
-import           Model.Parser                            (Sentence (Imperative))
-import           Model.Parser.Composites.Verbs           (AcquisitionVerbPhrase,
-                                                          Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
-                                                          PosturalVerbPhrase,
-                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
+import           ActionDiscovery.Administrative                  (manageAdministration)
+import           ActionDiscovery.Consume                         (manageConsumptionProcess)
+import           ActionDiscovery.Get.Acquisition.Get             (manageAcquisitionProcess)
+import           ActionDiscovery.Manipulate.ContainerAccess.Open (manageContainerAccessProcess)
+import           ActionDiscovery.Manipulate.SomaticAccess.Open   (manageSomaticAccessProcess)
+import           ActionDiscovery.Movement.Postural.SitStand      (managePosturalProcess)
+import           ActionDiscovery.Percieve.Look                   (manageContainerDirectionalStimulusProcess,
+                                                                  manageDirectionalStimulusProcess,
+                                                                  manageImplicitStimulusProcess)
+import           Control.Monad.Identity                          (Identity)
+import           Model.Core                                      (GameComputation)
+import           Model.Parser                                    (Sentence (Imperative))
+import           Model.Parser.Composites.Verbs                   (AcquisitionVerbPhrase,
+                                                                  Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                                  PosturalVerbPhrase,
+                                                                  StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 

@@ -10,12 +10,13 @@ import qualified Data.Set
 import qualified Data.Set                      as Set
 import qualified Data.Text
 import           Debug.Trace                   (trace)
-import           GameState                     (getDescriptionM, getObjectM,
+import           GameState                     (getDescriptionM, getLocationM,
+                                                getObjectM,
                                                 getPlayerLocationGID,
-                                                modifyNarration, updateActionConsequence)
+                                                modifyNarration,
+                                                updateActionConsequence)
 import           GameState.Spatial             (findObjectInInventoryContainers)
-import           Location                      (getLocationM)
-import           Model.Core               (GameComputation,
+import           Model.Core                    (GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
                                                 Object (_descriptives),

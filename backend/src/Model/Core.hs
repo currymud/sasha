@@ -1,5 +1,7 @@
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 
 module Model.Core
   ( -- * Entity Types
@@ -54,6 +56,7 @@ module Model.Core
   , ProcessImplicitVerbMap
   , ProcessImplicitVerbMaps
   , PlayerProcessImplicitVerbMap
+  , SystemEffectMap
     -- * Search and Access Types
   , SimpleAccessSearchStrategy
   , SearchStrategy
@@ -309,19 +312,28 @@ type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplici
 -- Action Maps
 type ImplicitStimulusActionMap :: Type
 type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF
+
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
+
 type DirectionalStimulusContainerActionMap :: Type
 type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF
+
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
+
+type SomaticAccessActionMap :: Type
 type SomaticAccessActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
+
 type SomaticStimulusActionMap :: Type
 type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
+
 type AcquisitionVerbActionMap :: Type
 type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
+
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
+
 type PosturalActionMap :: Type
 type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 
@@ -337,9 +349,10 @@ data ActionMaps = ActionMaps
   , _posturalActionMap            :: PosturalActionMap
   }
 
--- Configuration
+-- All Possible Actions
+type Config :: Type
 data Config = Config
-  { _actionMaps :: ActionMaps }
+  { _actionMaps :: !ActionMaps }
 
 -- Registry and evaluator types from other modules
 
@@ -365,12 +378,14 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
+type ActionEffectKey :: Type
 data ActionEffectKey
   = LocationKey (GID Location)
   | ObjectKey (GID Object)
   | PlayerKey PlayerKey
   deriving stock (Show, Eq, Ord)
 
+type SystemEffectKey :: Type
 data SystemEffectKey
   = SystemLocationKey (GID Location)
   | SystemObjectKey (GID Object)
@@ -395,31 +410,41 @@ type SystemEffect :: Type
 data SystemEffect
   = PerceptionSystemEffect (GameComputation Identity ())
 
+type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
   { _actionEffectMap :: Map ActionEffectKey (Set Effect) }
   deriving stock (Show, Eq, Ord)
 
+type SystemEffectConfig :: Type
 data SystemEffectConfig = SystemEffectConfig
   { _systemEffect           :: SystemEffect
   , _systemEffectManagement :: GameComputation Identity ()
   }
 
 -- Registry types
+
+type EffectRegistry :: Type
 type EffectRegistry = Map EffectActionKey ActionEffectMap
+
+type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
+
+type SystemEffectKeysRegistry :: Type
 type SystemEffectKeysRegistry = Map EffectActionKey [SystemEffectKey]
+
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
 
+type TriggerRegistry :: Type
 newtype TriggerRegistry = TriggerRegistry
-  { _triggerRegistry :: Map EffectActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)] }
+  { _unTriggerRegistry :: Map EffectActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)] }
 
--- | Action key mapping
+type ActionKeyMap :: Type
 newtype ActionKeyMap = ActionKeyMap
   { _unActionKeyMap :: Map EffectActionKey ActionEffectMap }
   deriving stock (Show, Eq, Ord)
 
--- Need ActionManagementOperation for GameState
+type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
@@ -434,6 +459,7 @@ data ActionManagementOperation
   | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
+type ActionGID :: Type
 data ActionGID
   = ImplicitActionGID (GID ImplicitStimulusActionF)
   | DirectionalActionGID (GID DirectionalStimulusActionF)
