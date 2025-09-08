@@ -193,11 +193,13 @@ library sasha-testing
     , template-haskell
     , text
  exposed-modules:
+      Examples.BedroomDemo.GameState
       Test.Arbitrary.Verbs
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
+      Test.Categorical.MonadLaws
       -- Grammar modules with Arbitrary instances
       Grammar.Parser.Partitions.Adjectives
       Grammar.Parser.Partitions.Adverbs.ImplicitPaths
@@ -237,6 +239,7 @@ executable sasha-tests
      , hspec
      , megaparsec
      , mmorph
+     , mtl
      , QuickCheck
      , relude
      , template-haskell
