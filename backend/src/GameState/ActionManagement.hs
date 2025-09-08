@@ -1,23 +1,18 @@
 module GameState.ActionManagement where
 import           Control.Applicative           ((<|>))
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (MonadState (get), gets, modify')
+import           Control.Monad.State           (modify')
+import qualified Data.Foldable
 import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           Data.Text                     (pack)
-import           Debug.Trace                   (trace)
 import           GameState                     (modifyLocationM, modifyObjectM,
                                                 modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           GameState.Perception          (buildPerceptionMapFromObjects,
-                                                computePerceivableObjects,
-                                                modifyPerceptionMapM, youSeeM)
-import           Model.Core               (AcquisitionActionF,
+import           Model.Core                    (AcquisitionActionF,
                                                 ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionGID (AcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
@@ -38,11 +33,10 @@ import           Model.Core               (AcquisitionActionF,
                                                 PosturalActionF,
                                                 SomaticAccessActionF,
                                                 SystemEffect,
-                                                SystemEffectConfig (SystemEffectConfig, _systemEffectManagement),
+                                                SystemEffectConfig,
                                                 SystemEffectKey, _systemEffect,
                                                 _title)
 import           Model.GID                     (GID)
-import           Model.Parser                  (ActionManagement (DirectionalStimulus))
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 ConsumptionVerb,
                                                 DirectionalStimulusVerb,
@@ -51,9 +45,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 PositivePosturalVerb,
                                                 SimpleAccessVerb,
                                                 SomaticAccessVerb)
-import           Model.Parser.Composites.Nouns (NounPhrase (SimpleNounPhrase))
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
-                                                ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                 ContainerAccessVerbPhrase,
                                                 PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase))
 
@@ -70,7 +62,10 @@ modifyLocationActionManagementM lid actionF = do
   modifyLocationM lid $ \loc ->
     loc { _locationActionManagement = actionF (_locationActionManagement loc) }
 
-registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> GameComputation Identity ()
+registerSystemEffect :: SystemEffectKey
+                          -> GID SystemEffect
+                          -> SystemEffectConfig
+                          -> GameComputation Identity ()
 registerSystemEffect key effectGID config = modify' $ \gs ->
   let currentRegistry = _systemEffectRegistry gs
       newEffectMap = Data.Map.Strict.singleton effectGID config
@@ -85,18 +80,8 @@ removeSystemEffect key effectGID = modify' $ \gs ->
 
 processEffectsFromRegistry :: EffectActionKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  trace ("DEBUG: processEffectsFromRegistry called with: " ++ show actionKey) $ pure ()
-  gameState <- get
-  let registry = _effectRegistry gameState
-  trace ("DEBUG: Full registry keys: " ++ show (Data.Map.Strict.keys registry)) $ pure ()
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-  case maybeEffectMap of
-    Just effectMap -> do
-      let ActionEffectMap effectMapContents = effectMap
-      trace ("DEBUG: Found effect map with keys: " ++ show (Data.Map.Strict.keys effectMapContents)) $ pure ()
-      processAllEffects effectMap
-    Nothing -> do
-      trace ("DEBUG: No effects found for key: " ++ show actionKey) $ pure ()
+  Data.Foldable.for_ maybeEffectMap processAllEffects
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
@@ -107,12 +92,10 @@ modifyObjectActionManagementM oid actionF = do
 
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
-  trace ("DEBUG: processAllEffects called with effect keys: " ++ show (Data.Map.Strict.keys effectMap)) $ pure ()
   mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
   where
     processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      trace ("DEBUG: Processing effect key: " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ pure ()
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
@@ -240,7 +223,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalContainerSt
         filteredActions = Data.Set.filter (\case DSAContainerManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -389,20 +371,12 @@ processEffect (PlayerKey pk) (ActionManagementEffect (AddAcquisitionVerb verb ne
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
-  trace ("DEBUG: Processing AddAcquisitionVerbPhrase effect for player - phrase: " ++ show phrase ++ " newGID: " ++ show newActionGID) $ pure ()
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
         updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-      {-
-processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
--}
+
 processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddConsumption verb _targetOid newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -549,4 +523,3 @@ findCONManagementKey cavp (ActionManagementFunctions actionSet) =
 findSAForContainersKey :: SimpleAccessVerb -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 findSAForContainersKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | SAConManagementKey v gid <- Data.Set.toList actionSet, v == verb]
-

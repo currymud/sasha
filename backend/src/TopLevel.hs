@@ -19,14 +19,6 @@ import           Model.Parser              (Sentence)
 import           Relude.String.Conversion  (ToText (toText))
 import           System.Console.Haskeline  (InputT, defaultSettings,
                                             getInputLine, runInputT)
-debugObjectMap :: GameComputation Identity ()
-debugObjectMap = do
-  world <- gets _world
-  let objectMap = _getGIDToDataMap $ _objectMap world
-      objectEntries = Data.Map.Strict.toList objectMap
-  trace "=== OBJECT MAP DEBUG ===" $ pure ()
-  mapM_ (\(gid, obj) -> trace ("Object GID " ++ show gid ++ ": " ++ (Data.Text.unpack $ _shortName obj)) $ pure ()) objectEntries
-  trace ("=== END OBJECT MAP ===") $ pure ()
 
 batchProcess :: [Text] -> GameComputation Identity ()
 batchProcess inputs = do
@@ -45,7 +37,6 @@ topLevel = runGame initComp
 
 runGame :: GameComputation Identity () -> GameT IO ()
 runGame comp' = do
-  transformToIO debugObjectMap
   transformToIO comp'
   liftDisplay displayResult
   transformToIO clearNarration

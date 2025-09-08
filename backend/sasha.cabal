@@ -200,6 +200,11 @@ library sasha-testing
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
       Test.Categorical.MonadLaws
+      Test.Categorical.RegistryNaturalityLaws
+
+      GameState.ActionManagement
+      GameState.EffectRegistry
+      Model.GID
       -- Grammar modules with Arbitrary instances
       Grammar.Parser.Partitions.Adjectives
       Grammar.Parser.Partitions.Adverbs.ImplicitPaths

@@ -679,8 +679,7 @@ generateObjectGID :: WorldBuilder (GID Object)
 generateObjectGID = do
   state <- get
   let newGID = GID (_nextObjectGID state)
-  trace ("generateObjectGID: current nextObjectGID: " ++ show (_nextObjectGID state) ++ ", generating: " ++ show newGID) $
-    put state { _nextObjectGID = _nextObjectGID state + 1 }
+  put state { _nextObjectGID = _nextObjectGID state + 1 }
   pure newGID
 
 generateLocationGID :: WorldBuilder (GID Location)

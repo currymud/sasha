@@ -54,7 +54,6 @@ getF = AcquisitionActionF getit
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
     getit actionKey actionMap searchStrategy avp finalize = do
-      trace ("DEBUG: getF called with actionKey=" ++ show actionKey) $ pure ()
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saObjectKey
@@ -62,7 +61,6 @@ getF = AcquisitionActionF getit
             Left err' -> handleAcquisitionError err'
             Right (objectGID, containerGID) -> do
               objectActionLookup <- lookupAcquisitionAction objectGID actionMap
-              trace ("DEBUG: getF - objectGID=" ++ show objectGID ++ " lookup result: ") $ pure ()
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
                 Right (NotGettableF objectNotGettableF) -> objectNotGettableF
@@ -142,14 +140,6 @@ lookupAcquisitionAction objectGID actionMap = do
   case findAVKey get actionMgmt of
     Nothing -> pure $ Left $ ContainerMissingAction $ (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
     Just actionGID -> do
-      trace ("DEBUG: lookupAcquisitionAction - Object " ++ show objectGID ++ " has get action GID: " ++ show actionGID) $ pure ()
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> pure $ Left $ InvalidActionType $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
-        Just action -> do
-         trace ("DEBUG: lookupAcquisitionAction - GID " ++ show actionGID ++ " found: " ++ case action of
-            NotGettableF _ -> "NotGettableF"
-            CollectedF _   -> "CollectedF"
-            LosesObjectF _ -> "LosesObjectF"
-            _              -> "Other") $ pure ()
-
-         pure $ Right action
+        Just action -> pure $ Right action
