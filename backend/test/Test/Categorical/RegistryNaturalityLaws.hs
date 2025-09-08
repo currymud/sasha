@@ -62,8 +62,9 @@ import           Model.Core                     (ActionEffectMap (..),
                                                  EffectRegistry,
                                                  GameComputation (..),
                                                  GameState (..),
-                                                 GameStateT (..),
-                                                 ImplicitStimulusActionF)
+                                                 GameStateT (..), GameT (..),
+                                                 ImplicitStimulusActionF,
+                                                 transformToIO)
 import           Model.GID                      (GID (GID))
 
 -- Test runner that executes GameComputation in a minimal context
@@ -142,6 +143,60 @@ testEffectProcessingStructurePreservation = do
 
   result1 `shouldBe` result2
 
+-- Test runner for GameT IO that returns final state
+runGameTWithState :: GameT IO a -> IO (Either Text (a, EffectRegistry))
+runGameTWithState comp = do
+  let initialState = gameState
+      testConfig = Config (ActionMaps mempty mempty mempty mempty mempty mempty mempty mempty)
+      computation = runReaderT (runGameT comp) testConfig
+      withErrorHandling = runExceptT computation
+      withState = runStateT (runGameStateT withErrorHandling) initialState
+  result <- withState
+  case result of
+    (Left err, _)           -> return $ Left err
+    (Right val, finalState) -> return $ Right (val, _effectRegistry finalState)
+
+-- State Management Transformation Tests
+-- Test naturality: fmap f (transformToIO comp) ≡ transformToIO (fmap f comp)
+testTransformToIONaturality :: IO ()
+testTransformToIONaturality = do
+  let testKey = ImplicitStimulusActionKey (GID 10)
+      effectMap = ActionEffectMap mempty
+      f = Map.size  -- Function EffectRegistry -> Int
+
+      -- Pure computation that modifies state
+      comp = registerEffects testKey effectMap >> getGlobalEffectRegistry
+
+      -- Left side: fmap f (transformToIO comp)
+      leftSide = fmap f (transformToIO comp)
+
+      -- Right side: transformToIO (fmap f comp)
+      rightSide = transformToIO (fmap f comp)
+
+  lhsResult <- runGameTWithState leftSide
+  rhsResult <- runGameTWithState rightSide
+  lhsResult `shouldBe` rhsResult
+
+-- Test state threading: sequential operations compose correctly
+testTransformToIOStateThreading :: IO ()
+testTransformToIOStateThreading = do
+  let key1 = ImplicitStimulusActionKey (GID 11)
+      key2 = ImplicitStimulusActionKey (GID 12)
+      effectMap = ActionEffectMap mempty
+
+      comp1 = registerEffects key1 effectMap
+      comp2 = registerEffects key2 effectMap
+
+      -- Left side: transformToIO comp1 >> transformToIO comp2
+      leftSide = transformToIO comp1 >> transformToIO comp2 >> transformToIO getGlobalEffectRegistry
+
+      -- Right side: transformToIO (comp1 >> comp2)
+      rightSide = transformToIO (comp1 >> comp2 >> getGlobalEffectRegistry)
+
+  lhsResult <- runGameTWithState leftSide
+  rhsResult <- runGameTWithState rightSide
+  lhsResult `shouldBe` rhsResult
+
 spec :: Spec
 spec = describe "Registry Access Naturality Laws" $ do
   describe "getGlobalEffectRegistry Natural Transformation" $ do
@@ -150,6 +205,10 @@ spec = describe "Registry Access Naturality Laws" $ do
   describe "processEffectsFromRegistry Natural Transformation" $ do
     it "Preserves context: equivalent keys produce equivalent results" testEffectProcessingNaturality
     it "Preserves computational structure: empty effects don't modify state" testEffectProcessingStructurePreservation
+
+  describe "transformToIO Natural Transformation" $ do
+    it "Preserves functor structure: fmap f (transformToIO comp) ≡ transformToIO (fmap f comp)" testTransformToIONaturality
+    it "Preserves sequential composition: transformToIO comp1 >> transformToIO comp2 ≡ transformToIO (comp1 >> comp2)" testTransformToIOStateThreading
 
 main :: IO ()
 main = hspec spec
