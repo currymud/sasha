@@ -500,7 +500,7 @@ newtype ActionManagementFunctions = ActionManagementFunctions
 
 type SpatialRelationshipMap :: Type
 newtype SpatialRelationshipMap = SpatialRelationshipMap
-  { _spatialRelationshipMap :: Map (GID Object) (Set SpatialRelationship) }
+  { _unSpatialRelationshipMap :: Map (GID Object) (Set SpatialRelationship) }
   deriving stock (Show, Eq, Ord)
 
 type SpatialRelationship :: Type

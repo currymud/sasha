@@ -203,10 +203,11 @@ library sasha-testing
       Test.Categorical.MonadLaws
       Test.Categorical.HierarchyNaturalityLaws
       Test.Categorical.RegistryNaturalityLaws
-
+      Test.Categorical.SpatialMonoidLaws
       GameState
       GameState.ActionManagement
       GameState.EffectRegistry
+      GameState.Spatial
       Model.GID
       -- Grammar modules with Arbitrary instances
       Grammar.Parser.Partitions.Adjectives
