@@ -36,7 +36,7 @@ gameState :: GameState
 gameState = resultGameState buildResult
 
 config :: Config
-config = Config { _actionMaps = trace ("Config maps size: " ++ show (Data.Map.Strict.size (_directionalStimulusActionMap forcedMaps))) forcedMaps }
+config = Config { _actionMaps = forcedMaps }
   where
     maps = resultActionMaps buildResult
     forcedMaps = ActionMaps

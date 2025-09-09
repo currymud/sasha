@@ -269,7 +269,7 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
 bedroomLoc :: GID ImplicitStimulusActionF ->  WorldDSL Location
 bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
   where
-    bedroomLoc' = withTitle "bedroom in bed"
+    bedroomLoc' = withTitle "<LOC-001> bedroom in bed"
                     >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook lookResponseGID))
 
 floorObj :: GID DirectionalStimulusActionF
@@ -277,7 +277,7 @@ floorObj :: GID DirectionalStimulusActionF
 floorObj lookGID =  defaultObject & floor
   where
     floor =
-      withShortName "floor"
+      withShortName "<OBJ-001>floor"
         >=> withDescription "The bedroom floor"
         >=> withDescriptives [SimpleNounPhrase floorDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
@@ -288,7 +288,7 @@ chairObj :: GID DirectionalStimulusActionF
 chairObj lookGID getGID =  defaultObject & chair
   where
     chair =
-      withShortName "chair"
+      withShortName "<OBJ-002>chair"
         >=> withDescription "A simple wooden chair"
         >=> withDescriptives [SimpleNounPhrase chairDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
@@ -301,7 +301,7 @@ robeObj :: GID DirectionalStimulusActionF
 robeObj lookGID getGID = defaultObject & robe
   where
     robe =
-      withShortName "comfortable robe"
+      withShortName "<OBJ-003>comfortable robe"
         >=> withDescription "The robe is draped on the chair"
         >=> withDescriptives [SimpleNounPhrase robeDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))
@@ -316,7 +316,7 @@ pocketObj :: GID DirectionalStimulusActionF
 pocketObj lookGID openGID = defaultObject & pocket
   where
     pocket =
-      withShortName "pocket"
+      withShortName "<OBJ-004>pocket"
         >=> withDescription "A pocket sewn into the robe"
         >=> withDescriptives [SimpleNounPhrase pocketDS]
         >=> (\o -> withObjectBehavior o (DSAManagementKey look lookGID))

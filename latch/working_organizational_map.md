@@ -1,4 +1,6 @@
-"Level Up With Latch: Expand Your Foundations in Complex Systems Design"
+"Flip the Latch and Rise: A Structured Learning Path to Succes For All Levels"
+
+Missing - Weaving in the dev cycle, and leveraging llms productively
 
 FASCICLE 1: FOUNDATIONS
 Complete Learning Arc: Zero → Working sequential puzzles with architectural understanding

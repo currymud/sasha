@@ -219,12 +219,9 @@ youSeeM = do
   let anchorObjects = [oid | (oid, rels) <- Data.Map.Strict.toList smap,
                             not (any isContainedOrSupported (Data.Set.toList rels))]
 
-  trace ("youSeeM: Anchor objects: " ++ show anchorObjects) $ pure ()
-
   -- Build hierarchical descriptions
   descriptions <- concatMapM (buildHierarchy smap) anchorObjects
 
-  trace ("youSeeM: Generated descriptions: " ++ show descriptions) $ pure ()
   unless (null descriptions) $ do
     let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
     modifyNarration $ updateActionConsequence seeText
@@ -237,13 +234,13 @@ youSeeM = do
       anchorDesc <- getDescriptionM anchorOID
       let firstLevel = getDirectlySupported smap anchorOID
       firstLevelDescs <- concatMapM (buildSecondLevel smap) firstLevel
-      pure $ [anchorDesc] ++ firstLevelDescs
+      pure $ anchorDesc : firstLevelDescs
 
     buildSecondLevel smap firstLevelOID = do
       firstDesc <- getDescriptionM firstLevelOID
       let secondLevel = getDirectlySupported smap firstLevelOID
       secondLevelDescs <- mapM getDescriptionM secondLevel
-      pure $ [firstDesc] ++ secondLevelDescs
+      pure $ firstDesc : secondLevelDescs
 
     getDirectlySupported smap containerOID =
       case Data.Map.Strict.lookup containerOID smap of

@@ -39,8 +39,6 @@ getFromSupportF supportObjGID = LosesObjectF getit
     getit :: GID Object
               -> GameComputation Identity CoordinationResult
     getit targetObjectGID = do
-      trace ("DEBUG: getFromSupportF executing with supportObjGID=" ++ show supportObjGID ++ " targetObjectGID=" ++ show targetObjectGID) $ pure ()
-
       -- Get the target object's action management
       actionManagement <- _objectActionManagement <$> getObjectM targetObjectGID
       let ActionManagementFunctions actionSet = actionManagement

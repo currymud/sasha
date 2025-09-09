@@ -197,6 +197,8 @@ library sasha-testing
       Examples.BedroomDemo.GameState
       Test.Arbitrary.Verbs
       Test.EndToEnd.GetRobeFails
+      Test.EndToEnd.OpenEyesTriggerTest
+      Test.EndToEnd.OpenEyesUnlocksGetRobe
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
@@ -207,6 +209,7 @@ library sasha-testing
       GameState.ActionManagement
       GameState.EffectRegistry
       GameState.Spatial
+      Model.Core.Mappings
       Model.GID
       -- Grammar modules with Arbitrary instances
       Grammar.Parser.Partitions.Adjectives
