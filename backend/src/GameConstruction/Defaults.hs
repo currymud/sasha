@@ -10,7 +10,7 @@ import           Model.Core          (ActionManagementFunctions (ActionManagemen
                                       Location (Location, _locationActionManagement, _objectSemanticMap, _title),
                                       Narration (Narration),
                                       Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
-                                      Player (Player, _location, _playerActions),
+                                      Player (Player, _inventory, _location, _playerActions),
                                       SpatialRelationshipMap (SpatialRelationshipMap),
                                       World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings (GIDToDataMap (GIDToDataMap))
@@ -43,6 +43,7 @@ defaultPlayer :: Player
 defaultPlayer = Player
   { _location = GID 0  -- Will be overridden
   , _playerActions = ActionManagementFunctions Data.Set.empty
+  , _inventory = mempty
   }
 
 defaultNarration :: Narration

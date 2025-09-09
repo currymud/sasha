@@ -119,8 +119,8 @@ import           Model.Parser.GCase            (NounKey)
 #ifdef TESTING
 import           Data.Text                     (pack)
 import           Model.GID                     (GID (GID))
-import           Test.QuickCheck               (Arbitrary (arbitrary), choose,
-                                                listOf, oneof, resize, Gen)
+import           Test.QuickCheck               (Arbitrary (arbitrary), Gen,
+                                                choose, listOf, oneof, resize)
 #endif
 
 -- | State monad transformer for game state
@@ -521,6 +521,7 @@ newtype Perceptables = Perceptables
 type Player :: Type
 data Player = Player
   { _location      :: GID Location
+  , _inventory     :: Set (GID Object)
   , _playerActions :: ActionManagementFunctions
   }
   deriving stock (Show, Eq, Ord)
@@ -589,19 +590,19 @@ arbitraryText = pack <$> resize 15 (listOf (choose ('a', 'z')))
 instance Arbitrary Location where
   arbitrary = Location <$> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
-instance Arbitrary Object where  
+instance Arbitrary Object where
   arbitrary = Object <$> arbitraryText <*> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
--- ActionEffectKey instances  
+-- ActionEffectKey instances
 instance Arbitrary ActionEffectKey where
   arbitrary = oneof
     [ LocationKey <$> arbitrary
-    , ObjectKey <$> arbitrary  
+    , ObjectKey <$> arbitrary
     , PlayerKey <$> arbitrary
     ]
 
 -- PlayerKey instances
-instance Arbitrary PlayerKey where  
+instance Arbitrary PlayerKey where
   arbitrary = oneof
     [ PlayerKeyLocation <$> arbitrary
     , PlayerKeyObject <$> arbitrary
@@ -630,7 +631,7 @@ instance Arbitrary FieldUpdateOperation where
     ]
 
 -- Effect instances (focusing on FieldUpdateEffect, skipping function types)
-instance Arbitrary Effect where  
+instance Arbitrary Effect where
   arbitrary = FieldUpdateEffect <$> arbitrary
 
 -- ActionEffectMap instances

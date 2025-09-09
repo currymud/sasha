@@ -1,4 +1,4 @@
-module Examples.BedroomDemo.GameState (gameState) where
+module Examples.BedroomDemo.GameState (gameState,config) where
 
 import qualified Data.Map.Strict
 import           Debug.Trace                (trace)

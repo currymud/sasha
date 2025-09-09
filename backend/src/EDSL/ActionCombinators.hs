@@ -13,7 +13,7 @@ import           Model.Core                                              (Acquis
 import           Model.GID                                               (GID)
 
 -- Import existing action constructors
-import           ConstraintRefinement.Actions.Player.Get.Constructors    (getObjectF)
+import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getObjectF)
 import           ConstraintRefinement.Actions.Player.Look                (lookAtF,
                                                                           lookInF)
 

@@ -63,11 +63,11 @@ library
       ConstraintRefinement.Actions.Utils
       ConstraintRefinement.Actions.Locations.Look
       ConstraintRefinement.Actions.Player.Get
-      ConstraintRefinement.Actions.Player.Get.Constructors
       ConstraintRefinement.Actions.Player.Look
       ConstraintRefinement.Actions.Player.Open
       ConstraintRefinement.Actions.Player.Stand
       ConstraintRefinement.Actions.Player.Take
+      ConstraintRefinement.Actions.Objects.Get.Constructors
       ConstraintRefinement.Actions.Objects.Open
       ConstraintRefinement.Actions.Objects.SupportLook
       ConstraintRefinement.Actions.Objects.Chair.Look
@@ -182,6 +182,7 @@ library sasha-testing
     , Earley
     , generic-arbitrary
     , hashable
+    , haskeline
     , hspec
     , megaparsec
     , mmorph
@@ -195,15 +196,13 @@ library sasha-testing
  exposed-modules:
       Examples.BedroomDemo.GameState
       Test.Arbitrary.Verbs
+      Test.EndToEnd.GetRobeFails
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
-      Test.Categorical.FreeMonadLaws
-      Test.Categorical.MonadLaws
-      Test.Categorical.HierarchyNaturalityLaws
-      Test.Categorical.RegistryNaturalityLaws
-      Test.Categorical.SpatialMonoidLaws
+      Test.TestRunner
+      TopLevel
       GameState
       GameState.ActionManagement
       GameState.EffectRegistry
@@ -245,6 +244,7 @@ executable sasha-tests
      base
      , Earley
      , hashable
+     , haskeline
      , hspec
      , megaparsec
      , mmorph

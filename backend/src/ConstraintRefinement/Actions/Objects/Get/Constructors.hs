@@ -1,4 +1,4 @@
-module ConstraintRefinement.Actions.Player.Get.Constructors where
+module ConstraintRefinement.Actions.Objects.Get.Constructors where
 import           Control.Monad.Identity                           (Identity)
 import qualified Data.Set
 import           Debug.Trace                                      (trace)

@@ -80,13 +80,13 @@ import           Relude.Function                                         ((&))
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
                                                                           pitchBlackF)
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
+import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
+                                                                          getObjectF)
 import           ConstraintRefinement.Actions.Objects.Pocket.Open        (pocketOutOfReachF)
 import           ConstraintRefinement.Actions.Objects.Robe.Get           (getRobeDeniedF)
 import           ConstraintRefinement.Actions.Objects.Robe.Look          (notEvenRobeF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
-import           ConstraintRefinement.Actions.Player.Get.Constructors    (getFromSupportF,
-                                                                          getObjectF)
 import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF,
                                                                           notEvenInventoryF)
 import           ConstraintRefinement.Actions.Player.Look                (dsvActionEnabled,

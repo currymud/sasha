@@ -50,7 +50,6 @@ import           Data.Set                      (Set, delete, empty, fromList,
                                                 insert, member, null, toList)
 import qualified Data.Set                      (filter)
 import           Data.Text                     (Text, pack)
-import           Debug.Trace                   (trace)
 import           Error                         (throwMaybeM)
 import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
@@ -70,7 +69,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 Location (_locationActionManagement),
                                                 Narration (Narration, _actionConsequence),
                                                 Object (_description, _descriptives, _objectActionManagement),
-                                                Player (_location, _playerActions),
+                                                Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
                                                 SpatialRelationship (Inventory),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
@@ -497,10 +496,12 @@ clearNarration = modifyNarration (const emptyNarration)
 updateActionConsequence :: Text -> Narration -> Narration
 updateActionConsequence consequence narration =
   narration { _actionConsequence = consequence : _actionConsequence narration }
--- Add object to inventory (replaces current inventory insertion)
+
 addToInventoryM :: GID Object -> GameComputation Identity ()
 addToInventoryM oid = do
-  modifySpatialRelationshipsForObjectM oid (Data.Set.insert Inventory)
+  player <- getPlayerM
+  let inventory = _inventory player
+  modifyPlayerM $ \p -> p { _inventory = Data.Set.insert oid inventory }
 
 -- Remove object from inventory
 removeFromInventoryM :: GID Object -> GameComputation Identity ()
