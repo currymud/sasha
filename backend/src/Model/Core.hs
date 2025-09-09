@@ -120,7 +120,7 @@ import           Model.Parser.GCase            (NounKey)
 import           Data.Text                     (pack)
 import           Model.GID                     (GID (GID))
 import           Test.QuickCheck               (Arbitrary (arbitrary), choose,
-                                                listOf, oneof, resize)
+                                                listOf, oneof, resize, Gen)
 #endif
 
 -- | State monad transformer for game state
@@ -580,5 +580,61 @@ instance Arbitrary a => Arbitrary (GID a) where
 newtype SmallText = SmallText Text
 instance Arbitrary SmallText where
   arbitrary = SmallText . pack <$> resize 20 (listOf (choose ('a', 'z')))
+
+-- Helper for arbitrary text
+arbitraryText :: Gen Text
+arbitraryText = pack <$> resize 15 (listOf (choose ('a', 'z')))
+
+-- Basic data type instances
+instance Arbitrary Location where
+  arbitrary = Location <$> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
+
+instance Arbitrary Object where  
+  arbitrary = Object <$> arbitraryText <*> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
+
+-- ActionEffectKey instances  
+instance Arbitrary ActionEffectKey where
+  arbitrary = oneof
+    [ LocationKey <$> arbitrary
+    , ObjectKey <$> arbitrary  
+    , PlayerKey <$> arbitrary
+    ]
+
+-- PlayerKey instances
+instance Arbitrary PlayerKey where  
+  arbitrary = oneof
+    [ PlayerKeyLocation <$> arbitrary
+    , PlayerKeyObject <$> arbitrary
+    ]
+
+-- EffectActionKey instances (using simple GID generation, not actual functions)
+instance Arbitrary EffectActionKey where
+  arbitrary = oneof
+    [ ImplicitStimulusActionKey . GID <$> choose (1, 1000)
+    , DirectionalStimulusActionKey . GID <$> choose (1, 1000)
+    , DirectionalStimulusContainerActionKey . GID <$> choose (1, 1000)
+    , SomaticAccessActionKey . GID <$> choose (1, 1000)
+    , ContainerAccessActionKey . GID <$> choose (1, 1000)
+    , AcquisitionalActionKey . GID <$> choose (1, 1000)
+    , ConsumptionActionKey . GID <$> choose (1, 1000)
+    , PosturalActionKey . GID <$> choose (1, 1000)
+    ]
+
+-- FieldUpdateOperation instances
+instance Arbitrary FieldUpdateOperation where
+  arbitrary = oneof
+    [ ObjectShortName <$> arbitrary <*> arbitraryText
+    , ObjectDescription <$> arbitrary <*> arbitraryText
+    , LocationTitle <$> arbitrary <*> arbitraryText
+    , PlayerLocation <$> arbitrary
+    ]
+
+-- Effect instances (focusing on FieldUpdateEffect, skipping function types)
+instance Arbitrary Effect where  
+  arbitrary = FieldUpdateEffect <$> arbitrary
+
+-- ActionEffectMap instances
+instance Arbitrary ActionEffectMap where
+  arbitrary = ActionEffectMap <$> arbitrary
 
 #endif
