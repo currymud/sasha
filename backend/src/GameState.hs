@@ -415,15 +415,12 @@ modifyObjectM :: GID Object
 modifyObjectM oid objectF = do
   world <- gets _world
   let objectMap = _getGIDToDataMap $ _objectMap world
-  trace ("modifyObjectM: Looking for object " ++ show oid ++ " in map with keys: " ++ show (Data.Map.Strict.keys objectMap)) $ pure ()
   object <- throwMaybeM ("Object not found: " <> pack (show oid)) $
             Data.Map.Strict.lookup oid objectMap
-  trace ("modifyObjectM: Found object " ++ show oid ++ ", applying function") $ pure ()
   let updatedObject = objectF object
   let updatedObjectMap = Data.Map.Strict.insert oid updatedObject objectMap
       updatedWorld = world { _objectMap = (_objectMap world) { _getGIDToDataMap = updatedObjectMap } }
   modify' (\gs -> gs { _world = updatedWorld })
-  trace ("modifyObjectM: Successfully updated object " ++ show oid) $ pure ()
 
 modifyPlayerM :: (Player -> Player)
               -> GameComputation Identity ()

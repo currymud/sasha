@@ -199,9 +199,12 @@ library sasha-testing
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils
       Test.Parser.Atomics.Verbs
+      Test.Categorical.FreeMonadLaws
       Test.Categorical.MonadLaws
+      Test.Categorical.HierarchyNaturalityLaws
       Test.Categorical.RegistryNaturalityLaws
 
+      GameState
       GameState.ActionManagement
       GameState.EffectRegistry
       Model.GID
