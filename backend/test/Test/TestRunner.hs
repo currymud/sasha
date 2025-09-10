@@ -2,17 +2,16 @@
 
 module Test.TestRunner where
 
-import           Control.Monad.Except           (runExceptT)
-import           Control.Monad.Reader           (runReaderT)
-import           Control.Monad.State            (get, runStateT)
-import           Data.Text                      (Text)
+import           Control.Monad.Except (runExceptT)
+import           Control.Monad.Reader (runReaderT)
+import           Control.Monad.State  (get, runStateT)
+import           Data.Text            (Text)
 
-import           Examples.BedroomDemo.GameState (config, gameState)
-import           GameState                      (clearNarration)
-import           Model.Core                     (GameState, GameStateT (..),
-                                                 GameT, runGameT, transformToIO)
-import           TopLevel                       (processWithSystemEffects,
-                                                 trySentence)
+import           Examples.GameState   (config, gameState)
+import           GameState            (clearNarration)
+import           Model.Core           (GameState, GameStateT (..), GameT,
+                                       runGameT, transformToIO)
+import           TopLevel             (processWithSystemEffects, trySentence)
 
 -- Execute a player command like topLevel but with Text input, no loop, returns GameState
 executeCommandInGameT :: Text -> GameT IO GameState

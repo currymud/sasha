@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
-module GameConstruction.SashaDemo where
+module Examples.SashaDemo where
 
-import           GameConstruction.Defaults                               (defaultLocation,
+import           Examples.Defaults                                       (defaultLocation,
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Prelude                                                 hiding
@@ -24,11 +25,9 @@ import           Model.Parser.Composites.Nouns                           (Consum
 
 -- Import behavior management constructors and spatial relationships
 import           Model.Core                                              (AcquisitionActionF,
-                                                                          ActionEffectKey,
                                                                           ActionManagement (AAManagementKey, AVManagementKey, CONManagementKey, DSAManagementKey, ISAManagementKey, SAConManagementKey, SSAManagementKey),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
-                                                                          Effect,
                                                                           EffectActionKey (SomaticAccessActionKey),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
@@ -87,8 +86,7 @@ import           ConstraintRefinement.Actions.Objects.Robe.Get           (getRob
 import           ConstraintRefinement.Actions.Objects.Robe.Look          (notEvenRobeF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
-import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF,
-                                                                          notEvenInventoryF)
+import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
 import           ConstraintRefinement.Actions.Player.Look                (dsvActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAtF)
@@ -96,10 +94,7 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openEyes,
                                                                           openF)
 import           Control.Monad                                           ((>=>))
-import           Data.Kind                                               (Type)
 import qualified Data.Set
-import           Data.Text                                               (Text)
-import           Grammar.Parser.Partitions.Misc                          (a)
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
 import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
@@ -119,7 +114,7 @@ import           Model.Parser.Atomics.Nouns                              (Direct
                                                                           Surface)
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase))
+                                                                          ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
 import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 -- =============================================================================
 -- VERB PHRASES

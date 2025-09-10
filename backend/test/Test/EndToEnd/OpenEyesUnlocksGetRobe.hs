@@ -7,18 +7,17 @@ Tests that after "open eyes", "get robe" succeeds with multi-entity coordination
 
 module Test.EndToEnd.OpenEyesUnlocksGetRobe (spec) where
 
-import qualified Data.Map.Strict                as Map
-import qualified Data.Set                       as Set
-import           Data.Text                      (Text, isInfixOf)
+import qualified Data.Map.Strict     as Map
+import qualified Data.Set            as Set
+import           Data.Text           (Text, isInfixOf)
 import           Test.Hspec
 
-import           Examples.BedroomDemo.GameState (gameState)
-import           Model.Core                     (GameState, _actionConsequence,
-                                                 _inventory, _narration,
-                                                 _objectMap, _player,
-                                                 _shortName, _world)
-import           Model.Core.Mappings            (_getGIDToDataMap)
-import           Test.TestRunner                (executeCommand)
+import           Examples.GameState  (gameState)
+import           Model.Core          (GameState, _actionConsequence, _inventory,
+                                      _narration, _objectMap, _player,
+                                      _shortName, _world)
+import           Model.Core.Mappings (_getGIDToDataMap)
+import           Test.TestRunner     (executeCommand)
 
 -- Helper function to check if robe is in inventory
 hasRobeInInventory :: GameState -> Bool
