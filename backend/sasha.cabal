@@ -57,8 +57,6 @@ library
       ActionDiscovery.Manipulate.SomaticAccess.Open
       ActionDiscovery.Movement.Postural.SitStand
       ActionDiscovery.Percieve.Look
-      Examples.BedroomDemo.GameState
-      GameConstruction.Defaults
       ConstraintRefinement.Actions.Player.Inventory
       ConstraintRefinement.Actions.Utils
       ConstraintRefinement.Actions.Locations.Look
@@ -84,11 +82,13 @@ library
       ConstraintRefinement.Actions.Objects.Robe.Look
       ConstraintRefinement.Actions.Objects.Table.Look
       ConstraintRefinement.Effects.Perception.Look
-      GameConstruction.SashaDemo
       EDSL.GameStateBuilder
       EDSL.ActionCombinators
       Error
       Evaluators.Player.General
+      Examples.Defaults
+      Examples.GameState
+      Examples.SashaDemo
       GameState
       GameState.ActionManagement
       GameState.Perception
@@ -194,7 +194,6 @@ library sasha-testing
     , template-haskell
     , text
  exposed-modules:
-      Examples.BedroomDemo.GameState
       Test.Arbitrary.Verbs
       Test.EndToEnd.GetRobeFails
       Test.EndToEnd.OpenEyesTriggerTest

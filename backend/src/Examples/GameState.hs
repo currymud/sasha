@@ -1,20 +1,20 @@
-module Examples.BedroomDemo.GameState (gameState,config) where
+module Examples.GameState (gameState,config) where
 
 import qualified Data.Map.Strict
-import           Debug.Trace                (trace)
-import           EDSL.GameStateBuilder      (WorldBuilderResult (resultActionMaps, resultGameState),
-                                             initialBuilderState, interpretDSL,
-                                             runWorldBuilderWithMaps)
-import           Evaluators.Player.General  (eval)
-import           GameConstruction.Defaults  (defaultNarration, defaultPlayer,
-                                             defaultWorld)
-import           GameConstruction.SashaDemo (sashaBedroomDemo)
-import           Model.Core                 (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
-                                             Config (Config, _actionMaps),
-                                             Evaluator (Evaluator),
-                                             GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
-                                             TriggerRegistry (TriggerRegistry))
-import           Relude.DeepSeq             (deepseq)
+import           Debug.Trace               (trace)
+import           EDSL.GameStateBuilder     (WorldBuilderResult (resultActionMaps, resultGameState),
+                                            initialBuilderState, interpretDSL,
+                                            runWorldBuilderWithMaps)
+import           Evaluators.Player.General (eval)
+import           Examples.Defaults         (defaultNarration, defaultPlayer,
+                                            defaultWorld)
+import           Examples.SashaDemo        (sashaBedroomDemo)
+import           Model.Core                (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                            Config (Config, _actionMaps),
+                                            Evaluator (Evaluator),
+                                            GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
+                                            TriggerRegistry (TriggerRegistry))
+import           Relude.DeepSeq            (deepseq)
 
 buildResult :: WorldBuilderResult
 buildResult = case runWorldBuilderWithMaps (interpretDSL sashaBedroomDemo) (initialBuilderState defaultGameState) of

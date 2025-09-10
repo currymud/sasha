@@ -1,4 +1,4 @@
-module GameConstruction.Defaults  (defaultLocation
+module Examples.Defaults  (defaultLocation
                                              ,defaultNarration
                                              ,defaultObject
                                              ,defaultPlayer
