@@ -12,7 +12,7 @@ import qualified Data.Set            as Set
 import           Data.Text           (Text, isInfixOf)
 import           Test.Hspec
 
-import           Examples.GameState  (gameState)
+import           Examples.Initialize (gameState)
 import           Model.Core          (GameState, _actionConsequence, _inventory,
                                       _narration, _objectMap, _player,
                                       _shortName, _world)

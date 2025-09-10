@@ -82,12 +82,12 @@ library
       ConstraintRefinement.Actions.Objects.Robe.Look
       ConstraintRefinement.Actions.Objects.Table.Look
       ConstraintRefinement.Effects.Perception.Look
-      EDSL.GameStateBuilder
+      EDSL.GameBuilder
       EDSL.ActionCombinators
       Error
       Evaluators.Player.General
       Examples.Defaults
-      Examples.GameState
+      Examples.Initialize
       Examples.SashaDemo
       GameState
       GameState.ActionManagement
@@ -137,7 +137,7 @@ library
       Model.Actions.Results
       Model.Core
       Model.Core.Mappings
-      Model.GameState.GameStateDSL
+      Model.EDSL.SashaLambdaDSL
       Model.GID
       Model.Label
       Model.Parser
@@ -204,6 +204,7 @@ library sasha-testing
       Test.Parser.Atomics.Verbs
       Test.TestRunner
       TopLevel
+      Examples.Initialize
       GameState
       GameState.ActionManagement
       GameState.EffectRegistry

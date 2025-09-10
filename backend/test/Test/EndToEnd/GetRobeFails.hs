@@ -5,13 +5,13 @@ Tests that "get robe" fails initially with expected message
 
 module Test.EndToEnd.GetRobeFails (spec) where
 
-import qualified Data.Set           as Set
+import qualified Data.Set            as Set
 import           Test.Hspec
 
-import           Examples.GameState (gameState)
-import           Model.Core         (_actionConsequence, _inventory, _narration,
-                                     _player)
-import           Test.TestRunner    (executeCommand)
+import           Examples.Initialize (gameState)
+import           Model.Core          (_actionConsequence, _inventory,
+                                      _narration, _player)
+import           Test.TestRunner     (executeCommand)
 
 -- Phase 1: Test that "get robe" fails initially
 testInitialGetRobeFailure :: IO ()

@@ -7,14 +7,14 @@ Tests that "open eyes" executes successfully and triggers effect processing
 
 module Test.EndToEnd.OpenEyesTriggerTest (spec) where
 
-import qualified Data.Map.Strict    as Map
-import           Data.Text          (Text, unpack)
+import qualified Data.Map.Strict     as Map
+import           Data.Text           (Text, unpack)
 import           Test.Hspec
 
-import           Examples.GameState (gameState)
-import           Model.Core         (_actionConsequence, _effectRegistry,
-                                     _narration)
-import           Test.TestRunner    (executeCommand)
+import           Examples.Initialize (gameState)
+import           Model.Core          (_actionConsequence, _effectRegistry,
+                                      _narration)
+import           Test.TestRunner     (executeCommand)
 
 -- Phase 2: Test that "open eyes" executes and triggers effects
 testOpenEyesExecution :: IO ()
