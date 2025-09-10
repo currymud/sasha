@@ -32,24 +32,22 @@ The parsing pipeline transforms text adventure commands through multiple stages:
 
 ### Compositional Grammar Architecture
 
-The grammar system leverages [case grammar](https://en.wikipedia.org/wiki/Case_grammar), to build compositional verb phrases that
-encode text adventure action intentions:
+The grammar system leverages [case grammar](https://en.wikipedia.org/wiki/Case_grammar),
+to build compositional verb phrases that encode intentions:
 
 ```haskell
 -- From Model.Parser.Composites.Verbs
 data Imperative
-  = Administrative AdministrativeVerb
+  = Administrative AdministrativeVerb --depricated
   | ContainerAccessVerbPhrase' ContainerAccessVerbPhrase  
   | StimulusVerbPhrase StimulusVerbPhrase
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   | PosturalVerbPhrase PosturalVerbPhrase
 ```
-
 ### Grammar-to-Key Mapping
 
-The grammar system generates ActionManagement keys that serve as lookup keys into action maps:
-
+ActionManagement keys leverage the grammar which serves as lookup keys into action maps:
 ```haskell
 -- From Model.Core.hs:481-494
 data ActionManagement
@@ -64,28 +62,31 @@ Each verb phrase type maps to specific management keys which then resolve to act
 
 ## Dynamic Dispatch System
 
-Sasha uses action maps as lookup tables that can fail if keys are not found. The grammar generates keys that may or may not successfully resolve to computations.
+Sasha uses action maps as lookup tables that the dynamic dispatch system queries to resolve.
 
 ### Action Map Architecture
-
 ```haskell
+type ActionMaps :: Type
 data ActionMaps = ActionMaps
-  { _implicitStimulusActionMap           :: Map ImplicitStimulusActionF (GameComputation Identity CoordinationResult)
-  , _directionalStimulusActionMap        :: Map DirectionalStimulusActionF (GameComputation Identity CoordinationResult)  
-  , _acquisitionActionMap                :: Map AcquisitionActionF (GameComputation Identity CoordinationResult)
-  , _containerAccessActionMap            :: Map ContainerAccessActionF (GameComputation Identity CoordinationResult)
-  , _somaticStimulusActionMap           :: Map SomaticStimulusActionF (GameComputation Identity CoordinationResult)
+  { _implicitStimulusActionMap             :: ImplicitStimulusActionMap
+  , _directionalStimulusActionMap          :: DirectionalStimulusActionMap
+  , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
+  , _containerAccessActionMap              :: ContainerAccessActionMap
+  , _somaticStimulusActionMap              :: SomaticStimulusActionMap
+  , _acquisitionActionMap                  :: AcquisitionVerbActionMap
+  , _consumptionActionMap                  :: ConsumptionActionMap
+  , _posturalActionMap                     :: PosturalActionMap
   }
+
 ```
 
-### Dispatch Process with Failure Handling
+### Dispatch Process
 
 1. **Grammar Parsing**: `"get robe"` → `AcquisitionVerbPhrase' getRobeAVP`
 2. **Key Generation**: Verb phrase → ActionManagement key for entity
-3. **Map Lookup**: Check if key exists in acquisitionActionMap → may fail. But that would be a DSL programmer error.
-4. **Execution**: If found, the bound computation executes; if not, action fails, then the DSL programmer needs to fix it.
+3. **Map Lookup**: Check if key exists in acquisitionActionMap 
+4. **Execution**: the bound computation executes in TopLevel
 
-There should always be some sort of actionF function associated with an action, even if it's a "you can't do that" action.
 ## Effects Management System: Dynamic Key Swapping
 
 The effects system dynamically swaps which ActionManagement keys entities use to
@@ -94,7 +95,6 @@ look up actions in the static action maps.
 ### Effect Processing Model
 
 Effects work by modifying the ActionManagement keys in entities' ActionManagementFunctions:
-
 ```haskell
 -- From GameState/ActionManagement.hs:144-149
 processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerb verb newActionGID) _) = do
@@ -106,23 +106,20 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerb verb
 ```
 
 ### Dynamic Key Swapping Example: "Open Eyes" → "Get Robe"
-
 ```haskell
 -- Initial state: Object's ActionManagementFunctions contains:
 -- AVManagementKey get getRobeDeniedGID
 
 -- After "open eyes" fires effects:
--- 1. Filter out old key: AVManagementKey get getRobeDeniedGID
--- 2. Insert new key: AVManagementKey get getObjectGID  
+-- 1. replace key, if any. AVManagementKey get getRobeDeniedGID
 
 -- Same grammar parse "get robe" → same verb lookup → different GID → different action
-```
 
 ### Effect Ownership and Scoping
 
 Effects are owned by specific entities and modify ActionManagementFunctions within their ownership scope:
+```
 
-```haskell
 -- From SashaDemo.hs:220-231
 linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) 
   robeOpenEyesLookChangesGetRobeForPlayer
@@ -131,23 +128,23 @@ linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID
   robeOpenEyesLookChangesGetRobeForRobe
 ```
 
-When "open eyes" fires, these effects modify which ActionManagement keys the player and robe use, changing what actions they can successfully perform.
+When "open eyes" fires, these effects modify which ActionManagement keys the player
+and robe use, changing what actions they can successfully perform.
 
 ## The Constraint Solver System
 
-Sasha implements a two-phase constraint solver that operates on the computations resolved through dynamic dispatch:
+Sasha implements a two-phase constraint solver that operates on the computations
+resolved through dynamic dispatch:
 
 ### Phase 1: ActionDiscovery - Feasibility Analysis
 
 The ActionDiscovery system determines whether a requested action is feasible:
-
-```haskell
+```
 -- From ActionDiscovery modules
 manageAcquisitionProcess    -- Analyzes acquisition feasibility
 manageContainerAccessProcess -- Analyzes container access feasibility
-manageSomaticAccessProcess  -- Analyzes physical action feasibility
+manageSomaticAccessProcess  -- Analyzes feasibility of body-related actions. e.g "open eyes"
 ```
-
 ### Phase 2: ConstraintRefinement - Multi-Entity Coordination  
 
 The ConstraintRefinement system coordinates execution across multiple entities:
@@ -156,9 +153,9 @@ The ConstraintRefinement system coordinates execution across multiple entities:
 -- From ConstraintRefinement modules  
 ConstraintRefinement.Actions.Player.Get    -- Player coordination logic
 ConstraintRefinement.Actions.Objects.Get   -- Object participation logic
-ConstraintRefinement.Actions.Locations     -- Location state updates
+ConstraintRefinement.Actions.Locations     -- Location (not involved in "get" commands)
+but has similar purpose
 ```
-
 ## System Integration: Grammar → Dispatch → Effects → Constraint Solver
 
 ### Complete Flow Example: "get robe"
@@ -166,12 +163,12 @@ ConstraintRefinement.Actions.Locations     -- Location state updates
 1. **Grammar Processing**: `"get robe"` → `AVManagementKey get someGID`
 2. **Dynamic Dispatch**: Key lookup in acquisitionActionMap 
 3. **Effect Resolution**: Effects may have swapped which GID the key contains
-4. **Constraint Processing**: The resolved computation executes through ActionDiscovery → ConstraintRefinement
+4. **Constraint Processing**: The resolved computation builds through
+ActionDiscovery → ConstraintRefinement, then executes TopLevel
 
 ### Effect-Driven Behavioral Change
 
 The same input produces different behavior through effect-driven key swapping:
-
 ```haskell
 -- Before "open eyes":
 "get robe" → AVManagementKey get getRobeDeniedGID → acquisitionActionMap lookup → getRobeDeniedF → "You feel dizzy..."
@@ -179,8 +176,7 @@ The same input produces different behavior through effect-driven key swapping:
 -- After "open eyes" fires effects:
 "get robe" → AVManagementKey get getObjectGID → acquisitionActionMap lookup → getObjectF → successful acquisition
 ```
-
-The grammar parsing remains identical - only the GID in the ActionManagement key changes, pointing to a different entry in the action map.
+The GID in the ActionManagement key changes, pointing to a different entry in the action map.
 
 ## Engineering Benefits
 
@@ -193,4 +189,5 @@ This architecture provides:
 - **Separation of Concerns**: Grammar, dispatch, effects, and constraint solving are cleanly separated
 
 The result is a system where the same text adventure command can produce different behavior
-through effect-driven key swapping, while maintaining type safety and predictable dispatch semantics within the constrained interactive fiction domain.
+through effect-driven key swapping, while maintaining type safety and predictable
+dispatch semantics.
