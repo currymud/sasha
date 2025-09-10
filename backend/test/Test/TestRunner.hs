@@ -7,7 +7,7 @@ import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.State  (get, runStateT)
 import           Data.Text            (Text)
 
-import           Examples.GameState   (config, gameState)
+import           Examples.Initialize  (config, gameState)
 import           GameState            (clearNarration)
 import           Model.Core           (GameState, GameStateT (..), GameT,
                                        runGameT, transformToIO)

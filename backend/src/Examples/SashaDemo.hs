@@ -37,7 +37,7 @@ import           Model.Core                                              (Acquis
                                                                           PlayerKey (PlayerKeyObject),
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (ContainedIn, SupportedBy, Supports))
-import           Model.GameState.GameStateDSL                            (WorldDSL,
+import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
                                                                           createContainerAccessEffect,
@@ -132,8 +132,7 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
 
-
-sashaBedroomDemo :: WorldDSL GameState
+sashaBedroomDemo :: SashaLambdaDSL GameState
 sashaBedroomDemo = do
   -- Location
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
@@ -235,7 +234,7 @@ sashaBedroomDemo = do
 
   finalizeGameState
 
-buildLocation :: GID ImplicitStimulusActionF -> WorldDSL Location
+buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID = defaultLocation & bedroomLoc'
   where
     bedroomLoc' = withTitle "bedroom in bed"
@@ -248,7 +247,7 @@ buildBedroomPlayer :: GID Location
                         -> GID DirectionalStimulusActionF
                         -> GID AcquisitionActionF
                         -> GID ContainerAccessActionF
-                        -> WorldDSL Player
+                        -> SashaLambdaDSL Player
 buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID
     >>= (\p -> withPlayerBehavior p (ISAManagementKey isaLook implicitLookResponseGID))
@@ -261,14 +260,14 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
     >>= (\p -> withPlayerBehavior p (CONManagementKey openPocketCVP containerAccessDeniedF))
 -- CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
 
-bedroomLoc :: GID ImplicitStimulusActionF ->  WorldDSL Location
+bedroomLoc :: GID ImplicitStimulusActionF ->  SashaLambdaDSL Location
 bedroomLoc lookResponseGID = defaultLocation & bedroomLoc'
   where
     bedroomLoc' = withTitle "<LOC-001> bedroom in bed"
                     >=> (\o -> withLocationBehavior o (ISAManagementKey isaLook lookResponseGID))
 
 floorObj :: GID DirectionalStimulusActionF
-         -> WorldDSL Object
+         -> SashaLambdaDSL Object
 floorObj lookGID =  defaultObject & floor
   where
     floor =
@@ -279,7 +278,7 @@ floorObj lookGID =  defaultObject & floor
 
 chairObj :: GID DirectionalStimulusActionF
          -> GID AcquisitionActionF
-         -> WorldDSL Object
+         -> SashaLambdaDSL Object
 chairObj lookGID getGID =  defaultObject & chair
   where
     chair =
@@ -292,7 +291,7 @@ chairObj lookGID getGID =  defaultObject & chair
 
 robeObj :: GID DirectionalStimulusActionF
         -> GID AcquisitionActionF
-        -> WorldDSL Object
+        -> SashaLambdaDSL Object
 robeObj lookGID getGID = defaultObject & robe
   where
     robe =
@@ -307,7 +306,7 @@ robeObj lookGID getGID = defaultObject & robe
 
 pocketObj :: GID DirectionalStimulusActionF
           -> GID ContainerAccessActionF
-          -> WorldDSL Object
+          -> SashaLambdaDSL Object
 pocketObj lookGID openGID = defaultObject & pocket
   where
     pocket =
@@ -320,12 +319,12 @@ pocketObj lookGID openGID = defaultObject & pocket
 --CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
 
 
-placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> WorldDSL ()
+placeObject :: GID Location -> GID Object -> DirectionalStimulus -> Objective -> SashaLambdaDSL ()
 placeObject lid oid ds obj = do
   registerObjectToLocation lid oid (DirectionalStimulusKey ds)
   registerObjectToLocation lid oid (ObjectiveKey obj)
 
-placeSurface :: GID Location -> GID Object -> Surface -> WorldDSL ()
+placeSurface :: GID Location -> GID Object -> Surface -> SashaLambdaDSL ()
 placeSurface lid oid surface = do
   registerObjectToLocation lid oid (SurfaceKey surface)
 
