@@ -9,9 +9,9 @@ Sasha's parser implements a **case grammar** system that transforms interactive 
 Case grammar, developed by linguist Charles Fillmore, analyzes sentences in terms of **cases** - the semantic relationships between verbs and their associated noun phrases. Rather than focusing on surface syntax (subject, object, predicate), case grammar identifies the underlying semantic roles:
 
 - **Agent**: Who performs the action (always the player in Sasha)
-- **Patient/Object**: What receives the action ("get **the robe**")  
-- **Source**: Where something comes from ("from **the chair**")
-- **Instrument**: What is used to perform the action ("with **the key**")
+- **Patient/Object**: What receives the action ("get **the ball**")  
+- **Source**: Where something comes from ("from **the pit**")
+- **Instrument**: What is used to perform the action ("with **the magnet**")
 
 For interactive fiction, this provides a systematic way to structure command languages around actions (verbs) and the entities (nouns) that participate in those actions in specific semantic roles.
 
