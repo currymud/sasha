@@ -3,32 +3,35 @@
 
 module Sasha.HasEffect where
 
-import           Data.Kind                 (Constraint, Type)
-import           Model.Core                (Effect, ActionEffectKey, Location,
-                                            Object, PlayerKey)
-import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL, linkEffectToLocation,
-                                            linkEffectToObject,
-                                            linkEffectToPlayer,
-                                            createImplicitStimulusEffect,
-                                            createDirectionalStimulusEffect,
-                                            createAcquisitionVerbEffect,
-                                            createAcquisitionVerbPhraseEffect,
-                                            createContainerAccessEffect)
-import           Model.GID                 (GID)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, 
-                                            AcquisitionVerb, SimpleAccessVerb)
+import           Data.Kind                     (Constraint, Type)
+import           Model.Core                    (ActionEffectKey, Effect,
+                                                Location, Object, PlayerKey)
+import           Model.EDSL.SashaDSL           (SashaDSL,
+                                                createAcquisitionVerbEffect,
+                                                createAcquisitionVerbPhraseEffect,
+                                                createContainerAccessEffect,
+                                                createDirectionalStimulusEffect,
+                                                createImplicitStimulusEffect,
+                                                linkEffectToLocation,
+                                                linkEffectToObject,
+                                                linkEffectToPlayer)
+import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb,
+                                                SimpleAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
-import           Sasha.TypeMappings        (ActionFunctionType)
+import           Sasha.TypeMappings            (ActionFunctionType)
 
 -- | Class for creating Effects with type-safe verb-to-GID mapping
 type MakeEffect :: Type -> Constraint
 class MakeEffect verb where
-  makeEffect :: verb -> GID (ActionFunctionType verb) -> SashaLambdaDSL Effect
+  makeEffect :: verb -> GID (ActionFunctionType verb) -> SashaDSL Effect
 
 -- | Unified interface for linking effects to any entity type
 type HasEffect :: Type -> Constraint
 class HasEffect a where
-  linkEffect :: ActionEffectKey -> a -> Effect -> SashaLambdaDSL ()
+  linkEffect :: ActionEffectKey -> a -> Effect -> SashaDSL ()
 
 instance HasEffect (GID Location) where
   linkEffect = linkEffectToLocation

@@ -8,6 +8,7 @@ module ActionDiscovery.Percieve.Look (
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
+import qualified Data.Set
 import           GameState                     (getLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
@@ -16,6 +17,8 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
+                                                ActionEffectKey (ImplicitStimulusActionKey),
+                                                EffectKey (ActionKey),
                                                 GameComputation,
                                                 ImplicitStimulusActionF (ImplicitStimulusActionF),
                                                 ImplicitStimulusActionMap,
@@ -35,10 +38,8 @@ manageImplicitStimulusProcess isv = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
         Just (ImplicitStimulusActionF actionFunc) -> do
-          player <- getPlayerM
-          let lid = player._location
-          loc <- getLocationM lid
-          actionFunc player loc
+          let effectKeys = Data.Set.singleton (ActionKey (ImplicitStimulusActionKey actionGID))
+          actionFunc effectKeys
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do

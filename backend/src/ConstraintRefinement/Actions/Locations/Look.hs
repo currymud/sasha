@@ -1,14 +1,24 @@
 module ConstraintRefinement.Actions.Locations.Look where
-import           Data.Text            (Text)
-import           GameState            (modifyNarration, updateActionConsequence)
-import           GameState.Perception (youSeeM)
-import           Model.Core           (ImplicitStimulusActionF (ImplicitStimulusActionF))
+import           Control.Monad.Identity (Identity)
+import           Data.Set               (Set)
+import           GameState.Perception   (youSeeM)
+import           Model.Core             (EffectKey, GameComputation,
+                                         ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF))
 
 pitchBlackF :: ImplicitStimulusActionF
-pitchBlackF = ImplicitStimulusActionF (const (const (modifyNarration $ updateActionConsequence pitchBlack))) -- agentCannotSee pitchBlack
+pitchBlackF = CannotSeeImplicitF pitchBlack
   where
-    pitchBlack :: Text
-    pitchBlack = "It's pitch black, you can't see a thing."
+    pitchBlack :: Set EffectKey -> GameComputation Identity ()
+    pitchBlack _ = do
+      -- process all effects here
+      pure ()
 
 lookF :: ImplicitStimulusActionF
-lookF = ImplicitStimulusActionF (const (const youSeeM))
+lookF = ImplicitStimulusActionF look
+  where
+    look :: Set EffectKey -> GameComputation Identity ()
+    look effects = do
+      -- process all effects here
+      lookEffects <- youSeeM
+      -- combine lookeffects with effects and process them
+      pure () -- placeholder remove when completed

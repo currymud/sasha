@@ -1,9 +1,9 @@
 module Sasha.EffectAlgebra where
 
-import           Data.Kind                 (Type)
-import           Model.Core                (Effect, ActionEffectKey)
-import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL)
-import           Sasha.HasEffect           (HasEffect, linkEffect)
+import           Data.Kind           (Type)
+import           Model.Core          (ActionEffectKey, Effect)
+import           Model.EDSL.SashaDSL (SashaDSL)
+import           Sasha.HasEffect     (HasEffect, linkEffect)
 
 -- | Composable effect that can chain
 type EffectChain :: Type
@@ -29,7 +29,7 @@ buildEffect :: (HasEffect a) => ActionEffectKey -> a -> Effect -> EffectChain
 buildEffect = Single
 
 -- | Build the composed effect computation
-buildEffects :: EffectChain -> SashaLambdaDSL ()
+buildEffects :: EffectChain -> SashaDSL ()
 buildEffects (Single key target eff) = linkEffect key target eff
 buildEffects (Sequential left right) = buildEffects left >> buildEffects right
 buildEffects (Parallel left right)   = buildEffects left >> buildEffects right

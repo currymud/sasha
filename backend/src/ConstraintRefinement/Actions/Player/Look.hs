@@ -7,9 +7,11 @@ import           Control.Monad.State           (gets)
 import           Data.Map.Strict               (Map)
 import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
+import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
-import           GameState                     (getObjectM, modifyNarration,
+import           GameState                     (getObjectM, getPlayerLocationM,
+                                                modifyNarration,
                                                 updateActionConsequence)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
@@ -21,9 +23,9 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
-                                                GameComputation,
+                                                EffectKey, GameComputation,
                                                 GameState (_world),
-                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
@@ -156,7 +158,9 @@ getContainedObjects objGID spatialMap =
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
   where
-    actionEnabled player loc = do
+    actionEnabled :: Set EffectKey ->  GameComputation Identity ()
+    actionEnabled effects = do
+      loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
         Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in location map"
@@ -164,7 +168,8 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
+            Just (ImplicitStimulusActionF actionF) -> actionF effects
+            Just (CannotSeeImplicitF actionF) -> actionF effects
 
 dsvActionEnabled :: DirectionalStimulusActionF
 dsvActionEnabled = PlayerDirectionalStimulusActionF lookit

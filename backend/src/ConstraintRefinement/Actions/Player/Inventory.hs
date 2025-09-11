@@ -1,16 +1,18 @@
 module ConstraintRefinement.Actions.Player.Inventory (defaultInventoryLookF, notEvenInventoryF) where
 
-import           Control.Monad.Identity (Identity)
-import           Data.Kind              (Type)
-import           Data.Text              (Text)
-import qualified Data.Text              as Text
-import           GameState              (getInventoryObjectsM, getObjectM,
-                                         modifyNarration,
-                                         updateActionConsequence)
-import           Model.Core             (GameComputation,
-                                         ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                         Object (_shortName))
-import           Model.GID              (GID)
+import           Control.Monad.Identity     (Identity)
+import           Data.Kind                  (Type)
+import           Data.Set                   (Set, toList)
+import           Data.Text                  (Text)
+import qualified Data.Text                  as Text
+import           GameState                  (getInventoryObjectsM, getObjectM)
+import           GameState.ActionManagement (processEffects)
+import           Model.Core                 (EffectKey (NarrationKey),
+                                             GameComputation,
+                                             ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                             NarrationOperation (ActionConsequenceNarration),
+                                             Object (_shortName))
+import           Model.GID                  (GID)
 
 type InventoryFlavorText :: Type
 data InventoryFlavorText = InventoryFlavorText
@@ -25,11 +27,13 @@ defaultFlavorText = InventoryFlavorText
   }
 
 notEvenInventoryF :: ImplicitStimulusActionF
-notEvenInventoryF = ImplicitStimulusActionF (const (const notEvenInventory'))
+notEvenInventoryF = ImplicitStimulusActionF notEvenInventory'
   where
-    notEvenInventory' :: GameComputation Identity ()
-    notEvenInventory'  = do
-      modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
+    notEvenInventory' :: Set EffectKey -> GameComputation Identity ()
+    notEvenInventory' effectKeys = do
+      let narrationEffect = NarrationKey (ActionConsequenceNarration "You've got nothing but a terrible headache and a slight pang of regret.")
+          allEffects = Data.Set.toList effectKeys <> [narrationEffect]
+      processEffects allEffects
 
 defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
@@ -37,19 +41,19 @@ defaultInventoryLookF = inventoryLookF defaultFlavorText
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
 inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
   where
-    inventoryLook' :: a -> b -> GameComputation Identity ()
-    inventoryLook' _player _location = do
+    inventoryLook' :: Set EffectKey -> GameComputation Identity ()
+    inventoryLook' effectKeys  = do
       inventoryObjects <- getInventoryObjectsM
-      case inventoryObjects of
-        [] -> do
-          -- Empty inventory case
-          modifyNarration $ updateActionConsequence _emptyFlavorText
+      narrationEffect <- case inventoryObjects of
+        [] -> pure $ NarrationKey (ActionConsequenceNarration _emptyFlavorText)
         objects -> do
-          -- Non-empty inventory case
           objectNames <- mapM getObjectShortName objects
           let itemsList = Text.intercalate ", " objectNames
               fullMessage = _inventoryFlavorText <> " You are carrying: " <> itemsList <> "."
-          modifyNarration $ updateActionConsequence fullMessage
+          pure $ NarrationKey (ActionConsequenceNarration fullMessage)
+
+      let allEffects = Data.Set.toList effectKeys <> [narrationEffect]
+      processEffects allEffects
 -- | Get the short name of an object
 getObjectShortName :: GID Object -> GameComputation Identity Text
 getObjectShortName oid = do

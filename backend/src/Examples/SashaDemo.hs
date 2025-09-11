@@ -10,10 +10,10 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (AcquisitionActionF,
+                                                                          ActionEffectKey (..),
                                                                           ActionManagement (..),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
-                                                                          ActionEffectKey (..),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
                                                                           Location,
@@ -22,7 +22,7 @@ import           Model.Core                                              (Acquis
                                                                           PlayerKey (..),
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (..))
-import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
+import           Model.EDSL.SashaDSL                                     (SashaDSL,
                                                                           createAcquisitionVerbEffect,
                                                                           createAcquisitionVerbPhraseEffect,
                                                                           createContainerAccessEffect,
@@ -110,7 +110,7 @@ openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
 
 -- | Main demo function with HasBehavior and HasEffect - same signature as original
-sashaBedroomDemo :: SashaLambdaDSL GameState
+sashaBedroomDemo :: SashaDSL GameState
 sashaBedroomDemo = do
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
@@ -191,20 +191,20 @@ sashaBedroomDemo = do
   finalizeGameState
 
 -- Helper functions using HasBehavior - much cleaner!
-buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
+buildLocation :: GID ImplicitStimulusActionF -> SashaDSL Location
 buildLocation implicitLookResponseGID =
   defaultLocation &
     (withTitle "bedroom in bed" >=>
     withBehavior (makeBehavior isaLook implicitLookResponseGID))
 
-floorObj :: GID DirectionalStimulusActionF -> SashaLambdaDSL Object
+floorObj :: GID DirectionalStimulusActionF -> SashaDSL Object
 floorObj lookGID = defaultObject &
   (withShortName "<OBJ-001>floor" >=>
   withDescription "The bedroom floor" >=>
   withDescriptives [SimpleNounPhrase floorDS] >=>
   withBehavior (makeBehavior look lookGID))
 
-chairObj :: GID DirectionalStimulusActionF -> GID AcquisitionActionF -> SashaLambdaDSL Object
+chairObj :: GID DirectionalStimulusActionF -> GID AcquisitionActionF -> SashaDSL Object
 chairObj lookGID getGID = defaultObject &
   (withShortName "<OBJ-002>chair" >=>
   withDescription "A simple wooden chair" >=>
@@ -213,7 +213,7 @@ chairObj lookGID getGID = defaultObject &
   withBehavior (makeBehavior get getGID) >=>
   withBehavior (makeBehavior getRobeAVP getGID))
 
-robeObj :: GID DirectionalStimulusActionF -> GID AcquisitionActionF -> SashaLambdaDSL Object
+robeObj :: GID DirectionalStimulusActionF -> GID AcquisitionActionF -> SashaDSL Object
 robeObj lookGID getGID = defaultObject &
   (withShortName "<OBJ-003>comfortable robe" >=>
   withDescription "The robe is draped on the chair" >=>
@@ -222,7 +222,7 @@ robeObj lookGID getGID = defaultObject &
   withBehavior (makeBehavior get getGID) >=>
   withBehavior (makeBehavior getRobeAVP getGID))
 
-pocketObj :: GID DirectionalStimulusActionF -> GID ContainerAccessActionF -> SashaLambdaDSL Object
+pocketObj :: GID DirectionalStimulusActionF -> GID ContainerAccessActionF -> SashaDSL Object
 pocketObj lookGID openGID = defaultObject &
   (withShortName "<OBJ-004>pocket" >=>
   withDescription "A pocket sewn into the robe" >=>
@@ -237,7 +237,7 @@ buildBedroomPlayer :: GID Location
                    -> GID DirectionalStimulusActionF
                    -> GID AcquisitionActionF
                    -> GID ContainerAccessActionF
-                   -> SashaLambdaDSL Player
+                   -> SashaDSL Player
 buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID >>=
   withBehavior (makeBehavior isaLook implicitLookResponseGID) >>=

@@ -27,6 +27,7 @@ module Model.Core
   , identityToIO
     -- * Action Function Types
   , ImplicitStimulusActionF(..)
+  , ImplicitStimulusParameters
   , DirectionalStimulusActionF(..)
   , DirectionalStimulusContainerActionF(..)
   , ContainerAccessActionF(..)
@@ -194,10 +195,15 @@ newtype GameComputation m a = GameComputation
 instance MonadTrans GameComputation where
   lift = GameComputation . lift . lift . lift
 
+type ImplicitStimulusParameters :: Type
+type ImplicitStimulusParameters = Set EffectKey
+                                    -> GameComputation Identity ()
+
 -- Action function types
 type ImplicitStimulusActionF :: Type
-newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: Player -> Location -> GameComputation Identity () }
+data ImplicitStimulusActionF
+  = ImplicitStimulusActionF ImplicitStimulusParameters
+  | CannotSeeImplicitF  (Set EffectKey -> (GameComputation Identity ()))
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF

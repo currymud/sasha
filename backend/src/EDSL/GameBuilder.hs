@@ -34,14 +34,14 @@ import qualified Data.Set                                                       
 import           Debug.Trace                                                      (trace)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
-import           Model.Core                                                       (ActionEffectMap (ActionEffectMap),
+import           Model.Core                                                       (ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                                   ActionEffectMap (ActionEffectMap),
                                                                                    ActionGID (AcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                    ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
-                                                                                   ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -54,7 +54,7 @@ import           Model.Core                                                     
                                                                                    TriggerRegistry (TriggerRegistry, _unTriggerRegistry),
                                                                                    World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings                                              (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
-import           Model.EDSL.SashaLambdaDSL                                        (SashaLambdaDSL (..))
+import           Model.EDSL.SashaDSL                                              (SashaDSL (..))
 import           Model.GID                                                        (GID (GID))
 import           Model.Parser.Atomics.Nouns                                       (Consumable,
                                                                                    Container,
@@ -184,7 +184,7 @@ runWorldBuilder :: WorldBuilder a -> BuilderState -> Either WorldBuilderError a
 runWorldBuilder (WorldBuilder computation) = evalState (runExceptT computation)
 
 -- Core interpreter function
-interpretDSL :: SashaLambdaDSL a -> WorldBuilder a
+interpretDSL :: SashaDSL a -> WorldBuilder a
 interpretDSL (Pure a)             = pure a
 
 interpretDSL (Map f dsl)          = f <$> interpretDSL dsl
@@ -517,8 +517,6 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
           updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
           updatedGameState = (_gameState state) { _world = updatedWorld }
       put state { _gameState = updatedGameState }
-
-interpretDSL DisplayVisibleObjects = pure youSeeM
 
 interpretDSL (CreateAcquisitionVerbEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAcquisitionVerb verb actionGID) (AcquisitionActionGID actionGID))

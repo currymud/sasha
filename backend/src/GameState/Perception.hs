@@ -6,6 +6,7 @@ import           Control.Monad.State           (gets, modify')
 import           Data.Kind                     (Type)
 import qualified Data.Map.Strict
 import qualified Data.Map.Strict               as Map
+import           Data.Set                      (Set)
 import qualified Data.Set
 import qualified Data.Set                      as Set
 import qualified Data.Text
@@ -16,7 +17,7 @@ import           GameState                     (getDescriptionM, getLocationM,
                                                 modifyNarration,
                                                 updateActionConsequence)
 import           GameState.Spatial             (findObjectInInventoryContainers)
-import           Model.Core                    (GameComputation,
+import           Model.Core                    (EffectKey, GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
                                                 Object (_descriptives),
@@ -207,8 +208,9 @@ modifyPerceptionMapM perceptionMapF = do
       updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
 
-
-youSeeM :: GameComputation Identity ()
+-- youSeem needs to generate a Narration effect
+-- instead of using modifyNarration
+youSeeM :: GameComputation Identity (Set EffectKey)
 youSeeM = do
   trace "youSeeM: Starting execution" $ pure ()
 
@@ -225,6 +227,7 @@ youSeeM = do
   unless (null descriptions) $ do
     let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
     modifyNarration $ updateActionConsequence seeText
+  pure Data.Set.empty -- Placeholder for actual effect keys
   where
     isContainedOrSupported (ContainedIn _) = True
     isContainedOrSupported (SupportedBy _) = True

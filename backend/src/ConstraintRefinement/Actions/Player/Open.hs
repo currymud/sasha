@@ -56,9 +56,10 @@ openEyes = SomaticAccessActionF opened
              ->  ActionEffectMap
              ->  SystemEffectRegistry
              -> GameComputation Identity ()
-   opened actionEffectKeys _ (ActionEffectMap actionEffectMap) _ = do
-     modifyNarration (updateActionConsequence msg)
-     youSeeM
+   opened effectKeys _ (ActionEffectMap effectMap) _ = do
+     lookEffectKeys <- youSeeM
+
+     pure ()
 
 msg :: Text
 msg = "You open your eyes, and the world comes into focus."

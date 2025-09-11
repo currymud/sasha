@@ -137,7 +137,7 @@ library
       Model.Actions.Results
       Model.Core
       Model.Core.Mappings
-      Model.EDSL.SashaLambdaDSL
+      Model.EDSL.SashaDSL
       Model.GID
       Model.Label
       Model.Parser

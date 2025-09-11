@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Sasha.HasBehavior where
 
 import           Data.Kind                     (Constraint, Type)
 import           Model.Core                    (ActionManagement (..), Location,
                                                 Object, Player)
-import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
-                                                withLocationBehavior,
+import           Model.EDSL.SashaDSL           (SashaDSL, withLocationBehavior,
                                                 withObjectBehavior,
                                                 withPlayerBehavior)
 import           Model.GID                     (GID)
@@ -29,7 +29,7 @@ class MakeBehavior verb where
 -- | Unified interface for adding behaviors to any entity type
 type HasBehavior :: Type -> Constraint
 class HasBehavior a where
-  withBehavior :: ActionManagement -> a -> SashaLambdaDSL a
+  withBehavior :: ActionManagement -> a -> SashaDSL a
 
 instance MakeBehavior ImplicitStimulusVerb where
   makeBehavior = ISAManagementKey
