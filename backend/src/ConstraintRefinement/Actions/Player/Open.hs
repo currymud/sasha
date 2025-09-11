@@ -18,7 +18,7 @@ import           Model.Actions.Results                             (AccessRes (C
 import           Model.Core                                        (ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
-                                                                    ActionEffectKey,
+                                                                    EffectKey,
                                                                     EffectTargetKey,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
@@ -66,13 +66,13 @@ msg = "You open your eyes, and the world comes into focus."
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
   where
-    openit :: ActionEffectKey
+    openit :: [EffectKey]
                -> SimpleAccessSearchStrategy
                -> ContainerAccessActionMap
                -> ContainerAccessVerbPhrase
                ->  FinalizeAccessNotInstrumentF
                -> GameComputation Identity ()
-    openit actionKey searchStrategy actionMap avp finalize = do
+    openit effectKeys searchStrategy actionMap avp finalize = do
       case caRes of
         SimpleAR (SimpleAccessRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saContainerKey
@@ -85,7 +85,7 @@ openF = PlayerContainerAccessF openit
                 Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
                 Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
                 Right (CannotAccessF actionF) -> actionF
-                Right (ObjectContainerAccessF actionF) -> finalize actionKey actionF
+                Right (ObjectContainerAccessF actionF) -> finalize effectKeys actionF
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp

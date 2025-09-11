@@ -19,6 +19,7 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
                                                      ActionEffectKey (AcquisitionalActionKey),
+                                                     EffectKey (ActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -44,8 +45,8 @@ manageAcquisitionProcess avp = do
         Just foundAction -> do
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               let actionKey = AcquisitionalActionKey actionGID
-               actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
+               let effectKeys = [ActionKey (AcquisitionalActionKey actionGID)]
+               actionFunc effectKeys actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
             (NotGettableF actionF) -> do
@@ -77,13 +78,13 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: ActionEffectKey
+finalizeAcquisition :: [EffectKey]
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult
                         -> (GID Object -> GameComputation Identity CoordinationResult)
                         -> GameComputation Identity ()
-finalizeAcquisition effectActionKey containerGID objectGID objectActionF containerActionF = do
+finalizeAcquisition effectKeys containerGID objectGID objectActionF containerActionF = do
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
@@ -98,6 +99,6 @@ finalizeAcquisition effectActionKey containerGID objectGID objectActionF contain
      else  do
        (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
-       let allEffects = effectActionKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
-       mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
+       let allEffects = effectKeys <> objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects
+       mapM_ (\(ActionKey k) -> processEffectsFromRegistry k) allEffects >> containerRemoveObjectF >> playerGetObjectF
 

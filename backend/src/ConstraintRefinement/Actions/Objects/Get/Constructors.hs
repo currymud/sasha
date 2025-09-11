@@ -13,6 +13,7 @@ import           Model.Core                                       (AcquisitionAc
                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                    CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
                                                                    ActionEffectKey (AcquisitionalActionKey),
+                                                                   EffectKey (ActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
                                                                    SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
@@ -29,8 +30,8 @@ getObjectF objectGID = CollectedF getit
       let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
-        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
-        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _actionEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
+        , _fieldEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -67,7 +68,7 @@ getFromSupportF supportObjGID = LosesObjectF getit
 
       pure $ CoordinationResult
         { _computation = computation
-        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
-        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _actionEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
+        , _fieldEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
         }
 
