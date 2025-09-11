@@ -47,11 +47,12 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
                                                                           withShortName,
                                                                           withTitle)
 import           Model.GID                                               (GID)
+import           Sasha.EffectAlgebra                                     (alongside,
+                                                                          andThen, effect, buildEffects)
 import           Sasha.HasBehavior                                       (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior))
 import           Sasha.HasEffect                                         (HasEffect (linkEffect),
                                                                           MakeEffect (makeEffect))
-import           Sasha.EffectAlgebra                                 (andThen, alongside, singleEffect, executeEffect)
 
 -- All the noun/verb imports from original
 import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
@@ -109,14 +110,12 @@ openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleN
 -- | Main demo function with HasBehavior and HasEffect - same signature as original
 sashaBedroomDemo :: SashaLambdaDSL GameState
 sashaBedroomDemo = do
-  -- Declare all GIDs exactly like original
   bedroomGID <- declareLocationGID (SimpleNounPhrase bedroomDS)
   floorGID <- declareObjectGID (SimpleNounPhrase floorDS)
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
-  -- Declare action GIDs exactly like original
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
   notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
@@ -130,7 +129,6 @@ sashaBedroomDemo = do
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
 
-  -- Player action GIDs exactly like original
   openEyesGID <- declareSomaticActionGID openEyes
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
   playerGetFGID <- declareAcquisitionActionGID getF
@@ -141,7 +139,6 @@ sashaBedroomDemo = do
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
 
-  -- Register entities with clean syntax using HasBehavior
   registerLocation bedroomGID (buildLocation pitchBlackGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
@@ -152,7 +149,6 @@ sashaBedroomDemo = do
                               dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
-  -- Place objects exactly like original
   registerObjectToLocation bedroomGID floorGID (DirectionalStimulusKey floorDS)
   registerObjectToLocation bedroomGID floorGID (ObjectiveKey floorOB)
   registerObjectToLocation bedroomGID chairGID (DirectionalStimulusKey chairDS)
@@ -163,15 +159,12 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
 
-  -- Spatial relationships exactly like original
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
   registerSpatial pocketGID (ContainedIn robeGID)
 
-  -- Effects with proper composition algebra
-  
-  -- Create all effects first  
+  -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
   openEyesLookChangeEffectFloor <- makeEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeEffect dsaLook lookAtChairGID
@@ -181,21 +174,17 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
 
-  -- Compose effects with explicit structure using domain-relevant operators
-  let parallelLookEffects = 
-        singleEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
-        singleEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
-        singleEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
-        singleEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe
-
-  let sequentialAccessEffects =
-        singleEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
-        singleEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
-        singleEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
-        singleEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
-
-  -- Execute the composed effects: look effects happen alongside each other, and then access effects in sequence
-  executeEffect (parallelLookEffects `andThen` sequentialAccessEffects)
+  -- Build composed effect computation
+  buildEffects $
+    effect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
+    effect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
+    effect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
+    effect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `andThen`
+    
+    effect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
+    effect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
+    effect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
+    effect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
   finalizeGameState
 
