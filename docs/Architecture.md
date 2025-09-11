@@ -1,10 +1,10 @@
-# Sasha Architecture: Constraint Solver, Dynamic Dispatch, and Effects Management
+# Sasha Architecture: Compositional Effect System with Categorical Foundations
 
-This document describes Sasha's core architectural systems:
- - The constraint solver that manages action feasibility.
- - The dynamic dispatch system that routes actions to appropriate handlers.
- - The effects management system that dynamically swaps action keys,
-   and the constrained grammar system that converts domain-specific commands to typed action structures.
+This document describes Sasha's core architectural systems built on category theory principles:
+ - Type-safe compositional interfaces for behaviors and effects
+ - Mathematical composition laws ensuring predictable system behavior  
+ - Domain-expressive operators for temporal effect relationships
+ - Unified entity interfaces that work across all game object types
 
 ## Constrained Interactive Fiction Grammar System
 
@@ -45,91 +45,127 @@ data Imperative
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   | PosturalVerbPhrase PosturalVerbPhrase
 ```
-### Grammar-to-Key Mapping
+### Type-Safe Verb-to-Action Mapping
 
-ActionManagement keys leverage the grammar which serves as lookup keys into action maps:
+Type families ensure compile-time correspondence between verbs and action functions:
 ```haskell
--- From Model.Core.hs:481-494
-data ActionManagement
-  = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)           -- "get robe" 
-  | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
-  | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
-  | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)      -- "open eyes"
+-- Type family defines the mapping
+type family ActionFunctionType (verb :: Type) :: Type where
+  ActionFunctionType ImplicitStimulusVerb = ImplicitStimulusActionF
+  ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF  
+  ActionFunctionType AcquisitionVerb = AcquisitionActionF
+  ActionFunctionType SomaticAccessVerb = SomaticAccessActionF
+  ActionFunctionType SimpleAccessVerb = ContainerAccessActionF
+
+-- Type classes use the family for safety
+class MakeBehavior verb where
+  makeBehavior :: verb -> GID (ActionFunctionType verb) -> ActionManagement
 ```
 
-Each verb phrase type maps to specific management keys which then resolve to action computations through the dispatch system.
+Type families prevent mismatched verb-action combinations at compile time, ensuring system integrity.
 
-## Dynamic Dispatch System
+## Unified Entity Interfaces  
 
-Sasha uses action maps as lookup tables that the dynamic dispatch system queries to resolve.
+Sasha provides type classes that work uniformly across all entity types, eliminating the need for entity-specific dispatch logic.
 
-### Action Map Architecture
+### HasBehavior: Universal Behavior Attachment
 ```haskell
-type ActionMaps :: Type
-data ActionMaps = ActionMaps
-  { _implicitStimulusActionMap             :: ImplicitStimulusActionMap
-  , _directionalStimulusActionMap          :: DirectionalStimulusActionMap
-  , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
-  , _containerAccessActionMap              :: ContainerAccessActionMap
-  , _somaticStimulusActionMap              :: SomaticStimulusActionMap
-  , _acquisitionActionMap                  :: AcquisitionVerbActionMap
-  , _consumptionActionMap                  :: ConsumptionActionMap
-  , _posturalActionMap                     :: PosturalActionMap
-  }
+class HasBehavior a where
+  withBehavior :: ActionManagement -> a -> SashaLambdaDSL a
 
+-- Works identically for all entity types  
+instance HasBehavior Location where
+  withBehavior = flip withLocationBehavior
+
+instance HasBehavior Object where
+  withBehavior = flip withObjectBehavior
+
+instance HasBehavior Player where
+  withBehavior = flip withPlayerBehavior
 ```
 
-### Dispatch Process
-
-1. **Grammar Parsing**: `"get robe"` → `AcquisitionVerbPhrase' getRobeAVP`
-2. **Key Generation**: Verb phrase → ActionManagement key for entity
-3. **Map Lookup**: Check if key exists in acquisitionActionMap 
-4. **Execution**: the bound computation executes in TopLevel
-
-## Effects Management System: Dynamic Key Swapping
-
-The effects system dynamically swaps which ActionManagement keys entities use to
-look up actions in the static action maps.
-
-### Effect Processing Model
-
-Effects work by modifying the ActionManagement keys in entities' ActionManagementFunctions:
+### HasEffect: Universal Effect Linking
 ```haskell
--- From GameState/ActionManagement.hs:144-149
-processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerb verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
+class HasEffect a where
+  linkEffect :: EffectActionKey -> a -> Effect -> SashaLambdaDSL ()
+
+-- Same interface for all target types
+instance HasEffect (GID Location) where
+  linkEffect = linkEffectToLocation
+
+instance HasEffect (GID Object) where
+  linkEffect = linkEffectToObject
+
+instance HasEffect PlayerKey where
+  linkEffect = linkEffectToPlayer
 ```
 
-### Dynamic Key Swapping Example: "Open Eyes" → "Get Robe"
+### Unified Usage Pattern
+
+The same code patterns work across all entity types:
 ```haskell
--- Initial state: Object's ActionManagementFunctions contains:
--- AVManagementKey get getRobeDeniedGID
+-- Attach behaviors uniformly
+player   & withBehavior (makeBehavior verb gid)
+object   & withBehavior (makeBehavior verb gid)  
+location & withBehavior (makeBehavior verb gid)
 
--- After "open eyes" fires effects:
--- 1. replace key, if any. AVManagementKey get getRobeDeniedGID
-
--- Same grammar parse "get robe" → same verb lookup → different GID → different action
-
-### Effect Ownership and Scoping
-
-Effects are owned by specific entities and modify ActionManagementFunctions within their ownership scope:
+-- Link effects uniformly
+linkEffect triggerKey playerTarget effect
+linkEffect triggerKey objectTarget effect
+linkEffect triggerKey locationTarget effect
 ```
 
--- From SashaDemo.hs:220-231
-linkEffectToPlayer (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) 
-  robeOpenEyesLookChangesGetRobeForPlayer
+## Compositional Effect Architecture
 
-linkEffectToObject (SomaticAccessActionKey openEyesGID) robeGID 
-  robeOpenEyesLookChangesGetRobeForRobe
+Sasha provides a compositional algebra for expressing temporal relationships between effects with domain-relevant operators.
+
+### Effect Composition Algebra
+
+Effects are built using type-safe composition with expressive operators:
+```haskell
+-- Composable effect chain
+data EffectChain where
+  Single :: (HasEffect a) => EffectActionKey -> a -> Effect -> EffectChain
+  Sequential :: EffectChain -> EffectChain -> EffectChain  
+  Parallel :: EffectChain -> EffectChain -> EffectChain
+
+-- Domain-relevant composition operators
+infixr 1 `andThen`   -- Sequential: one effect and then another
+infixr 2 `alongside` -- Parallel: effects happening simultaneously
+
+andThen :: EffectChain -> EffectChain -> EffectChain
+alongside :: EffectChain -> EffectChain -> EffectChain
 ```
 
-When "open eyes" fires, these effects modify which ActionManagement keys the player
-and robe use, changing what actions they can successfully perform.
+### Expressive Effect Composition
+
+Effects compose naturally using domain language:
+```haskell
+-- Opening eyes triggers parallel look effects, then sequential access effects
+buildEffects $
+  effect triggerKey target1 lookEffect1 `alongside`
+  effect triggerKey target2 lookEffect2 `alongside`
+  effect triggerKey target3 lookEffect3 `alongside`
+  effect triggerKey target4 lookEffect4 `andThen`
+  
+  effect triggerKey target5 accessEffect1 `andThen`
+  effect triggerKey target6 accessEffect2 `andThen`
+  effect triggerKey target7 accessEffect3
+```
+
+### Categorical Foundation
+
+The effect system is built on category theory principles:
+- **Objects**: Game states or state transformations
+- **Morphisms**: Effect operations that transform game states  
+- **Composition**: Monadic composition ensures proper sequencing
+- **Identity**: Pure operations that leave state unchanged
+
+```haskell
+-- SashaLambdaDSL forms a category
+buildEffects :: EffectChain -> SashaLambdaDSL ()
+-- Builds morphisms in the SashaLambdaDSL category
+```
 
 ## The Constraint Solver System
 
@@ -180,14 +216,35 @@ The GID in the ActionManagement key changes, pointing to a different entry in th
 
 ## Engineering Benefits
 
-This architecture provides:
+This compositional architecture provides:
 
-- **Predictable Dispatch**: Grammar generates consistent keys; map lookups may succeed or fail
-- **Dynamic Behavioral Modification**: Effects swap keys without changing action map structure
-- **Type-Safe Action Resolution**: Grammar types ensure valid key generation for text adventure commands
-- **Compositional Effects**: Multiple effects can modify the same entity's ActionManagement keys safely
-- **Separation of Concerns**: Grammar, dispatch, effects, and constraint solving are cleanly separated
+### Mathematical Guarantees
+- **Composition Laws**: Categorical foundation ensures associativity and identity laws
+- **Type Safety**: Type families prevent invalid verb-action combinations at compile time
+- **Predictable Behavior**: Mathematical laws ensure effects compose as expected
 
-The result is a system where the same text adventure command can produce different behavior
-through effect-driven key swapping, while maintaining type safety and predictable
-dispatch semantics.
+### Developer Experience  
+- **Domain Expression**: `alongside` and `andThen` read like natural language
+- **Unified Interfaces**: Same patterns work across all entity types
+- **Compile-Time Errors**: Mismatched types caught early rather than at runtime
+
+### Architectural Benefits
+- **Compositional Design**: Effects build complex behaviors from simple parts
+- **Separation of Concerns**: Type classes separate interface from implementation
+- **Extensibility**: New entity types automatically work with existing interfaces
+
+### Example: Compositional Effect Structure
+```haskell
+-- Effects compose to express temporal relationships
+buildEffects $
+  -- Parallel composition: effects that happen simultaneously
+  eyeOpenLookBedroom `alongside` eyeOpenLookFloor `alongside` 
+  eyeOpenLookChair   `alongside` eyeOpenLookRobe  `andThen`
+  
+  -- Sequential composition: effects that happen in order  
+  enablePocketAccess `andThen` enableRobeGet `andThen`
+  addRobeToInventory `andThen` completeAcquisition
+```
+
+The result is a system where complex interactive behaviors are built through
+mathematical composition of simple effects, providing both correctness guarantees and expressive power.

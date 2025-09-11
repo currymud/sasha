@@ -1,70 +1,90 @@
-# SashaDemo: A Reference Implementation of Effect-Driven Dynamic Dispatch
+# SashaDemo: A Reference Implementation of Compositional Effect Architecture
 
 ## What SashaDemo Demonstrates
 
-SashaDemo demonstrates **effect-driven dynamic dispatch** - a system where runtime behavior changes are managed through effects that modify dispatch table mappings, combined with type-enforced ownership boundaries that prevent unauthorized cross-component modifications.
+SashaDemo demonstrates a **compositional effect architecture** built on category theory principles - a system where game behaviors are constructed through type-safe composition of effects and actions, with mathematical guarantees about behavior composition and effect ownership.
 
 ## The Core Engineering System
 
-### Effect-Driven Dynamic Dispatch
+### Type-Safe Compositional Architecture
 ```haskell
--- Dispatch tables map keys to implementations
-AVManagementKey get getRobeDeniedGID
+-- Type families ensure verb-to-action correspondence  
+type family ActionFunctionType (verb :: *) :: *
+ActionFunctionType AcquisitionVerb = AcquisitionActionF
 
--- Effects modify which implementation a key points to
-openEyesEffect = swapActionMapping get getObjectGID
+-- Type classes provide unified interfaces
+class MakeBehavior verb where
+  makeBehavior :: verb -> GID (ActionFunctionType verb) -> ActionManagement
 
--- Same key, different behavior after effect processing
-AVManagementKey get getObjectGID
+-- Entities get behaviors through unified interface
+withBehavior (makeBehavior get getRobeDeniedGID) robeObject
 ```
 
-**Key insight**: State is represented by which functions are bound to which keys. State changes happen by swapping function bindings, not by updating variables.
+**Key insight**: Mathematical composition laws ensure that behaviors and effects compose predictably, while type families guarantee correctness at compile time.
 
-## Relationship Between Sasha's Engineering Systems
+## Compositional Effect Architecture
 
-### 1. Grammar System → Dynamic Dispatch System
-**Grammar parsing** generates ActionManagement keys:
+### 1. Effect Composition Algebra
+**Domain-relevant operators** for expressing temporal relationships:
 ```haskell
-"get robe" → AcquisitionVerbPhrase → AVManagementKey get someGID
+-- Effects happening simultaneously
+effect key target1 effect1 `alongside`
+effect key target2 effect2 `alongside`
+effect key target3 effect3 `andThen`
+
+-- Effects happening in sequence  
+effect key target4 effect4 `andThen`
+effect key target5 effect5
 ```
 
-**Dynamic dispatch** uses these keys to look up implementations:
+**Categorical foundation** ensures composition laws:
 ```haskell
-lookupAcquisitionVerb (AVManagementKey get) entityActionMap → currentImplementation
+-- SashaLambdaDSL forms a category with proper composition
+buildEffects :: EffectChain -> SashaLambdaDSL ()
+-- Composes effect morphisms into single computation
 ```
 
-The grammar system provides the keys; dispatch system provides the lookup mechanism.
-
-### 2. Effect System → Dynamic Dispatch System  
-**Effect processing** modifies which implementations keys point to:
+### 2. Unified Type-Safe Interfaces
+**HasBehavior** provides entity-agnostic behavior attachment:
 ```haskell
-processEffect openEyesEffect → swaps get key from getRobeDeniedGID to getObjectGID
+class HasBehavior a where
+  withBehavior :: ActionManagement -> a -> SashaLambdaDSL a
+
+-- Works uniformly across all entity types
+player   & withBehavior (makeBehavior get getGID)
+object   & withBehavior (makeBehavior look lookGID)  
+location & withBehavior (makeBehavior isaLook implicitGID)
 ```
 
-**Dynamic dispatch** uses the modified mappings for subsequent lookups:
+**HasEffect** provides entity-agnostic effect linking:
 ```haskell
--- Same key, different implementation after effect processing
-AVManagementKey get → now points to getObjectGID instead of getRobeDeniedGID
+class HasEffect a where
+  linkEffect :: EffectActionKey -> a -> Effect -> SashaLambdaDSL ()
+
+-- Same interface for all target types
+linkEffect triggerKey playerTarget effect
+linkEffect triggerKey objectTarget effect
 ```
 
-The effect system changes the dispatch tables; dispatch system uses the changed tables.
-
-### 3. Constraint Processing → Multi-Entity Coordination
-**ActionDiscovery** determines if an action is feasible across entities:
+### 3. Type Families for Compile-Time Safety
+**ActionFunctionType** maps verbs to their action function types:
 ```haskell
--- Can player get robe? Check all participating entities
-discoverAcquisition :: Player -> Object -> Location → Feasibility
+type family ActionFunctionType (verb :: *) :: * where
+  ActionFunctionType ImplicitStimulusVerb = ImplicitStimulusActionF
+  ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF  
+  ActionFunctionType AcquisitionVerb = AcquisitionActionF
 ```
 
-**ConstraintRefinement** coordinates the actual execution:
+**MakeBehavior** and **MakeEffect** use type families for safety:
 ```haskell
--- Each entity handles its part of "get robe"
-getF        -- Player orchestrates
-getFromSupportF  -- Chair releases  
-getObjectF      -- Robe adds to inventory
+class MakeBehavior verb where
+  makeBehavior :: verb -> GID (ActionFunctionType verb) -> ActionManagement
+
+class MakeEffect verb where  
+  makeEffect :: verb -> GID (ActionFunctionType verb) -> SashaLambdaDSL Effect
 ```
 
-Constraint processing validates; coordination executes the distributed operation.
+Type families prevent mismatched verb-action pairings at compile time.
 
 ### 4. Ownership System → Effect System → Dynamic Dispatch
 **Ownership boundaries** control which effects can modify which entities:
@@ -119,24 +139,47 @@ The DSL ensures all systems are configured consistently and safely.
 4. **Dynamic Dispatch** tables get updated with new key→implementation mappings
 5. **Future Actions** use modified dispatch tables
 
-## Engineering Benefits of System Integration
+## Compositional Benefits
 
-### Type-Safe Runtime Behavior Modification
-The ownership system ensures effects can't break dispatch table integrity, while the effect system enables safe runtime behavior changes.
+### Mathematical Guarantees
+The categorical foundation provides composition laws that ensure:
+- **Associativity**: `(a `alongside` b) `alongside` c = a `alongside` (b `alongside` c)`  
+- **Identity**: Effects compose with identity morphisms correctly
+- **Type Safety**: Impossible to create invalid verb-action combinations
 
-### Compositional Architecture
-Each system has clear boundaries and interfaces:
-- Grammar → produces keys
-- Dispatch → consumes keys, produces implementations  
-- Effects → modify dispatch mappings
-- Constraints → coordinate implementations
-- Ownership → controls effect scope
+### Domain-Expressive Code
+Effect relationships read like natural language:
+```haskell
+-- Opening eyes triggers look effects alongside each other,
+-- and then access effects happen one after another
+buildEffects $
+  lookEffect1 `alongside` lookEffect2 `alongside` lookEffect3 `andThen`
+  accessEffect1 `andThen` accessEffect2 `andThen` accessEffect3
+```
 
-### Distributed Coordination Without Shared State
-Multi-entity operations coordinate through the constraint system while each entity maintains its own dispatch table through the ownership system.
+### Unified Entity Interface
+The same patterns work across all entity types:
+```haskell
+-- Behaviors attach uniformly
+player   & withBehavior (makeBehavior verb gid)
+object   & withBehavior (makeBehavior verb gid)  
+location & withBehavior (makeBehavior verb gid)
+
+-- Effects link uniformly
+linkEffect key player effect
+linkEffect key object effect
+linkEffect key location effect
+```
+
+### Compile-Time Correctness
+Type families catch errors at compile time rather than runtime:
+- Verb types must match their corresponding action function types
+- Effect ownership is enforced through the type system
+- Composition preserves type safety throughout the chain
 
 ## The Reference Value
 
-SashaDemo shows these five engineering systems working together as an integrated architecture. Each system handles its specific concern while composing cleanly with the others through well-defined interfaces and type-level safety guarantees.
-
-The implementation demonstrates how effect-driven dynamic dispatch can serve as a foundation for building systems that need runtime behavior modification with strong safety properties.
+SashaDemo demonstrates how category theory principles can create practical,
+expressive APIs for complex interactive systems.
+The implementation serves as a reference for building compositional effect systems
+with strong mathematical foundations and intuitive developer experiences.
