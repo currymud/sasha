@@ -58,11 +58,11 @@ import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR)
                                                 SimpleAccessRes (SimpleAccessRes),
                                                 SimpleAcquisitionRes (SimpleAcquisitionRes))
 import           Model.Core                    (AcquisitionActionF,
-                                                ActionEffectKey (ObjectKey),
                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF (_consumptionAction),
                                                 ContainerAccessActionF,
+                                                EffectTargetKey (ObjectKey),
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
                                                 ImplicitStimulusActionF,
@@ -290,7 +290,7 @@ getObjectsBySpatialRelationship targetRelationship = do
 getInventoryObjectsM :: GameComputation Identity [GID Object]
 getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
 
-getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set ActionEffectKey)
+getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set EffectTargetKey)
 getLocationObjectIDsM lid = do
   location <- getLocationM lid
   let objectSemanticMap = _objectSemanticMap location

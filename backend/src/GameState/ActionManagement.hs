@@ -11,7 +11,6 @@ import           GameState                     (modifyLocationM, modifyObjectM,
                                                 modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
-                                                ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
@@ -22,6 +21,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
                                                 EffectActionKey,
+                                                EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_effectRegistry, _narration, _player, _systemEffectRegistry),
@@ -93,26 +93,26 @@ modifyObjectActionManagementM oid actionF = do
    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
 
 modifyNarrationM :: (Narration -> Narration) -> GameComputation Identity ()
-modifyNarrationM narrationF = 
+modifyNarrationM narrationF =
   modify' $ \gs -> gs { _narration = narrationF (_narration gs) }
 
 processNarrationEffect :: NarrationOperation -> GameComputation Identity ()
-processNarrationEffect (PlayerActionNarration text) = 
-  modifyNarrationM $ \narration -> 
+processNarrationEffect (PlayerActionNarration text) =
+  modifyNarrationM $ \narration ->
     narration { _playerAction = text : _playerAction narration }
-processNarrationEffect (ActionConsequenceNarration text) = 
-  modifyNarrationM $ \narration -> 
+processNarrationEffect (ActionConsequenceNarration text) =
+  modifyNarrationM $ \narration ->
     narration { _actionConsequence = text : _actionConsequence narration }
 
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
   mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
   where
-    processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
+    processEffectEntry :: (EffectTargetKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
-processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
+processEffect :: EffectTargetKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -203,7 +203,7 @@ processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
 -- Location-triggered narration effects
-processEffect (LocationKey _) (NarrationEffect narrationOp) = 
+processEffect (LocationKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
 
 -- OBJECT EFFECTS (updating object action management)
@@ -297,7 +297,7 @@ processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
 -- Object-triggered narration effects
-processEffect (ObjectKey _) (NarrationEffect narrationOp) = 
+processEffect (ObjectKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
 
 -- PLAYER EFFECTS (updating player action management)
@@ -454,7 +454,7 @@ processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
 -- Player-triggered narration effects
-processEffect (PlayerKey _) (NarrationEffect narrationOp) = 
+processEffect (PlayerKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)

@@ -68,13 +68,13 @@ module Model.Core
   , Perceptables(..)
     -- * Field Updates
   , FieldUpdateOperation(..)
-    -- * Narration Updates  
+    -- * Narration Updates
   , NarrationOperation(..)
     -- * Effects and Registries
   , Evaluator(..)
   , PlayerKey(..)
-  , EffectActionKey(..)
   , ActionEffectKey(..)
+  , EffectTargetKey(..)
   , SystemEffectKey(..)
   , Effect(..)
   , SystemEffect(..)
@@ -216,25 +216,25 @@ type SimpleAccessSearchStrategy = NounKey
 
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [EffectActionKey]
-  , _containerFieldEffectKeys  :: [EffectActionKey]
+  { _containerActionEffectKeys :: [ActionEffectKey]
+  , _containerFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [EffectActionKey]
-  , _instrumentFieldEffectKeys  :: [EffectActionKey]
+  { _instrumentActionEffectKeys :: [ActionEffectKey]
+  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type FinalizeAccessNotInstrumentF :: Type
-type FinalizeAccessNotInstrumentF = EffectActionKey
+type FinalizeAccessNotInstrumentF = ActionEffectKey
                                       -> GameComputation Identity ContainerAccessResult
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
-type ContainerAccessF = (EffectActionKey
+type ContainerAccessF = (ActionEffectKey
                            -> SimpleAccessSearchStrategy
                            -> ContainerAccessActionMap
                            -> ContainerAccessVerbPhrase
@@ -250,7 +250,7 @@ data ContainerAccessActionF
 
 type SomaticAccessActionF :: Type
 newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: Set ActionEffectKey
+  { _somaticAccessAction :: Set EffectTargetKey
                               -> [SystemEffectKey]
                               -> ActionEffectMap
                               -> SystemEffectRegistry
@@ -258,13 +258,13 @@ newtype SomaticAccessActionF = SomaticAccessActionF
 
 type PosturalActionF :: Type
 newtype PosturalActionF = PosturalActionF
-  { _positivePosturalAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
+  { _positivePosturalAction :: Set EffectTargetKey -> ActionEffectMap -> GameComputation Identity () }
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
-  , _actionEffectKeys :: [EffectActionKey]
-  , _fieldEffectKeys  :: [EffectActionKey]
+  , _actionEffectKeys :: [ActionEffectKey]
+  , _fieldEffectKeys  :: [ActionEffectKey]
   }
 
 type SearchStrategy :: Type
@@ -272,10 +272,10 @@ type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
 type AcquisitionF :: Type
-type AcquisitionF = (EffectActionKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+type AcquisitionF = (ActionEffectKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = EffectActionKey
+type FinalizeAcquisitionF = ActionEffectKey
                               -> GID Object
                               -> GID Object
                               -> GameComputation Identity CoordinationResult
@@ -292,7 +292,7 @@ data AcquisitionActionF
 type ConsumptionActionF :: Type
 newtype ConsumptionActionF = ConsumptionActionF
   { _consumptionAction :: GID Object
-                            -> Set ActionEffectKey
+                            -> Set EffectTargetKey
                             -> ActionEffectMap
                             -> ConsumptionVerbPhrase
                             -> GameComputation Identity () }
@@ -368,8 +368,8 @@ type Evaluator :: Type
 newtype Evaluator = Evaluator
   { _evaluator :: Sentence -> GameComputation Identity () }
 
-type EffectActionKey :: Type
-data EffectActionKey
+type ActionEffectKey :: Type
+data ActionEffectKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
@@ -386,8 +386,8 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
-type ActionEffectKey :: Type
-data ActionEffectKey
+type EffectTargetKey :: Type
+data EffectTargetKey
   = LocationKey (GID Location)
   | ObjectKey (GID Object)
   | PlayerKey PlayerKey
@@ -427,7 +427,7 @@ data SystemEffect
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
-  { _actionEffectMap :: Map ActionEffectKey (Set Effect) }
+  { _actionEffectMap :: Map EffectTargetKey (Set Effect) }
   deriving stock (Show, Eq, Ord)
 
 type SystemEffectConfig :: Type
@@ -439,24 +439,24 @@ data SystemEffectConfig = SystemEffectConfig
 -- Registry types
 
 type EffectRegistry :: Type
-type EffectRegistry = Map EffectActionKey ActionEffectMap
+type EffectRegistry = Map ActionEffectKey ActionEffectMap
 
 type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
 
 type SystemEffectKeysRegistry :: Type
-type SystemEffectKeysRegistry = Map EffectActionKey [SystemEffectKey]
+type SystemEffectKeysRegistry = Map ActionEffectKey [SystemEffectKey]
 
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
 
 type TriggerRegistry :: Type
 newtype TriggerRegistry = TriggerRegistry
-  { _unTriggerRegistry :: Map EffectActionKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)] }
+  { _unTriggerRegistry :: Map ActionEffectKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)] }
 
 type ActionKeyMap :: Type
 newtype ActionKeyMap = ActionKeyMap
-  { _unActionKeyMap :: Map EffectActionKey ActionEffectMap }
+  { _unActionKeyMap :: Map ActionEffectKey ActionEffectMap }
   deriving stock (Show, Eq, Ord)
 
 type ActionManagementOperation :: Type
@@ -582,7 +582,6 @@ data GameState = GameState
 
 #ifdef TESTING
 
--- Simple Arbitrary instance for GID (just use Int)
 instance Arbitrary a => Arbitrary (GID a) where
   arbitrary = GID <$> choose (1, 1000)
 
@@ -595,15 +594,13 @@ instance Arbitrary SmallText where
 arbitraryText :: Gen Text
 arbitraryText = pack <$> resize 15 (listOf (choose ('a', 'z')))
 
--- Basic data type instances
 instance Arbitrary Location where
   arbitrary = Location <$> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
 instance Arbitrary Object where
   arbitrary = Object <$> arbitraryText <*> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
--- ActionEffectKey instances
-instance Arbitrary ActionEffectKey where
+instance Arbitrary EffectTargetKey where
   arbitrary = oneof
     [ LocationKey <$> arbitrary
     , ObjectKey <$> arbitrary
@@ -617,8 +614,8 @@ instance Arbitrary PlayerKey where
     , PlayerKeyObject <$> arbitrary
     ]
 
--- EffectActionKey instances (using simple GID generation, not actual functions)
-instance Arbitrary EffectActionKey where
+-- ActionEffectKey instances (using simple GID generation, not actual functions)
+instance Arbitrary ActionEffectKey where
   arbitrary = oneof
     [ ImplicitStimulusActionKey . GID <$> choose (1, 1000)
     , DirectionalStimulusActionKey . GID <$> choose (1, 1000)

@@ -4,9 +4,8 @@ import           Data.Set               (Set)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration,
                                          updateActionConsequence)
-import           Model.Core             (ActionEffectKey,
-                                         ActionEffectMap (ActionEffectMap),
-                                         GameComputation,
+import           Model.Core             (ActionEffectMap (ActionEffectMap),
+                                         EffectTargetKey, GameComputation,
                                          PosturalActionF (PosturalActionF))
 
 standDenied :: PosturalActionF
@@ -20,7 +19,7 @@ standDenied = PosturalActionF (const (const denied))
 standUp :: PosturalActionF
 standUp = PosturalActionF stood
   where
-    stood :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
+    stood :: Set EffectTargetKey -> ActionEffectMap -> GameComputation Identity ()
     stood actionEffectKeys (ActionEffectMap actionEffectMap) = do
       -- Processsing ToDo
       modifyNarration (updateActionConsequence msg)

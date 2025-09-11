@@ -8,12 +8,12 @@ import qualified Data.Set
 import           GameState                     (getLocationObjectIDsM,
                                                 getPlayerLocationM, getPlayerM,
                                                 parseConsumptionPhrase)
-import           Model.Core                    (ActionEffectKey (LocationKey, PlayerKey),
-                                                ActionEffectMap (ActionEffectMap),
+import           Model.Core                    (ActionEffectMap (ActionEffectMap),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (ConsumptionActionF),
                                                 EffectActionKey (ConsumptionActionKey),
+                                                EffectTargetKey (LocationKey, PlayerKey),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_location, _playerActions))

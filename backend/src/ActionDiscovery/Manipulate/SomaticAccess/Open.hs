@@ -1,7 +1,6 @@
 module ActionDiscovery.Manipulate.SomaticAccess.Open where
 import           Control.Monad.Identity     (Identity)
 import           Control.Monad.Reader       (asks)
-import           Control.Monad.State        (get)
 import           Control.Monad.State.Strict (gets)
 import qualified Data.Map.Strict
 import qualified Data.Set
@@ -9,11 +8,11 @@ import           GameState                  (getLocationObjectIDsM, getPlayerM)
 import           GameState.ActionManagement (lookupSomaticAccess,
                                              processEffectsFromRegistry)
 import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
-import           Model.Core                 (ActionEffectKey (LocationKey, PlayerKey),
-                                             ActionEffectMap (ActionEffectMap),
+import           Model.Core                 (ActionEffectMap (ActionEffectMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              EffectActionKey (SomaticAccessActionKey),
+                                             EffectTargetKey (LocationKey, PlayerKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (SomaticAccessActionF))

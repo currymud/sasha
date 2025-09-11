@@ -9,17 +9,15 @@ import           GameState                     (getLocationObjectIDsM,
 import           GameState.ActionManagement    (lookupPostural,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Model.Core                    (ActionEffectKey (LocationKey, PlayerKey),
-                                                ActionEffectMap (ActionEffectMap),
-                                                ActionKeyMap (_unActionKeyMap),
+import           Model.Core                    (ActionEffectMap (ActionEffectMap),
                                                 ActionMaps (_posturalActionMap),
                                                 Config (_actionMaps),
                                                 EffectActionKey (PosturalActionKey),
+                                                EffectTargetKey (LocationKey, PlayerKey),
                                                 GameComputation,
                                                 Player (_location, _playerActions),
                                                 PosturalActionF (PosturalActionF))
 import           Model.Parser.Composites.Verbs (PosturalVerbPhrase)
-
 
 managePosturalProcess :: PosturalVerbPhrase -> GameComputation Identity ()
 managePosturalProcess posturalPhrase = do

@@ -15,11 +15,11 @@ import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     SimpleAccessRes (SimpleAccessRes, _saContainerKey))
-import           Model.Core                                        (ActionEffectKey,
-                                                                    ActionEffectMap (ActionEffectMap),
+import           Model.Core                                        (ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
                                                                     EffectActionKey,
+                                                                    EffectTargetKey,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
@@ -51,7 +51,7 @@ openEyesDenied = SomaticAccessActionF (const (const (const (const denied))))
 openEyes :: SomaticAccessActionF
 openEyes = SomaticAccessActionF opened
  where
-   opened :: Set ActionEffectKey
+   opened :: Set EffectTargetKey
              -> [SystemEffectKey]
              ->  ActionEffectMap
              ->  SystemEffectRegistry
