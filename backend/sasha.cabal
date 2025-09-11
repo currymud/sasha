@@ -89,6 +89,7 @@ library
       Examples.Defaults
       Examples.Initialize
       Examples.SashaDemo
+      Examples.SashaDemoClean
       GameState
       GameState.ActionManagement
       GameState.Perception
@@ -151,7 +152,9 @@ library
       Model.Parser.Composites.Verbs
       Model.Parser.GCase
       Model.Parser.Lexer
-
+      Sasha.HasBehavior
+      Sasha.HasEffect
+      Sasha.TypeMappings
       TopLevel
   hs-source-dirs:
       src
