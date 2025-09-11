@@ -48,7 +48,9 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
                                                                           withTitle)
 import           Model.GID                                               (GID)
 import           Sasha.EffectAlgebra                                     (alongside,
-                                                                          andThen, effect, buildEffects)
+                                                                          andThen,
+                                                                          buildEffect,
+                                                                          buildEffects)
 import           Sasha.HasBehavior                                       (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior))
 import           Sasha.HasEffect                                         (HasEffect (linkEffect),
@@ -176,15 +178,15 @@ sashaBedroomDemo = do
 
   -- Build composed effect computation
   buildEffects $
-    effect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
-    effect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
-    effect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
-    effect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `andThen`
-    
-    effect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
-    effect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
-    effect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
-    effect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+    buildEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `andThen`
+
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
   finalizeGameState
 
