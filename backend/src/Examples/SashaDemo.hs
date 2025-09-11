@@ -51,7 +51,7 @@ import           Sasha.HasBehavior                                       (HasBeh
                                                                           MakeBehavior (makeBehavior))
 import           Sasha.HasEffect                                         (HasEffect (linkEffect),
                                                                           MakeEffect (makeEffect))
-import           Sasha.EffectAlgebra                                 ((<+>), (<*>), effectChain)
+import           Sasha.EffectAlgebra                                 (andThen, alongside, singleEffect, executeEffect)
 
 -- All the noun/verb imports from original
 import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
@@ -169,30 +169,33 @@ sashaBedroomDemo = do
   registerSpatial robeGID (SupportedBy chairGID)
   registerSpatial pocketGID (ContainedIn robeGID)
 
-  -- Effects with clean syntax using HasEffect
+  -- Effects with proper composition algebra
+  
+  -- Create all effects first  
   openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer
-
   openEyesLookChangeEffectFloor <- makeEffect dsaLook lookAtFloorFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor
-
   openeEyesLooKChangeEffectChair <- makeEffect dsaLook lookAtChairGID
-  linkEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair
-
   openEyesLookChangeEffectRobe <- makeEffect dsaLook lookAtRobeFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe
-
   openEyesOpenPocketChangesForPlayer <- makeEffect openSA accessContainerFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer
-
   robeOpenEyesLookChangesGetRobeForPlayer <- makeEffect getRobeAVP playerGetFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
-
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe
-
   robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
-  linkEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+
+  -- Compose effects with explicit structure using domain-relevant operators
+  let parallelLookEffects = 
+        singleEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
+        singleEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
+        singleEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
+        singleEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe
+
+  let sequentialAccessEffects =
+        singleEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
+        singleEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
+        singleEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
+        singleEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+
+  -- Execute the composed effects: look effects happen alongside each other, and then access effects in sequence
+  executeEffect (parallelLookEffects `andThen` sequentialAccessEffects)
 
   finalizeGameState
 
