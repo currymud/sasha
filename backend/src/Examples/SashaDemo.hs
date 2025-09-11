@@ -49,7 +49,9 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
 import           Model.GID                                               (GID)
 import           Sasha.HasBehavior                                       (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior))
-import           Sasha.HasEffect                                         (HasEffect (linkEffect))
+import           Sasha.HasEffect                                         (HasEffect (linkEffect),
+                                                                          MakeEffect (makeEffect))
+import           Sasha.EffectAlgebra                                 ((<+>), (<*>), effectChain)
 
 -- All the noun/verb imports from original
 import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
@@ -168,28 +170,28 @@ sashaBedroomDemo = do
   registerSpatial pocketGID (ContainedIn robeGID)
 
   -- Effects with clean syntax using HasEffect
-  openEyesLookChangeEffectPlayer <- createImplicitStimulusEffect isaLook lookFGID
+  openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
   linkEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer
 
-  openEyesLookChangeEffectFloor <- createDirectionalStimulusEffect dsaLook lookAtFloorFGID
+  openEyesLookChangeEffectFloor <- makeEffect dsaLook lookAtFloorFGID
   linkEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor
 
-  openeEyesLooKChangeEffectChair <- createDirectionalStimulusEffect dsaLook lookAtChairGID
+  openeEyesLooKChangeEffectChair <- makeEffect dsaLook lookAtChairGID
   linkEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair
 
-  openEyesLookChangeEffectRobe <- createDirectionalStimulusEffect dsaLook lookAtRobeFGID
+  openEyesLookChangeEffectRobe <- makeEffect dsaLook lookAtRobeFGID
   linkEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe
 
-  openEyesOpenPocketChangesForPlayer <- createContainerAccessEffect openSA accessContainerFGID
+  openEyesOpenPocketChangesForPlayer <- makeEffect openSA accessContainerFGID
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer
 
-  robeOpenEyesLookChangesGetRobeForPlayer <- createAcquisitionVerbPhraseEffect getRobeAVP playerGetFGID
+  robeOpenEyesLookChangesGetRobeForPlayer <- makeEffect getRobeAVP playerGetFGID
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer
 
-  robeOpenEyesLookChangesGetRobePhraseForRobe <- createAcquisitionVerbPhraseEffect getRobeAVP getRobeFGID
+  robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
   linkEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe
 
-  robeOpenEyesLookChangesGetRobeForRobe <- createAcquisitionVerbEffect get getRobeFGID
+  robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
   linkEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
   finalizeGameState

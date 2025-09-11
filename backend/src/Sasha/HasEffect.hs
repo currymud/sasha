@@ -8,8 +8,22 @@ import           Model.Core                (Effect, EffectActionKey, Location,
                                             Object, PlayerKey)
 import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL, linkEffectToLocation,
                                             linkEffectToObject,
-                                            linkEffectToPlayer)
+                                            linkEffectToPlayer,
+                                            createImplicitStimulusEffect,
+                                            createDirectionalStimulusEffect,
+                                            createAcquisitionVerbEffect,
+                                            createAcquisitionVerbPhraseEffect,
+                                            createContainerAccessEffect)
 import           Model.GID                 (GID)
+import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, 
+                                            AcquisitionVerb, SimpleAccessVerb)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
+import           Sasha.TypeMappings        (ActionFunctionType)
+
+-- | Class for creating Effects with type-safe verb-to-GID mapping
+type MakeEffect :: Type -> Constraint
+class MakeEffect verb where
+  makeEffect :: verb -> GID (ActionFunctionType verb) -> SashaLambdaDSL Effect
 
 -- | Unified interface for linking effects to any entity type
 type HasEffect :: Type -> Constraint
@@ -24,3 +38,18 @@ instance HasEffect (GID Object) where
 
 instance HasEffect PlayerKey where
   linkEffect = linkEffectToPlayer
+
+instance MakeEffect ImplicitStimulusVerb where
+  makeEffect = createImplicitStimulusEffect
+
+instance MakeEffect DirectionalStimulusVerb where
+  makeEffect = createDirectionalStimulusEffect
+
+instance MakeEffect AcquisitionVerb where
+  makeEffect = createAcquisitionVerbEffect
+
+instance MakeEffect SimpleAccessVerb where
+  makeEffect = createContainerAccessEffect
+
+instance MakeEffect AcquisitionVerbPhrase where
+  makeEffect = createAcquisitionVerbPhraseEffect
