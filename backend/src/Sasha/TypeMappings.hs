@@ -2,16 +2,25 @@
 
 module Sasha.TypeMappings where
 
-import Model.Core (ImplicitStimulusActionF, DirectionalStimulusActionF, 
-                   AcquisitionActionF, ContainerAccessActionF, SomaticAccessActionF)
-import Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, AcquisitionVerb, 
-                                   SomaticAccessVerb, SimpleAccessVerb)
-import Model.Parser.Composites.Verbs (AcquisitionVerbPhrase, ContainerAccessVerbPhrase)
+import           Data.Kind                     (Type)
+import           Model.Core                    (AcquisitionActionF,
+                                                ContainerAccessActionF,
+                                                DirectionalStimulusActionF,
+                                                ImplicitStimulusActionF,
+                                                SomaticAccessActionF)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb,
+                                                SimpleAccessVerb,
+                                                SomaticAccessVerb)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ContainerAccessVerbPhrase)
 
 -- | Type family mapping verb types to their corresponding action function types
-type family ActionFunctionType (verb :: *) :: * where
+type ActionFunctionType :: Type -> Type
+type family ActionFunctionType (verb :: Type) :: Type where
   ActionFunctionType ImplicitStimulusVerb = ImplicitStimulusActionF
-  ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF  
+  ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF
   ActionFunctionType AcquisitionVerb = AcquisitionActionF
   ActionFunctionType SomaticAccessVerb = SomaticAccessActionF
   ActionFunctionType SimpleAccessVerb = ContainerAccessActionF
