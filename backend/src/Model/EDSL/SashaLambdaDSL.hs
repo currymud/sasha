@@ -119,6 +119,10 @@ data SashaLambdaDSL :: Type -> Type where
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
   CreateContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
+  
+  -- Narration effect creation
+  CreatePlayerActionNarration :: Text -> SashaLambdaDSL Effect
+  CreateActionConsequenceNarration :: Text -> SashaLambdaDSL Effect
 
   LinkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
   LinkFieldEffectToLocation :: EffectActionKey -> GID Location -> Effect -> SashaLambdaDSL ()
@@ -256,6 +260,12 @@ createSomaticAccessEffect = CreateSomaticAccessEffect
 
 createContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 createContainerAccessEffect = CreateContainerAccessEffect
+
+createPlayerActionNarration :: Text -> SashaLambdaDSL Effect
+createPlayerActionNarration = CreatePlayerActionNarration
+
+createActionConsequenceNarration :: Text -> SashaLambdaDSL Effect
+createActionConsequenceNarration = CreateActionConsequenceNarration
 
 linkEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
 linkEffectToObject = LinkEffectToObject

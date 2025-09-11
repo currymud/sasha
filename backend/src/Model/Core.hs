@@ -68,6 +68,8 @@ module Model.Core
   , Perceptables(..)
     -- * Field Updates
   , FieldUpdateOperation(..)
+    -- * Narration Updates  
+  , NarrationOperation(..)
     -- * Effects and Registries
   , Evaluator(..)
   , PlayerKey(..)
@@ -406,10 +408,17 @@ data FieldUpdateOperation
   | PlayerLocation (GID Location)
   deriving stock (Show, Eq, Ord)
 
+type NarrationOperation :: Type
+data NarrationOperation
+  = PlayerActionNarration Text
+  | ActionConsequenceNarration Text
+  deriving stock (Show, Eq, Ord)
+
 type Effect :: Type
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation
+  | NarrationEffect NarrationOperation
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type

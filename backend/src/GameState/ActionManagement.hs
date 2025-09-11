@@ -20,13 +20,15 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect (ActionManagementEffect, FieldUpdateEffect),
+                                                Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
                                                 EffectActionKey,
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
-                                                GameState (_effectRegistry, _player, _systemEffectRegistry),
+                                                GameState (_effectRegistry, _narration, _player, _systemEffectRegistry),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
+                                                Narration (_actionConsequence, _playerAction),
+                                                NarrationOperation (ActionConsequenceNarration, PlayerActionNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 Player (_location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
@@ -89,6 +91,18 @@ modifyObjectActionManagementM :: GID Object
 modifyObjectActionManagementM oid actionF = do
  modifyObjectM oid $ \obj ->
    obj { _objectActionManagement = actionF (_objectActionManagement obj) }
+
+modifyNarrationM :: (Narration -> Narration) -> GameComputation Identity ()
+modifyNarrationM narrationF = 
+  modify' $ \gs -> gs { _narration = narrationF (_narration gs) }
+
+processNarrationEffect :: NarrationOperation -> GameComputation Identity ()
+processNarrationEffect (PlayerActionNarration text) = 
+  modifyNarrationM $ \narration -> 
+    narration { _playerAction = text : _playerAction narration }
+processNarrationEffect (ActionConsequenceNarration text) = 
+  modifyNarrationM $ \narration -> 
+    narration { _actionConsequence = text : _actionConsequence narration }
 
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
@@ -188,6 +202,10 @@ processEffect (LocationKey _) (FieldUpdateEffect (LocationTitle targetLid newTit
 processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
+-- Location-triggered narration effects
+processEffect (LocationKey _) (NarrationEffect narrationOp) = 
+  processNarrationEffect narrationOp
+
 -- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -277,6 +295,10 @@ processEffect (ObjectKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 
 processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
+
+-- Object-triggered narration effects
+processEffect (ObjectKey _) (NarrationEffect narrationOp) = 
+  processNarrationEffect narrationOp
 
 -- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -430,6 +452,10 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
+
+-- Player-triggered narration effects
+processEffect (PlayerKey _) (NarrationEffect narrationOp) = 
+  processNarrationEffect narrationOp
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
