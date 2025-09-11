@@ -41,7 +41,7 @@ import           Model.Core                                                     
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                    ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
-                                                                                   EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                                   ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -651,7 +651,7 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-actionGIDToKey :: ActionGID -> EffectActionKey
+actionGIDToKey :: ActionGID -> ActionEffectKey
 actionGIDToKey (ImplicitActionGID gid)             = ImplicitStimulusActionKey gid
 actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKey gid
 actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid

@@ -18,7 +18,7 @@ import           Model.Actions.Results                             (AccessRes (C
 import           Model.Core                                        (ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
-                                                                    EffectActionKey,
+                                                                    ActionEffectKey,
                                                                     EffectTargetKey,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
@@ -66,7 +66,7 @@ msg = "You open your eyes, and the world comes into focus."
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
   where
-    openit :: EffectActionKey
+    openit :: ActionEffectKey
                -> SimpleAccessSearchStrategy
                -> ContainerAccessActionMap
                -> ContainerAccessVerbPhrase

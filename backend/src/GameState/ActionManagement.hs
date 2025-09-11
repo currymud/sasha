@@ -20,7 +20,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
-                                                EffectActionKey,
+                                                ActionEffectKey,
                                                 EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
@@ -80,7 +80,7 @@ removeSystemEffect key effectGID = modify' $ \gs ->
       updatedRegistry = Data.Map.Strict.adjust (Data.Map.Strict.delete effectGID) key currentRegistry
   in gs { _systemEffectRegistry = updatedRegistry }
 
-processEffectsFromRegistry :: EffectActionKey -> GameComputation Identity ()
+processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   Data.Foldable.for_ maybeEffectMap processAllEffects

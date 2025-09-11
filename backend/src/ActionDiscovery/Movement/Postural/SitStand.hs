@@ -12,7 +12,7 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (ActionEffectMap (ActionEffectMap),
                                                 ActionMaps (_posturalActionMap),
                                                 Config (_actionMaps),
-                                                EffectActionKey (PosturalActionKey),
+                                                ActionEffectKey (PosturalActionKey),
                                                 EffectTargetKey (LocationKey, PlayerKey),
                                                 GameComputation,
                                                 Player (_location, _playerActions),

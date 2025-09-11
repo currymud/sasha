@@ -13,7 +13,7 @@ import           Model.Core                                              (Acquis
                                                                           ActionManagement (..),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
-                                                                          EffectActionKey (..),
+                                                                          ActionEffectKey (..),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
                                                                           Location,

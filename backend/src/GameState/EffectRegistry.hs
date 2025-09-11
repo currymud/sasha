@@ -2,7 +2,7 @@ module GameState.EffectRegistry where
 import           Control.Monad.Identity (Identity)
 import           Control.Monad.State    (gets, modify')
 import qualified Data.Map.Strict
-import           Model.Core             (ActionEffectMap, EffectActionKey,
+import           Model.Core             (ActionEffectMap, ActionEffectKey,
                                          EffectRegistry, GameComputation,
                                          GameState (_effectRegistry))
 
@@ -14,18 +14,18 @@ modifyGlobalEffectRegistry :: (EffectRegistry -> EffectRegistry)
 modifyGlobalEffectRegistry f = modify' $ \gs ->
   gs { _effectRegistry = f (_effectRegistry gs) }
 
-lookupActionEffectsInRegistry :: EffectActionKey -> GameComputation Identity (Maybe ActionEffectMap)
+lookupActionEffectsInRegistry :: ActionEffectKey -> GameComputation Identity (Maybe ActionEffectMap)
 lookupActionEffectsInRegistry actionKey = do
   Data.Map.Strict.lookup actionKey <$> getGlobalEffectRegistry
 
 -- Utility to register new effects
-registerEffects :: EffectActionKey -> ActionEffectMap -> GameComputation Identity ()
+registerEffects :: ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
 registerEffects actionKey effectMap =
   modifyGlobalEffectRegistry $ \registry ->
     Data.Map.Strict.insert actionKey effectMap registry
 
 -- Utility to modify existing effects in registry
-modifyRegisteredEffects :: EffectActionKey
+modifyRegisteredEffects :: ActionEffectKey
                         -> (ActionEffectMap -> ActionEffectMap)
                         -> GameComputation Identity ()
 modifyRegisteredEffects actionKey f =
@@ -33,7 +33,7 @@ modifyRegisteredEffects actionKey f =
     Data.Map.Strict.adjust f actionKey registry
 
 -- Utility to remove effects from registry
-unregisterEffects :: EffectActionKey -> GameComputation Identity ()
+unregisterEffects :: ActionEffectKey -> GameComputation Identity ()
 unregisterEffects actionKey =
   modifyGlobalEffectRegistry $ \registry ->
     Data.Map.Strict.delete actionKey registry

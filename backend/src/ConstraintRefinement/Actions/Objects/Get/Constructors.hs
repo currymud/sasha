@@ -12,7 +12,7 @@ import           Model.Core                                       (AcquisitionAc
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                    CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
-                                                                   EffectActionKey (AcquisitionalActionKey),
+                                                                   ActionEffectKey (AcquisitionalActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
                                                                    SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))

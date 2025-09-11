@@ -18,7 +18,7 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     EffectActionKey (AcquisitionalActionKey),
+                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -77,7 +77,7 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: EffectActionKey
+finalizeAcquisition :: ActionEffectKey
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult

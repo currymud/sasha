@@ -4,7 +4,7 @@
 module Sasha.HasEffect where
 
 import           Data.Kind                 (Constraint, Type)
-import           Model.Core                (Effect, EffectActionKey, Location,
+import           Model.Core                (Effect, ActionEffectKey, Location,
                                             Object, PlayerKey)
 import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL, linkEffectToLocation,
                                             linkEffectToObject,
@@ -28,7 +28,7 @@ class MakeEffect verb where
 -- | Unified interface for linking effects to any entity type
 type HasEffect :: Type -> Constraint
 class HasEffect a where
-  linkEffect :: EffectActionKey -> a -> Effect -> SashaLambdaDSL ()
+  linkEffect :: ActionEffectKey -> a -> Effect -> SashaLambdaDSL ()
 
 instance HasEffect (GID Location) where
   linkEffect = linkEffectToLocation

@@ -11,7 +11,7 @@ import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
 import           Model.Core                 (ActionEffectMap (ActionEffectMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
-                                             EffectActionKey (SomaticAccessActionKey),
+                                             ActionEffectKey (SomaticAccessActionKey),
                                              EffectTargetKey (LocationKey, PlayerKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
