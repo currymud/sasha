@@ -89,7 +89,6 @@ library
       Examples.Defaults
       Examples.Initialize
       Examples.SashaDemo
-      Examples.SashaDemoClean
       GameState
       GameState.ActionManagement
       GameState.Perception

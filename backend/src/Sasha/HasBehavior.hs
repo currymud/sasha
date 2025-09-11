@@ -4,20 +4,25 @@
 
 module Sasha.HasBehavior where
 
-import           Data.Kind                 (Constraint, Type)
-import           Model.Core                (ActionManagement(..), Location, Object,
-                                            Player)
-import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
-                                            withLocationBehavior,
-                                            withObjectBehavior,
-                                            withPlayerBehavior)
-import           Model.GID                 (GID)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, 
-                                            AcquisitionVerb, SomaticAccessVerb, SimpleAccessVerb)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase, ContainerAccessVerbPhrase)
-import           Sasha.TypeMappings        (ActionFunctionType)
+import           Data.Kind                     (Constraint, Type)
+import           Model.Core                    (ActionManagement (..), Location,
+                                                Object, Player)
+import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
+                                                withLocationBehavior,
+                                                withObjectBehavior,
+                                                withPlayerBehavior)
+import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb,
+                                                SimpleAccessVerb,
+                                                SomaticAccessVerb)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ContainerAccessVerbPhrase)
+import           Sasha.TypeMappings            (ActionFunctionType)
 
 -- | Class for creating ActionManagement with type-safe verb-to-GID mapping
+type MakeBehavior :: Type -> Constraint
 class MakeBehavior verb where
   makeBehavior :: verb -> GID (ActionFunctionType verb) -> ActionManagement
 
@@ -29,7 +34,7 @@ class HasBehavior a where
 instance MakeBehavior ImplicitStimulusVerb where
   makeBehavior = ISAManagementKey
 
-instance MakeBehavior DirectionalStimulusVerb where  
+instance MakeBehavior DirectionalStimulusVerb where
   makeBehavior = DSAManagementKey
 
 instance MakeBehavior AcquisitionVerb where

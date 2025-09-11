@@ -7,7 +7,7 @@ import           EDSL.GameBuilder          (WorldBuilderResult (resultActionMaps
 import           Evaluators.Player.General (eval)
 import           Examples.Defaults         (defaultNarration, defaultPlayer,
                                             defaultWorld)
-import           Examples.SashaDemoClean   (sashaBedroomDemo)
+import           Examples.SashaDemo        (sashaBedroomDemo)
 import           Model.Core                (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                             Config (Config, _actionMaps),
                                             Evaluator (Evaluator),
