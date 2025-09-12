@@ -11,7 +11,7 @@ import           GameState                     (modifyLocationM, modifyObjectM,
                                                 modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
-                                                ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+                                                TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
@@ -21,7 +21,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect),
-                                                EffectActionKey,
+                                                ActionEffectKey,
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_effectRegistry, _player, _systemEffectRegistry),
@@ -78,7 +78,7 @@ removeSystemEffect key effectGID = modify' $ \gs ->
       updatedRegistry = Data.Map.Strict.adjust (Data.Map.Strict.delete effectGID) key currentRegistry
   in gs { _systemEffectRegistry = updatedRegistry }
 
-processEffectsFromRegistry :: EffectActionKey -> GameComputation Identity ()
+processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   Data.Foldable.for_ maybeEffectMap processAllEffects
@@ -94,11 +94,11 @@ processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
   mapM_ processEffectEntry (Data.Map.Strict.toList effectMap)
   where
-    processEffectEntry :: (ActionEffectKey, Set Effect) -> GameComputation Identity ()
+    processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
       mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
-processEffect :: ActionEffectKey -> Effect -> GameComputation Identity ()
+processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt

@@ -34,7 +34,7 @@ import qualified Data.Set                                                       
 import           Debug.Trace                                                      (trace)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
-import           Model.Core                                                       (ActionEffectKey (LocationKey, ObjectKey, PlayerKey),
+import           Model.Core                                                       (TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    ActionEffectMap (ActionEffectMap),
                                                                                    ActionGID (AcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
@@ -42,7 +42,7 @@ import           Model.Core                                                     
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                    ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
-                                                                                   EffectActionKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                                   ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
                                                                                    Location (_locationActionManagement, _objectSemanticMap, _title),
@@ -644,7 +644,7 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-actionGIDToKey :: ActionGID -> EffectActionKey
+actionGIDToKey :: ActionGID -> ActionEffectKey
 actionGIDToKey (ImplicitActionGID gid)             = ImplicitStimulusActionKey gid
 actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKey gid
 actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid

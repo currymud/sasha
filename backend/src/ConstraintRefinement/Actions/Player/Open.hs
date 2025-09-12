@@ -15,11 +15,11 @@ import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     SimpleAccessRes (SimpleAccessRes, _saContainerKey))
-import           Model.Core                                        (ActionEffectKey,
+import           Model.Core                                        (TargetEffectKey,
                                                                     ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
-                                                                    EffectActionKey,
+                                                                    ActionEffectKey,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
@@ -51,7 +51,7 @@ openEyesDenied = CannotSomaticAccessF denied
 openEyes :: SomaticAccessActionF
 openEyes = PlayerSomaticAccessActionF opened
  where
-   opened :: Set ActionEffectKey
+   opened :: Set TargetEffectKey
              ->  ActionEffectMap
              -> GameComputation Identity ()
    opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
@@ -64,7 +64,7 @@ msg = "You open your eyes, and the world comes into focus."
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
   where
-    openit :: EffectActionKey
+    openit :: ActionEffectKey
                -> SimpleAccessSearchStrategy
                -> ContainerAccessActionMap
                -> ContainerAccessVerbPhrase
