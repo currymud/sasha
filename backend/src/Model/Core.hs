@@ -193,8 +193,9 @@ instance MonadTrans GameComputation where
 
 -- Action function types
 type ImplicitStimulusActionF :: Type
-newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: Player -> Location -> GameComputation Identity () }
+data ImplicitStimulusActionF
+  = PlayerImplicitStimulusActionF (GameComputation Identity ())
+  | CannotImplicitStimulusActionF (GameComputation Identity ())
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF

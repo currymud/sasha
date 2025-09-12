@@ -17,7 +17,7 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
                                                 GameComputation,
-                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (PlayerImplicitStimulusActionF, CannotImplicitStimulusActionF),
                                                 ImplicitStimulusActionMap,
                                                 Player (_location, _playerActions))
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
@@ -34,11 +34,8 @@ manageImplicitStimulusProcess isv = do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
-        Just (ImplicitStimulusActionF actionFunc) -> do
-          player <- getPlayerM
-          let lid = player._location
-          loc <- getLocationM lid
-          actionFunc player loc
+        Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
+        Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do
