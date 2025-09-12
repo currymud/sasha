@@ -21,7 +21,6 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
-                                                EffectKey (ActionKey, NarrationKey, SystemKey),
                                                 EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
@@ -86,12 +85,8 @@ processEffectsFromRegistry actionKey = do
   maybeEffectMap <- lookupActionEffectsInRegistry actionKey
   Data.Foldable.for_ maybeEffectMap processAllEffects
 
-processEffects :: [EffectKey] -> GameComputation Identity ()
-processEffects = mapM_ processKey
-  where
-    processKey (ActionKey k)     = processEffectsFromRegistry k
-    processKey (SystemKey _)     = error "system key unimplemented" -- System keys processed differently
-    processKey (NarrationKey op) = processNarrationEffect op
+processEffects :: [ActionEffectKey] -> GameComputation Identity ()
+processEffects = mapM_ processEffectsFromRegistry
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)

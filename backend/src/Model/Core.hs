@@ -77,7 +77,6 @@ module Model.Core
   , ActionEffectKey(..)
   , EffectTargetKey(..)
   , SystemEffectKey(..)
-  , EffectKey(..)
   , Effect(..)
   , SystemEffect(..)
   , SystemEffectConfig(..)
@@ -196,14 +195,14 @@ instance MonadTrans GameComputation where
   lift = GameComputation . lift . lift . lift
 
 type ImplicitStimulusParameters :: Type
-type ImplicitStimulusParameters = Set EffectKey
+type ImplicitStimulusParameters = Set ActionEffectKey
                                     -> GameComputation Identity ()
 
 -- Action function types
 type ImplicitStimulusActionF :: Type
 data ImplicitStimulusActionF
   = ImplicitStimulusActionF ImplicitStimulusParameters
-  | CannotSeeImplicitF  (Set EffectKey -> (GameComputation Identity ()))
+  | CannotSeeImplicitF  (Set ActionEffectKey -> (GameComputation Identity ()))
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
@@ -223,23 +222,23 @@ type SimpleAccessSearchStrategy = NounKey
 
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [EffectKey]
+  { _containerActionEffectKeys :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [EffectKey]
+  { _instrumentActionEffectKeys :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type FinalizeAccessNotInstrumentF :: Type
-type FinalizeAccessNotInstrumentF = [EffectKey]
+type FinalizeAccessNotInstrumentF = [ActionEffectKey]
                                       -> GameComputation Identity ContainerAccessResult
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
-type ContainerAccessF = ([EffectKey]
+type ContainerAccessF = ([ActionEffectKey]
                            -> SimpleAccessSearchStrategy
                            -> ContainerAccessActionMap
                            -> ContainerAccessVerbPhrase
@@ -268,7 +267,7 @@ newtype PosturalActionF = PosturalActionF
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
-  , _actionEffectKeys :: [EffectKey]
+  , _actionEffectKeys :: [ActionEffectKey]
   }
 
 type SearchStrategy :: Type
@@ -276,10 +275,10 @@ type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
 type AcquisitionF :: Type
-type AcquisitionF = ([EffectKey] -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+type AcquisitionF = ([ActionEffectKey] -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = [EffectKey]
+type FinalizeAcquisitionF = [ActionEffectKey]
                               -> GID Object
                               -> GID Object
                               -> GameComputation Identity CoordinationResult
@@ -384,12 +383,7 @@ data ActionEffectKey
   | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
-type EffectKey :: Type
-data EffectKey
-  = ActionKey ActionEffectKey      -- Action that triggers effects
-  | SystemKey SystemEffectKey     -- System effects
-  | NarrationKey NarrationOperation -- Narration effects
-  deriving stock (Show, Eq, Ord)
+-- EffectKey type eliminated - using ActionEffectKey -> Effect mapping directly
 
 type PlayerKey :: Type
 data PlayerKey

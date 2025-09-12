@@ -19,9 +19,9 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Actions.Results                            (AcquisitionRes (Complete, Simple),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey))
-import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+import           Model.Core                                       (ActionEffectKey,
+                                                                   AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
-                                                                   EffectKey,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
                                                                    GameState (_world),
@@ -47,7 +47,7 @@ getDeniedF = NotGettableF denied
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: [EffectKey]
+    getit :: [ActionEffectKey]
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase

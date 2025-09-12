@@ -8,7 +8,6 @@ import           Model.Core                                        (ActionManage
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
                                                                     ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys),
                                                                     ActionEffectKey (ContainerAccessActionKey),
-                                                                    EffectKey (ActionKey),
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)
@@ -24,5 +23,5 @@ openContainerF objectGID = ObjectContainerAccessF openit
       let getActionGIDs = [gid | SAConManagementKey verb gid <- Data.Set.toList actionSet, verb == open]
       pure $ ContainerAccessResult
         {
-          _containerActionEffectKeys = map (ActionKey . ContainerAccessActionKey) getActionGIDs
+          _containerActionEffectKeys = map ContainerAccessActionKey getActionGIDs
         }

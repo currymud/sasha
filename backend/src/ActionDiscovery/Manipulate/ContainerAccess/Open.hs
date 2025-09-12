@@ -13,7 +13,6 @@ import           Model.Core                    (ActionMaps (_containerAccessActi
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                 ContainerAccessResult (ContainerAccessResult),
                                                 ActionEffectKey (ContainerAccessActionKey),
-                                                EffectKey (ActionKey),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
@@ -33,7 +32,7 @@ manageContainerAccessProcess cavp  = do
         Just (CannotAccessF actionF) -> actionF  -- Execute the failure action
         Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
         Just (PlayerContainerAccessF actionF) -> do
-          let effectKeys = [ActionKey (ContainerAccessActionKey actionGID)]
+          let effectKeys = [ContainerAccessActionKey actionGID]
           actionF effectKeys objectSearchStrategy actionMap cavp finalizeContainerAccess
 
 -- | ToDo Clarification system. object identification assumes only one object in location matches nounkey.
@@ -44,7 +43,7 @@ objectSearchStrategy nounkey = do
     Just objSet
       | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
     _ -> pure Nothing
-finalizeContainerAccess :: [EffectKey]
+finalizeContainerAccess :: [ActionEffectKey]
                         -> GameComputation Identity ContainerAccessResult
                         -> GameComputation Identity ()
 finalizeContainerAccess effectKeys objectActionF = do

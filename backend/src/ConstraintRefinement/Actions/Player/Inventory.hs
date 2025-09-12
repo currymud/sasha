@@ -7,8 +7,7 @@ import           Data.Text                  (Text)
 import qualified Data.Text                  as Text
 import           GameState                  (getInventoryObjectsM, getObjectM)
 import           GameState.ActionManagement (processEffects)
-import           Model.Core                 (EffectKey (NarrationKey),
-                                             GameComputation,
+import           Model.Core                 (GameComputation,
                                              ImplicitStimulusActionF (ImplicitStimulusActionF),
                                              NarrationOperation (ActionConsequenceNarration),
                                              Object (_shortName))

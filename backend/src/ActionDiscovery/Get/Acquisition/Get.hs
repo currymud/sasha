@@ -19,7 +19,6 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     EffectKey (ActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -45,7 +44,7 @@ manageAcquisitionProcess avp = do
         Just foundAction -> do
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               let effectKeys = [ActionKey (AcquisitionalActionKey actionGID)]
+               let effectKeys = [AcquisitionalActionKey actionGID]
                actionFunc effectKeys actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
@@ -78,7 +77,7 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: [EffectKey]
+finalizeAcquisition :: [ActionEffectKey]
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult

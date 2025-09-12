@@ -18,7 +18,6 @@ import           Model.Core                    (ActionEffectKey (ImplicitStimulu
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
-                                                EffectKey (ActionKey),
                                                 GameComputation,
                                                 ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF),
                                                 ImplicitStimulusActionMap,
@@ -38,10 +37,10 @@ manageImplicitStimulusProcess isv = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
         Just (ImplicitStimulusActionF actionF) -> do
-          let effectKeys = Data.Set.singleton (ActionKey (ImplicitStimulusActionKey actionGID))
+          let effectKeys = Data.Set.singleton (ImplicitStimulusActionKey actionGID)
           actionF effectKeys
         Just (CannotSeeImplicitF actionF) -> do
-          let effectKeys = Data.Set.singleton (ActionKey (ImplicitStimulusActionKey actionGID))
+          let effectKeys = Data.Set.singleton (ImplicitStimulusActionKey actionGID)
           actionF effectKeys
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
