@@ -248,12 +248,9 @@ data ContainerAccessActionF
   | CannotAccessF          (GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
-newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: Set ActionEffectKey
-                              -> [SystemEffectKey]
-                              -> ActionEffectMap
-                              -> SystemEffectRegistry
-                              -> GameComputation Identity () }
+data SomaticAccessActionF
+  = PlayerSomaticAccessActionF (Set ActionEffectKey -> [SystemEffectKey] -> ActionEffectMap -> SystemEffectRegistry -> GameComputation Identity ())
+  | CannotSomaticAccessF (GameComputation Identity ())
 
 type PosturalActionF :: Type
 data PosturalActionF

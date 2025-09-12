@@ -24,7 +24,7 @@ import           Model.Core                                        (ActionEffect
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
                                                                     SimpleAccessSearchStrategy,
-                                                                    SomaticAccessActionF (SomaticAccessActionF),
+                                                                    SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF),
                                                                     SystemEffectKey,
                                                                     SystemEffectRegistry)
 import           Model.GID                                         (GID)
@@ -41,7 +41,7 @@ openDeniedF = CannotAccessF denied
     msg' = "You are in position to not be opening anything but your eyes."
 
 openEyesDenied :: SomaticAccessActionF
-openEyesDenied = SomaticAccessActionF (const (const (const (const denied))))
+openEyesDenied = CannotSomaticAccessF denied
  where
    denied :: GameComputation Identity ()
    denied = modifyNarration $ updateActionConsequence msg
@@ -49,7 +49,7 @@ openEyesDenied = SomaticAccessActionF (const (const (const (const denied))))
    msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
-openEyes = SomaticAccessActionF opened
+openEyes = PlayerSomaticAccessActionF opened
  where
    opened :: Set ActionEffectKey
              -> [SystemEffectKey]

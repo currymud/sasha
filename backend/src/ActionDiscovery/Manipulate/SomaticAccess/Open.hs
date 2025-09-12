@@ -16,7 +16,7 @@ import           Model.Core                 (ActionEffectKey (LocationKey, Playe
                                              EffectActionKey (SomaticAccessActionKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
-                                             SomaticAccessActionF (SomaticAccessActionF))
+                                             SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
 
 manageSomaticAccessProcess :: SomaticAccessVerb -> GameComputation Identity ()
@@ -28,7 +28,7 @@ manageSomaticAccessProcess sav = do
       actionMap <- asks (_somaticStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No somatic access action found for GID: "
-        Just (SomaticAccessActionF actionFunc) -> do
+        Just (PlayerSomaticAccessActionF actionFunc) -> do
           let actionKey = SomaticAccessActionKey actionGID
           maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
@@ -53,3 +53,4 @@ manageSomaticAccessProcess sav = do
 
               actionFunc allActionKeys systemEffectKeysForAction (ActionEffectMap effectMap) systemEffectRegistry
               processEffectsFromRegistry actionKey
+        Just (CannotSomaticAccessF actionFunc) -> actionFunc
