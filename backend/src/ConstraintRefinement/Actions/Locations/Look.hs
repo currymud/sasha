@@ -1,24 +1,28 @@
 module ConstraintRefinement.Actions.Locations.Look where
-import           Control.Monad.Identity (Identity)
-import           Data.Set               (Set)
-import           GameState.Perception   (youSeeM)
-import           Model.Core             (EffectKey, GameComputation,
-                                         ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF))
+import           Control.Monad.Identity     (Identity)
+import qualified Data.Set
+import           Data.Set                   (Set)
+import           GameState.ActionManagement (processEffects)
+import           GameState.Perception       (youSeeM)
+import           Model.Core                 (EffectKey, GameComputation,
+                                             ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF))
 
 pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF = CannotSeeImplicitF pitchBlack
   where
     pitchBlack :: Set EffectKey -> GameComputation Identity ()
-    pitchBlack _ = do
-      -- process all effects here
-      pure ()
+    pitchBlack effectKeys = do
+      -- Just process the incoming effects (narration comes from effect system)
+      processEffects (Data.Set.toList effectKeys)
 
 lookF :: ImplicitStimulusActionF
 lookF = ImplicitStimulusActionF look
   where
     look :: Set EffectKey -> GameComputation Identity ()
-    look effects = do
-      -- process all effects here
+    look effectKeys = do
+      -- Get perception effects
       lookEffects <- youSeeM
-      -- combine lookeffects with effects and process them
-      pure () -- placeholder remove when completed
+      -- Combine incoming effects with perception effects
+      let allEffects = Data.Set.toList effectKeys <> Data.Set.toList lookEffects
+      -- Process all effects together
+      processEffects allEffects

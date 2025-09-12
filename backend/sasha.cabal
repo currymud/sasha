@@ -81,6 +81,7 @@ library
       ConstraintRefinement.Actions.Objects.Robe.Get
       ConstraintRefinement.Actions.Objects.Robe.Look
       ConstraintRefinement.Actions.Objects.Table.Look
+      ConstraintRefinement.Effects.NarrationEffects
       ConstraintRefinement.Effects.Perception.Look
       EDSL.GameBuilder
       EDSL.ActionCombinators
@@ -208,6 +209,7 @@ library sasha-testing
       Test.TestRunner
       TopLevel
       Examples.Initialize
+      ConstraintRefinement.Effects.NarrationEffects
       GameState
       GameState.ActionManagement
       GameState.EffectRegistry

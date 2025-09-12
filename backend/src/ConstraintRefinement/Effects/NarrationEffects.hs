@@ -1,21 +1,19 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ConstraintRefinment.Effects.NarrationEffects where
+module ConstraintRefinement.Effects.NarrationEffects where
 
 import           Data.Text           (Text)
-import           Model.Core          (Effect,
+import           Model.Core          (Effect (NarrationEffect),
                                       NarrationOperation (ActionConsequenceNarration, PlayerActionNarration))
-import           Model.EDSL.SashaDSL (SashaDSL,
-                                      createActionConsequenceNarration,
-                                      createPlayerActionNarration)
+import           Model.EDSL.SashaDSL (SashaDSL)
 
 -- | Create a narration effect for player actions
 playerActionNarration :: Text -> SashaDSL Effect
-playerActionNarration = createPlayerActionNarration
+playerActionNarration text = pure $ NarrationEffect (PlayerActionNarration text)
 
 -- | Create a narration effect for action consequences
 actionConsequenceNarration :: Text -> SashaDSL Effect
-actionConsequenceNarration = createActionConsequenceNarration
+actionConsequenceNarration text = pure $ NarrationEffect (ActionConsequenceNarration text)
 
 -- Common narration effects for various game situations
 

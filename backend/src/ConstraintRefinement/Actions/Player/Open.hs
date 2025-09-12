@@ -4,12 +4,14 @@ import           ConstraintRefinement.Actions.Utils                (AcquisitionE
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
 import           Data.Set                                          (Set)
+import qualified Data.Set
 import           Data.Text                                         (Text, pack)
 import           GameState                                         (getObjectM,
                                                                     modifyNarration,
                                                                     parseAccessPhrase,
                                                                     updateActionConsequence)
-import           GameState.ActionManagement                        (findSAForContainersKey)
+import           GameState.ActionManagement                        (findSAForContainersKey,
+                                                                    processEffects)
 import           GameState.Perception                              (youSeeM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
@@ -56,10 +58,12 @@ openEyes = SomaticAccessActionF opened
              ->  ActionEffectMap
              ->  SystemEffectRegistry
              -> GameComputation Identity ()
-   opened effectKeys _ (ActionEffectMap effectMap) _ = do
+   opened effectTargetKeys _ (ActionEffectMap effectMap) _ = do
      lookEffectKeys <- youSeeM
-
-     pure ()
+     -- Add the hardcoded narration for now until effect system is fully integrated
+     modifyNarration $ updateActionConsequence msg
+     -- Process the look effects
+     processEffects (Data.Set.toList lookEffectKeys)
 
 msg :: Text
 msg = "You open your eyes, and the world comes into focus."

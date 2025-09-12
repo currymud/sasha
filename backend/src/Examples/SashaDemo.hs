@@ -85,6 +85,15 @@ import           Model.Parser.GCase                                      (NounKe
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
                                                                           pitchBlackF)
+-- Narration effects
+import           ConstraintRefinement.Effects.NarrationEffects            (pitchBlackNarration,
+                                                                          openEyesSuccessNarration,
+                                                                          eyesClosedRobeNarration,
+                                                                          eyesClosedFloorNarration,
+                                                                          eyesClosedChairNarration,
+                                                                          pickUpNarration,
+                                                                          getRobeDeniedNarration,
+                                                                          pocketOutOfReachNarration)
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF)
@@ -175,9 +184,27 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobeForPlayer <- makeEffect getRobeAVP playerGetFGID
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
+  
+  -- Create narration effects
+  pitchBlackNarr <- pitchBlackNarration
+  openEyesNarr <- openEyesSuccessNarration
+  eyesClosedFloorNarr <- eyesClosedFloorNarration
+  eyesClosedChairNarr <- eyesClosedChairNarration
+  eyesClosedRobeNarr <- eyesClosedRobeNarration
+  getRobeDeniedNarr <- getRobeDeniedNarration
+  pocketOutOfReachNarr <- pocketOutOfReachNarration
 
   -- Build composed effect computation
   buildEffects $
+    -- Narration effects for actions attempted with eyes closed
+    buildEffect (ImplicitStimulusActionKey pitchBlackGID) bedroomGID pitchBlackNarr `alongside`
+    buildEffect (DirectionalStimulusActionKey notEvenFloorFGID) floorGID eyesClosedFloorNarr `alongside`
+    buildEffect (DirectionalStimulusActionKey whatChairFGID) chairGID eyesClosedChairNarr `alongside`
+    buildEffect (DirectionalStimulusActionKey notEvenRobeFGID) robeGID eyesClosedRobeNarr `alongside`
+    buildEffect (AcquisitionalActionKey getRobeDeniedGID) robeGID getRobeDeniedNarr `alongside`
+    buildEffect (ContainerAccessActionKey openPocketNoReachGID) pocketGID pocketOutOfReachNarr `andThen`
+    
+    -- Effects that happen when eyes are opened
     buildEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
