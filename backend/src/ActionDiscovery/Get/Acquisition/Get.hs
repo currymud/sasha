@@ -76,7 +76,7 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: [ActionEffectKey]
+finalizeAcquisition :: ActionEffectKey
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult
@@ -97,6 +97,6 @@ finalizeAcquisition effectKeys containerGID objectGID objectActionF containerAct
      else  do
        (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
-       let allEffects = effectKeys <> objectEffects <> containerEffects
+       let allEffects = effectKeys : objectEffects <> containerEffects
        processEffects allEffects >> containerRemoveObjectF >> playerGetObjectF
 

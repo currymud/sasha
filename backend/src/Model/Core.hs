@@ -278,7 +278,7 @@ type AcquisitionF :: Type
 type AcquisitionF = ([ActionEffectKey] -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = [ActionEffectKey]
+type FinalizeAcquisitionF = ActionEffectKey
                               -> GID Object
                               -> GID Object
                               -> GameComputation Identity CoordinationResult

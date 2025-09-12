@@ -19,9 +19,9 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Actions.Results                            (AcquisitionRes (Complete, Simple),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey))
-import           Model.Core                                       (ActionEffectKey,
-                                                                   AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
+                                                                   ActionEffectKey,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
                                                                    GameState (_world),
@@ -47,13 +47,13 @@ getDeniedF = NotGettableF denied
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: [ActionEffectKey]
+    getit :: ActionEffectKey
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
-    getit effectKeys actionMap searchStrategy avp finalize = do
+    getit effectKey actionMap searchStrategy avp finalize = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saObjectKey
@@ -69,7 +69,7 @@ getF = AcquisitionActionF getit
                   case containerActionLookup of
                     Left err' -> handleAcquisitionError err'
                     Right (NotGettableF cannotGetFromF) -> cannotGetFromF
-                    Right (LosesObjectF containerActionF) -> finalize effectKeys containerGID objectGID objectActionF containerActionF
+                    Right (LosesObjectF containerActionF) -> finalize effectKey containerGID objectGID objectActionF containerActionF
                     Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
                 Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
         Complete (CompleteAcquisitionRes {..}) -> do
