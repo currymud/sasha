@@ -192,6 +192,7 @@ sashaBedroomDemo = do
   eyesClosedChairNarr <- eyesClosedChairNarration
   eyesClosedRobeNarr <- eyesClosedRobeNarration
   getRobeDeniedNarr <- getRobeDeniedNarration
+  pickUpNarr <- pickUpNarration
   pocketOutOfReachNarr <- pocketOutOfReachNarration
 
   -- Build composed effect computation
@@ -213,7 +214,10 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `andThen`
+    
+    -- Success narrations - triggered when actions succeed  
+    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID pickUpNarr
 
   finalizeGameState
 

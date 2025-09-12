@@ -31,7 +31,7 @@ getObjectF objectGID = CollectedF getit
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
         , _actionEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
-        , _fieldEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
+        , _fieldEffectKeys = [] -- Avoid duplicating the same effects
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -63,12 +63,11 @@ getFromSupportF supportObjGID = LosesObjectF getit
 
             -- Add to inventory
             addToInventoryM targetObjectGID
-            -- Success narration
-            modifyNarration $ updateActionConsequence "You pick it up."
+            -- Narration now comes from effect system
 
       pure $ CoordinationResult
         { _computation = computation
-        , _actionEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
-        , _fieldEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
+        , _actionEffectKeys = [] -- Container doesn't produce effects, only the collected object does
+        , _fieldEffectKeys = [] -- Avoid duplicating the same effects
         }
 
