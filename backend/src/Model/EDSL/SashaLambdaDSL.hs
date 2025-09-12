@@ -20,7 +20,8 @@ import           Model.Core                    (AcquisitionActionF,
                                                 SpatialRelationship,
                                                 SystemEffect,
                                                 SystemEffectConfig,
-                                                SystemEffectKey)
+                                                SystemEffectKey,
+                                                TargetEffectKey)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Consumable, Container,
                                                 DirectionalStimulus, Objective)

@@ -80,6 +80,7 @@ module Model.Core
   , EffectRegistry
   , SystemEffectRegistry
   , SystemEffectKeysRegistry
+  , TargetEffectKeyRegistry
   , TriggerRegistry(..)
   , ActionKeyMap(..)
     -- * Configuration
@@ -400,7 +401,6 @@ data FieldUpdateOperation
   | ObjectDescription (GID Object) Text
   | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
-  | TargetEffectKeyRedirect TargetEffectKey TargetEffectKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -434,6 +434,9 @@ type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEf
 
 type SystemEffectKeysRegistry :: Type
 type SystemEffectKeysRegistry = Map ActionEffectKey [SystemEffectKey]
+
+type TargetEffectKeyRegistry :: Type  
+type TargetEffectKeyRegistry = Map TargetEffectKey TargetEffectKey
 
 type SystemEffectMap :: Type
 type SystemEffectMap = Map (GID SystemEffect) SystemEffect
@@ -566,7 +569,7 @@ data GameState = GameState
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   , _triggerRegistry        :: TriggerRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
-  , _targetEffectRedirects  :: Map TargetEffectKey TargetEffectKey
+  , _targetEffectKeyRegistry :: TargetEffectKeyRegistry
   }
 
 #ifdef TESTING
