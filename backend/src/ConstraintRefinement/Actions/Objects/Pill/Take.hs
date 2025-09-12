@@ -10,13 +10,13 @@ import           GameState                     (modifyNarration,
                                                 updateActionConsequence)
 import           Model.Core                    (ActionEffectKey (PlayerKey),
                                                 ActionEffectMap,
-                                                ConsumptionActionF (ConsumptionActionF),
+                                                ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
                                                 GameComputation, Object)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 
 takePillDeniedF :: ConsumptionActionF
-takePillDeniedF = ConsumptionActionF (const (const (const (const denied))))
+takePillDeniedF = CannotConsumeF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -25,7 +25,7 @@ takePillDeniedF = ConsumptionActionF (const (const (const (const denied))))
 
 
 alreadyTookPillF :: ConsumptionActionF
-alreadyTookPillF = ConsumptionActionF (const (const (const (const denied))))
+alreadyTookPillF = CannotConsumeF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -33,7 +33,7 @@ alreadyTookPillF = ConsumptionActionF (const (const (const (const denied))))
     msg = "You already took the pill."
 
 pillTooFarF :: ConsumptionActionF
-pillTooFarF = ConsumptionActionF (const (const (const (const denied))))
+pillTooFarF = CannotConsumeF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -41,7 +41,7 @@ pillTooFarF = ConsumptionActionF (const (const (const (const denied))))
     msg = "You grab at it but it's hard to get to. try grabbing the robe first."
 
 takePillF :: ConsumptionActionF
-takePillF = ConsumptionActionF takePill
+takePillF = PlayerConsumptionActionF takePill
   where
     takePill :: GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
     takePill _targetOid _actionKeys _effectMap _cvp = do

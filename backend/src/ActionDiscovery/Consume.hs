@@ -12,7 +12,7 @@ import           Model.Core                    (ActionEffectKey (LocationKey, Pl
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
-                                                ConsumptionActionF (ConsumptionActionF),
+                                                ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
                                                 EffectActionKey (ConsumptionActionKey),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
@@ -32,7 +32,7 @@ manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
       actionMap <- asks (_consumptionActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No consumption action found for GID"
-        Just (ConsumptionActionF actionFunc) -> do
+        Just (PlayerConsumptionActionF actionFunc) -> do
           lid <- _location <$> getPlayerM
           objectActionKeys <- getLocationObjectIDsM lid
 
@@ -56,3 +56,4 @@ manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
                   -- Process effects from registry after action execution
                   processEffectsFromRegistry actionKey
                 _ -> error $ "Target object not found for consumption: " <> show nounKey
+        Just (CannotConsumeF actionFunc) -> actionFunc

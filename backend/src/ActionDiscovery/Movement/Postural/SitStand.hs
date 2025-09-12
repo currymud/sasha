@@ -17,7 +17,7 @@ import           Model.Core                    (ActionEffectKey (LocationKey, Pl
                                                 EffectActionKey (PosturalActionKey),
                                                 GameComputation,
                                                 Player (_location, _playerActions),
-                                                PosturalActionF (PosturalActionF))
+                                                PosturalActionF (CannotPosturalActionF, PlayerPosturalActionF))
 import           Model.Parser.Composites.Verbs (PosturalVerbPhrase)
 
 
@@ -30,7 +30,7 @@ managePosturalProcess posturalPhrase = do
       actionMap <- asks (_posturalActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No postural action found for GID: "
-        Just (PosturalActionF actionFunc) -> do
+        Just (PlayerPosturalActionF actionFunc) -> do
           let actionKey = PosturalActionKey actionGID
           maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
@@ -45,3 +45,4 @@ managePosturalProcess posturalPhrase = do
               actionFunc allActionKeys (ActionEffectMap effectMap)
               -- Process effects from registry after action execution
               processEffectsFromRegistry actionKey
+        Just (CannotPosturalActionF actionFunc) -> actionFunc

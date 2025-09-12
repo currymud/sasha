@@ -256,8 +256,9 @@ newtype SomaticAccessActionF = SomaticAccessActionF
                               -> GameComputation Identity () }
 
 type PosturalActionF :: Type
-newtype PosturalActionF = PosturalActionF
-  { _positivePosturalAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
+data PosturalActionF
+  = PlayerPosturalActionF (Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  | CannotPosturalActionF (GameComputation Identity ())
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
@@ -289,12 +290,9 @@ data AcquisitionActionF
   | NotGettableF (GameComputation Identity ())
 
 type ConsumptionActionF :: Type
-newtype ConsumptionActionF = ConsumptionActionF
-  { _consumptionAction :: GID Object
-                            -> Set ActionEffectKey
-                            -> ActionEffectMap
-                            -> ConsumptionVerbPhrase
-                            -> GameComputation Identity () }
+data ConsumptionActionF
+  = PlayerConsumptionActionF (GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
+  | CannotConsumeF (GameComputation Identity ())
 
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb

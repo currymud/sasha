@@ -7,10 +7,10 @@ import           GameState              (modifyNarration,
 import           Model.Core             (ActionEffectKey,
                                          ActionEffectMap (ActionEffectMap),
                                          GameComputation,
-                                         PosturalActionF (PosturalActionF))
+                                         PosturalActionF (CannotPosturalActionF, PlayerPosturalActionF))
 
 standDenied :: PosturalActionF
-standDenied = PosturalActionF (const (const denied))
+standDenied = CannotPosturalActionF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
@@ -18,7 +18,7 @@ standDenied = PosturalActionF (const (const denied))
     msg = "You try to stand but the room starts spinning and you lay back down. There's some aspirin in your robe pocket."
 
 standUp :: PosturalActionF
-standUp = PosturalActionF stood
+standUp = PlayerPosturalActionF stood
   where
     stood :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
     stood actionEffectKeys (ActionEffectMap actionEffectMap) = do
@@ -29,7 +29,7 @@ msg :: Text
 msg = "You stand up, feeling more alert and ready for action."
 
 standUpDenied :: PosturalActionF
-standUpDenied = PosturalActionF (const (const denied))
+standUpDenied = CannotPosturalActionF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg

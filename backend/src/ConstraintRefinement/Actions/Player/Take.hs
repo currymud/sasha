@@ -3,12 +3,12 @@ import           Control.Monad.Identity (Identity)
 import           Data.Text              (Text)
 import           GameState              (modifyNarration,
                                          updateActionConsequence)
-import           Model.Core             (ConsumptionActionF (ConsumptionActionF),
+import           Model.Core             (ConsumptionActionF (CannotConsumeF),
                                          GameComputation)
 import           Prelude                hiding (take)
 
 takeDenied :: ConsumptionActionF
-takeDenied = ConsumptionActionF (const (const (const (const denied))))
+takeDenied = CannotConsumeF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
