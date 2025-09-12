@@ -22,9 +22,9 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect),
                                                 ActionEffectKey,
-                                                FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
+                                                FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation, TargetEffectKeyRedirect),
                                                 GameComputation,
-                                                GameState (_effectRegistry, _player, _systemEffectRegistry),
+                                                GameState (_effectRegistry, _player, _systemEffectRegistry, _targetEffectRedirects),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
@@ -430,6 +430,11 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
+
+-- TARGET EFFECT KEY REDIRECTION
+processEffect _ (FieldUpdateEffect (TargetEffectKeyRedirect fromKey toKey)) = do
+  modify' $ \gs -> gs { _targetEffectRedirects = 
+    Data.Map.Strict.insert fromKey toKey (_targetEffectRedirects gs) }
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =

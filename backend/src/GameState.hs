@@ -11,6 +11,7 @@ module GameState ( addToInventoryM
                  , getPlayerM
                  , getPlayerLocationM
                  , getPlayerLocationGID
+                 , resolveTargetEffectKey
                  , modifyLocationMapM
                  , modifyLocationActionMapsM
                  , modifyLocationM
@@ -58,13 +59,12 @@ import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR)
                                                 SimpleAccessRes (SimpleAccessRes),
                                                 SimpleAcquisitionRes (SimpleAcquisitionRes))
 import           Model.Core                    (AcquisitionActionF,
-                                                TargetEffectKey (ObjectKey),
                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 GameComputation,
-                                                GameState (_narration, _player, _world),
+                                                GameState (_narration, _player, _targetEffectRedirects, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Narration (Narration, _actionConsequence),
@@ -73,6 +73,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 PosturalActionF,
                                                 SpatialRelationship (Inventory),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
+                                                TargetEffectKey (ObjectKey),
                                                 World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
@@ -507,3 +508,11 @@ addToInventoryM oid = do
 removeFromInventoryM :: GID Object -> GameComputation Identity ()
 removeFromInventoryM oid = do
   modifySpatialRelationshipsForObjectM oid (Data.Set.delete Inventory)
+
+-- Resolve TargetEffectKey redirections
+resolveTargetEffectKey :: TargetEffectKey -> GameComputation Identity TargetEffectKey
+resolveTargetEffectKey key = do
+  redirects <- gets _targetEffectRedirects
+  case Data.Map.Strict.lookup key redirects of
+    Nothing            -> pure key
+    Just redirectedKey -> resolveTargetEffectKey redirectedKey  -- Follow redirect chain

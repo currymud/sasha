@@ -400,6 +400,7 @@ data FieldUpdateOperation
   | ObjectDescription (GID Object) Text
   | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
+  | TargetEffectKeyRedirect TargetEffectKey TargetEffectKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -565,6 +566,7 @@ data GameState = GameState
   , _actionSystemEffectKeys :: SystemEffectKeysRegistry
   , _triggerRegistry        :: TriggerRegistry
   , _systemEffectRegistry   :: SystemEffectRegistry
+  , _targetEffectRedirects  :: Map TargetEffectKey TargetEffectKey
   }
 
 #ifdef TESTING
