@@ -13,14 +13,14 @@ import           GameState                     (getLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
                                                 lookupImplicitStimulus)
-import           Model.Core                    (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (ImplicitStimulusActionKey),
+                                                ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
-                                                ActionEffectKey (ImplicitStimulusActionKey),
                                                 EffectKey (ActionKey),
                                                 GameComputation,
-                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF),
                                                 ImplicitStimulusActionMap,
                                                 Player (_location, _playerActions))
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
@@ -37,9 +37,12 @@ manageImplicitStimulusProcess isv = do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
-        Just (ImplicitStimulusActionF actionFunc) -> do
+        Just (ImplicitStimulusActionF actionF) -> do
           let effectKeys = Data.Set.singleton (ActionKey (ImplicitStimulusActionKey actionGID))
-          actionFunc effectKeys
+          actionF effectKeys
+        Just (CannotSeeImplicitF actionF) -> do
+          let effectKeys = Data.Set.singleton (ActionKey (ImplicitStimulusActionKey actionGID))
+          actionF effectKeys
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do

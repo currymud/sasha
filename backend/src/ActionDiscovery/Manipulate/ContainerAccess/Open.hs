@@ -48,6 +48,6 @@ finalizeContainerAccess :: [EffectKey]
                         -> GameComputation Identity ContainerAccessResult
                         -> GameComputation Identity ()
 finalizeContainerAccess effectKeys objectActionF = do
- (ContainerAccessResult objectEffects objectFieldEffects) <- objectActionF
- let allEffects = effectKeys <> objectEffects <> objectFieldEffects
+ (ContainerAccessResult objectEffects) <- objectActionF
+ let allEffects = effectKeys <> objectEffects
  mapM_ (\(ActionKey k) -> processEffectsFromRegistry k) allEffects

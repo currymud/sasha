@@ -224,14 +224,12 @@ type SimpleAccessSearchStrategy = NounKey
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [EffectKey]
-  , _containerFieldEffectKeys  :: [EffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
   { _instrumentActionEffectKeys :: [EffectKey]
-  , _instrumentFieldEffectKeys  :: [EffectKey]
   }
   deriving stock (Show, Eq, Ord)
 

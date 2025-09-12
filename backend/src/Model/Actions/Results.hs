@@ -2,8 +2,7 @@
 
 module Model.Actions.Results
   ( -- * Constraint Resolution Results
-    CoordinationResult(..)
-  , ContainerAccessResult(..)
+   ContainerAccessResult(..)
   , InstrumentAccessResult(..)
     -- * Parsed Command Results
   , AcquisitionRes(..)
@@ -25,17 +24,10 @@ import           Model.Parser.GCase            (NounKey)
 
 -- | Coordination result - bundles computation with effects after constraint solving
 
-type CoordinationResult :: Type
-data CoordinationResult = CoordinationResult
-  { _computation      :: GameComputation Identity ()
-  , _actionEffectKeys :: [ActionEffectKey]
-  }
-
 -- | Container access coordination result
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [ActionEffectKey]
-  , _containerFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
@@ -43,7 +35,6 @@ data ContainerAccessResult = ContainerAccessResult
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
   { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 

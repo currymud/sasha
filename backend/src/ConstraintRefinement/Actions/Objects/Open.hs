@@ -6,7 +6,7 @@ import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
 import           Model.Core                                        (ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
-                                                                    ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys),
+                                                                    ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys),
                                                                     ActionEffectKey (ContainerAccessActionKey),
                                                                     EffectKey (ActionKey),
                                                                     GameComputation,
@@ -25,5 +25,4 @@ openContainerF objectGID = ObjectContainerAccessF openit
       pure $ ContainerAccessResult
         {
           _containerActionEffectKeys = map (ActionKey . ContainerAccessActionKey) getActionGIDs
-        , _containerFieldEffectKeys = map (ActionKey . ContainerAccessActionKey) getActionGIDs
         }
