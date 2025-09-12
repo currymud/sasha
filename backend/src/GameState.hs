@@ -12,6 +12,7 @@ module GameState ( addToInventoryM
                  , getPlayerLocationM
                  , getPlayerLocationGID
                  , modifyLocationMapM
+                 , resolveTargetEffectKey
                  , modifyLocationActionMapsM
                  , modifyLocationM
                  , modifyNarration
@@ -63,7 +64,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 GameComputation,
-                                                GameState (_narration, _player, _world),
+                                                GameState (_narration, _player, _targetEffectKeyRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Narration (Narration, _actionConsequence),
@@ -507,4 +508,12 @@ addToInventoryM oid = do
 removeFromInventoryM :: GID Object -> GameComputation Identity ()
 removeFromInventoryM oid = do
   modifySpatialRelationshipsForObjectM oid (Data.Set.delete Inventory)
+
+-- Resolve TargetEffectKey through registry
+resolveTargetEffectKey :: TargetEffectKey -> GameComputation Identity TargetEffectKey
+resolveTargetEffectKey key = do
+  registry <- gets _targetEffectKeyRegistry
+  case Data.Map.Strict.lookup key registry of
+    Nothing            -> pure key
+    Just mappedKey     -> resolveTargetEffectKey mappedKey  -- Follow registry chain
 

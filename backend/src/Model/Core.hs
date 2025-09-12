@@ -401,6 +401,9 @@ data FieldUpdateOperation
   | ObjectDescription (GID Object) Text
   | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
+  | TargetEffectKeyLocationUpdate TargetEffectKey (GID Location)
+  | TargetEffectKeyObjectUpdate TargetEffectKey (GID Object)
+  | TargetEffectKeyPlayerUpdate TargetEffectKey PlayerKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type

@@ -8,7 +8,7 @@ import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (modifyLocationM, modifyObjectM,
-                                                modifyPlayerM)
+                                                modifyPlayerM, resolveTargetEffectKey)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
                                                 TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
@@ -22,9 +22,9 @@ import           Model.Core                    (AcquisitionActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect),
                                                 ActionEffectKey,
-                                                FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
+                                                FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation, TargetEffectKeyLocationUpdate, TargetEffectKeyObjectUpdate, TargetEffectKeyPlayerUpdate),
                                                 GameComputation,
-                                                GameState (_effectRegistry, _player, _systemEffectRegistry),
+                                                GameState (_effectRegistry, _player, _systemEffectRegistry, _targetEffectKeyRegistry),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
@@ -96,7 +96,8 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      mapM_ (processEffect effectKey) (Data.Set.toList effects)
+      resolvedKey <- resolveTargetEffectKey effectKey
+      mapM_ (processEffect resolvedKey) (Data.Set.toList effects)
 
 processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -430,6 +431,19 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
+
+-- TARGET EFFECT KEY REGISTRY UPDATES
+processEffect _ (FieldUpdateEffect (TargetEffectKeyLocationUpdate targetKey newLocationGID)) = do
+  modify' $ \gs -> gs { _targetEffectKeyRegistry = 
+    Data.Map.Strict.insert targetKey (LocationKey newLocationGID) (_targetEffectKeyRegistry gs) }
+
+processEffect _ (FieldUpdateEffect (TargetEffectKeyObjectUpdate targetKey newObjectGID)) = do
+  modify' $ \gs -> gs { _targetEffectKeyRegistry = 
+    Data.Map.Strict.insert targetKey (ObjectKey newObjectGID) (_targetEffectKeyRegistry gs) }
+
+processEffect _ (FieldUpdateEffect (TargetEffectKeyPlayerUpdate targetKey newPlayerKey)) = do
+  modify' $ \gs -> gs { _targetEffectKeyRegistry = 
+    Data.Map.Strict.insert targetKey (PlayerKey newPlayerKey) (_targetEffectKeyRegistry gs) }
 
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
