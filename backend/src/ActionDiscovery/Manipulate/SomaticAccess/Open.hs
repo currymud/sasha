@@ -14,7 +14,7 @@ import           Model.Core                 (ActionEffectKey (LocationKey, Playe
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
                                              EffectActionKey (SomaticAccessActionKey),
-                                             GameComputation, GameState (..),
+                                             GameComputation,
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
 import           Model.Parser.Atomics.Verbs (SomaticAccessVerb)
@@ -36,21 +36,12 @@ manageSomaticAccessProcess sav = do
             Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
               objectActionKeys <- getLocationObjectIDsM lid
-
-              -- Get SystemEffectKeys from GameState
-              systemEffectKeysRegistry <- gets _actionSystemEffectKeys
-              let systemEffectKeysForAction = Data.Map.Strict.findWithDefault [] actionKey systemEffectKeysRegistry
-
-              -- Get SystemEffectRegistry from GameState
-              systemEffectRegistry <- gets _systemEffectRegistry
-
               let playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [
                     Data.Set.singleton (LocationKey lid),
                     objectActionKeys,
                     playerKeys
                     ]
-
-              actionFunc allActionKeys systemEffectKeysForAction (ActionEffectMap effectMap) systemEffectRegistry
+              actionFunc allActionKeys (ActionEffectMap effectMap)
               processEffectsFromRegistry actionKey
         Just (CannotSomaticAccessF actionFunc) -> actionFunc

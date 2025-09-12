@@ -52,11 +52,9 @@ openEyes :: SomaticAccessActionF
 openEyes = PlayerSomaticAccessActionF opened
  where
    opened :: Set ActionEffectKey
-             -> [SystemEffectKey]
              ->  ActionEffectMap
-             ->  SystemEffectRegistry
              -> GameComputation Identity ()
-   opened actionEffectKeys _ (ActionEffectMap actionEffectMap) _ = do
+   opened actionEffectKeys (ActionEffectMap actionEffectMap) = do
      modifyNarration (updateActionConsequence msg)
      youSeeM
 

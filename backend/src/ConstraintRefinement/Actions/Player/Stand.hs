@@ -1,4 +1,4 @@
-module ConstraintRefinement.Actions.Player.Stand (standDenied, standUp) where
+module ConstraintRefinement.Actions.Player.Stand (standDenied, standUp,alreadyStandingF) where
 import           Control.Monad.Identity (Identity)
 import           Data.Set               (Set)
 import           Data.Text              (Text)
@@ -28,8 +28,8 @@ standUp = PlayerPosturalActionF stood
 msg :: Text
 msg = "You stand up, feeling more alert and ready for action."
 
-standUpDenied :: PosturalActionF
-standUpDenied = CannotPosturalActionF denied
+alreadyStandingF :: PosturalActionF
+alreadyStandingF = CannotPosturalActionF denied
   where
     denied :: GameComputation Identity ()
     denied = modifyNarration $ updateActionConsequence msg
