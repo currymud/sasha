@@ -78,6 +78,7 @@ module Model.Core
   , EffectTargetKey(..)
   , SystemEffectKey(..)
   , Effect(..)
+  , InventoryFlavorText(..)
   , SystemEffect(..)
   , SystemEffectConfig(..)
   , EffectRegistry
@@ -420,10 +421,18 @@ data NarrationOperation
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
+type InventoryFlavorText :: Type
+data InventoryFlavorText = InventoryFlavorText
+  { _emptyFlavorText     :: Text
+  , _inventoryFlavorText :: Text
+  }
+  deriving stock (Show, Eq, Ord)
+
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation
   | NarrationEffect NarrationOperation
+  | InventoryNarrationEffect InventoryFlavorText
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type

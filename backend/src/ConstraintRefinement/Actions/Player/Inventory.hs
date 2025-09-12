@@ -5,19 +5,13 @@ import           Data.Kind                  (Type)
 import           Data.Set                   (Set, toList)
 import           Data.Text                  (Text)
 import qualified Data.Text                  as Text
-import           GameState                  (getInventoryObjectsM, getObjectM)
-import           GameState.ActionManagement (processEffects)
-import           Model.Core                 (GameComputation,
+import           GameState.ActionManagement (processEffects, processInventoryNarration)
+import           Model.Core                 (ActionEffectKey,
+                                             GameComputation,
                                              ImplicitStimulusActionF (ImplicitStimulusActionF),
-                                             NarrationOperation (ActionConsequenceNarration),
-                                             Object (_shortName))
+                                             InventoryFlavorText (InventoryFlavorText, _emptyFlavorText, _inventoryFlavorText))
 import           Model.GID                  (GID)
 
-type InventoryFlavorText :: Type
-data InventoryFlavorText = InventoryFlavorText
-  { _emptyFlavorText     :: Text
-  , _inventoryFlavorText :: Text
-  }
 
 defaultFlavorText :: InventoryFlavorText
 defaultFlavorText = InventoryFlavorText
@@ -28,11 +22,11 @@ defaultFlavorText = InventoryFlavorText
 notEvenInventoryF :: ImplicitStimulusActionF
 notEvenInventoryF = ImplicitStimulusActionF notEvenInventory'
   where
-    notEvenInventory' :: Set EffectKey -> GameComputation Identity ()
+    notEvenInventory' :: Set ActionEffectKey -> GameComputation Identity ()
     notEvenInventory' effectKeys = do
-      let narrationEffect = NarrationKey (ActionConsequenceNarration "You've got nothing but a terrible headache and a slight pang of regret.")
-          allEffects = Data.Set.toList effectKeys <> [narrationEffect]
-      processEffects allEffects
+      processEffects (Data.Set.toList effectKeys)
+      -- Use the pre-defined empty inventory narration
+      processInventoryNarration (InventoryFlavorText "You've got nothing but a terrible headache and a slight pang of regret." "")
 
 defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
@@ -40,21 +34,7 @@ defaultInventoryLookF = inventoryLookF defaultFlavorText
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
 inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
   where
-    inventoryLook' :: Set EffectKey -> GameComputation Identity ()
+    inventoryLook' :: Set ActionEffectKey -> GameComputation Identity ()
     inventoryLook' effectKeys  = do
-      inventoryObjects <- getInventoryObjectsM
-      narrationEffect <- case inventoryObjects of
-        [] -> pure $ NarrationKey (ActionConsequenceNarration _emptyFlavorText)
-        objects -> do
-          objectNames <- mapM getObjectShortName objects
-          let itemsList = Text.intercalate ", " objectNames
-              fullMessage = _inventoryFlavorText <> " You are carrying: " <> itemsList <> "."
-          pure $ NarrationKey (ActionConsequenceNarration fullMessage)
-
-      let allEffects = Data.Set.toList effectKeys <> [narrationEffect]
-      processEffects allEffects
--- | Get the short name of an object
-getObjectShortName :: GID Object -> GameComputation Identity Text
-getObjectShortName oid = do
-  obj <- getObjectM oid
-  pure $ _shortName obj
+      processEffects (Data.Set.toList effectKeys)
+      processInventoryNarration (InventoryFlavorText _emptyFlavorText _inventoryFlavorText)

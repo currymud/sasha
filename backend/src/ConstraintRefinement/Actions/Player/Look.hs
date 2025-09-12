@@ -23,7 +23,7 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
-                                                EffectKey, GameComputation,
+                                                ActionEffectKey, GameComputation,
                                                 GameState (_world),
                                                 ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
@@ -158,7 +158,7 @@ getContainedObjects objGID spatialMap =
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
   where
-    actionEnabled :: Set EffectKey ->  GameComputation Identity ()
+    actionEnabled :: Set ActionEffectKey ->  GameComputation Identity ()
     actionEnabled effects = do
       loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc

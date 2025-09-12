@@ -4,13 +4,13 @@ import qualified Data.Set
 import           Data.Set                   (Set)
 import           GameState.ActionManagement (processEffects)
 import           GameState.Perception       (youSeeM)
-import           Model.Core                 (EffectKey, GameComputation,
+import           Model.Core                 (ActionEffectKey, GameComputation,
                                              ImplicitStimulusActionF (CannotSeeImplicitF, ImplicitStimulusActionF))
 
 pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF = CannotSeeImplicitF pitchBlack
   where
-    pitchBlack :: Set EffectKey -> GameComputation Identity ()
+    pitchBlack :: Set ActionEffectKey -> GameComputation Identity ()
     pitchBlack effectKeys = do
       -- Just process the incoming effects (narration comes from effect system)
       processEffects (Data.Set.toList effectKeys)
@@ -18,7 +18,7 @@ pitchBlackF = CannotSeeImplicitF pitchBlack
 lookF :: ImplicitStimulusActionF
 lookF = ImplicitStimulusActionF look
   where
-    look :: Set EffectKey -> GameComputation Identity ()
+    look :: Set ActionEffectKey -> GameComputation Identity ()
     look effectKeys = do
       -- Get perception effects
       lookEffects <- youSeeM

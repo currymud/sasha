@@ -7,7 +7,10 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (modifyLocationM, modifyObjectM,
+import           Data.Text                     (Text)
+import qualified Data.Text                     as Text
+import           GameState                     (getInventoryObjectsM, getObjectM,
+                                                modifyLocationM, modifyObjectM,
                                                 modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
@@ -20,7 +23,8 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
+                                                Effect (ActionManagementEffect, FieldUpdateEffect, InventoryNarrationEffect, NarrationEffect),
+                                                InventoryFlavorText (_emptyFlavorText, _inventoryFlavorText),
                                                 EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
@@ -88,6 +92,22 @@ processEffectsFromRegistry actionKey = do
 processEffects :: [ActionEffectKey] -> GameComputation Identity ()
 processEffects = mapM_ processEffectsFromRegistry
 
+-- Process effects directly with appropriate target key context
+processDirectEffects :: EffectTargetKey -> [Effect] -> GameComputation Identity ()
+processDirectEffects targetKey = mapM_ (processEffect targetKey)
+
+-- Process inventory narration effect directly
+processInventoryNarration :: InventoryFlavorText -> GameComputation Identity ()
+processInventoryNarration flavorText = do
+  inventoryObjects <- getInventoryObjectsM
+  case inventoryObjects of
+    [] -> processNarrationEffect (ActionConsequenceNarration (_emptyFlavorText flavorText))
+    objects -> do
+      objectNames <- mapM getObjectShortName objects
+      let itemsList = Text.intercalate ", " objectNames
+          fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
+      processNarrationEffect (ActionConsequenceNarration fullMessage)
+
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
                              -> GameComputation Identity ()
@@ -106,6 +126,12 @@ processNarrationEffect (PlayerActionNarration text) =
 processNarrationEffect (ActionConsequenceNarration text) =
   modifyNarrationM $ \narration ->
     narration { _actionConsequence = text : _actionConsequence narration }
+
+-- Helper function to get object short name for inventory narrations
+getObjectShortName :: GID Object -> GameComputation Identity Text
+getObjectShortName oid = do
+  obj <- getObjectM oid
+  pure $ _shortName obj
 
 processAllEffects :: ActionEffectMap -> GameComputation Identity ()
 processAllEffects (ActionEffectMap effectMap) = do
@@ -209,6 +235,17 @@ processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)
 processEffect (LocationKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
 
+-- Location-triggered inventory narration effects
+processEffect (LocationKey _) (InventoryNarrationEffect flavorText) = do
+  inventoryObjects <- getInventoryObjectsM
+  case inventoryObjects of
+    [] -> processNarrationEffect (ActionConsequenceNarration (_emptyFlavorText flavorText))
+    objects -> do
+      objectNames <- mapM getObjectShortName objects
+      let itemsList = Text.intercalate ", " objectNames
+          fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
+      processNarrationEffect (ActionConsequenceNarration fullMessage)
+
 -- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -302,6 +339,17 @@ processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
 -- Object-triggered narration effects
 processEffect (ObjectKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
+
+-- Object-triggered inventory narration effects
+processEffect (ObjectKey _) (InventoryNarrationEffect flavorText) = do
+  inventoryObjects <- getInventoryObjectsM
+  case inventoryObjects of
+    [] -> processNarrationEffect (ActionConsequenceNarration (_emptyFlavorText flavorText))
+    objects -> do
+      objectNames <- mapM getObjectShortName objects
+      let itemsList = Text.intercalate ", " objectNames
+          fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
+      processNarrationEffect (ActionConsequenceNarration fullMessage)
 
 -- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -459,6 +507,17 @@ processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
 -- Player-triggered narration effects
 processEffect (PlayerKey _) (NarrationEffect narrationOp) =
   processNarrationEffect narrationOp
+
+-- Player-triggered inventory narration effects
+processEffect (PlayerKey _) (InventoryNarrationEffect flavorText) = do
+  inventoryObjects <- getInventoryObjectsM
+  case inventoryObjects of
+    [] -> processNarrationEffect (ActionConsequenceNarration (_emptyFlavorText flavorText))
+    objects -> do
+      objectNames <- mapM getObjectShortName objects
+      let itemsList = Text.intercalate ", " objectNames
+          fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
+      processNarrationEffect (ActionConsequenceNarration fullMessage)
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =

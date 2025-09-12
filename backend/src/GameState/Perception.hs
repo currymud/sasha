@@ -17,7 +17,7 @@ import           GameState                     (getDescriptionM, getLocationM,
                                                 modifyNarration,
                                                 updateActionConsequence)
 import           GameState.Spatial             (findObjectInInventoryContainers)
-import           Model.Core                    (EffectKey, GameComputation,
+import           Model.Core                    (ActionEffectKey, GameComputation,
                                                 GameState (_world),
                                                 Location (_objectSemanticMap),
                                                 Object (_descriptives),
@@ -210,7 +210,7 @@ modifyPerceptionMapM perceptionMapF = do
 
 -- youSeem needs to generate a Narration effect
 -- instead of using modifyNarration
-youSeeM :: GameComputation Identity (Set EffectKey)
+youSeeM :: GameComputation Identity (Set ActionEffectKey)
 youSeeM = do
   trace "youSeeM: Starting execution" $ pure ()
 
