@@ -18,13 +18,15 @@ import           GameState.ActionManagement    (lookupDirectionalContainerStimul
 import           GameState.Perception          (findAccessibleObject,
                                                 isObjectPerceivable,
                                                 queryPerceptionMap)
-import           Model.Core                    (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (ImplicitStimulusActionKey),
+                                                ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
                                                 GameComputation,
                                                 GameState (_world),
-                                                ImplicitStimulusActionF (PlayerImplicitStimulusActionF, CannotImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF),
+                                                ImplicitStimulusActionMap,
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
@@ -157,9 +159,8 @@ getContainedObjects objGID spatialMap =
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
   where
-    actionEnabled :: GameComputation Identity ()
-    actionEnabled = do
-      player <- getPlayerM
+    actionEnabled :: ActionEffectKey -> ImplicitStimulusActionMap -> GameComputation Identity ()
+    actionEnabled _actionKey _actionMap = do
       loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
@@ -168,8 +169,12 @@ isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
-            Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc
+            Just (PlayerImplicitStimulusActionF actionFunc) ->
+              let actionKey = ImplicitStimulusActionKey actionGID
+              in actionFunc actionKey actionMap'
+            Just (CannotImplicitStimulusActionF actionFunc) ->
+              let actionKey = ImplicitStimulusActionKey actionGID
+              in actionFunc actionKey actionMap'
 
 dsvActionEnabled :: DirectionalStimulusActionF
 dsvActionEnabled = PlayerDirectionalStimulusActionF lookit

@@ -194,8 +194,8 @@ instance MonadTrans GameComputation where
 -- Action function types
 type ImplicitStimulusActionF :: Type
 data ImplicitStimulusActionF
-  = PlayerImplicitStimulusActionF (GameComputation Identity ())
-  | CannotImplicitStimulusActionF (GameComputation Identity ())
+  = PlayerImplicitStimulusActionF (ActionEffectKey -> ImplicitStimulusActionMap -> GameComputation Identity ())
+  | CannotImplicitStimulusActionF (ActionEffectKey -> ImplicitStimulusActionMap -> GameComputation Identity ())
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF

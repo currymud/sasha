@@ -25,7 +25,7 @@ defaultFlavorText = InventoryFlavorText
   }
 
 notEvenInventoryF :: ImplicitStimulusActionF
-notEvenInventoryF = CannotImplicitStimulusActionF notEvenInventory'
+notEvenInventoryF = CannotImplicitStimulusActionF (\_ _ -> notEvenInventory')
   where
     notEvenInventory' :: GameComputation Identity ()
     notEvenInventory'  = do
@@ -35,7 +35,7 @@ defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
 
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
-inventoryLookF (InventoryFlavorText {..}) = PlayerImplicitStimulusActionF inventoryLook'
+inventoryLookF (InventoryFlavorText {..}) = PlayerImplicitStimulusActionF (\_ _ -> inventoryLook')
   where
     inventoryLook' :: GameComputation Identity ()
     inventoryLook' = do

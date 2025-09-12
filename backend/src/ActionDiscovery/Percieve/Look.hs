@@ -12,7 +12,8 @@ import           GameState                     (getLocationM, getPlayerM)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
                                                 lookupImplicitStimulus)
-import           Model.Core                    (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (ImplicitStimulusActionKey),
+                                                ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, PlayerDirectionalStimulusContainerActionF),
@@ -34,8 +35,12 @@ manageImplicitStimulusProcess isv = do
       actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
-        Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
-        Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc
+        Just (PlayerImplicitStimulusActionF actionFunc) -> 
+          let actionKey = ImplicitStimulusActionKey actionGID
+          in actionFunc actionKey actionMap
+        Just (CannotImplicitStimulusActionF actionFunc) -> 
+          let actionKey = ImplicitStimulusActionKey actionGID
+          in actionFunc actionKey actionMap
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do
