@@ -11,7 +11,7 @@ import           Examples.SashaDemo        (sashaBedroomDemo)
 import           Model.Core                (ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                             Config (Config, _actionMaps),
                                             Evaluator (Evaluator),
-                                            GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
+                                            GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _targetEffectRedirects, _triggerRegistry, _world),
                                             TriggerRegistry (TriggerRegistry))
 import           Relude.DeepSeq            (deepseq)
 
@@ -29,6 +29,7 @@ buildResult = case runWorldBuilderWithMaps (interpretDSL sashaBedroomDemo) (init
       , _evaluation = Evaluator eval
       , _narration = defaultNarration
       , _actionSystemEffectKeys = mempty
+      , _targetEffectRedirects = Data.Map.Strict.empty
       }
 
 gameState :: GameState

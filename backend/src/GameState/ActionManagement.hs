@@ -8,7 +8,7 @@ import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           GameState                     (modifyLocationM, modifyObjectM,
-                                                modifyPlayerM)
+                                                modifyPlayerM, resolveTargetEffectKey)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
                                                 TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
@@ -96,7 +96,8 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      mapM_ (processEffect effectKey) (Data.Set.toList effects)
+      resolvedKey <- resolveTargetEffectKey effectKey  -- Resolve redirections
+      mapM_ (processEffect resolvedKey) (Data.Set.toList effects)
 
 processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
