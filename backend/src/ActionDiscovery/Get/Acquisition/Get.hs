@@ -97,8 +97,8 @@ finalizeAcquisition effectKeys containerGID objectGID objectActionF containerAct
      if not isContainedInSource
      then handleAcquisitionError $ SpatialValidationFailed $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
      else  do
-       (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
-       (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
-       let allEffects = effectKeys <> objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects
+       (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
+       (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
+       let allEffects = effectKeys <> objectEffects <> containerEffects
        mapM_ (\(ActionKey k) -> processEffectsFromRegistry k) allEffects >> containerRemoveObjectF >> playerGetObjectF
 

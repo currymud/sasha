@@ -11,7 +11,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionActionF (CollectedF, LosesObjectF),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                   CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
+                                                                   CoordinationResult (CoordinationResult, _actionEffectKeys, _computation),
                                                                    ActionEffectKey (AcquisitionalActionKey),
                                                                    EffectKey (ActionKey),
                                                                    GameComputation,
@@ -31,7 +31,6 @@ getObjectF objectGID = CollectedF getit
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
         , _actionEffectKeys = map (ActionKey . AcquisitionalActionKey) getActionGIDs
-        , _fieldEffectKeys = [] -- Avoid duplicating the same effects
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -68,6 +67,5 @@ getFromSupportF supportObjGID = LosesObjectF getit
       pure $ CoordinationResult
         { _computation = computation
         , _actionEffectKeys = [] -- Container doesn't produce effects, only the collected object does
-        , _fieldEffectKeys = [] -- Avoid duplicating the same effects
         }
 
