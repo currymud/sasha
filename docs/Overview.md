@@ -7,7 +7,7 @@
 Sasha's design centers around four core principles:
 
 - **Management Hierarchy**: Each level (location, object, player) owns its effects and cannot modify other levels' state directly
-- **Composition Strategy**: Effects are processed first to modify action mappings, then actions execute with the updated mappings  
+- **Composition Strategy**: Effects are processed first to modify action mappings, then actions contribute to building the computation for `topLevel`  
 - **Execution Model**: All operations build to a single computation that executes in `topLevel`
 - **Effect Ownership**: Cross-scope effect processing is prevented through type-level boundaries
 
@@ -21,6 +21,13 @@ data AcquisitionActionF
   = CollectedF (GameComputation Identity CoordinationResult)      -- Object handles being collected
   | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult) -- Container handles loss
   | NotGettableF (GameComputation Identity ())                    -- Object refuses collection
+
+-- Effect types for different operations
+data Effect
+  = ActionManagementEffect ActionManagementOperation ActionGID
+  | FieldUpdateEffect FieldUpdateOperation
+  | NarrationEffect NarrationOperation
+  | InventoryNarrationEffect InventoryFlavorText                   -- Computational effects for dynamic content
 ```
 
 Effect ownership is enforced through dedicated linking functions:
@@ -57,13 +64,16 @@ For example, "get robe" involves:
 
 ## Effect System
 
-The effect system allows actions to modify what other actions do:
+Effects are composed using an algebra with `andThen` (sequential) and `alongside` (parallel) operators. The `buildEffects` function constructs the effect computation that contributes to `topLevel`:
 
-- Effects are created during world building and linked to specific entities
-- When trigger actions execute (e.g., "open eyes"), effects modify action mappings
-- Subsequent actions use the modified mappings, enabling different behaviors
+```haskell
+buildEffects $
+  buildEffect key1 target1 effect1 `alongside`
+  buildEffect key2 target2 effect2 `andThen`
+  buildEffect key3 target3 effect3
+```
 
-This creates dynamic gameplay where the same command can produce different results based on previous actions.
+Effects link `ActionEffectKey`s to entities through the `HasEffect` typeclass, enabling compositional effect registration during world building.
 
 ## World Building DSL
 
@@ -72,7 +82,7 @@ Games are constructed using a domain-specific language that handles:
 - **Entity Declaration**: Creating GIDs for locations, objects, and actions
 - **Behavior Assignment**: Linking actions to entities through management keys
 - **Spatial Relationships**: Defining containment and support relationships
-- **Effect Registration**: Connecting trigger actions to behavioral changes
+- **Effect Registration**: Linking `ActionEffectKey`s to specific effects in the registry
 
 The DSL ensures consistent world construction while maintaining type safety.
 
@@ -81,7 +91,7 @@ The DSL ensures consistent world construction while maintaining type safety.
 - **Type Safety**: Architectural constraints are enforced at compile time
 - **Modular Design**: Clear separation between action discovery, constraint refinement, and effect processing  
 - **Multi-Entity Coordination**: Complex actions naturally decompose into entity-specific responsibilities
-- **Dynamic Behavior**: Effect system enables rich, stateful gameplay mechanics
+- **Dynamic Behavior**: Direct effect key mapping enables rich, stateful gameplay mechanics with computational effects
 - **Testability**: End-to-end scenarios validate complete action flows from input to state changes
 
 The result is an interactive fiction engine that combines rigorous architecture with practical gameplay mechanics, ensuring both correctness and extensibility.
