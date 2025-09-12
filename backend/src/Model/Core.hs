@@ -193,8 +193,9 @@ instance MonadTrans GameComputation where
 
 -- Action function types
 type ImplicitStimulusActionF :: Type
-newtype ImplicitStimulusActionF = ImplicitStimulusActionF
-  { _implicitStimulusAction :: Player -> Location -> GameComputation Identity () }
+data ImplicitStimulusActionF
+  = PlayerImplicitStimulusActionF (GameComputation Identity ())
+  | CannotImplicitStimulusActionF (GameComputation Identity ())
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
@@ -247,16 +248,14 @@ data ContainerAccessActionF
   | CannotAccessF          (GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
-newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: Set ActionEffectKey
-                              -> [SystemEffectKey]
-                              -> ActionEffectMap
-                              -> SystemEffectRegistry
-                              -> GameComputation Identity () }
+data SomaticAccessActionF
+  = PlayerSomaticAccessActionF (Set ActionEffectKey -> [SystemEffectKey] -> ActionEffectMap -> SystemEffectRegistry -> GameComputation Identity ())
+  | CannotSomaticAccessF (GameComputation Identity ())
 
 type PosturalActionF :: Type
-newtype PosturalActionF = PosturalActionF
-  { _positivePosturalAction :: Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity () }
+data PosturalActionF
+  = PlayerPosturalActionF (Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  | CannotPosturalActionF (GameComputation Identity ())
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
@@ -288,12 +287,9 @@ data AcquisitionActionF
   | NotGettableF (GameComputation Identity ())
 
 type ConsumptionActionF :: Type
-newtype ConsumptionActionF = ConsumptionActionF
-  { _consumptionAction :: GID Object
-                            -> Set ActionEffectKey
-                            -> ActionEffectMap
-                            -> ConsumptionVerbPhrase
-                            -> GameComputation Identity () }
+data ConsumptionActionF
+  = PlayerConsumptionActionF (GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
+  | CannotConsumeF (GameComputation Identity ())
 
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb

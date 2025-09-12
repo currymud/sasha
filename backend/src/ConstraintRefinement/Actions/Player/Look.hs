@@ -9,7 +9,8 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
-import           GameState                     (getObjectM, modifyNarration,
+import           GameState                     (getObjectM, getPlayerLocationM,
+                                                getPlayerM, modifyNarration,
                                                 updateActionConsequence)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
@@ -23,7 +24,7 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
                                                 GameComputation,
                                                 GameState (_world),
-                                                ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (PlayerImplicitStimulusActionF, CannotImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
@@ -154,9 +155,12 @@ getContainedObjects objGID spatialMap =
              oid <- Data.Set.toList oidSet]
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
-isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
+isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
   where
-    actionEnabled player loc = do
+    actionEnabled :: GameComputation Identity ()
+    actionEnabled = do
+      player <- getPlayerM
+      loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
         Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in location map"
@@ -164,7 +168,8 @@ isvActionEnabled isv = ImplicitStimulusActionF actionEnabled
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (ImplicitStimulusActionF actionFunc) -> actionFunc player loc
+            Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
+            Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc
 
 dsvActionEnabled :: DirectionalStimulusActionF
 dsvActionEnabled = PlayerDirectionalStimulusActionF lookit

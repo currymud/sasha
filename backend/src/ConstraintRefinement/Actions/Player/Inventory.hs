@@ -8,7 +8,7 @@ import           GameState              (getInventoryObjectsM, getObjectM,
                                          modifyNarration,
                                          updateActionConsequence)
 import           Model.Core             (GameComputation,
-                                         ImplicitStimulusActionF (ImplicitStimulusActionF),
+                                         ImplicitStimulusActionF (PlayerImplicitStimulusActionF, CannotImplicitStimulusActionF),
                                          Object (_shortName))
 import           Model.GID              (GID)
 
@@ -25,7 +25,7 @@ defaultFlavorText = InventoryFlavorText
   }
 
 notEvenInventoryF :: ImplicitStimulusActionF
-notEvenInventoryF = ImplicitStimulusActionF (const (const notEvenInventory'))
+notEvenInventoryF = CannotImplicitStimulusActionF notEvenInventory'
   where
     notEvenInventory' :: GameComputation Identity ()
     notEvenInventory'  = do
@@ -35,10 +35,10 @@ defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
 
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
-inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
+inventoryLookF (InventoryFlavorText {..}) = PlayerImplicitStimulusActionF inventoryLook'
   where
-    inventoryLook' :: a -> b -> GameComputation Identity ()
-    inventoryLook' _player _location = do
+    inventoryLook' :: GameComputation Identity ()
+    inventoryLook' = do
       inventoryObjects <- getInventoryObjectsM
       case inventoryObjects of
         [] -> do
