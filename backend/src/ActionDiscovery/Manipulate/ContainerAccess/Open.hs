@@ -7,7 +7,7 @@ import           GameState                     (getPlayerLocationM, getPlayerM,
                                                 modifyNarration,
                                                 updateActionConsequence)
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
-                                                processEffectsFromRegistry)
+                                                processEffects)
 import           Model.Core                    (ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
@@ -50,4 +50,4 @@ finalizeContainerAccess :: [EffectKey]
 finalizeContainerAccess effectKeys objectActionF = do
  (ContainerAccessResult objectEffects) <- objectActionF
  let allEffects = effectKeys <> objectEffects
- mapM_ (\(ActionKey k) -> processEffectsFromRegistry k) allEffects
+ processEffects allEffects

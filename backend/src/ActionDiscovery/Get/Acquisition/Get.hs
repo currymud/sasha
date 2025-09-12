@@ -13,12 +13,12 @@ import qualified Data.Text
 import           GameState                          (getPlayerLocationM,
                                                      getPlayerM)
 import           GameState.ActionManagement         (lookupAcquisitionPhrase,
-                                                     processEffectsFromRegistry)
+                                                     processEffects)
 import           Model.Core                         (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      EffectKey (ActionKey),
                                                      GameComputation,
                                                      GameState (_world),
@@ -100,5 +100,5 @@ finalizeAcquisition effectKeys containerGID objectGID objectActionF containerAct
        (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
        let allEffects = effectKeys <> objectEffects <> containerEffects
-       mapM_ (\(ActionKey k) -> processEffectsFromRegistry k) allEffects >> containerRemoveObjectF >> playerGetObjectF
+       processEffects allEffects >> containerRemoveObjectF >> playerGetObjectF
 
