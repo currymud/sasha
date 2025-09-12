@@ -5,6 +5,7 @@ module Grammar.Parser.Rules.Composites.Verbs
   , imperativeRules
   , consumptionVerbPhraseRules
   , posturalVerbPhraseRules
+  , somaticAccessVerbPhraseRules
   ) where
 import           Data.Text                                               (Text)
 import           GHC.Base                                                (Alternative ((<|>)))
@@ -58,7 +59,8 @@ import           Model.Parser.Composites.Verbs                           (Acquis
                                                                           ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase),
                                                                           Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
                                                                           PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
-                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
+                                                                          SomaticStimulusVerbPhrase (SomaticStimulusVerbPhrase),
+                                                                          StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb))
 import           Text.Earley.Grammar                                     (Grammar,
                                                                           Prod,
                                                                           rule)
@@ -69,14 +71,11 @@ stimulusVerbPhraseRules = do
   directionalStimulusMarker <- directionalStimulusMarkerRule
   directionalStimulusVerb <- parseRule directionalStimulusVerbs DirectionalStimulusVerb
   directionalStimulusNoun <- parseRule directionalStimulii DirectionalStimulus
-  somaticAccessVerb <- parseRule somaticAccessVerbs SomaticAccessVerb
-  somaticStimulus <- parseRule somaticStimulii SomaticStimulus
   determiner <- parseRule determiners Determiner
   container <- parseRule containers Container
   adj <- parseRule adjectives Adjective
   containerPhrase <- containerPhraseRules determiner adj container
   directionalStimulusNounPhrase <- directionalStimulusNounPhraseRules determiner adj directionalStimulusMarker directionalStimulusNoun
-  somaticStimulusNounPhrase <- somaticStimulusNounPhraseRules determiner adj somaticStimulus
   rule $ ImplicitStimulusVerb <$> implicitStimulusVerb
            <|> DirectStimulusVerbPhrase
              <$> directionalStimulusVerb
@@ -84,10 +83,20 @@ stimulusVerbPhraseRules = do
            <|> DirectionalStimulusContainmentPhrase
                  <$> directionalStimulusVerb
                  <*> containerPhrase
-           <|> SomaticStimulusVerbPhrase
-             <$> somaticAccessVerb
-             <*> somaticStimulusNounPhrase
 
+somaticAccessVerbPhraseRules :: Grammar r (Prod r Text Lexeme SomaticStimulusVerbPhrase)
+somaticAccessVerbPhraseRules = do
+  determiner <- parseRule determiners Determiner
+  adj <- parseRule adjectives Adjective
+  somaticAccessVerb <- parseRule somaticAccessVerbs SomaticAccessVerb
+  somaticStimulus <- parseRule somaticStimulii SomaticStimulus
+  somaticStimulusNounPhrase <- somaticStimulusNounPhraseRules
+                                 determiner
+                                 adj
+                                 somaticStimulus
+  rule $ SomaticStimulusVerbPhrase
+           <$> somaticAccessVerb
+           <*> somaticStimulusNounPhrase
 containerVerbPhraseRules :: Grammar r (Prod r Text Lexeme ContainerAccessVerbPhrase)
 containerVerbPhraseRules = do
   determiner <- parseRule determiners Determiner

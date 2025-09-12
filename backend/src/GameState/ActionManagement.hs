@@ -9,10 +9,11 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text)
 import qualified Data.Text                     as Text
-import           GameState                     (getInventoryObjectsM, getObjectM,
-                                                modifyLocationM, modifyObjectM,
-                                                modifyPlayerM)
+import           GameState                     (getInventoryObjectsM,
+                                                getObjectM, modifyLocationM,
+                                                modifyObjectM, modifyPlayerM)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
+import           GameState.Perception          (youSeeM)
 import           Model.Core                    (AcquisitionActionF,
                                                 ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
@@ -23,13 +24,13 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect (ActionManagementEffect, FieldUpdateEffect, InventoryNarrationEffect, NarrationEffect),
-                                                InventoryFlavorText (_emptyFlavorText, _inventoryFlavorText),
+                                                Effect (ActionManagementEffect, FieldUpdateEffect, InventoryNarrationEffect, NarrationEffect, SomaticNarrationEffect),
                                                 EffectTargetKey (LocationKey, ObjectKey, PlayerKey),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_effectRegistry, _narration, _player, _systemEffectRegistry),
                                                 ImplicitStimulusActionF,
+                                                InventoryFlavorText (_emptyFlavorText, _inventoryFlavorText),
                                                 Location (_locationActionManagement),
                                                 Narration (_actionConsequence, _playerAction),
                                                 NarrationOperation (ActionConsequenceNarration, PlayerActionNarration),
@@ -246,6 +247,10 @@ processEffect (LocationKey _) (InventoryNarrationEffect flavorText) = do
           fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
       processNarrationEffect (ActionConsequenceNarration fullMessage)
 
+-- Location-triggered somatic narration effects (perception)
+processEffect (LocationKey _) SomaticNarrationEffect =
+  youSeeM
+
 -- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
@@ -350,6 +355,10 @@ processEffect (ObjectKey _) (InventoryNarrationEffect flavorText) = do
       let itemsList = Text.intercalate ", " objectNames
           fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
       processNarrationEffect (ActionConsequenceNarration fullMessage)
+
+-- Object-triggered somatic narration effects (perception)
+processEffect (ObjectKey _) SomaticNarrationEffect =
+  youSeeM
 
 -- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -518,6 +527,9 @@ processEffect (PlayerKey _) (InventoryNarrationEffect flavorText) = do
       let itemsList = Text.intercalate ", " objectNames
           fullMessage = _inventoryFlavorText flavorText <> " You are carrying: " <> itemsList <> "."
       processNarrationEffect (ActionConsequenceNarration fullMessage)
+
+-- Player-triggered somatic narration effects (perception)
+processEffect (PlayerKey _) SomaticNarrationEffect =  youSeeM
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =

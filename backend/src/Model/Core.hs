@@ -196,14 +196,15 @@ instance MonadTrans GameComputation where
   lift = GameComputation . lift . lift . lift
 
 type ImplicitStimulusParameters :: Type
-type ImplicitStimulusParameters = Set ActionEffectKey
+type ImplicitStimulusParameters = ActionEffectKey
+                                    -> ActionEffectMap
                                     -> GameComputation Identity ()
 
 -- Action function types
 type ImplicitStimulusActionF :: Type
 data ImplicitStimulusActionF
-  = ImplicitStimulusActionF ImplicitStimulusParameters
-  | CannotSeeImplicitF  (Set ActionEffectKey -> (GameComputation Identity ()))
+  = ImplicitStimulusActionF (ActionEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  | CannotSeeImplicitF  (ActionEffectKey -> ActionEffectMap -> (GameComputation Identity ()))
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
@@ -253,13 +254,11 @@ data ContainerAccessActionF
   | InstrumentContainerAccessF (GID Object -> GameComputation Identity InstrumentAccessResult)
   | CannotAccessF          (GameComputation Identity ())
 
+-- This only allows "open eyes" and "close eyes" for now
 type SomaticAccessActionF :: Type
-newtype SomaticAccessActionF = SomaticAccessActionF
-  { _somaticAccessAction :: Set EffectTargetKey
-                              -> [SystemEffectKey]
-                              -> ActionEffectMap
-                              -> SystemEffectRegistry
-                              -> GameComputation Identity () }
+data SomaticAccessActionF
+  = SomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotSomaticAccessF (ActionEffectKey -> GameComputation Identity ())
 
 type PosturalActionF :: Type
 newtype PosturalActionF = PosturalActionF
@@ -433,6 +432,7 @@ data Effect
   | FieldUpdateEffect FieldUpdateOperation
   | NarrationEffect NarrationOperation
   | InventoryNarrationEffect InventoryFlavorText
+  | SomaticNarrationEffect
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type

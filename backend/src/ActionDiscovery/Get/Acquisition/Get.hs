@@ -7,8 +7,7 @@ import           Control.Monad.Identity             (Identity)
 import           Control.Monad.Reader.Class         (asks)
 import           Control.Monad.State                (gets)
 import qualified Data.Map.Strict
-import           Data.Set                           (Set, elemAt, fromList,
-                                                     null, toList)
+import           Data.Set                           (Set, elemAt, null, toList)
 import qualified Data.Text
 import           GameState                          (getPlayerLocationM,
                                                      getPlayerM)

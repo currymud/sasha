@@ -216,6 +216,9 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `andThen`
     
+    -- Perception narration triggered by opening eyes
+    buildEffect (SomaticAccessActionKey openEyesGID) PlayerKey SomaticNarrationEffect `andThen`
+    
     -- Success narrations - triggered when actions succeed  
     buildEffect (AcquisitionalActionKey getRobeFGID) robeGID pickUpNarr
 

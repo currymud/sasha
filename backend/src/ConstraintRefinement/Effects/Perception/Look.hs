@@ -5,8 +5,4 @@ import           GameState.Perception (youSeeM)
 import           Model.Core           (SystemEffect (PerceptionSystemEffect))
 
 youSeeMEffect :: SystemEffect
-youSeeMEffect = PerceptionSystemEffect youSeeMAction
-  where
-    youSeeMAction = do
-      effectKeys <- youSeeM
-      processEffects (Data.Set.toList effectKeys)
+youSeeMEffect = PerceptionSystemEffect youSeeM

@@ -1,17 +1,13 @@
 module ConstraintRefinement.Actions.Player.Inventory (defaultInventoryLookF, notEvenInventoryF) where
 
 import           Control.Monad.Identity     (Identity)
-import           Data.Kind                  (Type)
+import qualified Data.List
 import           Data.Set                   (Set, toList)
-import           Data.Text                  (Text)
-import qualified Data.Text                  as Text
-import           GameState.ActionManagement (processEffects, processInventoryNarration)
-import           Model.Core                 (ActionEffectKey,
-                                             GameComputation,
+import           GameState.ActionManagement (processEffects,
+                                             processInventoryNarration)
+import           Model.Core                 (ActionEffectKey, GameComputation,
                                              ImplicitStimulusActionF (ImplicitStimulusActionF),
                                              InventoryFlavorText (InventoryFlavorText, _emptyFlavorText, _inventoryFlavorText))
-import           Model.GID                  (GID)
-
 
 defaultFlavorText :: InventoryFlavorText
 defaultFlavorText = InventoryFlavorText
@@ -22,9 +18,9 @@ defaultFlavorText = InventoryFlavorText
 notEvenInventoryF :: ImplicitStimulusActionF
 notEvenInventoryF = ImplicitStimulusActionF notEvenInventory'
   where
-    notEvenInventory' :: Set ActionEffectKey -> GameComputation Identity ()
-    notEvenInventory' effectKeys = do
-      processEffects (Data.Set.toList effectKeys)
+    notEvenInventory' :: ActionEffectKey -> GameComputation Identity ()
+    notEvenInventory' effectKey = do
+      processEffects (Data.List.singleton effectKey)
       -- Use the pre-defined empty inventory narration
       processInventoryNarration (InventoryFlavorText "You've got nothing but a terrible headache and a slight pang of regret." "")
 
@@ -34,7 +30,7 @@ defaultInventoryLookF = inventoryLookF defaultFlavorText
 inventoryLookF :: InventoryFlavorText -> ImplicitStimulusActionF
 inventoryLookF (InventoryFlavorText {..}) = ImplicitStimulusActionF inventoryLook'
   where
-    inventoryLook' :: Set ActionEffectKey -> GameComputation Identity ()
-    inventoryLook' effectKeys  = do
-      processEffects (Data.Set.toList effectKeys)
+    inventoryLook' :: ActionEffectKey -> GameComputation Identity ()
+    inventoryLook' effectKey  = do
+      processEffects (Data.List.singleton effectKey)
       processInventoryNarration (InventoryFlavorText _emptyFlavorText _inventoryFlavorText)

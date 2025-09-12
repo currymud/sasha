@@ -57,8 +57,17 @@ data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
   | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusNounPhrase
   | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb ContainerPhrase
-  | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
+--  | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
+
+type SomaticStimulusVerbPhrase :: Type
+data SomaticStimulusVerbPhrase
+  = SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
+  deriving stock (Show, Eq, Ord, Generic)
+
+instance ToText SomaticStimulusVerbPhrase where
+  toText (SomaticStimulusVerbPhrase verb nounPhrase) =
+    toText verb <> " " <> toText nounPhrase
 
 type ConsumptionVerbPhrase :: Type
 data ConsumptionVerbPhrase
@@ -88,8 +97,6 @@ instance ToText StimulusVerbPhrase where
     toText verb <> " " <> toText nounPhrase
   toText (DirectionalStimulusContainmentPhrase verb containerPhrase) =
     toText verb <> " " <> toText containerPhrase
-  toText (SomaticStimulusVerbPhrase verb nounPhrase) =
-    toText verb <> " " <> toText nounPhrase
 
 type Imperative :: Type
 data Imperative
@@ -99,6 +106,7 @@ data Imperative
   | ConsumptionVerbPhrase' ConsumptionVerbPhrase
   | AcquisitionVerbPhrase' AcquisitionVerbPhrase
   | PosturalVerbPhrase PosturalVerbPhrase
+  | SomaticStimulusVerbPhrase' SomaticStimulusVerbPhrase
   deriving stock (Show, Eq, Ord, Generic)
 
 instance ToText Imperative where
@@ -113,4 +121,6 @@ instance ToText Imperative where
   toText (AcquisitionVerbPhrase' verbPhrase) =
     toText verbPhrase
   toText (PosturalVerbPhrase verbPhrase) =
+    toText verbPhrase
+  toText (SomaticStimulusVerbPhrase' verbPhrase) =
     toText verbPhrase

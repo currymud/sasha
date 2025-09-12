@@ -37,11 +37,11 @@ manageImplicitStimulusProcess isv = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
         Just (ImplicitStimulusActionF actionF) -> do
-          let effectKeys = Data.Set.singleton (ImplicitStimulusActionKey actionGID)
-          actionF effectKeys
+          let effectKey = ImplicitStimulusActionKey actionGID
+          actionF effectKey
         Just (CannotSeeImplicitF actionF) -> do
-          let effectKeys = Data.Set.singleton (ImplicitStimulusActionKey actionGID)
-          actionF effectKeys
+          let effectKey = ImplicitStimulusActionKey actionGID
+          actionF effectKey
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do

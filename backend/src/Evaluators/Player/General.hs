@@ -12,9 +12,9 @@ import           Control.Monad.Identity                          (Identity)
 import           Model.Core                                      (GameComputation)
 import           Model.Parser                                    (Sentence (Imperative))
 import           Model.Parser.Composites.Verbs                   (AcquisitionVerbPhrase,
-                                                                  Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
+                                                                  Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, SomaticStimulusVerbPhrase', StimulusVerbPhrase),
                                                                   PosturalVerbPhrase,
-                                                                  StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
+                                                                  StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb))
 eval :: Sentence -> GameComputation Identity ()
 eval (Imperative imperative) = evalImperative imperative
 
@@ -28,12 +28,14 @@ evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =
 evalImperative (AcquisitionVerbPhrase' acquisitionVerbPhrase) =
   evalAcquisitionVerbPhrase acquisitionVerbPhrase
 evalImperative (PosturalVerbPhrase postureVerbPhrase) = evalPosturalVerbPhrase postureVerbPhrase -- Posture verbs are not implemented yet
+evalImperative (SomaticStimulusVerbPhrase' somaticStimulusVerbPhrase) =
+    manageSomaticAccessProcess somaticStimulusVerbPhrase
 
 evalStimulusVerbPhrase :: StimulusVerbPhrase -> GameComputation Identity ()
 evalStimulusVerbPhrase (ImplicitStimulusVerb isv) = manageImplicitStimulusProcess isv
 evalStimulusVerbPhrase (DirectStimulusVerbPhrase dsv dsp) = manageDirectionalStimulusProcess dsv dsp
 evalStimulusVerbPhrase (DirectionalStimulusContainmentPhrase dsv cp) = manageContainerDirectionalStimulusProcess dsv cp
-evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessProcess sav
+-- evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessProcess sav
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()
 evalAcquisitionVerbPhrase = manageAcquisitionProcess

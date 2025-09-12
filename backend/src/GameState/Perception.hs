@@ -208,9 +208,7 @@ modifyPerceptionMapM perceptionMapF = do
       updatedWorld = world { _perceptionMap = updatedPerceptionMap }
   modify' (\gs -> gs { _world = updatedWorld })
 
--- youSeem needs to generate a Narration effect
--- instead of using modifyNarration
-youSeeM :: GameComputation Identity (Set ActionEffectKey)
+youSeeM :: GameComputation Identity ()
 youSeeM = do
   trace "youSeeM: Starting execution" $ pure ()
 
@@ -227,7 +225,6 @@ youSeeM = do
   unless (null descriptions) $ do
     let seeText = "You see: " <> Data.Text.intercalate ", " descriptions
     modifyNarration $ updateActionConsequence seeText
-  pure Data.Set.empty -- Placeholder for actual effect keys
   where
     isContainedOrSupported (ContainedIn _) = True
     isContainedOrSupported (SupportedBy _) = True
