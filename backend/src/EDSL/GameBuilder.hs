@@ -446,7 +446,7 @@ interpretDSL (LinkActionKeyToSystemEffect actionKey sysEffectKey) = do
 
 interpretDSL (LinkEffectToObject actionKey objGID effect) = do
   state <- get
-  let effectKey = ObjectKey objGID
+  let effectKey = ObjectKey objGID actionKey
       currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
       ActionEffectMap currentMap = currentEffectMap
       updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
@@ -455,7 +455,7 @@ interpretDSL (LinkEffectToObject actionKey objGID effect) = do
 
 interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
   state <- get
-  let effectKey = LocationKey locGID
+  let effectKey = LocationKey locGID actionKey
       currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
       ActionEffectMap currentMap = currentEffectMap
       updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
@@ -464,7 +464,7 @@ interpretDSL (LinkEffectToLocation actionKey locGID effect) = do
 
 interpretDSL (LinkEffectToPlayer actionKey playerKey effect) = do
   state <- get
-  let effectKey = PlayerKey playerKey
+  let effectKey = PlayerKey playerKey actionKey
       currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
       ActionEffectMap currentMap = currentEffectMap
       updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
@@ -473,7 +473,7 @@ interpretDSL (LinkEffectToPlayer actionKey playerKey effect) = do
 
 interpretDSL (LinkFieldEffectToObject actionKey objGID effect) = do
  state <- get
- let effectKey = ObjectKey objGID
+ let effectKey = ObjectKey objGID actionKey
      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
      ActionEffectMap currentMap = currentEffectMap
      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton effect) currentMap
@@ -485,7 +485,7 @@ interpretDSL FinalizeGameState = do
 
 interpretDSL (LinkFieldEffectToLocation actionKey locGID fieldEffect) = do
  state <- get
- let effectKey = LocationKey locGID
+ let effectKey = LocationKey locGID actionKey
      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
      ActionEffectMap currentMap = currentEffectMap
      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton fieldEffect) currentMap
@@ -494,7 +494,7 @@ interpretDSL (LinkFieldEffectToLocation actionKey locGID fieldEffect) = do
 
 interpretDSL (LinkFieldEffectToPlayer actionKey playerKey fieldEffect) = do
  state <- get
- let effectKey = PlayerKey playerKey
+ let effectKey = PlayerKey playerKey actionKey
      currentEffectMap = Data.Map.Strict.findWithDefault (ActionEffectMap mempty) actionKey (_effectRegistry (_gameState state))
      ActionEffectMap currentMap = currentEffectMap
      updatedMap = Data.Map.Strict.insertWith Data.Set.union effectKey (Data.Set.singleton fieldEffect) currentMap

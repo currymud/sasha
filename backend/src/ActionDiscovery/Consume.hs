@@ -34,16 +34,15 @@ manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
         Nothing -> error "Programmer Error: No consumption action found for GID"
         Just (PlayerConsumptionActionF actionFunc) -> do
           lid <- _location <$> getPlayerM
-          objectActionKeys <- getLocationObjectIDsM lid
-
           -- Build actionEffectKeys for the action function
           let actionKey = ConsumptionActionKey actionGID
+          objectActionKeys <- getLocationObjectIDsM lid actionKey
           maybeEffectMap <- lookupActionEffectsInRegistry actionKey
           case maybeEffectMap of
             Nothing -> error "Programmer Error: No effects registered for consumption action"
             Just (ActionEffectMap effectMap) -> do
-              let locationKeys = Data.Set.singleton (LocationKey lid)
-                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+              let locationKeys = Data.Set.singleton (LocationKey lid actionKey)
+                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _ _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [locationKeys, objectActionKeys, playerKeys]
 
               -- Parse consumption phrase to find target object

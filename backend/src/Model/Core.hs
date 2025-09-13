@@ -383,9 +383,9 @@ data PlayerKey
 
 type TargetEffectKey :: Type
 data TargetEffectKey
-  = LocationKey (GID Location)
-  | ObjectKey (GID Object)
-  | PlayerKey PlayerKey
+  = LocationKey (GID Location) ActionEffectKey
+  | ObjectKey (GID Object) ActionEffectKey
+  | PlayerKey PlayerKey ActionEffectKey
   deriving stock (Show, Eq, Ord)
 
 type SystemEffectKey :: Type
@@ -401,9 +401,7 @@ data FieldUpdateOperation
   | ObjectDescription (GID Object) Text
   | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
-  | TargetEffectKeyLocationUpdate TargetEffectKey (GID Location)
-  | TargetEffectKeyObjectUpdate TargetEffectKey (GID Object)
-  | TargetEffectKeyPlayerUpdate TargetEffectKey PlayerKey
+  | TargetEffectKeyUpdate TargetEffectKey ActionEffectKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -438,7 +436,7 @@ type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEf
 type SystemEffectKeysRegistry :: Type
 type SystemEffectKeysRegistry = Map ActionEffectKey [SystemEffectKey]
 
-type TargetEffectKeyRegistry :: Type  
+type TargetEffectKeyRegistry :: Type
 type TargetEffectKeyRegistry = Map TargetEffectKey TargetEffectKey
 
 type SystemEffectMap :: Type
@@ -564,14 +562,14 @@ data Narration = Narration
 
 type GameState :: Type
 data GameState = GameState
-  { _world                  :: World
-  , _player                 :: Player
-  , _narration              :: Narration
-  , _evaluation             :: Evaluator
-  , _effectRegistry         :: EffectRegistry
-  , _actionSystemEffectKeys :: SystemEffectKeysRegistry
-  , _triggerRegistry        :: TriggerRegistry
-  , _systemEffectRegistry   :: SystemEffectRegistry
+  { _world                   :: World
+  , _player                  :: Player
+  , _narration               :: Narration
+  , _evaluation              :: Evaluator
+  , _effectRegistry          :: EffectRegistry
+  , _actionSystemEffectKeys  :: SystemEffectKeysRegistry
+  , _triggerRegistry         :: TriggerRegistry
+  , _systemEffectRegistry    :: SystemEffectRegistry
   , _targetEffectKeyRegistry :: TargetEffectKeyRegistry
   }
 
@@ -600,9 +598,9 @@ instance Arbitrary Object where
 -- TargetEffectKey instances
 instance Arbitrary TargetEffectKey where
   arbitrary = oneof
-    [ LocationKey <$> arbitrary
-    , ObjectKey <$> arbitrary
-    , PlayerKey <$> arbitrary
+    [ LocationKey <$> arbitrary <*> arbitrary
+    , ObjectKey <$> arbitrary <*> arbitrary
+    , PlayerKey <$> arbitrary <*> arbitrary
     ]
 
 -- PlayerKey instances

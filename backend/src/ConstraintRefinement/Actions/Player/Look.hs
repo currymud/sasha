@@ -160,7 +160,7 @@ isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
   where
     actionEnabled :: ActionEffectKey -> ImplicitStimulusActionMap -> GameComputation Identity ()
-    actionEnabled _actionKey _actionMap = do
+    actionEnabled pActionKey pActionMap = do
       loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
@@ -169,12 +169,14 @@ isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (PlayerImplicitStimulusActionF actionFunc) ->
-              let actionKey = ImplicitStimulusActionKey actionGID
-              in actionFunc actionKey actionMap'
-            Just (CannotImplicitStimulusActionF actionFunc) ->
-              let actionKey = ImplicitStimulusActionKey actionGID
-              in actionFunc actionKey actionMap'
+            Just isvAction -> do
+              case isvAction of
+                (PlayerImplicitStimulusActionF actionFunc) ->
+                  let actionKey = ImplicitStimulusActionKey actionGID
+                  in actionFunc actionKey actionMap'
+                (CannotImplicitStimulusActionF actionFunc) ->
+                  let actionKey = ImplicitStimulusActionKey actionGID
+                  in actionFunc actionKey actionMap'
 
 dsvActionEnabled :: DirectionalStimulusActionF
 dsvActionEnabled = PlayerDirectionalStimulusActionF lookit

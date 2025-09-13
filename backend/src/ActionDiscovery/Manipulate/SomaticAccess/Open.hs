@@ -35,10 +35,10 @@ manageSomaticAccessProcess sav = do
             Nothing -> error "Programmer Error: No effects registered for somatic access action"
             Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
-              objectActionKeys <- getLocationObjectIDsM lid
-              let playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+              objectActionKeys <- getLocationObjectIDsM lid actionKey
+              let playerKeys = Data.Set.fromList [key | key@(PlayerKey _ _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.unions [
-                    Data.Set.singleton (LocationKey lid),
+                    Data.Set.singleton (LocationKey lid actionKey),
                     objectActionKeys,
                     playerKeys
                     ]

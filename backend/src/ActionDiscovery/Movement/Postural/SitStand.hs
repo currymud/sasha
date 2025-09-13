@@ -37,10 +37,10 @@ managePosturalProcess posturalPhrase = do
             Nothing -> error "Programmer Error: No effects registered for postural action"
             Just (ActionEffectMap effectMap) -> do
               lid <- _location <$> getPlayerM
-              objectActionKeys <- getLocationObjectIDsM lid
+              objectActionKeys <- getLocationObjectIDsM lid actionKey
               -- Build actionEffectKeys following existing pattern
-              let locationKeys = Data.Set.insert (LocationKey lid) objectActionKeys
-                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _) <- Data.Map.Strict.keys effectMap]
+              let locationKeys = Data.Set.insert (LocationKey lid actionKey) objectActionKeys
+                  playerKeys = Data.Set.fromList [key | key@(PlayerKey _ _) <- Data.Map.Strict.keys effectMap]
                   allActionKeys = Data.Set.union locationKeys playerKeys
               actionFunc allActionKeys (ActionEffectMap effectMap)
               -- Process effects from registry after action execution

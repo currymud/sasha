@@ -64,6 +64,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 GameComputation,
+                                                ActionEffectKey,
                                                 GameState (_narration, _player, _targetEffectKeyRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
@@ -291,13 +292,13 @@ getObjectsBySpatialRelationship targetRelationship = do
 getInventoryObjectsM :: GameComputation Identity [GID Object]
 getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
 
-getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set TargetEffectKey)
-getLocationObjectIDsM lid = do
+getLocationObjectIDsM :: GID Location -> ActionEffectKey -> GameComputation Identity (Set TargetEffectKey)
+getLocationObjectIDsM lid actionKey = do
   location <- getLocationM lid
   let objectSemanticMap = _objectSemanticMap location
       objectGIDSets = Data.Map.Strict.elems objectSemanticMap
       allObjectGIDs = concatMap Data.Set.toList objectGIDSets
-  pure $ Data.Set.fromList (map ObjectKey allObjectGIDs)
+  pure $ Data.Set.fromList (map (`ObjectKey` actionKey) allObjectGIDs)
 
 changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
 changeImplicit verb newActionGID = do
