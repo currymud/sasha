@@ -89,8 +89,8 @@ Type families prevent mismatched verb-action pairings at compile time.
 ### 4. Ownership System → Effect System → Dynamic Dispatch
 **Ownership boundaries** control which effects can modify which entities:
 ```haskell
-linkEffectToPlayer :: ActionEffectKey -> PlayerKey -> Effect → only affects Player
-linkEffectToObject :: ActionEffectKey → GID Object → Effect → only affects Object
+linkEffectToPlayer :: TargetEffectKey -> PlayerKey -> Effect → only affects Player
+linkEffectToObject :: TargetEffectKey → GID Object → Effect → only affects Object
 ```
 
 **Effect system** processes these ownership-constrained effects:

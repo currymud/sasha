@@ -72,7 +72,7 @@ module Model.Core
   , Evaluator(..)
   , PlayerKey(..)
   , EffectActionKey(..)
-  , ActionEffectKey(..)
+  , TargetEffectKey(..)
   , SystemEffectKey(..)
   , Effect(..)
   , SystemEffect(..)
@@ -249,12 +249,12 @@ data ContainerAccessActionF
 
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
-  = PlayerSomaticAccessActionF (Set ActionEffectKey -> [SystemEffectKey] -> ActionEffectMap -> SystemEffectRegistry -> GameComputation Identity ())
+  = PlayerSomaticAccessActionF (Set TargetEffectKey -> [SystemEffectKey] -> ActionEffectMap -> SystemEffectRegistry -> GameComputation Identity ())
   | CannotSomaticAccessF (GameComputation Identity ())
 
 type PosturalActionF :: Type
 data PosturalActionF
-  = PlayerPosturalActionF (Set ActionEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  = PlayerPosturalActionF (Set TargetEffectKey -> ActionEffectMap -> GameComputation Identity ())
   | CannotPosturalActionF (GameComputation Identity ())
 
 type CoordinationResult :: Type
@@ -288,7 +288,7 @@ data AcquisitionActionF
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF
-  = PlayerConsumptionActionF (GID Object -> Set ActionEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
+  = PlayerConsumptionActionF (GID Object -> Set TargetEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
   | CannotConsumeF (GameComputation Identity ())
 
 type ProcessImplicitStimulusVerb :: Type
@@ -380,8 +380,8 @@ data PlayerKey
   | PlayerKeyObject (GID Object)
   deriving stock (Show, Eq, Ord)
 
-type ActionEffectKey :: Type
-data ActionEffectKey
+type TargetEffectKey :: Type
+data TargetEffectKey
   = LocationKey (GID Location)
   | ObjectKey (GID Object)
   | PlayerKey PlayerKey
@@ -414,7 +414,7 @@ data SystemEffect
 
 type ActionEffectMap :: Type
 newtype ActionEffectMap = ActionEffectMap
-  { _actionEffectMap :: Map ActionEffectKey (Set Effect) }
+  { _actionEffectMap :: Map TargetEffectKey (Set Effect) }
   deriving stock (Show, Eq, Ord)
 
 type SystemEffectConfig :: Type
@@ -589,8 +589,8 @@ instance Arbitrary Location where
 instance Arbitrary Object where
   arbitrary = Object <$> arbitraryText <*> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
--- ActionEffectKey instances
-instance Arbitrary ActionEffectKey where
+-- TargetEffectKey instances
+instance Arbitrary TargetEffectKey where
   arbitrary = oneof
     [ LocationKey <$> arbitrary
     , ObjectKey <$> arbitrary
