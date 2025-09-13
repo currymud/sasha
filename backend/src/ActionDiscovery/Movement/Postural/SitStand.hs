@@ -14,7 +14,7 @@ import           Model.Core                    (TargetEffectKey (LocationKey, Pl
                                                 ActionKeyMap (_unActionKeyMap),
                                                 ActionMaps (_posturalActionMap),
                                                 Config (_actionMaps),
-                                                EffectActionKey (PosturalActionKey),
+                                                ActionEffectKey (PosturalActionKey),
                                                 GameComputation,
                                                 Player (_location, _playerActions),
                                                 PosturalActionF (CannotPosturalActionF, PlayerPosturalActionF))

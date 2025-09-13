@@ -7,7 +7,7 @@ import           Model.Core                                        (ActionManage
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
                                                                     ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys),
-                                                                    EffectActionKey (ContainerAccessActionKey),
+                                                                    ActionEffectKey (ContainerAccessActionKey),
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)

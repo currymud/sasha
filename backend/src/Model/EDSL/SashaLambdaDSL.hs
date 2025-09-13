@@ -10,7 +10,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect, EffectActionKey,
+                                                Effect, ActionEffectKey,
                                                 Evaluator, GameComputation,
                                                 GameState,
                                                 ImplicitStimulusActionF,
@@ -107,7 +107,7 @@ data SashaLambdaDSL :: Type -> Type where
   RegisterSpatial :: GID Object -> SpatialRelationship -> SashaLambdaDSL ()
   RegisterObjectToLocation :: GID Location -> GID Object -> NounKey -> SashaLambdaDSL ()
   RegisterSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
-  RegisterTrigger :: EffectActionKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
+  RegisterTrigger :: ActionEffectKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
@@ -120,14 +120,14 @@ data SashaLambdaDSL :: Type -> Type where
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
   CreateContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 
-  LinkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
-  LinkFieldEffectToLocation :: EffectActionKey -> GID Location -> Effect -> SashaLambdaDSL ()
-  LinkFieldEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
+  LinkFieldEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
+  LinkFieldEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
+  LinkFieldEffectToPlayer :: ActionEffectKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
 
-  LinkEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
-  LinkEffectToLocation :: EffectActionKey -> GID Location -> Effect -> SashaLambdaDSL ()
-  LinkEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
-  LinkActionKeyToSystemEffect :: EffectActionKey -> SystemEffectKey -> SashaLambdaDSL ()
+  LinkEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
+  LinkEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
+  LinkEffectToPlayer :: ActionEffectKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
+  LinkActionKeyToSystemEffect :: ActionEffectKey -> SystemEffectKey -> SashaLambdaDSL ()
   DisplayVisibleObjects :: SashaLambdaDSL (GameComputation Identity ())
   -- Final assembly
   FinalizeGameState :: SashaLambdaDSL GameState
@@ -257,16 +257,16 @@ createSomaticAccessEffect = CreateSomaticAccessEffect
 createContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 createContainerAccessEffect = CreateContainerAccessEffect
 
-linkEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
+linkEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
 linkEffectToObject = LinkEffectToObject
 
-linkEffectToLocation :: EffectActionKey -> GID Location -> Effect -> SashaLambdaDSL ()
+linkEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
 linkEffectToLocation = LinkEffectToLocation
 
-linkEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
+linkEffectToPlayer :: ActionEffectKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
 linkEffectToPlayer = LinkEffectToPlayer
 
-linkActionKeyToSystemEffect :: EffectActionKey -> SystemEffectKey -> SashaLambdaDSL ()
+linkActionKeyToSystemEffect :: ActionEffectKey -> SystemEffectKey -> SashaLambdaDSL ()
 linkActionKeyToSystemEffect = LinkActionKeyToSystemEffect
 
 finalizeGameState :: SashaLambdaDSL GameState
@@ -318,7 +318,7 @@ registerObjectToLocation = RegisterObjectToLocation
 registerSystemEffect :: SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
 registerSystemEffect = RegisterSystemEffect
 
-registerTrigger :: EffectActionKey
+registerTrigger :: ActionEffectKey
                      -> SystemEffectKey
                      -> GID SystemEffect
                      -> SystemEffectConfig
@@ -340,11 +340,11 @@ updateTitle = UpdateTitle
 updateLocation :: GID Location -> SashaLambdaDSL Effect
 updateLocation = UpdateLocation
 
-linkFieldEffectToObject :: EffectActionKey -> GID Object -> Effect -> SashaLambdaDSL ()
+linkFieldEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
 linkFieldEffectToObject = LinkFieldEffectToObject
 
-linkFieldEffectToLocation :: EffectActionKey -> GID Location -> Effect -> SashaLambdaDSL ()
+linkFieldEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
 linkFieldEffectToLocation = LinkFieldEffectToLocation
 
-linkFieldEffectToPlayer :: EffectActionKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
+linkFieldEffectToPlayer :: ActionEffectKey -> PlayerKey -> Effect -> SashaLambdaDSL ()
 linkFieldEffectToPlayer = LinkFieldEffectToPlayer

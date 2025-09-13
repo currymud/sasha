@@ -13,7 +13,7 @@ import           Model.Core                    (TargetEffectKey (LocationKey, Pl
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
-                                                EffectActionKey (ConsumptionActionKey),
+                                                ActionEffectKey (ConsumptionActionKey),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_location, _playerActions))

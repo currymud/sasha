@@ -59,7 +59,7 @@ location & withBehavior (makeBehavior isaLook implicitGID)
 **HasEffect** provides entity-agnostic effect linking:
 ```haskell
 class HasEffect a where
-  linkEffect :: EffectActionKey -> a -> Effect -> SashaLambdaDSL ()
+  linkEffect :: ActionEffectKey -> a -> Effect -> SashaLambdaDSL ()
 
 -- Same interface for all target types
 linkEffect triggerKey playerTarget effect

@@ -12,7 +12,7 @@ import           Model.Core                    (ActionMaps (_containerAccessActi
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                 ContainerAccessResult (ContainerAccessResult),
-                                                EffectActionKey (ContainerAccessActionKey),
+                                                ActionEffectKey (ContainerAccessActionKey),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
@@ -32,8 +32,8 @@ manageContainerAccessProcess cavp  = do
         Just (CannotAccessF actionF) -> actionF  -- Execute the failure action
         Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
         Just (PlayerContainerAccessF actionF) -> do
-          let effectActionKey = ContainerAccessActionKey actionGID
-          actionF effectActionKey objectSearchStrategy actionMap cavp finalizeContainerAccess
+          let actionEffectKey = ContainerAccessActionKey actionGID
+          actionF actionEffectKey objectSearchStrategy actionMap cavp finalizeContainerAccess
 
 -- | ToDo Clarification system. object identification assumes only one object in location matches nounkey.
 objectSearchStrategy :: SimpleAccessSearchStrategy
@@ -43,10 +43,10 @@ objectSearchStrategy nounkey = do
     Just objSet
       | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
     _ -> pure Nothing
-finalizeContainerAccess :: EffectActionKey
+finalizeContainerAccess :: ActionEffectKey
                         -> GameComputation Identity ContainerAccessResult
                         -> GameComputation Identity ()
-finalizeContainerAccess effectActionKey objectActionF = do
+finalizeContainerAccess actionEffectKey objectActionF = do
  (ContainerAccessResult objectEffects objectFieldEffects) <- objectActionF
- let allEffects = effectActionKey:(objectEffects <> objectFieldEffects)
+ let allEffects = actionEffectKey:(objectEffects <> objectFieldEffects)
  mapM_ processEffectsFromRegistry allEffects

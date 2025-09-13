@@ -21,7 +21,7 @@ import           Model.Actions.Results                            (AcquisitionRe
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey))
 import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
-                                                                   EffectActionKey,
+                                                                   ActionEffectKey,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
                                                                    GameState (_world),
@@ -47,7 +47,7 @@ getDeniedF = NotGettableF denied
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: EffectActionKey
+    getit :: ActionEffectKey
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase

@@ -13,7 +13,7 @@ import           Model.Core                 (TargetEffectKey (LocationKey, Playe
                                              ActionEffectMap (ActionEffectMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
-                                             EffectActionKey (SomaticAccessActionKey),
+                                             ActionEffectKey (SomaticAccessActionKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
