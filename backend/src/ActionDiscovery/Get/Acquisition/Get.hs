@@ -15,10 +15,10 @@ import           GameState                          (getPlayerLocationM,
 import           GameState.ActionManagement         (lookupAcquisitionPhrase,
                                                      processEffectsFromRegistry)
 import           Model.Core                         (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -27,6 +27,7 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      SearchStrategy,
                                                      SpatialRelationship (ContainedIn, SupportedBy),
                                                      SpatialRelationshipMap (SpatialRelationshipMap),
+                                                     TargetEffectKey,
                                                      World (_spatialRelationshipMap))
 import           Model.GID                          (GID)
 import           Model.Parser.Composites.Verbs      (AcquisitionVerbPhrase)
@@ -77,7 +78,7 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: ActionEffectKey
+finalizeAcquisition :: TargetEffectKey
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult

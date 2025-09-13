@@ -36,7 +36,7 @@ module Model.Core
   , ConsumptionActionF(..)
     -- * Action Maps
   , ActionMaps(..)
-  , ActionEffectMap(..)
+  , TargetEffectMap(..)
   , ImplicitStimulusActionMap
   , DirectionalStimulusActionMap
   , DirectionalStimulusContainerActionMap
@@ -82,7 +82,7 @@ module Model.Core
   , SystemEffectKeysRegistry
   , TargetEffectKeyRegistry
   , TriggerRegistry(..)
-  , ActionKeyMap(..)
+  , TargetKeyMap(..)
     -- * Configuration
   , Config(..)
     -- * Intermediate Results
@@ -216,15 +216,15 @@ type SimpleAccessSearchStrategy = NounKey
 
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [ActionEffectKey]
-  , _containerFieldEffectKeys  :: [ActionEffectKey]
+  { _containerActionEffectKeys :: [TargetEffectKey]
+  , _containerFieldEffectKeys  :: [TargetEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
+  { _instrumentActionEffectKeys :: [TargetEffectKey]
+  , _instrumentFieldEffectKeys  :: [TargetEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
@@ -250,12 +250,12 @@ data ContainerAccessActionF
 
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
-  = PlayerSomaticAccessActionF (Set TargetEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  = PlayerSomaticAccessActionF (Set TargetEffectKey -> TargetEffectMap -> GameComputation Identity ())
   | CannotSomaticAccessF (GameComputation Identity ())
 
 type PosturalActionF :: Type
 data PosturalActionF
-  = PlayerPosturalActionF (Set TargetEffectKey -> ActionEffectMap -> GameComputation Identity ())
+  = PlayerPosturalActionF (Set TargetEffectKey -> TargetEffectMap -> GameComputation Identity ())
   | CannotPosturalActionF (GameComputation Identity ())
 
 type CoordinationResult :: Type
@@ -270,10 +270,10 @@ type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
 type AcquisitionF :: Type
-type AcquisitionF = (ActionEffectKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+type AcquisitionF = (TargetEffectKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = ActionEffectKey
+type FinalizeAcquisitionF = TargetEffectKey
                               -> GID Object
                               -> GID Object
                               -> GameComputation Identity CoordinationResult
@@ -289,7 +289,7 @@ data AcquisitionActionF
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF
-  = PlayerConsumptionActionF (GID Object -> Set TargetEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
+  = PlayerConsumptionActionF (GID Object -> Set TargetEffectKey -> TargetEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
   | CannotConsumeF (GameComputation Identity ())
 
 type ProcessImplicitStimulusVerb :: Type
@@ -383,9 +383,9 @@ data PlayerKey
 
 type TargetEffectKey :: Type
 data TargetEffectKey
-  = LocationKey (GID Location) ActionEffectKey
-  | ObjectKey (GID Object) ActionEffectKey
-  | PlayerKey PlayerKey ActionEffectKey
+  = LocationKey (GID Location)
+  | ObjectKey (GID Object)
+  | PlayerKey PlayerKey
   deriving stock (Show, Eq, Ord)
 
 type SystemEffectKey :: Type
@@ -401,7 +401,6 @@ data FieldUpdateOperation
   | ObjectDescription (GID Object) Text
   | LocationTitle (GID Location) Text
   | PlayerLocation (GID Location)
-  | TargetEffectKeyUpdate TargetEffectKey ActionEffectKey
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
@@ -414,8 +413,8 @@ type SystemEffect :: Type
 data SystemEffect
   = PerceptionSystemEffect (GameComputation Identity ())
 
-type ActionEffectMap :: Type
-newtype ActionEffectMap = ActionEffectMap
+type TargetEffectMap :: Type
+newtype TargetEffectMap = TargetEffectMap
   { _actionEffectMap :: Map TargetEffectKey (Set Effect) }
   deriving stock (Show, Eq, Ord)
 
@@ -428,7 +427,7 @@ data SystemEffectConfig = SystemEffectConfig
 -- Registry types
 
 type EffectRegistry :: Type
-type EffectRegistry = Map ActionEffectKey ActionEffectMap
+type EffectRegistry = Map ActionEffectKey TargetEffectMap
 
 type SystemEffectRegistry :: Type
 type SystemEffectRegistry = Map SystemEffectKey (Map (GID SystemEffect) SystemEffectConfig)
@@ -446,9 +445,9 @@ type TriggerRegistry :: Type
 newtype TriggerRegistry = TriggerRegistry
   { _unTriggerRegistry :: Map ActionEffectKey [(SystemEffectKey, GID SystemEffect, SystemEffectConfig)] }
 
-type ActionKeyMap :: Type
-newtype ActionKeyMap = ActionKeyMap
-  { _unActionKeyMap :: Map ActionEffectKey ActionEffectMap }
+type TargetKeyMap :: Type
+newtype TargetKeyMap = TargetKeyMap
+  { _unActionKeyMap :: Map ActionEffectKey TargetEffectMap }
   deriving stock (Show, Eq, Ord)
 
 type ActionManagementOperation :: Type
@@ -598,9 +597,9 @@ instance Arbitrary Object where
 -- TargetEffectKey instances
 instance Arbitrary TargetEffectKey where
   arbitrary = oneof
-    [ LocationKey <$> arbitrary <*> arbitrary
-    , ObjectKey <$> arbitrary <*> arbitrary
-    , PlayerKey <$> arbitrary <*> arbitrary
+    [ LocationKey <$> arbitrary
+    , ObjectKey <$> arbitrary
+    , PlayerKey <$> arbitrary
     ]
 
 -- PlayerKey instances
@@ -637,7 +636,7 @@ instance Arbitrary Effect where
   arbitrary = FieldUpdateEffect <$> arbitrary
 
 -- ActionEffectMap instances
-instance Arbitrary ActionEffectMap where
-  arbitrary = ActionEffectMap <$> arbitrary
+instance Arbitrary TargetEffectMap where
+  arbitrary = TargetEffectMap <$> arbitrary
 
 #endif

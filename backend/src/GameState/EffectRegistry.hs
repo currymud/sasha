@@ -2,9 +2,10 @@ module GameState.EffectRegistry where
 import           Control.Monad.Identity (Identity)
 import           Control.Monad.State    (gets, modify')
 import qualified Data.Map.Strict
-import           Model.Core             (ActionEffectMap, ActionEffectKey,
-                                         EffectRegistry, GameComputation,
-                                         GameState (_effectRegistry))
+import           Model.Core             (ActionEffectKey, EffectRegistry,
+                                         GameComputation,
+                                         GameState (_effectRegistry),
+                                         TargetEffectMap)
 
 getGlobalEffectRegistry :: GameComputation Identity EffectRegistry
 getGlobalEffectRegistry = gets _effectRegistry
@@ -14,19 +15,19 @@ modifyGlobalEffectRegistry :: (EffectRegistry -> EffectRegistry)
 modifyGlobalEffectRegistry f = modify' $ \gs ->
   gs { _effectRegistry = f (_effectRegistry gs) }
 
-lookupActionEffectsInRegistry :: ActionEffectKey -> GameComputation Identity (Maybe ActionEffectMap)
+lookupActionEffectsInRegistry :: ActionEffectKey -> GameComputation Identity (Maybe TargetEffectMap)
 lookupActionEffectsInRegistry actionKey = do
   Data.Map.Strict.lookup actionKey <$> getGlobalEffectRegistry
 
 -- Utility to register new effects
-registerEffects :: ActionEffectKey -> ActionEffectMap -> GameComputation Identity ()
+registerEffects :: ActionEffectKey -> TargetEffectMap -> GameComputation Identity ()
 registerEffects actionKey effectMap =
   modifyGlobalEffectRegistry $ \registry ->
     Data.Map.Strict.insert actionKey effectMap registry
 
 -- Utility to modify existing effects in registry
 modifyRegisteredEffects :: ActionEffectKey
-                        -> (ActionEffectMap -> ActionEffectMap)
+                        -> (TargetEffectMap -> TargetEffectMap)
                         -> GameComputation Identity ()
 modifyRegisteredEffects actionKey f =
   modifyGlobalEffectRegistry $ \registry ->

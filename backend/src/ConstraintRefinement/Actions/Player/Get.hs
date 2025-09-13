@@ -30,6 +30,7 @@ import           Model.Core                                       (AcquisitionAc
                                                                    SearchStrategy,
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                   TargetEffectKey,
                                                                    World (_spatialRelationshipMap))
 import           Model.GID                                        (GID)
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
@@ -47,7 +48,7 @@ getDeniedF = NotGettableF denied
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
-    getit :: ActionEffectKey
+    getit :: TargetEffectKey
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase

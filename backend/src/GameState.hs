@@ -59,12 +59,12 @@ import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR)
                                                 SimpleAccessRes (SimpleAccessRes),
                                                 SimpleAcquisitionRes (SimpleAcquisitionRes))
 import           Model.Core                    (AcquisitionActionF,
+                                                ActionEffectKey,
                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 GameComputation,
-                                                ActionEffectKey,
                                                 GameState (_narration, _player, _targetEffectKeyRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
@@ -292,13 +292,14 @@ getObjectsBySpatialRelationship targetRelationship = do
 getInventoryObjectsM :: GameComputation Identity [GID Object]
 getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
 
-getLocationObjectIDsM :: GID Location -> ActionEffectKey -> GameComputation Identity (Set TargetEffectKey)
-getLocationObjectIDsM lid actionKey = do
+getLocationObjectIDsM :: GID Location
+                           -> GameComputation Identity (Set TargetEffectKey)
+getLocationObjectIDsM lid = do
   location <- getLocationM lid
   let objectSemanticMap = _objectSemanticMap location
       objectGIDSets = Data.Map.Strict.elems objectSemanticMap
       allObjectGIDs = concatMap Data.Set.toList objectGIDSets
-  pure $ Data.Set.fromList (map (`ObjectKey` actionKey) allObjectGIDs)
+  pure $ Data.Set.fromList $ ObjectKey <$> allObjectGIDs
 
 changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
 changeImplicit verb newActionGID = do
@@ -515,6 +516,6 @@ resolveTargetEffectKey :: TargetEffectKey -> GameComputation Identity TargetEffe
 resolveTargetEffectKey key = do
   registry <- gets _targetEffectKeyRegistry
   case Data.Map.Strict.lookup key registry of
-    Nothing            -> pure key
-    Just mappedKey     -> resolveTargetEffectKey mappedKey  -- Follow registry chain
+    Nothing        -> pure key
+    Just mappedKey -> resolveTargetEffectKey mappedKey  -- Follow registry chain
 

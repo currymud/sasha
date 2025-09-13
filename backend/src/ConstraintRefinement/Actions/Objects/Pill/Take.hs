@@ -8,10 +8,10 @@ import           Data.Set                      (Set)
 import           Data.Text                     (Text)
 import           GameState                     (modifyNarration,
                                                 updateActionConsequence)
-import           Model.Core                    (TargetEffectKey (PlayerKey),
-                                                ActionEffectMap,
-                                                ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
-                                                GameComputation, Object)
+import           Model.Core                    (ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
+                                                GameComputation, Object,
+                                                TargetEffectKey (PlayerKey),
+                                                TargetEffectMap)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 
@@ -43,7 +43,7 @@ pillTooFarF = CannotConsumeF denied
 takePillF :: ConsumptionActionF
 takePillF = PlayerConsumptionActionF takePill
   where
-    takePill :: GID Object -> Set TargetEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
+    takePill :: GID Object -> Set TargetEffectKey -> TargetEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
     takePill _targetOid _actionKeys _effectMap _cvp = do
       -- Add success narration
       modifyNarration
