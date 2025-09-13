@@ -16,7 +16,7 @@ module Model.Actions.Results
 
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
-import           Model.Core                    (EffectActionKey,
+import           Model.Core                    (ActionEffectKey,
                                                 GameComputation)
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
                                                 InstrumentalAccessNounPhrase,
@@ -28,23 +28,23 @@ import           Model.Parser.GCase            (NounKey)
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
-  , _actionEffectKeys :: [EffectActionKey]
-  , _fieldEffectKeys  :: [EffectActionKey]
+  , _actionEffectKeys :: [ActionEffectKey]
+  , _fieldEffectKeys  :: [ActionEffectKey]
   }
 
 -- | Container access coordination result
 type ContainerAccessResult :: Type
 data ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [EffectActionKey]
-  , _containerFieldEffectKeys  :: [EffectActionKey]
+  { _containerActionEffectKeys :: [ActionEffectKey]
+  , _containerFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 -- | Instrument access coordination result
 type InstrumentAccessResult :: Type
 data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [EffectActionKey]
-  , _instrumentFieldEffectKeys  :: [EffectActionKey]
+  { _instrumentActionEffectKeys :: [ActionEffectKey]
+  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 

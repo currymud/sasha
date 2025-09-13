@@ -9,12 +9,12 @@ import           GameState                     (getLocationObjectIDsM,
 import           GameState.ActionManagement    (lookupPostural,
                                                 processEffectsFromRegistry)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
-import           Model.Core                    (ActionEffectKey (LocationKey, PlayerKey),
+import           Model.Core                    (TargetEffectKey (LocationKey, PlayerKey),
                                                 ActionEffectMap (ActionEffectMap),
                                                 ActionKeyMap (_unActionKeyMap),
                                                 ActionMaps (_posturalActionMap),
                                                 Config (_actionMaps),
-                                                EffectActionKey (PosturalActionKey),
+                                                ActionEffectKey (PosturalActionKey),
                                                 GameComputation,
                                                 Player (_location, _playerActions),
                                                 PosturalActionF (CannotPosturalActionF, PlayerPosturalActionF))

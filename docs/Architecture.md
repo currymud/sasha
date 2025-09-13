@@ -87,7 +87,7 @@ instance HasBehavior Player where
 ### HasEffect: Universal Effect Linking
 ```haskell
 class HasEffect a where
-  linkEffect :: EffectActionKey -> a -> Effect -> SashaLambdaDSL ()
+  linkEffect :: ActionEffectKey -> a -> Effect -> SashaLambdaDSL ()
 
 -- Same interface for all target types
 instance HasEffect (GID Location) where
@@ -125,7 +125,7 @@ Effects are built using type-safe composition with expressive operators:
 ```haskell
 -- Composable effect chain
 data EffectChain where
-  Single :: (HasEffect a) => EffectActionKey -> a -> Effect -> EffectChain
+  Single :: (HasEffect a) => ActionEffectKey -> a -> Effect -> EffectChain
   Sequential :: EffectChain -> EffectChain -> EffectChain  
   Parallel :: EffectChain -> EffectChain -> EffectChain
 

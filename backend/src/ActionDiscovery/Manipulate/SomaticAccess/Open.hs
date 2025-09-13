@@ -9,11 +9,11 @@ import           GameState                  (getLocationObjectIDsM, getPlayerM)
 import           GameState.ActionManagement (lookupSomaticAccess,
                                              processEffectsFromRegistry)
 import           GameState.EffectRegistry   (lookupActionEffectsInRegistry)
-import           Model.Core                 (ActionEffectKey (LocationKey, PlayerKey),
+import           Model.Core                 (TargetEffectKey (LocationKey, PlayerKey),
                                              ActionEffectMap (ActionEffectMap),
                                              ActionMaps (_somaticStimulusActionMap),
                                              Config (_actionMaps),
-                                             EffectActionKey (SomaticAccessActionKey),
+                                             ActionEffectKey (SomaticAccessActionKey),
                                              GameComputation, GameState (..),
                                              Player (_location, _playerActions),
                                              SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))

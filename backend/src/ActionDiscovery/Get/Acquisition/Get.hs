@@ -18,7 +18,7 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     EffectActionKey (AcquisitionalActionKey),
+                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -77,13 +77,13 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
-finalizeAcquisition :: EffectActionKey
+finalizeAcquisition :: ActionEffectKey
                         -> GID Object
                         -> GID Object
                         -> GameComputation Identity CoordinationResult
                         -> (GID Object -> GameComputation Identity CoordinationResult)
                         -> GameComputation Identity ()
-finalizeAcquisition effectActionKey containerGID objectGID objectActionF containerActionF = do
+finalizeAcquisition actionEffectKey containerGID objectGID objectActionF containerActionF = do
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
@@ -98,6 +98,6 @@ finalizeAcquisition effectActionKey containerGID objectGID objectActionF contain
      else  do
        (CoordinationResult playerGetObjectF objectEffects objectFieldEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
-       let allEffects = effectActionKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
+       let allEffects = actionEffectKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
        mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
 

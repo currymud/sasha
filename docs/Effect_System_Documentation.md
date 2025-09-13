@@ -40,7 +40,7 @@ Effects are declared first using algebraic combinators, then actions are bound t
 
 ```haskell
 data EffectChain where
-  Single :: (HasEffect a) => EffectActionKey -> a -> Effect -> EffectChain
+  Single :: (HasEffect a) => ActionEffectKey -> a -> Effect -> EffectChain
   Sequential :: EffectChain -> EffectChain -> EffectChain  
   Parallel :: EffectChain -> EffectChain -> EffectChain
 
