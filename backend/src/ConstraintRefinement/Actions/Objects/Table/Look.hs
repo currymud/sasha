@@ -4,8 +4,7 @@ import           Data.Text              (Text)
 import           GameState              (modifyNarration,
                                          updateActionConsequence)
 import           Model.Core             (DirectionalStimulusActionF (CannotSeeF),
-                                         GameComputation (GameComputation),
-                                         Location)
+                                         GameComputation)
 -- ToDo naming convention fix
 whatTable :: DirectionalStimulusActionF
 whatTable = CannotSeeF whatTable'
