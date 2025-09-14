@@ -14,11 +14,13 @@ import           GameState                     (getObjectM, getPlayerLocationM,
                                                 updateActionConsequence)
 import           GameState.ActionManagement    (lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
-                                                lookupImplicitStimulus)
+                                                lookupImplicitStimulus,
+                                                processEffectsFromRegistry)
 import           GameState.Perception          (findAccessibleObject,
                                                 isObjectPerceivable,
                                                 queryPerceptionMap)
-import           Model.Core                    (ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (ImplicitStimulusActionKey),
+                                                ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
@@ -45,11 +47,13 @@ findContainer relationships =
       listToMaybe [cid | ContainedIn cid <- Data.Set.toList relationships] <|>
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
-lookInF :: GID Object -> Text -> DirectionalStimulusContainerActionF
+lookInF :: GID Object
+             -> Text
+             -> DirectionalStimulusContainerActionF
 lookInF containerGID flavorText = ObjectDirectionalStimulusContainerActionF lookInAction
   where
-    lookInAction :: GameComputation Identity ()
-    lookInAction = do
+    lookInAction :: ActionEffectKey ->  GameComputation Identity ()
+    lookInAction actionEffectKey = do
       -- First add the flavor text
       modifyNarration $ updateActionConsequence flavorText
 
@@ -66,6 +70,7 @@ lookInF containerGID flavorText = ObjectDirectionalStimulusContainerActionF look
           -- Get descriptions of contained objects
           descriptions <- mapM getObjectDescription containedObjects
           let contentText = "You see: " <> Data.Text.intercalate ", " descriptions
+          processEffectsFromRegistry actionEffectKey
           modifyNarration $ updateActionConsequence contentText
 
     getObjectDescription objGID = do
@@ -75,7 +80,7 @@ lookInF containerGID flavorText = ObjectDirectionalStimulusContainerActionF look
 lookAtF :: GID Object -> DirectionalStimulusActionF
 lookAtF objGID = ObjectDirectionalStimulusActionF lookAction
   where
-    lookAction = do
+    lookAction actionEffectKey  = do
       obj <- getObjectM objGID
       world <- gets _world
       let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
@@ -84,6 +89,7 @@ lookAtF objGID = ObjectDirectionalStimulusActionF lookAction
       generateLocationNarration obj objGID spatialMap
       -- Also check what's on/in this object
       generateContentsNarration objGID spatialMap
+      processEffectsFromRegistry actionEffectKey
 
 -- Updated to handle the case deconstruction internally
 generateLocationNarration :: Object
@@ -155,8 +161,8 @@ getContainedObjects objGID spatialMap =
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
   where
-    actionEnabled :: GameComputation Identity ()
-    actionEnabled = do
+    actionEnabled :: ActionEffectKey -> GameComputation Identity ()
+    actionEnabled actionEffectKey = do
       loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
@@ -165,16 +171,22 @@ isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
           actionMap' :: Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF <- asks (_implicitStimulusActionMap . _actionMaps)
           case Data.Map.Strict.lookup actionGID actionMap' of
             Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in actionmap "
-            Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
-            Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc
+            Just someActionF ->
+              let actionF = case someActionF of
+                    (PlayerImplicitStimulusActionF actionFunc) -> actionFunc
+                    (CannotImplicitStimulusActionF actionFunc) -> actionFunc
+              in  actionF actionEffectKey >> processEffectsFromRegistry actionEffectKey
+
+--      processEffectsFromRegistry actionEffectKey
 
 dsvActionEnabled :: DirectionalStimulusActionF
 dsvActionEnabled = PlayerDirectionalStimulusActionF lookit
   where
-    lookit :: DirectionalStimulusVerb
+    lookit :: ActionEffectKey
+           -> DirectionalStimulusVerb
            -> DirectionalStimulusNounPhrase
            -> GameComputation Identity ()
-    lookit dsv dsnp = do
+    lookit actionEffectKey dsv dsnp = do
       -- 1. Validate player capability and find object
       objectValidation <- validateObjectLook dsnp
       case objectValidation of
@@ -189,20 +201,23 @@ dsvActionEnabled = PlayerDirectionalStimulusActionF lookit
               actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap of
                 Nothing -> error "Programmer Error: No directional stimulus action found for GID"
-                Just objectResponse -> case objectResponse of
-                  -- 4. Pattern match on object's response constructor
-                  ObjectDirectionalStimulusActionF objectLookF -> objectLookF
-                  CannotSeeF cannotSeeF -> cannotSeeF
-                  PlayerDirectionalStimulusActionF _ ->
-                    error "Programmer Error: PlayerDirectionalStimulusActionF found in object action map"
+                Just objectResponse ->
+                  let objectLookF = case objectResponse of
+                        PlayerDirectionalStimulusActionF _ ->
+                          error "Programmer Error: PlayerDirectionalStimulusActionF found in object action map"
+                        ObjectDirectionalStimulusActionF objectLookF' -> objectLookF'
+                        CannotSeeF cannotSeeF -> cannotSeeF
+                  in objectLookF actionEffectKey
+                       >> processEffectsFromRegistry actionEffectKey
 
 dsvContainerActionEnabled :: DirectionalStimulusContainerActionF
 dsvContainerActionEnabled = PlayerDirectionalStimulusContainerActionF lookinit
   where
-    lookinit :: DirectionalStimulusVerb
+    lookinit :: ActionEffectKey
+             -> DirectionalStimulusVerb
              -> ContainerPhrase
              -> GameComputation Identity ()
-    lookinit dsv cp = do
+    lookinit actionEffectKey dsv cp = do
       -- 1. Validate player capability and find container object
       containerValidation <- validateContainerLook cp
       case containerValidation of
@@ -217,12 +232,14 @@ dsvContainerActionEnabled = PlayerDirectionalStimulusContainerActionF lookinit
               actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap of
                 Nothing -> error "Programmer Error: No directional container stimulus action found for GID"
-                Just containerResponse -> case containerResponse of
-                  -- 4. Pattern match on container's response constructor
-                  ObjectDirectionalStimulusContainerActionF containerLookF -> containerLookF
-                  CannotSeeInF cannotSeeInF -> cannotSeeInF
-                  PlayerDirectionalStimulusContainerActionF _ ->
-                    error "Programmer Error: PlayerDirectionalStimulusContainerActionF found in object action map"
+                Just containerResponse ->
+                  let containerLookF = case containerResponse of
+                        ObjectDirectionalStimulusContainerActionF containerLookF' -> containerLookF'
+                        CannotSeeInF cannotSeeInF -> cannotSeeInF
+                        PlayerDirectionalStimulusContainerActionF _ ->
+                          error "Programmer Error: PlayerDirectionalStimulusContainerActionF found in object action map"
+                  in containerLookF actionEffectKey
+                       >> processEffectsFromRegistry actionEffectKey
 
 extractContainerNoun :: ContainerPhrase -> NounKey
 extractContainerNoun (ContainerPhrase nounPhrase) = extractContainerNounFromPhrase nounPhrase
