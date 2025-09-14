@@ -284,7 +284,7 @@ data AcquisitionActionF
   = AcquisitionActionF AcquisitionF
   | CollectedF (GameComputation Identity CoordinationResult)
   | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
-  | NotGettableF (GameComputation Identity ())
+  | NotGettableF (ActionEffectKey -> GameComputation Identity ())
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF

@@ -15,10 +15,10 @@ import           GameState                          (getPlayerLocationM,
 import           GameState.ActionManagement         (lookupAcquisitionPhrase,
                                                      processEffectsFromRegistry)
 import           Model.Core                         (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      ActionMaps (_acquisitionActionMap),
                                                      Config (_actionMaps),
                                                      CoordinationResult (CoordinationResult),
-                                                     ActionEffectKey (AcquisitionalActionKey),
                                                      GameComputation,
                                                      GameState (_world),
                                                      Location (_objectSemanticMap),
@@ -42,14 +42,14 @@ manageAcquisitionProcess avp = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No acquisition action found for GID: "
         Just foundAction -> do
+          let actionKey = AcquisitionalActionKey actionGID
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               let actionKey = AcquisitionalActionKey actionGID
                actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
             (NotGettableF actionF) -> do
-              actionF
+              actionF actionKey
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
 -- | General case: Search current location's object semantic map
