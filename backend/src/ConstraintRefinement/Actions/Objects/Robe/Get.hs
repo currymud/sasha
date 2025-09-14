@@ -1,25 +1,10 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use mapM_" #-}
 module ConstraintRefinement.Actions.Objects.Robe.Get (getRobeDeniedF, alreadyHaveRobeF) where
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (modify')
-import qualified Data.Map.Strict
-import qualified Data.Set
-import           Data.Text                     (Text)
-import           GameState                     (addToInventoryM, getObjectM,
-                                                modifyNarration,
-                                                parseAcquisitionPhrase,
-                                                updateActionConsequence)
-import           Model.Core                    (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                GameComputation (GameComputation),
-                                                GameState (_player),
-                                                Location (_locationActionManagement, _objectSemanticMap),
-                                                Object (_description))
-import           Model.GID                     (GID)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase (AcquisitionVerbPhrase))
-import           Model.Parser.GCase            (NounKey)
-import           Relude.String                 (ToText (toText))
-
+import           Control.Monad.Identity (Identity)
+import           Data.Text              (Text)
+import           GameState              (modifyNarration,
+                                         updateActionConsequence)
+import           Model.Core             (AcquisitionActionF (NotGettableF),
+                                         GameComputation)
 
 alreadyHaveRobeF :: AcquisitionActionF
 alreadyHaveRobeF = NotGettableF haveRobe

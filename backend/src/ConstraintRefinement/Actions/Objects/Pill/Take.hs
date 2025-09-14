@@ -8,10 +8,10 @@ import           Data.Set                      (Set)
 import           Data.Text                     (Text)
 import           GameState                     (modifyNarration,
                                                 updateActionConsequence)
-import           Model.Core                    (TargetEffectKey (PlayerKey),
-                                                ActionEffectMap,
+import           Model.Core                    (ActionEffectMap,
                                                 ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
-                                                GameComputation, Object)
+                                                GameComputation, Object,
+                                                TargetEffectKey)
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 

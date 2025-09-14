@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use mapM_" #-}
 module ConstraintRefinement.Actions.Player.Get (getF,getDeniedF) where
 import           ConstraintRefinement.Actions.Utils               (AcquisitionError (ContainerMissingAction, InvalidActionType, ObjectNotFound, ObjectNotGettable, SpatialValidationFailed),
                                                                    handleAcquisitionError)
@@ -8,7 +6,6 @@ import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           Data.Text                                        (Text, pack)
-import           Debug.Trace                                      (trace)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM,
                                                                    modifyNarration,
@@ -43,7 +40,6 @@ getDeniedF = NotGettableF denied
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
--- ToDo: refactor to remove dead code.
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where

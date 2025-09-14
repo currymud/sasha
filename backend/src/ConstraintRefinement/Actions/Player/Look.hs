@@ -24,7 +24,7 @@ import           Model.Core                    (ActionMaps (_directionalStimulus
                                                 DirectionalStimulusContainerActionF (CannotSeeInF, ObjectDirectionalStimulusContainerActionF, PlayerDirectionalStimulusContainerActionF),
                                                 GameComputation,
                                                 GameState (_world),
-                                                ImplicitStimulusActionF (PlayerImplicitStimulusActionF, CannotImplicitStimulusActionF),
+                                                ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF),
                                                 Location (_locationActionManagement),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
@@ -76,9 +76,7 @@ lookAtF :: GID Object -> DirectionalStimulusActionF
 lookAtF objGID = ObjectDirectionalStimulusActionF lookAction
   where
     lookAction = do
-      -- Get object info
       obj <- getObjectM objGID
-      -- Get spatial relationships
       world <- gets _world
       let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
 
@@ -159,7 +157,6 @@ isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
   where
     actionEnabled :: GameComputation Identity ()
     actionEnabled = do
-      player <- getPlayerM
       loc <- getPlayerLocationM
       let actionMgmt = _locationActionManagement loc
       case lookupImplicitStimulus isv actionMgmt of
