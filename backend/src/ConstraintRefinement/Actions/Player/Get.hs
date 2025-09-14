@@ -11,7 +11,8 @@ import           GameState                                        (getObjectM,
                                                                    modifyNarration,
                                                                    parseAcquisitionPhrase,
                                                                    updateActionConsequence)
-import           GameState.ActionManagement                       (findAVKey)
+import           GameState.ActionManagement                       (findAVKey,
+                                                                   processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Actions.Results                            (AcquisitionRes (Complete, Simple),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caObjectPhrase, _caSupportKey, _caSupportPhrase),
@@ -35,8 +36,9 @@ import           Model.Parser.GCase                               (NounKey)
 getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey = processEffectsFromRegistry actionEffectKey
+                              >> modifyNarration (updateActionConsequence msg)
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
@@ -59,12 +61,12 @@ getF = AcquisitionActionF getit
               objectActionLookup <- lookupAcquisitionAction objectGID actionMap
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
-                Right (NotGettableF objectNotGettableF) -> objectNotGettableF
+                Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionKey
                 Right (CollectedF objectActionF) -> do
                   containerActionLookup <- lookupAcquisitionAction containerGID actionMap
                   case containerActionLookup of
                     Left err' -> handleAcquisitionError err'
-                    Right (NotGettableF cannotGetFromF) -> cannotGetFromF
+                    Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionKey
                     Right (LosesObjectF containerActionF) -> finalize actionKey containerGID objectGID objectActionF containerActionF
                     Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
                 Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
@@ -97,12 +99,12 @@ getF = AcquisitionActionF getit
                       objectActionLookup <- lookupAcquisitionAction objectGID actionMap
                       case objectActionLookup of
                         Left err' -> handleAcquisitionError err'
-                        Right (NotGettableF objectNotGettableF) -> objectNotGettableF
+                        Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionKey
                         Right (CollectedF objectActionF) -> do
                           containerActionLookup <- lookupAcquisitionAction supportGID actionMap
                           case containerActionLookup of
                             Left err' -> handleAcquisitionError err'
-                            Right (NotGettableF cannotGetFromF) -> cannotGetFromF
+                            Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionKey
                             Right (LosesObjectF containerActionF) ->
                               finalize actionKey supportGID objectGID objectActionF containerActionF
                             Right _ -> handleAcquisitionError $ InvalidActionType $
