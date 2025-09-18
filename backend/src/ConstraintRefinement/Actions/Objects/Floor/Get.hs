@@ -8,11 +8,13 @@ import           GameState                  (modifyNarration,
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (AcquisitionActionF (NotGettableF),
                                              ActionEffectKey, GameComputation)
+
 getFloorDeniedF :: AcquisitionActionF
 getFloorDeniedF = NotGettableF denied
   where
-    denied :: ActionEffectKey ->  GameComputation Identity ()
-    denied actionEffectKey = processEffectsFromRegistry actionEffectKey
-                               >> modifyNarration (updateActionConsequence msg)
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try to pick up the floor. It doesn't budge. Physics wins again."

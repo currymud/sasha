@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -Wno-missing-local-signatures #-}
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
 
 import           ConstraintRefinement.Actions.Utils (AcquisitionError (SpatialValidationFailed),
@@ -7,8 +6,7 @@ import           Control.Monad.Identity             (Identity)
 import           Control.Monad.Reader.Class         (asks)
 import           Control.Monad.State                (gets)
 import qualified Data.Map.Strict
-import           Data.Set                           (Set, elemAt, fromList,
-                                                     null, toList)
+import           Data.Set                           (Set, elemAt, null, toList)
 import qualified Data.Text
 import           GameState                          (getPlayerLocationM,
                                                      getPlayerM)
@@ -42,14 +40,19 @@ manageAcquisitionProcess avp = do
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error "Programmer Error: No acquisition action found for GID: "
         Just foundAction -> do
-          let actionKey = AcquisitionalActionKey actionGID
+          let actionEffectKey = AcquisitionalActionKey actionGID
           case foundAction of
             (AcquisitionActionF actionFunc) -> do
-               actionFunc actionKey actionMap locationSearchStrategy avp finalizeAcquisition
+               actionFunc
+                 actionEffectKey
+                 actionMap
+                 locationSearchStrategy
+                 avp
+                 finalizeAcquisition
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
             (NotGettableF actionF) -> do
-              actionF actionKey
+              actionF actionEffectKey
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
 -- | General case: Search current location's object semantic map
@@ -100,4 +103,3 @@ finalizeAcquisition actionEffectKey containerGID objectGID objectActionF contain
        (CoordinationResult containerRemoveObjectF containerEffects containerFieldEffects) <- containerActionF objectGID
        let allEffects = actionEffectKey:(objectEffects <> containerEffects <> objectFieldEffects <> containerFieldEffects)
        mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF
-

@@ -194,20 +194,20 @@ instance MonadTrans GameComputation where
 -- Action function types
 type ImplicitStimulusActionF :: Type
 data ImplicitStimulusActionF
-  = PlayerImplicitStimulusActionF (GameComputation Identity ())
-  | CannotImplicitStimulusActionF (GameComputation Identity ())
+  = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF (DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
-  | ObjectDirectionalStimulusActionF (GameComputation Identity ())
-  | CannotSeeF (GameComputation Identity ())
+  = PlayerDirectionalStimulusActionF (ActionEffectKey -> DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
+  | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotSeeF (ActionEffectKey -> GameComputation Identity ())
 
 type DirectionalStimulusContainerActionF :: Type
 data DirectionalStimulusContainerActionF
-  = PlayerDirectionalStimulusContainerActionF (DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ())
-  | ObjectDirectionalStimulusContainerActionF (GameComputation Identity ())
-  | CannotSeeInF (GameComputation Identity ())
+  = PlayerDirectionalStimulusContainerActionF (ActionEffectKey -> DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ())
+  | ObjectDirectionalStimulusContainerActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotSeeInF (ActionEffectKey -> GameComputation Identity ())
 
 type SimpleAccessSearchStrategy :: Type
 type SimpleAccessSearchStrategy = NounKey

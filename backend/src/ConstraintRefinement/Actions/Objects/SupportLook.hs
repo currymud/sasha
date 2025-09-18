@@ -1,30 +1,34 @@
 module ConstraintRefinement.Actions.Objects.SupportLook (supportLookF) where
 
-import           Control.Monad.Identity (Identity)
-import           Control.Monad.State    (gets)
-import qualified Data.Map.Strict        as Map
-import qualified Data.Set               as Set
-import           Data.Text              (Text)
-import qualified Data.Text              as Text
-import           GameState              (getObjectM, modifyNarration,
-                                         updateActionConsequence)
-import           Model.Core             (DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
-                                         GameComputation,
-                                         Object (_description, _shortName),
-                                         SpatialRelationship (Contains, Supports),
-                                         SpatialRelationshipMap (SpatialRelationshipMap),
-                                         World (_spatialRelationshipMap),
-                                         _world)
-import           Model.GID              (GID)
+import           Control.Monad.Identity     (Identity)
+import           Control.Monad.State        (gets)
+import qualified Data.Map.Strict            as Map
+import qualified Data.Set                   as Set
+import           Data.Text                  (Text)
+import qualified Data.Text                  as Text
+import           GameState                  (getObjectM, modifyNarration,
+                                             updateActionConsequence)
+import           GameState.ActionManagement (processEffectsFromRegistry)
+import           Model.Core                 (ActionEffectKey,
+                                             DirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
+                                             GameComputation,
+                                             Object (_description, _shortName),
+                                             SpatialRelationship (Contains, Supports),
+                                             SpatialRelationshipMap (SpatialRelationshipMap),
+                                             World (_spatialRelationshipMap),
+                                             _world)
+import           Model.GID                  (GID)
 
 -- | function for looking at objects that support or contain other objects
 -- Dynamically builds description based on current spatial relationships
 -- Takes flavor text to add personality to the base object description
-supportLookF :: GID Object -> Text -> DirectionalStimulusActionF
+supportLookF :: GID Object
+                  -> Text
+                  -> DirectionalStimulusActionF
 supportLookF objGID flavorText = ObjectDirectionalStimulusActionF supportLook
   where
-    supportLook :: GameComputation Identity ()
-    supportLook = do
+    supportLook :: ActionEffectKey -> GameComputation Identity ()
+    supportLook actionEffectKey  = do
       obj <- getObjectM objGID
       world <- gets _world
       let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
@@ -33,6 +37,7 @@ supportLookF objGID flavorText = ObjectDirectionalStimulusActionF supportLook
         Nothing -> do
           -- Object has no spatial relationships, show base description + flavor text
           let msg = _description obj <> " " <> flavorText
+          processEffectsFromRegistry actionEffectKey
           modifyNarration $ updateActionConsequence msg
         Just relationships -> do
           -- Get supported and contained objects
@@ -42,11 +47,13 @@ supportLookF objGID flavorText = ObjectDirectionalStimulusActionF supportLook
           -- Build dynamic description
           let baseDescription = _description obj
               fullDescription = buildFullDescription baseDescription flavorText supportedObjects containedObjects
-
+          processEffectsFromRegistry actionEffectKey
           modifyNarration $ updateActionConsequence fullDescription
 
 -- | Extract supported objects and get their short names
-getSupportedObjectNames :: GID Object -> Set.Set SpatialRelationship -> GameComputation Identity [Text]
+getSupportedObjectNames :: GID Object
+                             -> Set.Set SpatialRelationship
+                             -> GameComputation Identity [Text]
 getSupportedObjectNames _objGID relationships = do
   let supportedGIDs = concatMap extractSupported (Set.toList relationships)
   mapM getObjectShortName supportedGIDs

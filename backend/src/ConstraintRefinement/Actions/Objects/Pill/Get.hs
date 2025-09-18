@@ -13,8 +13,9 @@ alreadyHavePillF :: AcquisitionActionF
 alreadyHavePillF = NotGettableF havePill
   where
     havePill :: ActionEffectKey -> GameComputation Identity ()
-    havePill actionEffectKey = processEffectsFromRegistry actionEffectKey
-                                 >> modifyNarration (updateActionConsequence msg)
+    havePill actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You already have the pill in your inventory."
 
@@ -22,7 +23,8 @@ getPillDeniedF :: AcquisitionActionF
 getPillDeniedF = NotGettableF denied
   where
     denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey  = processEffectsFromRegistry actionEffectKey
-                                >> modifyNarration (updateActionConsequence msg)
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"

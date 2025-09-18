@@ -37,8 +37,9 @@ getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
   where
     denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = processEffectsFromRegistry actionEffectKey
-                              >> modifyNarration (updateActionConsequence msg)
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You try but feel dizzy and have to lay back down"
 
@@ -51,7 +52,7 @@ getF = AcquisitionActionF getit
                -> AcquisitionVerbPhrase
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
-    getit actionKey actionMap searchStrategy avp finalize = do
+    getit actionEffectKey actionMap searchStrategy avp finalize = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saObjectKey
@@ -61,13 +62,13 @@ getF = AcquisitionActionF getit
               objectActionLookup <- lookupAcquisitionAction objectGID actionMap
               case objectActionLookup of
                 Left err' -> handleAcquisitionError err'
-                Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionKey
+                Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
                 Right (CollectedF objectActionF) -> do
                   containerActionLookup <- lookupAcquisitionAction containerGID actionMap
                   case containerActionLookup of
                     Left err' -> handleAcquisitionError err'
-                    Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionKey
-                    Right (LosesObjectF containerActionF) -> finalize actionKey containerGID objectGID objectActionF containerActionF
+                    Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
+                    Right (LosesObjectF containerActionF) -> finalize actionEffectKey containerGID objectGID objectActionF containerActionF
                     Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
                 Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
         Complete (CompleteAcquisitionRes {..}) -> do
@@ -89,7 +90,6 @@ getF = AcquisitionActionF getit
                         SupportedBy sid -> sid == supportGID
                         ContainedIn cid -> cid == supportGID
                         _ -> False) (Data.Set.toList relationships)
-
                   if not isOnSupport
                     then handleAcquisitionError $ SpatialValidationFailed $
                       "The " <> (Data.Text.pack . show) objectGID <>
@@ -99,14 +99,14 @@ getF = AcquisitionActionF getit
                       objectActionLookup <- lookupAcquisitionAction objectGID actionMap
                       case objectActionLookup of
                         Left err' -> handleAcquisitionError err'
-                        Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionKey
+                        Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
                         Right (CollectedF objectActionF) -> do
                           containerActionLookup <- lookupAcquisitionAction supportGID actionMap
                           case containerActionLookup of
                             Left err' -> handleAcquisitionError err'
-                            Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionKey
+                            Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
                             Right (LosesObjectF containerActionF) ->
-                              finalize actionKey supportGID objectGID objectActionF containerActionF
+                              finalize actionEffectKey supportGID objectGID objectActionF containerActionF
                             Right _ -> handleAcquisitionError $ InvalidActionType $
                               "Container " <> (Data.Text.pack . show) supportGID <>
                               " does not have a LosesObjectF action."
@@ -123,7 +123,9 @@ getF = AcquisitionActionF getit
       where
         ares = parseAcquisitionPhrase avp
 
-validateObjectSearch :: SearchStrategy -> NounKey -> GameComputation Identity (Either AcquisitionError (GID Object, GID Object))
+validateObjectSearch :: SearchStrategy
+                          -> NounKey
+                          -> GameComputation Identity (Either AcquisitionError (GID Object, GID Object))
 validateObjectSearch searchStrategy nounKey = do
   maybeResult <- searchStrategy nounKey
   case maybeResult of
