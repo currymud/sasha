@@ -3,26 +3,27 @@ import           Control.Monad.Identity                            (Identity)
 import qualified Data.Set
 import           GameState                                         (getObjectM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
-import           Model.Core                                        (ActionManagement (SAConManagementKey),
+import           Model.Core                                        (ActionEffectKey (ContainerAccessActionKey),
+                                                                    ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
-                                                                    ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys),
-                                                                    ActionEffectKey (ContainerAccessActionKey),
+                                                                    ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys),
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)
 
+
+-- ToDo: get back to this next
 openContainerF :: GID Object -> ContainerAccessActionF
 openContainerF objectGID = ObjectContainerAccessF openit
   where
-    openit :: GameComputation Identity ContainerAccessResult
-    openit = do
+    openit :: ActionEffectKey -> GameComputation Identity ContainerAccessResult
+    openit actionEffectKey = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement
       -- Find the single AVManagementKey entry that matches the 'get' verb
       let getActionGIDs = [gid | SAConManagementKey verb gid <- Data.Set.toList actionSet, verb == open]
       pure $ ContainerAccessResult
         {
-          _containerActionEffectKeys = map ContainerAccessActionKey getActionGIDs
-        , _containerFieldEffectKeys = map ContainerAccessActionKey getActionGIDs
+          _containerActionEffectKeys = actionEffectKey: map ContainerAccessActionKey getActionGIDs
         }

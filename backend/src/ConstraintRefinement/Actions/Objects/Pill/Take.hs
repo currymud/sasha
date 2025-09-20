@@ -8,7 +8,9 @@ import           Data.Set                      (Set)
 import           Data.Text                     (Text)
 import           GameState                     (modifyNarration,
                                                 updateActionConsequence)
-import           Model.Core                    (ActionEffectMap,
+import           GameState.ActionManagement    (processEffectsFromRegistry)
+import           Model.Core                    (ActionEffectKey,
+                                                ActionEffectMap,
                                                 ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
                                                 GameComputation, Object,
                                                 TargetEffectKey)
@@ -18,33 +20,40 @@ import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase)
 takePillDeniedF :: ConsumptionActionF
 takePillDeniedF = CannotConsumeF denied
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You can't take the pill right now."
-
 
 alreadyTookPillF :: ConsumptionActionF
 alreadyTookPillF = CannotConsumeF denied
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey  = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You already took the pill."
 
 pillTooFarF :: ConsumptionActionF
 pillTooFarF = CannotConsumeF denied
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg
     msg :: Text
     msg = "You grab at it but it's hard to get to. try grabbing the robe first."
 
 takePillF :: ConsumptionActionF
 takePillF = PlayerConsumptionActionF takePill
   where
-    takePill :: GID Object -> Set TargetEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ()
-    takePill _targetOid _actionKeys _effectMap _cvp = do
+    takePill :: ActionEffectKey -> GID Object -> ConsumptionVerbPhrase -> GameComputation Identity ()
+    takePill actionEffectKey _oid _cvp = do
+    --  ToDo
       -- Add success narration
       modifyNarration
         $ updateActionConsequence "You take the pill and immediately feel better. Your headache is gone and you feel ready to get up."
+      processEffectsFromRegistry actionEffectKey

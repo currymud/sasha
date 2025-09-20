@@ -214,9 +214,8 @@ type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
 
 type ContainerAccessResult :: Type
-data ContainerAccessResult = ContainerAccessResult
+newtype ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [ActionEffectKey]
-  , _containerFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
@@ -243,19 +242,19 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (GameComputation Identity ContainerAccessResult)
-  | InstrumentContainerAccessF (GID Object -> GameComputation Identity InstrumentAccessResult)
-  | CannotAccessF          (GameComputation Identity ())
+  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ContainerAccessResult)
+  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity InstrumentAccessResult)
+  | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
-  = PlayerSomaticAccessActionF (Set TargetEffectKey -> [SystemEffectKey] -> ActionEffectMap -> SystemEffectRegistry -> GameComputation Identity ())
-  | CannotSomaticAccessF (GameComputation Identity ())
+  = PlayerSomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotSomaticAccessF (ActionEffectKey -> GameComputation Identity ())
 
 type PosturalActionF :: Type
 data PosturalActionF
-  = PlayerPosturalActionF (Set TargetEffectKey -> ActionEffectMap -> GameComputation Identity ())
-  | CannotPosturalActionF (GameComputation Identity ())
+  = PlayerPosturalActionF (ActionEffectKey -> GameComputation Identity ())
+  | CannotPosturalActionF (ActionEffectKey -> GameComputation Identity ())
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
@@ -288,8 +287,8 @@ data AcquisitionActionF
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF
-  = PlayerConsumptionActionF (GID Object -> Set TargetEffectKey -> ActionEffectMap -> ConsumptionVerbPhrase -> GameComputation Identity ())
-  | CannotConsumeF (GameComputation Identity ())
+  = PlayerConsumptionActionF (ActionEffectKey -> GID Object -> ConsumptionVerbPhrase -> GameComputation Identity ())
+  | CannotConsumeF (ActionEffectKey -> GameComputation Identity ())
 
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb

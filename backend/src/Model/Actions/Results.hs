@@ -3,7 +3,6 @@
 module Model.Actions.Results
   ( -- * Constraint Resolution Results
     CoordinationResult(..)
-  , ContainerAccessResult(..)
   , InstrumentAccessResult(..)
     -- * Parsed Command Results
   , AcquisitionRes(..)
@@ -31,14 +30,6 @@ data CoordinationResult = CoordinationResult
   , _actionEffectKeys :: [ActionEffectKey]
   , _fieldEffectKeys  :: [ActionEffectKey]
   }
-
--- | Container access coordination result
-type ContainerAccessResult :: Type
-data ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [ActionEffectKey]
-  , _containerFieldEffectKeys  :: [ActionEffectKey]
-  }
-  deriving stock (Show, Eq, Ord)
 
 -- | Instrument access coordination result
 type InstrumentAccessResult :: Type
