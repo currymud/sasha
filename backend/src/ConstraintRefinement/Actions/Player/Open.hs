@@ -9,24 +9,25 @@ import           GameState                                         (getObjectM,
                                                                     modifyNarration,
                                                                     parseAccessPhrase,
                                                                     updateActionConsequence)
-import           GameState.ActionManagement                        (findSAForContainersKey)
+import           GameState.ActionManagement                        (findSAForContainersKey,
+                                                                    processEffectsFromRegistry)
 import           GameState.Perception                              (youSeeM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     SimpleAccessRes (SimpleAccessRes, _saContainerKey))
-import           Model.Core                                        (TargetEffectKey,
+import           Model.Core                                        (ActionEffectKey,
                                                                     ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
-                                                                    ActionEffectKey,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
                                                                     SimpleAccessSearchStrategy,
                                                                     SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF),
                                                                     SystemEffectKey,
-                                                                    SystemEffectRegistry)
+                                                                    SystemEffectRegistry,
+                                                                    TargetEffectKey)
 import           Model.GID                                         (GID)
 import           Model.Parser.Composites.Verbs                     (ContainerAccessVerbPhrase)
 import           Model.Parser.GCase                                (NounKey)
@@ -35,33 +36,35 @@ import           Model.Parser.GCase                                (NounKey)
 openDeniedF :: ContainerAccessActionF
 openDeniedF = CannotAccessF denied
   where
-    denied :: GameComputation Identity ()
-    denied = modifyNarration $ updateActionConsequence msg'
+    denied :: ActionEffectKey -> GameComputation Identity ()
+    denied actionEffectKey = do
+      processEffectsFromRegistry actionEffectKey
+      modifyNarration $ updateActionConsequence msg'
     msg' :: Text
     msg' = "You are in position to not be opening anything but your eyes."
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = CannotSomaticAccessF denied
  where
-   denied :: GameComputation Identity ()
-   denied = modifyNarration $ updateActionConsequence msg
+   denied :: ActionEffectKey -> GameComputation Identity ()
+   denied actionEffectKey = do
+     processEffectsFromRegistry actionEffectKey
+     modifyNarration $ updateActionConsequence msg
    msg :: Text
    msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
 openEyes = PlayerSomaticAccessActionF opened
  where
-   opened :: Set TargetEffectKey
-             -> [SystemEffectKey]
-             ->  ActionEffectMap
-             ->  SystemEffectRegistry
+   opened :: ActionEffectKey
              -> GameComputation Identity ()
-   opened actionEffectKeys _ (ActionEffectMap actionEffectMap) _ = do
+   opened actionEffectKeys = do
      modifyNarration (updateActionConsequence msg)
      youSeeM
-
-msg :: Text
-msg = "You open your eyes, and the world comes into focus."
+     processEffectsFromRegistry actionEffectKeys
+     where
+       msg :: Text
+       msg = "You open your eyes, and the world comes into focus."
 
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
@@ -72,7 +75,7 @@ openF = PlayerContainerAccessF openit
                -> ContainerAccessVerbPhrase
                ->  FinalizeAccessNotInstrumentF
                -> GameComputation Identity ()
-    openit actionKey searchStrategy actionMap avp finalize = do
+    openit actionEffectKey searchStrategy actionMap avp finalize = do
       case caRes of
         SimpleAR (SimpleAccessRes {..}) -> do
           osValidation <- validateObjectSearch searchStrategy _saContainerKey
@@ -84,8 +87,8 @@ openF = PlayerContainerAccessF openit
                 Left errM -> errM
                 Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
                 Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
-                Right (CannotAccessF actionF) -> actionF
-                Right (ObjectContainerAccessF actionF) -> finalize actionKey actionF
+                Right (CannotAccessF actionF) -> actionF actionEffectKey
+                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF actionEffectKey)
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp

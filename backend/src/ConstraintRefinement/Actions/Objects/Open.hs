@@ -3,20 +3,22 @@ import           Control.Monad.Identity                            (Identity)
 import qualified Data.Set
 import           GameState                                         (getObjectM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
-import           Model.Core                                        (ActionManagement (SAConManagementKey),
+import           Model.Core                                        (ActionEffectKey (ContainerAccessActionKey),
+                                                                    ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
                                                                     ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys, _containerFieldEffectKeys),
-                                                                    ActionEffectKey (ContainerAccessActionKey),
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)
 
+
+-- ToDo: get back to this next
 openContainerF :: GID Object -> ContainerAccessActionF
 openContainerF objectGID = ObjectContainerAccessF openit
   where
-    openit :: GameComputation Identity ContainerAccessResult
-    openit = do
+    openit :: ActionEffectKey -> GameComputation Identity ContainerAccessResult
+    openit actionEffectKey = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement
       -- Find the single AVManagementKey entry that matches the 'get' verb
