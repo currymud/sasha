@@ -214,9 +214,8 @@ type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
 
 type ContainerAccessResult :: Type
-data ContainerAccessResult = ContainerAccessResult
+newtype ContainerAccessResult = ContainerAccessResult
   { _containerActionEffectKeys :: [ActionEffectKey]
-  , _containerFieldEffectKeys  :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
@@ -282,8 +281,8 @@ type FinalizeAcquisitionF = ActionEffectKey
 type AcquisitionActionF :: Type
 data AcquisitionActionF
   = AcquisitionActionF AcquisitionF
-  | CollectedF ( ActionEffectKey -> GameComputation Identity CoordinationResult)
-  | LosesObjectF (ActionEffectKey -> GID Object -> GameComputation Identity CoordinationResult)
+  | CollectedF (GameComputation Identity CoordinationResult)
+  | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
   | NotGettableF (ActionEffectKey -> GameComputation Identity ())
 
 type ConsumptionActionF :: Type
