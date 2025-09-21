@@ -11,7 +11,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionActionF (CollectedF, LosesObjectF),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                   CoordinationResult (CoordinationResult, _actionEffectKeys, _computation, _fieldEffectKeys),
+                                                                   CoordinationResult (CoordinationResult, _actionEffectKeys, _computation),
                                                                    ActionEffectKey (AcquisitionalActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
@@ -30,7 +30,6 @@ getObjectF objectGID = CollectedF getit
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
         , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
-        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
         }
 
 getFromSupportF :: GID Object -> AcquisitionActionF
@@ -68,6 +67,5 @@ getFromSupportF supportObjGID = LosesObjectF getit
       pure $ CoordinationResult
         { _computation = computation
         , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
-        , _fieldEffectKeys = map AcquisitionalActionKey getActionGIDs
         }
 
