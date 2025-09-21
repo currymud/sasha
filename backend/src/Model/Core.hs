@@ -260,7 +260,6 @@ type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
   , _actionEffectKeys :: [ActionEffectKey]
-  , _fieldEffectKeys  :: [ActionEffectKey]
   }
 
 type SearchStrategy :: Type
