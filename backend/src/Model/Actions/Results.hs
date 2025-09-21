@@ -1,10 +1,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 
 module Model.Actions.Results
-  ( -- * Constraint Resolution Results
-    CoordinationResult(..)
-  , InstrumentAccessResult(..)
-    -- * Parsed Command Results
+  ( CoordinationResult(..)
   , AcquisitionRes(..)
   , CompleteAcquisitionRes(..)
   , SimpleAcquisitionRes(..)
@@ -29,14 +26,6 @@ data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
   , _actionEffectKeys :: [ActionEffectKey]
   }
-
--- | Instrument access coordination result
-type InstrumentAccessResult :: Type
-data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
-  }
-  deriving stock (Show, Eq, Ord)
 
 -- | Acquisition parsing result - Simple vs Complete acquisition commands
 type AcquisitionRes :: Type

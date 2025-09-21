@@ -220,11 +220,10 @@ newtype ContainerAccessResult = ContainerAccessResult
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
-data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
+newtype InstrumentAccessResult = InstrumentAccessResult
+  { _instrumentEffectKeys :: [ActionEffectKey]
   }
-  deriving stock (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
@@ -242,8 +241,8 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ContainerAccessResult)
-  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity InstrumentAccessResult)
+  | ObjectContainerAccessF (GameComputation Identity ContainerAccessResult)
+  | InstrumentContainerAccessF (GID Object -> GameComputation Identity InstrumentAccessResult)
   | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type

@@ -3,7 +3,6 @@ import           ConstraintRefinement.Actions.Utils                (AcquisitionE
                                                                     handleAcquisitionError)
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
-import           Data.Set                                          (Set)
 import           Data.Text                                         (Text, pack)
 import           GameState                                         (getObjectM,
                                                                     modifyNarration,
@@ -17,17 +16,13 @@ import           Model.Actions.Results                             (AccessRes (C
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     SimpleAccessRes (SimpleAccessRes, _saContainerKey))
 import           Model.Core                                        (ActionEffectKey,
-                                                                    ActionEffectMap (ActionEffectMap),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
                                                                     SimpleAccessSearchStrategy,
-                                                                    SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF),
-                                                                    SystemEffectKey,
-                                                                    SystemEffectRegistry,
-                                                                    TargetEffectKey)
+                                                                    SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
 import           Model.GID                                         (GID)
 import           Model.Parser.Composites.Verbs                     (ContainerAccessVerbPhrase)
 import           Model.Parser.GCase                                (NounKey)
@@ -88,7 +83,7 @@ openF = PlayerContainerAccessF openit
                 Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
                 Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
                 Right (CannotAccessF actionF) -> actionF actionEffectKey
-                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF actionEffectKey)
+                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey actionF
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp
