@@ -4,10 +4,11 @@ import qualified Data.Set
 import           GameState                                         (getObjectM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
 import           Model.Core                                        (ActionEffectKey (ContainerAccessActionKey),
+                                                                    ActionEffectResult (ActionEffectResult, _actionEffectKeys),
                                                                     ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
-                                                                    ContainerAccessResult (ContainerAccessResult, _containerActionEffectKeys),
+                                                                    ContainerAccessResult,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)
@@ -23,7 +24,7 @@ openContainerF objectGID = ObjectContainerAccessF openit
       let ActionManagementFunctions actionSet = actionManagement
       -- Find the single AVManagementKey entry that matches the 'get' verb
       let getActionGIDs = [gid | SAConManagementKey verb gid <- Data.Set.toList actionSet, verb == open]
-      pure $ ContainerAccessResult
+      pure $ ActionEffectResult
         {
-          _containerActionEffectKeys = actionEffectKey: map ContainerAccessActionKey getActionGIDs
+          _actionEffectKeys = actionEffectKey: map ContainerAccessActionKey getActionGIDs
         }

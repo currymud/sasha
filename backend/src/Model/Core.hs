@@ -85,7 +85,9 @@ module Model.Core
     -- * Configuration
   , Config(..)
     -- * Intermediate Results
-  , ContainerAccessResult(..)
+  , ActionEffectResult(..)
+  , ContainerAccessResult
+  , InstrumentAccessResult
   , CoordinationResult(..)
   ) where
 
@@ -213,17 +215,16 @@ type SimpleAccessSearchStrategy :: Type
 type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
 
-type ContainerAccessResult :: Type
-newtype ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [ActionEffectKey]
+-- | Unified result type for actions that produce effect keys
+type ActionEffectResult :: Type
+newtype ActionEffectResult = ActionEffectResult
+  { _actionEffectKeys :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
-type InstrumentAccessResult :: Type
-newtype InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [ActionEffectKey]
-  }
-  deriving newtype (Show, Eq, Ord)
+-- Type aliases for semantic clarity and backward compatibility
+type ContainerAccessResult = ActionEffectResult
+type InstrumentAccessResult = ActionEffectResult
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
