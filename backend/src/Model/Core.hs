@@ -74,6 +74,7 @@ module Model.Core
   , ActionEffectKey(..)
   , TargetEffectKey(..)
   , SystemEffectKey(..)
+  , NarrationComputation(..)
   , Effect(..)
   , SystemEffect(..)
   , SystemEffectConfig(..)
@@ -394,10 +395,20 @@ data FieldUpdateOperation
   | PlayerLocation (GID Location)
   deriving stock (Show, Eq, Ord)
 
+type NarrationComputation :: Type
+data NarrationComputation
+  = StaticNarration Text
+  | InventoryNarration
+  | LookAtNarration (GID Object)
+  | ContainerContentsNarration (GID Object)
+  | EmptyContainerNarration
+  deriving stock (Show, Eq, Ord)
+
 type Effect :: Type
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation
+  | NarrationEffect NarrationComputation
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type
