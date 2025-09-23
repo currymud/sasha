@@ -30,8 +30,8 @@ notEvenInventoryF = CannotImplicitStimulusActionF notEvenInventory'
   where
     notEvenInventory' :: ActionEffectKey -> GameComputation Identity ()
     notEvenInventory' actionEffectKey  = do
+      -- All narration now handled via effects
       processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
 
 defaultInventoryLookF :: ImplicitStimulusActionF
 defaultInventoryLookF = inventoryLookF defaultFlavorText
@@ -41,16 +41,8 @@ inventoryLookF (InventoryFlavorText {..}) = PlayerImplicitStimulusActionF invent
   where
     inventoryLook' :: ActionEffectKey ->  GameComputation Identity ()
     inventoryLook' actionEffectKey  = do
-      inventoryObjects <- getInventoryObjectsM
-      case inventoryObjects of
-        [] -> do
-          modifyNarration $ updateActionConsequence _emptyFlavorText
-        objects -> do
-          objectNames <- mapM getObjectShortName objects
-          let itemsList = Text.intercalate ", " objectNames
-              fullMessage = _inventoryFlavorText <> " You are carrying: " <> itemsList <> "."
-          processEffectsFromRegistry actionEffectKey
-          modifyNarration $ updateActionConsequence fullMessage
+      -- All narration now handled via effects
+      processEffectsFromRegistry actionEffectKey
 
 getObjectShortName :: GID Object -> GameComputation Identity Text
 getObjectShortName oid = do
