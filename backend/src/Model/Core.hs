@@ -74,6 +74,7 @@ module Model.Core
   , ActionEffectKey(..)
   , TargetEffectKey(..)
   , SystemEffectKey(..)
+  , NarrationComputation(..)
   , Effect(..)
   , SystemEffect(..)
   , SystemEffectConfig(..)
@@ -85,7 +86,7 @@ module Model.Core
     -- * Configuration
   , Config(..)
     -- * Intermediate Results
-  , ContainerAccessResult(..)
+  , ActionEffectResult(..)
   , CoordinationResult(..)
   ) where
 
@@ -213,22 +214,16 @@ type SimpleAccessSearchStrategy :: Type
 type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
 
-type ContainerAccessResult :: Type
-newtype ContainerAccessResult = ContainerAccessResult
-  { _containerActionEffectKeys :: [ActionEffectKey]
-  }
-  deriving stock (Show, Eq, Ord)
-
-type InstrumentAccessResult :: Type
-data InstrumentAccessResult = InstrumentAccessResult
-  { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
+-- | Unified result type for actions that produce effect keys
+type ActionEffectResult :: Type
+newtype ActionEffectResult = ActionEffectResult
+  { _actionEffectKeys :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
-                                      -> GameComputation Identity ContainerAccessResult
+                                      -> GameComputation Identity ActionEffectResult
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
@@ -242,8 +237,8 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ContainerAccessResult)
-  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity InstrumentAccessResult)
+  | ObjectContainerAccessF (GameComputation Identity ActionEffectResult)
+  | InstrumentContainerAccessF (GID Object -> GameComputation Identity ActionEffectResult)
   | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
@@ -400,10 +395,20 @@ data FieldUpdateOperation
   | PlayerLocation (GID Location)
   deriving stock (Show, Eq, Ord)
 
+type NarrationComputation :: Type
+data NarrationComputation
+  = StaticNarration Text
+  | InventoryNarration
+  | LookAtNarration (GID Object)
+  | ContainerContentsNarration (GID Object)
+  | EmptyContainerNarration
+  deriving stock (Show, Eq, Ord)
+
 type Effect :: Type
 data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation
+  | NarrationEffect NarrationComputation
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type

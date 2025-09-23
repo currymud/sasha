@@ -88,7 +88,7 @@ openF = PlayerContainerAccessF openit
                 Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
                 Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
                 Right (CannotAccessF actionF) -> actionF actionEffectKey
-                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF actionEffectKey)
+                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey actionF
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp

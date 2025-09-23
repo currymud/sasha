@@ -14,9 +14,11 @@ import           Model.Core                                              (Acquis
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
                                                                           ActionEffectKey (..),
+                                                                          Effect (..),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
                                                                           Location,
+                                                                          NarrationComputation (..),
                                                                           Object,
                                                                           Player,
                                                                           PlayerKey (..),
@@ -187,6 +189,36 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+
+  -- Register narration effects for actions
+  -- Inventory narration
+  linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID) 
+    (NarrationEffect InventoryNarration)
+  
+  -- LookAt narration for objects
+  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
+    (NarrationEffect (LookAtNarration floorGID))
+  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
+    (NarrationEffect (ContainerContentsNarration floorGID))
+    
+  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
+    (NarrationEffect (LookAtNarration chairGID))
+  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
+    (NarrationEffect (ContainerContentsNarration chairGID))
+    
+  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
+    (NarrationEffect (LookAtNarration robeGID))
+  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
+    (NarrationEffect (ContainerContentsNarration robeGID))
+    
+  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
+    (NarrationEffect (LookAtNarration pocketGID))
+  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
+    (NarrationEffect (ContainerContentsNarration pocketGID))
+  
+  -- Static narration for player's get action
+  linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID) 
+    (NarrationEffect (StaticNarration "You pick it up."))
 
   finalizeGameState
 

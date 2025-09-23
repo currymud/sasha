@@ -1,14 +1,18 @@
 module GameState.ActionManagement where
 import           Control.Applicative           ((<|>))
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (modify')
+import           Control.Monad                 (filterM, unless)
+import           Control.Monad.State           (gets, modify')
 import qualified Data.Foldable
 import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
-import           GameState                     (modifyLocationM, modifyObjectM,
-                                                modifyPlayerM)
+import           Data.Text                     (Text, intercalate)
+import           GameState                     (getInventoryObjectsM, getObjectM,
+                                                modifyLocationM, modifyNarration,
+                                                modifyObjectM, modifyPlayerM,
+                                                updateActionConsequence)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           Model.Core                    (AcquisitionActionF,
                                                 ActionEffectKey,
@@ -20,21 +24,25 @@ import           Model.Core                    (AcquisitionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect (ActionManagementEffect, FieldUpdateEffect),
+                                                Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
-                                                GameState (_player, _systemEffectRegistry),
+                                                GameState (_player, _systemEffectRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
+                                                NarrationComputation (ContainerContentsNarration, EmptyContainerNarration, InventoryNarration, LookAtNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
-                                                Player (_location, _playerActions),
+                                                Player (_location, _playerActions, _inventory),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 PosturalActionF,
                                                 SomaticAccessActionF,
+                                                SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
                                                 SystemEffect,
                                                 SystemEffectConfig,
                                                 SystemEffectKey,
                                                 TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
+                                                World (_spatialRelationshipMap),
                                                 _title)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
@@ -430,6 +438,66 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
+
+-- NARRATION EFFECTS
+processEffect _ (NarrationEffect narrationComputation) = do
+  processNarrationEffect narrationComputation
+
+processNarrationEffect :: NarrationComputation -> GameComputation Identity ()
+processNarrationEffect (StaticNarration text) = 
+  modifyNarration $ updateActionConsequence text
+
+processNarrationEffect InventoryNarration = do
+  inventoryObjects <- getInventoryObjectsM
+  case inventoryObjects of
+    [] -> modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
+    objects -> do
+      objectNames <- mapM (fmap _shortName . getObjectM) objects
+      let itemsList = Data.Text.intercalate ", " objectNames
+          fullMessage = "You look through your inventory. You have a feeling all these things are very important somehow. You are carrying: " <> itemsList <> "."
+      modifyNarration $ updateActionConsequence fullMessage
+
+processNarrationEffect (LookAtNarration objGID) = do
+  obj <- getObjectM objGID
+  world <- gets _world
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+  
+  -- Generate location-based narration
+  case Data.Map.Strict.lookup objGID spatialMap of
+    Just relationships
+      | Inventory `Data.Set.member` relationships ->
+          modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
+      | otherwise ->
+          modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+    Nothing ->
+      modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+
+processNarrationEffect (ContainerContentsNarration objGID) = do
+  world <- gets _world
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+  
+  case Data.Map.Strict.lookup objGID spatialMap of
+    Nothing -> pure ()  -- Object not found
+    Just relationships -> do
+      let supportedObjects = [oid | Supports oidSet <- Data.Set.toList relationships,
+                                    oid <- Data.Set.toList oidSet]
+      let containedObjects = [oid | Contains oidSet <- Data.Set.toList relationships,
+                                    oid <- Data.Set.toList oidSet]
+      
+      -- Generate narration for supported objects
+      unless (null supportedObjects) $ do
+        supportedNames <- mapM (fmap _shortName . getObjectM) supportedObjects
+        let onText = "On it you see: " <> Data.Text.intercalate ", " supportedNames
+        modifyNarration $ updateActionConsequence onText
+      
+      -- Generate narration for contained objects
+      unless (null containedObjects) $ do
+        containedNames <- mapM (fmap _shortName . getObjectM) containedObjects
+        let inText = "In it you see: " <> Data.Text.intercalate ", " containedNames
+        modifyNarration $ updateActionConsequence inText
+
+processNarrationEffect EmptyContainerNarration = 
+  modifyNarration $ updateActionConsequence "It's empty."
 
 lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAccessActionF)
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =

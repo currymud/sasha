@@ -9,10 +9,10 @@ import           GameState                     (getPlayerLocationM, getPlayerM,
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Model.Core                    (ActionEffectKey (ContainerAccessActionKey),
+                                                ActionEffectResult (ActionEffectResult),
                                                 ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
-                                                ContainerAccessResult (ContainerAccessResult),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
@@ -46,9 +46,9 @@ objectSearchStrategy nounkey = do
     _ -> pure Nothing
 
 finalizeContainerAccess :: ActionEffectKey
-                           -> GameComputation Identity ContainerAccessResult
+                           -> GameComputation Identity ActionEffectResult
                            -> GameComputation Identity ()
 finalizeContainerAccess actionEffectKey objectActionF = do
- (ContainerAccessResult objectEffects) <- objectActionF
+ (ActionEffectResult objectEffects) <- objectActionF
  let allEffects = actionEffectKey:objectEffects
  mapM_ processEffectsFromRegistry allEffects

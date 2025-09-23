@@ -61,8 +61,6 @@ getFromSupportF supportObjGID = LosesObjectF getit
 
             -- Add to inventory
             addToInventoryM targetObjectGID
-            -- Success narration
-            modifyNarration $ updateActionConsequence "You pick it up."
 
       pure $ CoordinationResult
         { _computation = computation
