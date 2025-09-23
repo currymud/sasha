@@ -17,13 +17,13 @@ import           Model.GID                                         (GID)
 openContainerF :: GID Object -> ContainerAccessActionF
 openContainerF objectGID = ObjectContainerAccessF openit
   where
-    openit :: ActionEffectKey -> GameComputation Identity ActionEffectResult
-    openit actionEffectKey = do
+    openit :: GameComputation Identity ActionEffectResult
+    openit = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement
       -- Find the single AVManagementKey entry that matches the 'get' verb
       let getActionGIDs = [gid | SAConManagementKey verb gid <- Data.Set.toList actionSet, verb == open]
       pure $ ActionEffectResult
         {
-          _actionEffectKeys = actionEffectKey: map ContainerAccessActionKey getActionGIDs
+          _actionEffectKeys = map ContainerAccessActionKey getActionGIDs
         }

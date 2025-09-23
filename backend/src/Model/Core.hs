@@ -236,8 +236,8 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ActionEffectResult)
-  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity ActionEffectResult)
+  | ObjectContainerAccessF (GameComputation Identity ActionEffectResult)
+  | InstrumentContainerAccessF (GID Object -> GameComputation Identity ActionEffectResult)
   | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
