@@ -86,8 +86,6 @@ module Model.Core
   , Config(..)
     -- * Intermediate Results
   , ActionEffectResult(..)
-  , ContainerAccessResult
-  , InstrumentAccessResult
   , CoordinationResult(..)
   ) where
 
@@ -222,13 +220,9 @@ newtype ActionEffectResult = ActionEffectResult
   }
   deriving stock (Show, Eq, Ord)
 
--- Type aliases for semantic clarity and backward compatibility
-type ContainerAccessResult = ActionEffectResult
-type InstrumentAccessResult = ActionEffectResult
-
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
-                                      -> GameComputation Identity ContainerAccessResult
+                                      -> GameComputation Identity ActionEffectResult
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
@@ -242,8 +236,8 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ContainerAccessResult)
-  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity InstrumentAccessResult)
+  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ActionEffectResult)
+  | InstrumentContainerAccessF (ActionEffectKey -> GID Object -> GameComputation Identity ActionEffectResult)
   | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type

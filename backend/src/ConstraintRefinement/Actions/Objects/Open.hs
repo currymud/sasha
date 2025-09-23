@@ -8,7 +8,6 @@ import           Model.Core                                        (ActionEffect
                                                                     ActionManagement (SAConManagementKey),
                                                                     ActionManagementFunctions (ActionManagementFunctions),
                                                                     ContainerAccessActionF (ObjectContainerAccessF),
-                                                                    ContainerAccessResult,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement))
 import           Model.GID                                         (GID)
@@ -18,7 +17,7 @@ import           Model.GID                                         (GID)
 openContainerF :: GID Object -> ContainerAccessActionF
 openContainerF objectGID = ObjectContainerAccessF openit
   where
-    openit :: ActionEffectKey -> GameComputation Identity ContainerAccessResult
+    openit :: ActionEffectKey -> GameComputation Identity ActionEffectResult
     openit actionEffectKey = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement

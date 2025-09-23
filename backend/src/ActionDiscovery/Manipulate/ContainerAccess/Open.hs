@@ -13,7 +13,6 @@ import           Model.Core                    (ActionEffectKey (ContainerAccess
                                                 ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
                                                 ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
-                                                ContainerAccessResult,
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
@@ -47,7 +46,7 @@ objectSearchStrategy nounkey = do
     _ -> pure Nothing
 
 finalizeContainerAccess :: ActionEffectKey
-                           -> GameComputation Identity ContainerAccessResult
+                           -> GameComputation Identity ActionEffectResult
                            -> GameComputation Identity ()
 finalizeContainerAccess actionEffectKey objectActionF = do
  (ActionEffectResult objectEffects) <- objectActionF
