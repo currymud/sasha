@@ -220,11 +220,10 @@ newtype ContainerAccessResult = ContainerAccessResult
   deriving stock (Show, Eq, Ord)
 
 type InstrumentAccessResult :: Type
-data InstrumentAccessResult = InstrumentAccessResult
+newtype InstrumentAccessResult = InstrumentAccessResult
   { _instrumentActionEffectKeys :: [ActionEffectKey]
-  , _instrumentFieldEffectKeys  :: [ActionEffectKey]
   }
-  deriving stock (Show, Eq, Ord)
+  deriving newtype (Show, Eq, Ord)
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
