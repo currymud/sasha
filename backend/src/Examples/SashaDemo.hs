@@ -87,6 +87,17 @@ import           Model.Parser.GCase                                      (NounKe
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
                                                                           pitchBlackF)
+-- Effect functions
+import           ConstraintRefinement.Effects.Objects.Chair.Look         (chairLookNarrationEffect,
+                                                                          chairContentsNarrationEffect)
+import           ConstraintRefinement.Effects.Objects.Floor.Look         (floorLookNarrationEffect,
+                                                                          floorContentsNarrationEffect)
+import           ConstraintRefinement.Effects.Objects.Pocket.Look        (pocketLookNarrationEffect,
+                                                                          pocketContentsNarrationEffect)
+import           ConstraintRefinement.Effects.Objects.Robe.Look          (robeLookNarrationEffect,
+                                                                          robeContentsNarrationEffect)
+import           ConstraintRefinement.Effects.Player.Get                 (getObjectNarrationEffect)
+import           ConstraintRefinement.Effects.Player.Inventory           (inventoryNarrationEffect)
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF)
@@ -193,32 +204,32 @@ sashaBedroomDemo = do
   -- Register narration effects for actions
   -- Inventory narration
   linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID) 
-    (NarrationEffect InventoryNarration)
+    inventoryNarrationEffect
   
   -- LookAt narration for objects
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
-    (NarrationEffect (LookAtNarration floorGID))
+    (floorLookNarrationEffect floorGID)
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
-    (NarrationEffect (ContainerContentsNarration floorGID))
+    (floorContentsNarrationEffect floorGID)
     
   linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
-    (NarrationEffect (LookAtNarration chairGID))
+    (chairLookNarrationEffect chairGID)
   linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
-    (NarrationEffect (ContainerContentsNarration chairGID))
+    (chairContentsNarrationEffect chairGID)
     
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
-    (NarrationEffect (LookAtNarration robeGID))
+    (robeLookNarrationEffect robeGID)
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
-    (NarrationEffect (ContainerContentsNarration robeGID))
+    (robeContentsNarrationEffect robeGID)
     
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
-    (NarrationEffect (LookAtNarration pocketGID))
+    (pocketLookNarrationEffect pocketGID)
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
-    (NarrationEffect (ContainerContentsNarration pocketGID))
+    (pocketContentsNarrationEffect pocketGID)
   
   -- Static narration for player's get action
   linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID) 
-    (NarrationEffect (StaticNarration "You pick it up."))
+    getObjectNarrationEffect
 
   finalizeGameState
 
