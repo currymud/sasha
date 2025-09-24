@@ -89,19 +89,34 @@ import           ConstraintRefinement.Actions.Locations.Look             (lookF,
                                                                           pitchBlackF)
 -- Effect functions
 import           ConstraintRefinement.Effects.Objects.Chair.Look         (chairLookNarrationEffect,
-                                                                          chairContentsNarrationEffect)
+                                                                          chairContentsNarrationEffect,
+                                                                          whatChairEffect)
 import           ConstraintRefinement.Effects.Objects.Floor.Look         (floorLookNarrationEffect,
-                                                                          floorContentsNarrationEffect)
+                                                                          floorContentsNarrationEffect,
+                                                                          notEvenFloorEffect)
 import           ConstraintRefinement.Effects.Objects.Pocket.Look        (pocketLookNarrationEffect,
-                                                                          pocketContentsNarrationEffect)
+                                                                          pocketContentsNarrationEffect,
+                                                                          whatPocketEffect,
+                                                                          notEvenPocketEffect,
+                                                                          pocketClosedEffect)
+import           ConstraintRefinement.Effects.Objects.Pocket.Open        (notEvenOpenEffect,
+                                                                          pocketOutOfReachEffect)
 import           ConstraintRefinement.Effects.Objects.Robe.Look          (robeLookNarrationEffect,
-                                                                          robeContentsNarrationEffect)
+                                                                          robeContentsNarrationEffect,
+                                                                          notEvenRobeEffect)
+import           ConstraintRefinement.Effects.Objects.Robe.Get           (getRobeDeniedEffect,
+                                                                          alreadyHaveRobeEffect)
 import           ConstraintRefinement.Effects.Player.Get                 (getObjectNarrationEffect)
 import           ConstraintRefinement.Effects.Player.Inventory           (inventoryNarrationEffect)
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
+import           ConstraintRefinement.Actions.Objects.Floor.Look         (notEvenFloorF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF)
-import           ConstraintRefinement.Actions.Objects.Pocket.Open        (pocketOutOfReachF)
+import           ConstraintRefinement.Actions.Objects.Pocket.Look        (whatPocket,
+                                                                          notEvenPocket,
+                                                                          pocketClosedF)
+import           ConstraintRefinement.Actions.Objects.Pocket.Open        (notEvenOpenF,
+                                                                          pocketOutOfReachF)
 import           ConstraintRefinement.Actions.Objects.Robe.Get           (getRobeDeniedF)
 import           ConstraintRefinement.Actions.Objects.Robe.Look          (notEvenRobeF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
@@ -133,7 +148,7 @@ sashaBedroomDemo = do
 
   pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
-  notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
+  notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenFloorF
   lookAtChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
   whatChairFGID <- declareDirectionalStimulusActionGID whatChairF
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
@@ -141,7 +156,12 @@ sashaBedroomDemo = do
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
+  -- Pocket initial denial actions
+  whatPocketGID <- declareDirectionalStimulusActionGID whatPocket
+  notEvenPocketGID <- declareDirectionalStimulusActionGID notEvenPocket
+  -- Pocket enabled actions
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
+  notEvenOpenGID <- declareContainerAccessActionGID notEvenOpenF
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
 
   openEyesGID <- declareSomaticActionGID openEyes
@@ -158,7 +178,7 @@ sashaBedroomDemo = do
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
-  registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
+  registerObject pocketGID (pocketObj notEvenPocketGID notEvenOpenGID)
 
   player <- buildBedroomPlayer bedroomGID isaEnabledLookGID inventoryFGID openEyesGID
                               dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
@@ -184,6 +204,7 @@ sashaBedroomDemo = do
   openEyesLookChangeEffectFloor <- makeEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeEffect dsaLook lookAtRobeFGID
+  openEyesLookChangeEffectPocket <- makeEffect dsaLook lookAtPocketGID
   openEyesOpenPocketChangesForPlayer <- makeEffect openSA accessContainerFGID
   robeOpenEyesLookChangesGetRobeForPlayer <- makeEffect getRobeAVP playerGetFGID
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
@@ -194,7 +215,8 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `andThen`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) pocketGID openEyesLookChangeEffectPocket `andThen`
 
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
@@ -206,22 +228,45 @@ sashaBedroomDemo = do
   linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID) 
     inventoryNarrationEffect
   
-  -- LookAt narration for objects
+  -- Floor denial narration (initial state)
+  linkEffect (DirectionalStimulusActionKey notEvenFloorFGID) floorGID 
+    notEvenFloorEffect
+    
+  -- Floor enabled narrations (after eyes open)
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
     (floorLookNarrationEffect floorGID)
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
     (floorContentsNarrationEffect floorGID)
     
+  -- Chair denial narration (initial state)
+  linkEffect (DirectionalStimulusActionKey whatChairFGID) chairGID 
+    whatChairEffect
+    
+  -- Chair enabled narrations (after eyes open)
   linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
     (chairLookNarrationEffect chairGID)
   linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
     (chairContentsNarrationEffect chairGID)
     
+  -- Robe denial narrations (initial state)
+  linkEffect (DirectionalStimulusActionKey notEvenRobeFGID) robeGID 
+    notEvenRobeEffect
+  linkEffect (AcquisitionalActionKey getRobeDeniedGID) robeGID 
+    getRobeDeniedEffect
+    
+  -- Robe enabled narrations (after eyes open)
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
     (robeLookNarrationEffect robeGID)
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
     (robeContentsNarrationEffect robeGID)
     
+  -- Pocket denial narrations (initial state)
+  linkEffect (DirectionalStimulusActionKey notEvenPocketGID) pocketGID 
+    notEvenPocketEffect
+  linkEffect (ContainerAccessActionKey notEvenOpenGID) pocketGID 
+    notEvenOpenEffect
+    
+  -- Pocket enabled narrations (after eyes open)
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
     (pocketLookNarrationEffect pocketGID)
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
