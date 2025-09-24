@@ -37,11 +37,7 @@ getDeniedF :: AcquisitionActionF
 getDeniedF = NotGettableF denied
   where
     denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    denied actionEffectKey = processEffectsFromRegistry actionEffectKey
 
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit

@@ -87,17 +87,23 @@ library
       ConstraintRefinement.Effects.Objects.Floor.Look
       ConstraintRefinement.Effects.Objects.Mail.Get
       ConstraintRefinement.Effects.Objects.Mail.Look
+      ConstraintRefinement.Effects.Objects.Pill.Get
+      ConstraintRefinement.Effects.Objects.Pill.Look
+      ConstraintRefinement.Effects.Objects.Pill.Take
       ConstraintRefinement.Effects.Objects.Pocket.Look
       ConstraintRefinement.Effects.Objects.Pocket.Open
       ConstraintRefinement.Effects.Objects.Robe.Get
       ConstraintRefinement.Effects.Objects.Robe.Look
+      ConstraintRefinement.Effects.Objects.SupportLook
       ConstraintRefinement.Effects.Objects.Table.Look
       ConstraintRefinement.Effects.Perception.Look
       ConstraintRefinement.Effects.Player.Get
       ConstraintRefinement.Effects.Player.Inventory
+      ConstraintRefinement.Effects.Player.Look
       ConstraintRefinement.Effects.Player.Open
       ConstraintRefinement.Effects.Player.Stand
       ConstraintRefinement.Effects.Player.Take
+      ConstraintRefinement.Effects.Utils
       EDSL.GameBuilder
       Error
       Evaluators.Player.General

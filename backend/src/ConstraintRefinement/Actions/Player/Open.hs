@@ -37,21 +37,13 @@ openDeniedF :: ContainerAccessActionF
 openDeniedF = CannotAccessF denied
   where
     denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg'
-    msg' :: Text
-    msg' = "You are in position to not be opening anything but your eyes."
+    denied actionEffectKey = processEffectsFromRegistry actionEffectKey
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = CannotSomaticAccessF denied
  where
    denied :: ActionEffectKey -> GameComputation Identity ()
-   denied actionEffectKey = do
-     processEffectsFromRegistry actionEffectKey
-     modifyNarration $ updateActionConsequence msg
-   msg :: Text
-   msg = "They're already open, relax."
+   denied actionEffectKey = processEffectsFromRegistry actionEffectKey
 
 openEyes :: SomaticAccessActionF
 openEyes = PlayerSomaticAccessActionF opened
@@ -59,12 +51,8 @@ openEyes = PlayerSomaticAccessActionF opened
    opened :: ActionEffectKey
              -> GameComputation Identity ()
    opened actionEffectKeys = do
-     modifyNarration (updateActionConsequence msg)
-     youSeeM
      processEffectsFromRegistry actionEffectKeys
-     where
-       msg :: Text
-       msg = "You open your eyes, and the world comes into focus."
+     youSeeM
 
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit

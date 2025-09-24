@@ -1,6 +1,7 @@
 module ConstraintRefinement.Effects.Player.Open where
 
 import Model.Core (Effect (NarrationEffect), NarrationComputation (StaticNarration))
+import Data.Text (Text)
 
 -- From openDenied action
 openDeniedEffect :: Effect
@@ -13,3 +14,7 @@ eyesAlreadyOpenEffect = NarrationEffect (StaticNarration "They're already open, 
 -- From openEyes action
 openEyesSuccessEffect :: Effect
 openEyesSuccessEffect = NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus.")
+
+-- For dynamic error messages in Player/Open.hs
+openErrorEffect :: Text -> Effect
+openErrorEffect errorMsg = NarrationEffect (StaticNarration errorMsg)

@@ -106,8 +106,18 @@ import           ConstraintRefinement.Effects.Objects.Robe.Look          (robeLo
                                                                           notEvenRobeEffect)
 import           ConstraintRefinement.Effects.Objects.Robe.Get           (getRobeDeniedEffect,
                                                                           alreadyHaveRobeEffect)
-import           ConstraintRefinement.Effects.Player.Get                 (getObjectNarrationEffect)
+import           ConstraintRefinement.Effects.Player.Get                 (getObjectNarrationEffect,
+                                                                          getDeniedEffect)
 import           ConstraintRefinement.Effects.Player.Inventory           (inventoryNarrationEffect)
+import           ConstraintRefinement.Effects.Player.Look                (lookErrorEffect)
+import           ConstraintRefinement.Effects.Player.Open                (openDeniedEffect,
+                                                                          eyesAlreadyOpenEffect,
+                                                                          openEyesSuccessEffect)
+import           ConstraintRefinement.Effects.Player.Stand               (cantStandEffect,
+                                                                          standSuccessEffect,
+                                                                          alreadyStandingEffect)
+import           ConstraintRefinement.Effects.Player.Take                (takeDeniedEffect)
+import           ConstraintRefinement.Effects.Locations.Look             (pitchBlackEffect)
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
 import           ConstraintRefinement.Actions.Objects.Floor.Look         (notEvenFloorF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
@@ -275,6 +285,18 @@ sashaBedroomDemo = do
   -- Static narration for player's get action
   linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID) 
     getObjectNarrationEffect
+    
+  -- Player action denial narrations
+  linkEffect (AcquisitionalActionKey getDeniedFGID) (PlayerKeyLocation bedroomGID) 
+    getDeniedEffect
+  linkEffect (ContainerAccessActionKey containerAccessDeniedFGID) (PlayerKeyLocation bedroomGID) 
+    openDeniedEffect
+  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) 
+    openEyesSuccessEffect
+  
+  -- Pitch black narration (initial state)
+  linkEffect (ImplicitStimulusActionKey pitchBlackGID) bedroomGID 
+    pitchBlackEffect
 
   finalizeGameState
 
