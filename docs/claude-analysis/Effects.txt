@@ -36,7 +36,7 @@
   - You gain the ability to pick up the robe
   - You discover the robe has a pocket you can open
 
-  How the Effect Algebra Works (Without the Math!)
+  How the Effect Algebra Works
 
   Think of the Effect Algebra as building blocks that snap together:
 
