@@ -161,6 +161,8 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
 
+  -- Floor is the anchor object (not supported by anything)
+  registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)

@@ -30,7 +30,8 @@ testOpenEyesExecution = do
       consequences `shouldSatisfy` (== correctMatch)
   where
     correctMatch :: [Text]
-    correctMatch = ["You open your eyes, and the world comes into focus."]
+    correctMatch = ["You see: The bedroom floor, A simple wooden chair, The robe is draped on the chair",
+                    "You open your eyes, and the world comes into focus."]
 -- Test that effect system processes effects after "open eyes"
 testEffectRegistryUpdated :: IO ()
 testEffectRegistryUpdated = do

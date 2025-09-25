@@ -210,8 +210,6 @@ modifyPerceptionMapM perceptionMapF = do
 
 youSeeM :: GameComputation Identity ()
 youSeeM = do
-  trace "youSeeM: Starting execution" $ pure ()
-
   spatialMap <- gets (_spatialRelationshipMap . _world)
   let SpatialRelationshipMap smap = spatialMap
 
