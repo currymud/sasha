@@ -9,7 +9,6 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
-import           Debug.Trace                   (trace)
 import           GameState                     (getObjectM, getPlayerLocationM,
                                                 getPlayerM, modifyNarration,
                                                 updateActionConsequence)
@@ -127,7 +126,6 @@ dsvActionEnabled = PlayerDirectionalStimulusActionF lookit
             Nothing -> error "Programmer Error: No directional stimulus action found for verb"
             Just actionGID -> do
               let objectEffectKey = DirectionalStimulusActionKey actionGID
-              trace ("DEBUG: Object " ++ show objectGID ++ " using action " ++ show actionGID) $ pure ()
               -- 3. Get the actual action from the action map
               actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap of

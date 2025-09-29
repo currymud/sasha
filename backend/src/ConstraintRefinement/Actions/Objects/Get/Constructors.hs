@@ -1,7 +1,6 @@
 module ConstraintRefinement.Actions.Objects.Get.Constructors where
 import           Control.Monad.Identity                           (Identity)
 import qualified Data.Set
-import           Debug.Trace                                      (trace)
 import           GameState                                        (addToInventoryM,
                                                                    getObjectM,
                                                                    modifyNarration,

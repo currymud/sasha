@@ -9,7 +9,6 @@ import           Data.Maybe                    (isJust, listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
-import           Debug.Trace                   (trace)
 import           GameState                     (getInventoryObjectsM,
                                                 getObjectM, modifyLocationM,
                                                 modifyNarration, modifyObjectM,
@@ -91,10 +90,9 @@ removeSystemEffect key effectGID = modify' $ \gs ->
 
 processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  trace ("DEBUG: Processing effects for " ++ show actionKey) $ do
+  do
     maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-    trace ("DEBUG: Found effect map: " ++ show (Data.Maybe.isJust maybeEffectMap)) $ do
-      Data.Foldable.for_ maybeEffectMap processAllEffects
+    Data.Foldable.for_ maybeEffectMap processAllEffects
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
@@ -109,8 +107,7 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      trace ("DEBUG: Processing effects for target " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ do
-        mapM_ (processEffect effectKey) (Data.Set.toList effects)
+      mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -225,8 +222,7 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddImplicitStimulus verb 
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  trace ("DEBUG: Updating object " ++ show oid ++ " verb " ++ show verb ++ " to " ++ show newActionGID) $ do
-    modifyObjectActionManagementM oid $ \actionMgmt ->
+  modifyObjectActionManagementM oid $ \actionMgmt ->
       let ActionManagementFunctions actionSet = actionMgmt
           filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
           updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
@@ -475,7 +471,7 @@ processNarrationEffect (LookAtNarration objGID) = do
   -- Generate location-based narration
   case Data.Map.Strict.lookup objGID spatialMap of
     Just relationships -> do
-      trace ("DEBUG: Object " ++ show objGID ++ " has relationships: " ++ show relationships) $ do
+      do
         -- Handle primary location relationship
         if Inventory `Data.Set.member` relationships then
          modifyNarration

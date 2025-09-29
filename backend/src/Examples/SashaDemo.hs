@@ -98,7 +98,6 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
-import           Debug.Trace                                             (trace)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -116,8 +115,6 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
-  -- Debug trace to verify GIDs
-  trace ("DEBUG: floorGID = " ++ show floorGID ++ ", chairGID = " ++ show chairGID ++ ", robeGID = " ++ show robeGID ++ ", pocketGID = " ++ show pocketGID) $ pure ()
 
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
@@ -129,8 +126,6 @@ sashaBedroomDemo = do
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
 
-  -- Debug trace to verify action GIDs
-  trace ("DEBUG: lookAtChairGID = " ++ show lookAtChairGID ++ ", lookAtRobeFGID = " ++ show lookAtRobeFGID) $ pure ()
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
