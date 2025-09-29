@@ -474,13 +474,35 @@ processNarrationEffect (LookAtNarration objGID) = do
 
   -- Generate location-based narration
   case Data.Map.Strict.lookup objGID spatialMap of
-    Just relationships
-      | Inventory `Data.Set.member` relationships ->
-          modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
-      | otherwise ->
-          modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+    Just relationships -> do
+      trace ("DEBUG: Object " ++ show objGID ++ " has relationships: " ++ show relationships) $ do
+        -- Handle primary location relationship
+        if Inventory `Data.Set.member` relationships then
+         modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
+        else do
+        -- Process each relationship in the set (only if not in inventory)
+          Data.Foldable.for_ (Data.Set.toList relationships) $ \case
+            SupportedBy supportGID -> do
+              support <- getObjectM supportGID
+              modifyNarration $ updateActionConsequence $
+                "The " <> _shortName obj <> " is on the " <> _shortName support
+            ContainedIn containerGID -> do
+              container <- getObjectM containerGID
+              modifyNarration $ updateActionConsequence $
+                "The " <> _shortName obj <> " is inside the " <> _shortName container
+            Supports oidSet ->
+              unless (Data.Set.null oidSet) $ do
+                supportedNames <- mapM (fmap _shortName . getObjectM) (Data.Set.toList oidSet)
+                modifyNarration $ updateActionConsequence $
+                  "On it you see: " <> intercalate ", " supportedNames
+            Contains oidSet ->
+              unless (Data.Set.null oidSet) $ do
+                containedNames <- mapM (fmap _shortName . getObjectM) (Data.Set.toList oidSet)
+                modifyNarration $ updateActionConsequence $
+                  "Inside it you see: " <> intercalate ", " containedNames
+            Inventory -> pure () -- won't reach here due to if/else
     Nothing ->
-      modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+     error ("Object not found in spatial relationships." ++ show objGID)
 
 processNarrationEffect (LookInNarration objGID) = do
   world <- gets _world
