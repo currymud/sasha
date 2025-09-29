@@ -4,7 +4,6 @@ import           Control.Monad.IO.Class    (MonadIO (liftIO))
 import           Control.Monad.State.Class (gets)
 import qualified Data.Map.Strict
 import           Data.Text                 (Text, pack, unpack)
-import           Debug.Trace               (trace)
 import           GameState                 (clearNarration, modifyNarration,
                                             updateActionConsequence)
 import           Grammar.Parser            (parseTokens)

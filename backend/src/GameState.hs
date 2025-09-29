@@ -502,6 +502,7 @@ addToInventoryM oid = do
   player <- getPlayerM
   let inventory = _inventory player
   modifyPlayerM $ \p -> p { _inventory = Data.Set.insert oid inventory }
+  modifySpatialRelationshipsForObjectM oid (Data.Set.insert Inventory)
 
 -- Remove object from inventory
 removeFromInventoryM :: GID Object -> GameComputation Identity ()

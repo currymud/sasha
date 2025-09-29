@@ -9,7 +9,6 @@ import           Data.Maybe                    (isJust, listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
-import           Debug.Trace                   (trace)
 import           GameState                     (getInventoryObjectsM,
                                                 getObjectM, modifyLocationM,
                                                 modifyNarration, modifyObjectM,
@@ -91,10 +90,9 @@ removeSystemEffect key effectGID = modify' $ \gs ->
 
 processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  trace ("DEBUG: Processing effects for " ++ show actionKey) $ do
+  do
     maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-    trace ("DEBUG: Found effect map: " ++ show (Data.Maybe.isJust maybeEffectMap)) $ do
-      Data.Foldable.for_ maybeEffectMap processAllEffects
+    Data.Foldable.for_ maybeEffectMap processAllEffects
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
@@ -109,8 +107,7 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      trace ("DEBUG: Processing effects for target " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ do
-        mapM_ (processEffect effectKey) (Data.Set.toList effects)
+      mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -225,8 +222,7 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddImplicitStimulus verb 
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  trace ("DEBUG: Updating object " ++ show oid ++ " verb " ++ show verb ++ " to " ++ show newActionGID) $ do
-    modifyObjectActionManagementM oid $ \actionMgmt ->
+  modifyObjectActionManagementM oid $ \actionMgmt ->
       let ActionManagementFunctions actionSet = actionMgmt
           filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
           updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
@@ -474,13 +470,40 @@ processNarrationEffect (LookAtNarration objGID) = do
 
   -- Generate location-based narration
   case Data.Map.Strict.lookup objGID spatialMap of
-    Just relationships
-      | Inventory `Data.Set.member` relationships ->
-          modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
-      | otherwise ->
-          modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+    Just relationships -> do
+      do
+        -- Handle primary location relationship
+        if Inventory `Data.Set.member` relationships then
+         modifyNarration
+           $ updateActionConsequence
+               ("You're holding the "
+                  <> _shortName obj
+                  <> ". "
+                  <> _description obj)
+        else do
+        -- Process each relationship in the set (only if not in inventory)
+          Data.Foldable.for_ (Data.Set.toList relationships) $ \case
+            SupportedBy supportGID -> do
+              support <- getObjectM supportGID
+              modifyNarration $ updateActionConsequence $
+                "The " <> _shortName obj <> " is on the " <> _shortName support
+            ContainedIn containerGID -> do
+              container <- getObjectM containerGID
+              modifyNarration $ updateActionConsequence $
+                "The " <> _shortName obj <> " is inside the " <> _shortName container
+            Supports oidSet ->
+              unless (Data.Set.null oidSet) $ do
+                supportedNames <- mapM (fmap _shortName . getObjectM) (Data.Set.toList oidSet)
+                modifyNarration $ updateActionConsequence $
+                  "On it you see: " <> intercalate ", " supportedNames
+            Contains oidSet ->
+              unless (Data.Set.null oidSet) $ do
+                containedNames <- mapM (fmap _shortName . getObjectM) (Data.Set.toList oidSet)
+                modifyNarration $ updateActionConsequence $
+                  "Inside it you see: " <> intercalate ", " containedNames
+            Inventory -> pure () -- won't reach here due to if/else
     Nothing ->
-      modifyNarration $ updateActionConsequence $ "You see the " <> _shortName obj
+     error ("Object not found in spatial relationships." ++ show objGID)
 
 processNarrationEffect (LookInNarration objGID) = do
   world <- gets _world

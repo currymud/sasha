@@ -10,7 +10,6 @@ import           Model.Core                 (GameComputation,
                                              World (..))
 
 import           Control.Monad.State        (gets)
-import           Debug.Trace                (trace)
 import           Grammar.Parser.Lexer       (Lexeme (DEBUG))
 import           Model.Core.Mappings        (GIDToDataMap (GIDToDataMap))
 import           Model.Parser.Atomics.Verbs (AdministrativeVerb (AdministrativeVerb))
@@ -22,21 +21,18 @@ manageAdministration (AdministrativeVerb  DEBUG) = do
       -- Dump effect registry
      effectRegistry <- gets _effectRegistry
 
-     trace ("Effect Registry: " <> show effectRegistry) $ pure ()
+     pure ()
 
       -- Dump player info
      player <- getPlayerM
-     trace ("Player: " <> show player) $ pure ()
+     pure ()
 
       -- Dump world info
      world <- gets _world
      let GIDToDataMap objectMap = _objectMap world
          GIDToDataMap locationMap = _locationMap world
 
-     trace ("Object Map Keys: " <> (show (Data.Map.Strict.keys objectMap))) $ pure ()
-     trace ("Location Map Keys: " <> (show (Data.Map.Strict.keys locationMap))) $ pure ()
-
-     trace "=== END GAME STATE DUMP ===" $ pure ()
+     pure ()
 
      pure ()
 manageAdministration _ = error "Unhandled administrative action"

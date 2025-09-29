@@ -14,6 +14,7 @@ import           Model.Core                                              (Acquis
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect (..),
+                                                                          FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
                                                                           Location,
@@ -97,7 +98,6 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
-import           Debug.Trace                                             (trace)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -115,8 +115,6 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
-  -- Debug trace to verify GIDs
-  trace ("DEBUG: floorGID = " ++ show floorGID ++ ", chairGID = " ++ show chairGID ++ ", robeGID = " ++ show robeGID ++ ", pocketGID = " ++ show pocketGID) $ pure ()
 
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
@@ -127,9 +125,7 @@ sashaBedroomDemo = do
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
-  
-  -- Debug trace to verify action GIDs
-  trace ("DEBUG: lookAtChairGID = " ++ show lookAtChairGID ++ ", lookAtRobeFGID = " ++ show lookAtRobeFGID) $ pure ()
+
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
@@ -190,9 +186,10 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription))
 
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
@@ -230,6 +227,9 @@ sashaBedroomDemo = do
     closedEyes :: Text
     closedEyes = "The inability to see a dang-doodly"
                     <> "thing is directly related to your eyes being closed."
+    gotRobeDescription :: Text
+    gotRobeDescription = "This robe was make for wearin'. There's something in the pocket."
+
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =

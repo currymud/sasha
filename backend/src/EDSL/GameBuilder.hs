@@ -31,7 +31,6 @@ import qualified Data.Set                                                       
                                                                                    insert,
                                                                                    singleton,
                                                                                    union)
-import           Debug.Trace                                                      (trace)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
 import           Model.Core                                                       (TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
@@ -555,9 +554,7 @@ interpretDSL (SetPerceptionMap perceptionEntries) = do
         [(phrase, Data.Set.fromList gids) | (phrase, gids) <- perceptionEntries]
       updatedWorld = (_world (_gameState state)) { _perceptionMap = perceptionMap }
       updatedGameState = (_gameState state) { _world = updatedWorld }
-  trace ("SetPerceptionMap: Creating perception map with entries: " ++ show perceptionEntries) $
-    trace ("SetPerceptionMap: Resulting map: " ++ show perceptionMap) $
-      put state { _gameState = updatedGameState }
+  put state { _gameState = updatedGameState }
 
 interpretDSL (SetEvaluator evaluator) = do
   state <- get
