@@ -10,10 +10,10 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (AcquisitionActionF,
+                                                                          ActionEffectKey (..),
                                                                           ActionManagement (..),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
-                                                                          ActionEffectKey (..),
                                                                           Effect (..),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
@@ -103,6 +103,7 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openEyes,
                                                                           openF)
 import           Data.Function                                           ((&))
+import           Data.Text                                               (Text)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -120,7 +121,7 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
-  pitchBlackGID <- declareImplicitStimulusActionGID pitchBlackF
+  pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
   notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   lookAtChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
@@ -143,13 +144,13 @@ sashaBedroomDemo = do
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
 
-  registerLocation bedroomGID (buildLocation pitchBlackGID)
+  registerLocation bedroomGID (buildLocation pitchBlackFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
 
-  player <- buildBedroomPlayer bedroomGID isaEnabledLookGID inventoryFGID openEyesGID
+  player <- buildBedroomPlayer bedroomGID pitchBlackFGID inventoryFGID openEyesGID
                               dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
@@ -182,48 +183,55 @@ sashaBedroomDemo = do
 
   -- Build composed effect computation
   buildEffects $
-    buildEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `andThen`
-
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `andThen`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `andThen`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `andThen`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
   -- Register narration effects for actions
+  linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration closedEyes))
   -- Inventory narration
-  linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID) 
+  linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect InventoryNarration)
-  
+
+  linkEffect (ImplicitStimulusActionKey lookFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect LookNarration)
+
   -- LookAt narration for objects
-  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
+  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID
     (NarrationEffect (LookAtNarration floorGID))
-  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID 
-    (NarrationEffect (ContainerContentsNarration floorGID))
-    
-  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
+  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID
+    (NarrationEffect (LookInNarration floorGID))
+
+  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID
     (NarrationEffect (LookAtNarration chairGID))
-  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID 
-    (NarrationEffect (ContainerContentsNarration chairGID))
-    
-  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
+  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID
+    (NarrationEffect (LookInNarration chairGID))
+
+  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID
     (NarrationEffect (LookAtNarration robeGID))
-  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID 
-    (NarrationEffect (ContainerContentsNarration robeGID))
-    
-  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
+  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID
+    (NarrationEffect (LookInNarration robeGID))
+
+  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
-  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID 
-    (NarrationEffect (ContainerContentsNarration pocketGID))
-  
+  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID
+    (NarrationEffect (LookAtNarration pocketGID))
+
   -- Static narration for player's get action
-  linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID) 
+  linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))
 
   finalizeGameState
-
+  where
+    closedEyes :: Text
+    closedEyes = "The inability to see a dang-doodly"
+                    <> "thing is directly related to your eyes being closed."
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =

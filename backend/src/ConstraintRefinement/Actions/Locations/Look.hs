@@ -14,9 +14,6 @@ pitchBlackF = CannotImplicitStimulusActionF pitchBlack'
     pitchBlack' :: ActionEffectKey -> GameComputation Identity ()
     pitchBlack' actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence pitchBlack
-    pitchBlack :: Text
-    pitchBlack = "It's pitch black, you can't see a thing."
 
 lookF :: ImplicitStimulusActionF
 lookF = PlayerImplicitStimulusActionF look
@@ -24,4 +21,3 @@ lookF = PlayerImplicitStimulusActionF look
     look :: ActionEffectKey -> GameComputation Identity ()
     look actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
-      youSeeM
