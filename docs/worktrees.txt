@@ -1,0 +1,36 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: /home/mlitchard/github/sasha               │
+╰───────────────────────────────────────────────────╯
+
+> /clear 
+  ⎿  (no content)
+
+> how can I have git-worktree have you work in multiple project 
+  directories
+
+● To use git worktrees with Claude Code across multiple project
+  directories, you can:
+
+  1. Create worktrees for different branches:
+  git worktree add ../sasha-feature feature-branch
+  git worktree add ../sasha-hotfix hotfix-branch
+
+  2. Navigate between worktrees in Claude Code:
+  - Use cd /path/to/worktree to switch directories
+  - Each worktree maintains its own working state
+  - Claude Code will recognize the git context in each worktree
+
+  3. List existing worktrees:
+  git worktree list
+
+  4. Remove worktrees when done:
+  git worktree remove ../sasha-feature
+
+  This lets you work on multiple branches simultaneously without
+  switching branches in your main repository. Each worktree is a
+  separate working directory with its own checkout of a specific branch.
+

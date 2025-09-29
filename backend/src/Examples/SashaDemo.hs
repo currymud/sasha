@@ -163,7 +163,7 @@ sashaBedroomDemo = do
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
-  registerSpatial pocketGID (ContainedIn robeGID)
+  registerSpatial pocketGID (SupportedBy robeGID)
 
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
@@ -187,8 +187,8 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
-    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription))
-
+    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription))
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
@@ -224,6 +224,9 @@ sashaBedroomDemo = do
     gotRobeDescription :: Text
     gotRobeDescription = "This robe was make for wearin'. There's something in the pocket."
 
+    robePocketDescription :: Text
+    robePocketDescription = "The pocket is velcroed shut, "
+                              <> "but there's an indentation of a pill on it."
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =

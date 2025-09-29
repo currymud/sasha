@@ -486,7 +486,10 @@ processNarrationEffect (LookAtNarration objGID) = do
             SupportedBy supportGID -> do
               support <- getObjectM supportGID
               modifyNarration $ updateActionConsequence $
-                "The " <> _shortName obj <> " is on the " <> _shortName support
+                "The " <> _shortName obj
+                       <> " is on the "
+                       <> _shortName support
+                       <> ". " <> _description obj
             ContainedIn containerGID -> do
               container <- getObjectM containerGID
               modifyNarration $ updateActionConsequence $
