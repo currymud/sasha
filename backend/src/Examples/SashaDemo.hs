@@ -183,7 +183,7 @@ sashaBedroomDemo = do
 
   -- Build composed effect computation
   buildEffects $
-    buildEffect (SomaticAccessActionKey openEyesGID) bedroomGID openEyesLookChangeEffectPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
@@ -198,6 +198,9 @@ sashaBedroomDemo = do
   -- Inventory narration
   linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect InventoryNarration)
+
+  linkEffect (ImplicitStimulusActionKey lookFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect LookNarration)
 
   -- LookAt narration for objects
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID
