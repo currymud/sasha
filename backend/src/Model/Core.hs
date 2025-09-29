@@ -399,9 +399,9 @@ type NarrationComputation :: Type
 data NarrationComputation
   = StaticNarration Text
   | InventoryNarration
+  | LookNarration
   | LookAtNarration (GID Object)
-  | ContainerContentsNarration (GID Object)
-  | EmptyContainerNarration
+  | LookInNarration (GID Object)
   deriving stock (Show, Eq, Ord)
 
 type Effect :: Type
