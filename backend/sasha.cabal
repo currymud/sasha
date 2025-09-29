@@ -198,6 +198,7 @@ library sasha-testing
  exposed-modules:
       Test.Arbitrary.Verbs
       Test.EndToEnd.GetRobeFails
+      Test.EndToEnd.LookAtRobeProgression
       Test.EndToEnd.OpenEyesTriggerTest
       Test.EndToEnd.OpenEyesUnlocksGetRobe
       Test.Lexer
