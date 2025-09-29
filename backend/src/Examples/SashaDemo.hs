@@ -127,7 +127,7 @@ sashaBedroomDemo = do
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
-  
+
   -- Debug trace to verify action GIDs
   trace ("DEBUG: lookAtChairGID = " ++ show lookAtChairGID ++ ", lookAtRobeFGID = " ++ show lookAtRobeFGID) $ pure ()
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
@@ -190,7 +190,7 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
