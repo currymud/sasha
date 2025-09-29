@@ -478,7 +478,12 @@ processNarrationEffect (LookAtNarration objGID) = do
       trace ("DEBUG: Object " ++ show objGID ++ " has relationships: " ++ show relationships) $ do
         -- Handle primary location relationship
         if Inventory `Data.Set.member` relationships then
-         modifyNarration $ updateActionConsequence $ "You're holding the " <> _description obj
+         modifyNarration
+           $ updateActionConsequence
+               ("You're holding the "
+                  <> _shortName obj
+                  <> ". "
+                  <> _description obj)
         else do
         -- Process each relationship in the set (only if not in inventory)
           Data.Foldable.for_ (Data.Set.toList relationships) $ \case

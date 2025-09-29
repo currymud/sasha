@@ -14,6 +14,7 @@ import           Model.Core                                              (Acquis
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect (..),
+                                                                          FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
                                                                           ImplicitStimulusActionF,
                                                                           Location,
@@ -192,7 +193,8 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription))
 
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
@@ -230,6 +232,9 @@ sashaBedroomDemo = do
     closedEyes :: Text
     closedEyes = "The inability to see a dang-doodly"
                     <> "thing is directly related to your eyes being closed."
+    gotRobeDescription :: Text
+    gotRobeDescription = "This robe was make for wearin'. There's something in the pocket."
+
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =
