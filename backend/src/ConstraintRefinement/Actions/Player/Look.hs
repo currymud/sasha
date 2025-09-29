@@ -9,6 +9,7 @@ import qualified Data.Map.Strict
 import           Data.Maybe                    (listToMaybe)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
+import           Debug.Trace                   (trace)
 import           GameState                     (getObjectM, getPlayerLocationM,
                                                 getPlayerM, modifyNarration,
                                                 updateActionConsequence)
@@ -19,7 +20,7 @@ import           GameState.ActionManagement    (lookupDirectionalContainerStimul
 import           GameState.Perception          (findAccessibleObject,
                                                 isObjectPerceivable,
                                                 queryPerceptionMap)
-import           Model.Core                    (ActionEffectKey (ImplicitStimulusActionKey),
+import           Model.Core                    (ActionEffectKey (DirectionalStimulusActionKey, ImplicitStimulusActionKey),
                                                 ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (CannotSeeF, ObjectDirectionalStimulusActionF, PlayerDirectionalStimulusActionF),
@@ -48,9 +49,8 @@ findContainer relationships =
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
 lookInF :: GID Object
-             -> Text
              -> DirectionalStimulusContainerActionF
-lookInF containerGID flavorText = ObjectDirectionalStimulusContainerActionF lookInAction
+lookInF containerGID = ObjectDirectionalStimulusContainerActionF lookInAction
   where
     lookInAction :: ActionEffectKey ->  GameComputation Identity ()
     lookInAction actionEffectKey = do
@@ -126,6 +126,8 @@ dsvActionEnabled = PlayerDirectionalStimulusActionF lookit
           case lookupDirectionalStimulus dsv actionMgmt of
             Nothing -> error "Programmer Error: No directional stimulus action found for verb"
             Just actionGID -> do
+              let objectEffectKey = DirectionalStimulusActionKey actionGID
+              trace ("DEBUG: Object " ++ show objectGID ++ " using action " ++ show actionGID) $ pure ()
               -- 3. Get the actual action from the action map
               actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
               case Data.Map.Strict.lookup actionGID actionMap of
@@ -136,8 +138,7 @@ dsvActionEnabled = PlayerDirectionalStimulusActionF lookit
                           error "Programmer Error: PlayerDirectionalStimulusActionF found in object action map"
                         ObjectDirectionalStimulusActionF objectLookF' -> objectLookF'
                         CannotSeeF cannotSeeF -> cannotSeeF
-                  in objectLookF actionEffectKey
-                       >> processEffectsFromRegistry actionEffectKey
+                   in  objectLookF objectEffectKey >> processEffectsFromRegistry actionEffectKey
 
 dsvContainerActionEnabled :: DirectionalStimulusContainerActionF
 dsvContainerActionEnabled = PlayerDirectionalStimulusContainerActionF lookinit
@@ -168,7 +169,6 @@ dsvContainerActionEnabled = PlayerDirectionalStimulusContainerActionF lookinit
                         PlayerDirectionalStimulusContainerActionF _ ->
                           error "Programmer Error: PlayerDirectionalStimulusContainerActionF found in object action map"
                   in containerLookF actionEffectKey
-                       >> processEffectsFromRegistry actionEffectKey
 
 extractContainerNoun :: ContainerPhrase -> NounKey
 extractContainerNoun (ContainerPhrase nounPhrase) = extractContainerNounFromPhrase nounPhrase

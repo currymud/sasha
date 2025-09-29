@@ -5,10 +5,11 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Foldable
 import qualified Data.Map.Strict
-import           Data.Maybe                    (listToMaybe)
+import           Data.Maybe                    (isJust, listToMaybe)
 import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
+import           Debug.Trace                   (trace)
 import           GameState                     (getInventoryObjectsM,
                                                 getObjectM, modifyLocationM,
                                                 modifyNarration, modifyObjectM,
@@ -90,8 +91,10 @@ removeSystemEffect key effectGID = modify' $ \gs ->
 
 processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-  Data.Foldable.for_ maybeEffectMap processAllEffects
+  trace ("DEBUG: Processing effects for " ++ show actionKey) $ do
+    maybeEffectMap <- lookupActionEffectsInRegistry actionKey
+    trace ("DEBUG: Found effect map: " ++ show (Data.Maybe.isJust maybeEffectMap)) $ do
+      Data.Foldable.for_ maybeEffectMap processAllEffects
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
@@ -106,7 +109,8 @@ processAllEffects (ActionEffectMap effectMap) = do
   where
     processEffectEntry :: (TargetEffectKey, Set Effect) -> GameComputation Identity ()
     processEffectEntry (effectKey, effects) = do
-      mapM_ (processEffect effectKey) (Data.Set.toList effects)
+      trace ("DEBUG: Processing effects for target " ++ show effectKey ++ " with " ++ show (Data.Set.size effects) ++ " effects") $ do
+        mapM_ (processEffect effectKey) (Data.Set.toList effects)
 
 processEffect :: TargetEffectKey -> Effect -> GameComputation Identity ()
 processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
@@ -221,11 +225,12 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddImplicitStimulus verb 
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
+  trace ("DEBUG: Updating object " ++ show oid ++ " verb " ++ show verb ++ " to " ++ show newActionGID) $ do
+    modifyObjectActionManagementM oid $ \actionMgmt ->
+      let ActionManagementFunctions actionSet = actionMgmt
+          filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
+          updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
+      in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalContainerStimulus verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->

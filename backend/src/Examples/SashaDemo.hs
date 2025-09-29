@@ -11,7 +11,6 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultPlayer)
 import           Model.Core                                              (AcquisitionActionF,
                                                                           ActionEffectKey (..),
-                                                                          ActionManagement (..),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect (..),
@@ -25,11 +24,6 @@ import           Model.Core                                              (Acquis
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (..))
 import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
-                                                                          createAcquisitionVerbEffect,
-                                                                          createAcquisitionVerbPhraseEffect,
-                                                                          createContainerAccessEffect,
-                                                                          createDirectionalStimulusEffect,
-                                                                          createImplicitStimulusEffect,
                                                                           declareAcquisitionActionGID,
                                                                           declareContainerAccessActionGID,
                                                                           declareDirectionalStimulusActionGID,
@@ -50,7 +44,6 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
                                                                           withTitle)
 import           Model.GID                                               (GID)
 import           Sasha.EffectAlgebra                                     (alongside,
-                                                                          andThen,
                                                                           buildEffect,
                                                                           buildEffects)
 import           Sasha.HasBehavior                                       (HasBehavior (withBehavior),
@@ -104,6 +97,7 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
+import           Debug.Trace                                             (trace)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -121,6 +115,9 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
+  -- Debug trace to verify GIDs
+  trace ("DEBUG: floorGID = " ++ show floorGID ++ ", chairGID = " ++ show chairGID ++ ", robeGID = " ++ show robeGID ++ ", pocketGID = " ++ show pocketGID) $ pure ()
+
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
   notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
@@ -130,6 +127,9 @@ sashaBedroomDemo = do
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
+  
+  -- Debug trace to verify action GIDs
+  trace ("DEBUG: lookAtChairGID = " ++ show lookAtChairGID ++ ", lookAtRobeFGID = " ++ show lookAtRobeFGID) $ pure ()
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
@@ -173,6 +173,7 @@ sashaBedroomDemo = do
 
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
+  openEyesLookAtChangeEffectPlayer <- makeEffect dsaLook dsvEnabledLookGID
   openEyesLookChangeEffectFloor <- makeEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeEffect dsaLook lookAtRobeFGID
@@ -183,12 +184,13 @@ sashaBedroomDemo = do
 
   -- Build composed effect computation
   buildEffects $
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject floorGID) openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe
 
@@ -215,11 +217,7 @@ sashaBedroomDemo = do
 
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID
     (NarrationEffect (LookAtNarration robeGID))
-  linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID
-    (NarrationEffect (LookInNarration robeGID))
 
-  linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID
-    (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
 
