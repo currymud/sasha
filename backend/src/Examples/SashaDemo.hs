@@ -115,7 +115,6 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
 
-
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
   notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
@@ -135,7 +134,6 @@ sashaBedroomDemo = do
   playerGetFGID <- declareAcquisitionActionGID getF
   lookFGID <- declareImplicitStimulusActionGID lookF
   inventoryFGID <- declareImplicitStimulusActionGID defaultInventoryLookF
-  isaEnabledLookGID <- declareImplicitStimulusActionGID (isvActionEnabled isaLook)
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
@@ -165,7 +163,7 @@ sashaBedroomDemo = do
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
-  registerSpatial pocketGID (ContainedIn robeGID)
+  registerSpatial pocketGID (SupportedBy robeGID)
 
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
@@ -182,15 +180,15 @@ sashaBedroomDemo = do
   buildEffects $
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject floorGID) openEyesLookChangeEffectFloor `alongside`
+    buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
-    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription))
-
+    buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription))
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
@@ -204,13 +202,9 @@ sashaBedroomDemo = do
   -- LookAt narration for objects
   linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID
     (NarrationEffect (LookAtNarration floorGID))
-  linkEffect (DirectionalStimulusActionKey lookAtFloorFGID) floorGID
-    (NarrationEffect (LookInNarration floorGID))
 
   linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID
     (NarrationEffect (LookAtNarration chairGID))
-  linkEffect (DirectionalStimulusActionKey lookAtChairGID) chairGID
-    (NarrationEffect (LookInNarration chairGID))
 
   linkEffect (DirectionalStimulusActionKey lookAtRobeFGID) robeGID
     (NarrationEffect (LookAtNarration robeGID))
@@ -230,6 +224,9 @@ sashaBedroomDemo = do
     gotRobeDescription :: Text
     gotRobeDescription = "This robe was make for wearin'. There's something in the pocket."
 
+    robePocketDescription :: Text
+    robePocketDescription = "The pocket is velcroed shut, "
+                              <> "but there's an indentation of a pill on it."
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =
