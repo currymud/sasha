@@ -44,12 +44,12 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
                                                                           withShortName,
                                                                           withTitle)
 import           Model.GID                                               (GID)
-import           Sasha.EffectAlgebra                                     (alongside,
+import           EDSL.Effects.EffectAlgebra                                     (alongside,
                                                                           buildEffect,
                                                                           buildEffects)
-import           Sasha.HasBehavior                                       (HasBehavior (withBehavior),
+import           EDSL.Effects.HasBehavior                                       (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior))
-import           Sasha.HasEffect                                         (HasEffect (linkEffect),
+import           EDSL.Effects.HasEffect                                         (HasEffect (linkEffect),
                                                                           MakeEffect (makeEffect))
 
 -- All the noun/verb imports from original

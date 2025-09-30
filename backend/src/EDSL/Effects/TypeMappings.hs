@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module Sasha.TypeMappings where
+module EDSL.Effects.TypeMappings where
 
 import           Data.Kind                     (Type)
 import           Model.Core                    (AcquisitionActionF,

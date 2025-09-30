@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Sasha.HasEffect where
+module EDSL.Effects.HasEffect where
 
 import           Data.Kind                 (Constraint, Type)
 import           Model.Core                (Effect, ActionEffectKey, Location,
@@ -18,7 +18,7 @@ import           Model.GID                 (GID)
 import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, 
                                             AcquisitionVerb, SimpleAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
-import           Sasha.TypeMappings        (ActionFunctionType)
+import           EDSL.Effects.TypeMappings        (ActionFunctionType)
 
 -- | Class for creating Effects with type-safe verb-to-GID mapping
 type MakeEffect :: Type -> Constraint

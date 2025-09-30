@@ -1,9 +1,9 @@
-module Sasha.EffectAlgebra where
+module EDSL.Effects.EffectAlgebra where
 
 import           Data.Kind                 (Type)
 import           Model.Core                (Effect, ActionEffectKey)
 import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL)
-import           Sasha.HasEffect           (HasEffect, linkEffect)
+import           EDSL.Effects.HasEffect           (HasEffect, linkEffect)
 
 -- | Composable effect that can chain
 type EffectChain :: Type
