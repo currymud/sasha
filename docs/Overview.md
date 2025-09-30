@@ -1,87 +1,128 @@
-# Sasha Overview
+# Sasha: Effect-Driven Text Adventure Engine
 
-**Sasha** is a Haskell-based interactive fiction engine that implements sophisticated effect management and multi-entity action coordination through strict type-level ownership boundaries.
+## Architecture Overview
 
-## Architecture
+Sasha is a Haskell text adventure engine that uses an effect-driven architecture.
 
-Sasha's design centers around four core principles:
+## Core Design Principles
 
-- **Management Hierarchy**: Each level (location, object, player) owns its effects and cannot modify other levels' state directly
-- **Composition Strategy**: Effects are processed first to modify action mappings, then actions execute with the updated mappings  
-- **Execution Model**: All operations build to a single computation that executes in `topLevel`
-- **Effect Ownership**: Cross-scope effect processing is prevented through type-level boundaries
+### 1. Effect-Driven Architecture
+- **Actions produce effects** - Every player action generates ActionEffectKeys
+- **Effects are owned by entities** - Player, Location, Object, or System owns specific effects
+- **No cross-scope processing** - Effects are always processed by their owning entity
 
-## Type-Driven Design
-
-The system uses Haskell's type system to enforce architectural invariants:
-
-```haskell
--- Action responsibilities encoded in types
-data AcquisitionActionF
-  = CollectedF (GameComputation Identity CoordinationResult)      -- Object handles being collected
-  | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult) -- Container handles loss
-  | NotGettableF (GameComputation Identity ())                    -- Object refuses collection
+### 2. Management Hierarchy
+```
+Player Level    → Owns capability-granting effects
+Location Level  → Owns environmental effects and implicit actions  
+Object Level    → Owns object-specific behaviors
+System Level    → Owns perception and cross-cutting effects
 ```
 
-Effect ownership is enforced through dedicated linking functions:
-- `linkEffectToPlayer` - effects that modify player behavior
-- `linkEffectToObject` - effects that modify object behavior  
-- `linkEffectToLocation` - effects that modify location behavior
+### 3. Composition Strategy
+**Effects first, then actions** - Effects are declared and linked to entities during world building, then actions are resolved based on available capabilities.
 
-## Monadic Structure
-
-The engine is built on a stack of monad transformers:
-
-```haskell
-type GameComputation m a = ReaderT Config (ExceptT Text (GameStateT m)) a
-type GameT m a = ReaderT Config (ExceptT Text (GameStateT m)) a
+### 4. Execution Model
+Everything builds to a single computation in TopLevel:
+```
+Input → Parse → Evaluate → Resolve Actions → Process Effects → Display → Loop
 ```
 
-This provides:
-- **Configuration access** through `ReaderT Config`
-- **Error handling** through `ExceptT Text`  
-- **Game state management** through `GameStateT`
-- **IO capabilities** when needed through `transformToIO`
+## Project Structure
 
-## Action Processing Pipeline
+```
+/backend/src/
+├── ActionDiscovery/      # Transforms a Sentence into possible actions
+├── ConstraintRefinement/ # This is the constraint solver that is mis-named
+├── EDSL/                 # Embedded DSL for declarative world building
+├── Evaluators/           # Command evaluation and routing
+├── GameState/            # State management and effect processing
+├── Grammar/              # Where the Lexemes get meaning
+├── Model/                # What it says on the tin
+├── Sasha/                # Effect algebra and type mappings
+└── TopLevel.hs           # Main game loop orchestration
+```
 
-Actions flow through a two-phase pipeline:
+## Key Components
 
-1. **ActionDiscovery**: Determines if the player is capable of the requested action
-2. **ConstraintRefinement**: Coordinates multi-entity responsibilities for successful actions
+### Action System
+- **ActionDiscovery**: Determines what actions are available given current context
+- **ConstraintRefinement**: Validates action feasibility and constructs computation for topLevel.
+- **Type-safe action functions**: GADTs ensure compile-time safety
 
-For example, "get robe" involves:
-- **Player**: Orchestrates the overall process (`getF`)
-- **Chair**: Removes spatial relationships (`getFromSupportF`) 
-- **Robe**: Adds itself to player inventory (`getObjectF`)
+### Effect System
+- **ActionEffectKeys**: Links actions to their consequences
+- **Effect ownership**: Strict boundaries prevent cross-scope processing
+- **System effects**: Handles perception updates and global state sync
 
-## Effect System
+### Effect Algebra (Type Families)
+The effect algebra uses a type family to map verbs to their action function types,
+in service of a simpler DSL interface.
+```haskell
+type family ActionFunctionType (verb :: Type) :: Type where
+  ActionFunctionType ImplicitStimulusVerb = ImplicitStimulusActionF
+  ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF
+  -- ...
 
-The effect system allows actions to modify what other actions do:
+### World Building (EDSL)
+```haskell
+sashaWorld = do
+  locationGID <- declareLocationGID (SimpleNounPhrase locationDesc)
+  objectGID <- declareObjectGID (SimpleNounPhrase objectDesc)
+  buildEffect actionKey entityKey effectFunction
+```
 
-- Effects are created during world building and linked to specific entities
-- When trigger actions execute (e.g., "open eyes"), effects modify action mappings
-- Subsequent actions use the modified mappings, enabling different behaviors
+### Parser System
+- **Domain-constrained command parsing** 
+- **Grammar.Parser**: Tokenization and command structure parsing
+- **Model.Parser**: Command structures and sentence types
 
-This creates dynamic gameplay where the same command can produce different results based on previous actions.
+## Data Flow
 
-## World Building DSL
+1. **Input Processing**: User command → tokenization → parsing
+2. **Action Resolution**: Parse tree → action discovery → constraint resolution
+3. **Effect Processing**: Valid action → effect lookup → entity-owned processing
+4. **State Update**: Effect computation  → game state modification
+5. **Output Generation**: Updated state → narrative generation → display
 
-Games are constructed using a domain-specific language that handles:
+## Type Safety Features
 
-- **Entity Declaration**: Creating GIDs for locations, objects, and actions
-- **Behavior Assignment**: Linking actions to entities through management keys
-- **Spatial Relationships**: Defining containment and support relationships
-- **Effect Registration**: Connecting trigger actions to behavioral changes
+- **GADTs** for type-safe action functions
+- **Type families** in effect algebra for verb-to-action mapping
+- **Phantom types** (GID system) for entity identification
+- **Monad transformers** for layered computation effects
 
-The DSL ensures consistent world construction while maintaining type safety.
+## Extension Points
 
-## Key Benefits
+### Adding New Actions
+1. Define action function type in Model.Core
+2. Add mapping in ActionFunctionType type family
+3. Implement discovery logic in ActionDiscovery
+4. Add constraint refinement in ConstraintRefinement
+5. Link effects through EDSL
 
-- **Type Safety**: Architectural constraints are enforced at compile time
-- **Modular Design**: Clear separation between action discovery, constraint refinement, and effect processing  
-- **Multi-Entity Coordination**: Complex actions naturally decompose into entity-specific responsibilities
-- **Dynamic Behavior**: Effect system enables rich, stateful gameplay mechanics
-- **Testability**: End-to-end scenarios validate complete action flows from input to state changes
+### Adding New Effects
+1. Create effect function in appropriate entity module
+2. Register with ActionEffectKey
+3. Link to actions during world building using makeEffect
 
-The result is an interactive fiction engine that combines rigorous architecture with practical gameplay mechanics, ensuring both correctness and extensibility.
+## Key Abstractions
+
+- **GameState**: Central state container with entity maps
+- **GameComputation**: Primary computation monad (StateT GameState)
+- **GameT IO**: IO-lifted game monad for interactive execution
+- **SashaLambdaDSL**: World-building monad
+
+## Error Handling
+
+- Left-biased Either types for validation
+- Comprehensive error types per failure mode
+- Monadic error propagation through computation chains
+
+## Architectural Properties
+
+1. **Modularity**: Clean separation between parsing, resolution, validation, and execution
+2. **Type Safety**: Compile-time guarantees prevent runtime errors
+3. **Declarative**: Composable EDSL for world construction
+4. **Extensibility**: New content additions don't require core system changes
+5. **Effect Isolation**: Clear ownership boundaries prevent unexpected interactions
