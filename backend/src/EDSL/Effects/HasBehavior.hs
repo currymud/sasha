@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
 
-module Effects.HasBehavior where
+module EDSL.Effects.HasBehavior where
 
 import           Data.Kind                     (Constraint, Type)
 import           Model.Core                    (ActionManagement (..), Location,
@@ -19,7 +19,7 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ContainerAccessVerbPhrase)
-import           Effects.TypeMappings            (ActionFunctionType)
+import           EDSL.Effects.TypeMappings            (ActionFunctionType)
 
 -- | Class for creating ActionManagement with type-safe verb-to-GID mapping
 type MakeBehavior :: Type -> Constraint
