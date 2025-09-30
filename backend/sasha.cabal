@@ -150,10 +150,10 @@ library
       Model.Parser.Composites.Verbs
       Model.Parser.GCase
       Model.Parser.Lexer
-      Sasha.EffectAlgebra
-      Sasha.HasBehavior
-      Sasha.HasEffect
-      Sasha.TypeMappings
+      Effects.EffectAlgebra
+      Effects.HasBehavior
+      Effects.HasEffect
+      Effects.TypeMappings
       TopLevel
   hs-source-dirs:
       src
