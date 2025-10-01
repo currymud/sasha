@@ -223,7 +223,7 @@ sashaBedroomDemo = do
     (NarrationEffect (StaticNarration "You pick it up."))
 
   linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
-    (NarrationEffect (StaticNarration "You open the pocket and retrieve the pill."))
+    (NarrationEffect (LookInNarration pocketGID))
   finalizeGameState
   where
     closedEyes :: Text
