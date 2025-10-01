@@ -34,7 +34,8 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase,
                                                 NounPhrase)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ContainerAccessVerbPhrase)
 import           Model.Parser.GCase            (NounKey)
 
 
@@ -119,6 +120,7 @@ data SashaLambdaDSL :: Type -> Type where
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
   CreateContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 
   LinkFieldEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
   LinkFieldEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
@@ -256,6 +258,9 @@ createSomaticAccessEffect = CreateSomaticAccessEffect
 
 createContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 createContainerAccessEffect = CreateContainerAccessEffect
+
+createContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
+createContainerAccessVerbPhraseEffect = CreateContainerAccessVerbPhraseEffect
 
 linkEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
 linkEffectToObject = LinkEffectToObject

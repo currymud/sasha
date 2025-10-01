@@ -1,29 +1,35 @@
 module ConstraintRefinement.Actions.Objects.Pocket.Open (notEvenOpenF, pocketOutOfReachF) where
 import           Control.Monad.Identity     (Identity)
-import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
-                                             updateActionConsequence)
+import           GameState                  (getObjectM)
 import           GameState.ActionManagement (processEffectsFromRegistry)
-import           Model.Core                 (ActionEffectKey,
-                                             ContainerAccessActionF (CannotAccessF),
-                                             GameComputation)
+import           Model.Core                 (ActionEffectKey (ContainerAccessActionKey),
+                                             ActionManagementFunctions,
+                                             ContainerAccessActionF (CannotAccessF, ObjectContainerAccessF),
+                                             GameComputation,
+                                             Object (_objectActionManagement))
+import           Model.GID                  (GID)
 
-notEvenOpenF :: ContainerAccessActionF
-notEvenOpenF = CannotAccessF notEvenOpen
+notEvenOpenF :: GID Object -> ContainerAccessActionF
+notEvenOpenF oid = ObjectContainerAccessF notEvenOpen
   where
-    notEvenOpen :: ActionEffectKey -> GameComputation Identity ()
-    notEvenOpen actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "This is rather difficult as your eyes are closed"
+    notEvenOpen :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+                     -> GameComputation Identity ActionEffectKey
+    notEvenOpen actionGIDF = do
+      availableActions <- _objectActionManagement <$> getObjectM oid
+      case actionGIDF availableActions of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID -> do
+          pure $ ContainerAccessActionKey actionGID
 
-pocketOutOfReachF :: ContainerAccessActionF
-pocketOutOfReachF = CannotAccessF outOfReach
+pocketOutOfReachF :: GID Object -> ContainerAccessActionF
+pocketOutOfReachF oid = CannotAccessF outOfReach
   where
-    outOfReach :: ActionEffectKey -> GameComputation Identity ()
-    outOfReach actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You'll need to get the robe first"
+    outOfReach :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+                    -> GameComputation Identity ()
+    outOfReach actionGIDF = do
+      availableActions <- _objectActionManagement <$> getObjectM oid
+      case actionGIDF availableActions of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = ContainerAccessActionKey actionGID
+          in processEffectsFromRegistry actionKey

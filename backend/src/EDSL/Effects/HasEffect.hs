@@ -3,22 +3,27 @@
 
 module EDSL.Effects.HasEffect where
 
-import           Data.Kind                 (Constraint, Type)
-import           Model.Core                (Effect, ActionEffectKey, Location,
-                                            Object, PlayerKey)
-import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL, linkEffectToLocation,
-                                            linkEffectToObject,
-                                            linkEffectToPlayer,
-                                            createImplicitStimulusEffect,
-                                            createDirectionalStimulusEffect,
-                                            createAcquisitionVerbEffect,
-                                            createAcquisitionVerbPhraseEffect,
-                                            createContainerAccessEffect)
-import           Model.GID                 (GID)
-import           Model.Parser.Atomics.Verbs (ImplicitStimulusVerb, DirectionalStimulusVerb, 
-                                            AcquisitionVerb, SimpleAccessVerb)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
-import           EDSL.Effects.TypeMappings        (ActionFunctionType)
+import           Data.Kind                     (Constraint, Type)
+import           EDSL.Effects.TypeMappings     (ActionFunctionType)
+import           Model.Core                    (ActionEffectKey, Effect,
+                                                Location, Object, PlayerKey)
+import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
+                                                createAcquisitionVerbEffect,
+                                                createAcquisitionVerbPhraseEffect,
+                                                createContainerAccessEffect,
+                                                createContainerAccessVerbPhraseEffect,
+                                                createDirectionalStimulusEffect,
+                                                createImplicitStimulusEffect,
+                                                linkEffectToLocation,
+                                                linkEffectToObject,
+                                                linkEffectToPlayer)
+import           Model.GID                     (GID)
+import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
+                                                DirectionalStimulusVerb,
+                                                ImplicitStimulusVerb,
+                                                SimpleAccessVerb)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
+                                                ContainerAccessVerbPhrase)
 
 -- | Class for creating Effects with type-safe verb-to-GID mapping
 type MakeEffect :: Type -> Constraint
@@ -53,3 +58,6 @@ instance MakeEffect SimpleAccessVerb where
 
 instance MakeEffect AcquisitionVerbPhrase where
   makeEffect = createAcquisitionVerbPhraseEffect
+
+instance MakeEffect ContainerAccessVerbPhrase where
+  makeEffect = createContainerAccessVerbPhraseEffect
