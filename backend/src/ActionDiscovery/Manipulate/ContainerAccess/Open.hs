@@ -9,11 +9,10 @@ import           GameState                     (getPlayerLocationM, getPlayerM,
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Model.Core                    (ActionEffectKey (ContainerAccessActionKey),
-                                                ActionEffectResult (ActionEffectResult),
                                                 ActionManagementFunctions,
                                                 ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
-                                                ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
+                                                ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
@@ -32,6 +31,7 @@ manageContainerAccessProcess cavp = do
       let actionEffectKey = ContainerAccessActionKey actionGID
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
+        Just (PlayerCannotAccessF actionF) -> actionF actionEffectKey
         Just (InstrumentContainerAccessF _) -> error "InstrumentContainerAccessF is not a player constructor"
         Just (CannotAccessF actionF) -> actionF lookupActionF
         Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"

@@ -76,7 +76,7 @@ import           Model.Parser.Composites.Nouns                           (Contai
                                                                           ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
-import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
+import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
@@ -139,7 +139,6 @@ sashaBedroomDemo = do
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
   openContainerFGID <- declareContainerAccessActionGID (openContainerF pocketGID)
-
   registerLocation bedroomGID (buildLocation pitchBlackFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
@@ -159,6 +158,7 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID robeGID (ObjectiveKey robeOB)
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
+  registerObjectToLocation bedroomGID pocketGID (ContainerKey pocketCT)
 
   -- Floor is the anchor object (not supported by anything)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
@@ -178,6 +178,7 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
   pocketOpenGetRobe <- makeEffect openPocketCVP openContainerFGID
+  playerOpenPocketAfterRobe <- makeEffect openPocketCVP accessContainerFGID
   -- Build composed effect computation
   buildEffects $
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
@@ -190,7 +191,10 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
     buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
-    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription))
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe
+
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
@@ -218,6 +222,8 @@ sashaBedroomDemo = do
   linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))
 
+  linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
+    (NarrationEffect (StaticNarration "You open the pocket and retrieve the pill."))
   finalizeGameState
   where
     closedEyes :: Text
