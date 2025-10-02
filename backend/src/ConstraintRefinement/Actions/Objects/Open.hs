@@ -1,29 +1,23 @@
 module ConstraintRefinement.Actions.Objects.Open where
-import           Control.Monad.Identity                            (Identity)
-import qualified Data.Set
-import           GameState                                         (getObjectM)
-import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (open)
-import           Model.Core                                        (ActionEffectKey (ContainerAccessActionKey),
-                                                                    ActionEffectResult (ActionEffectResult, _actionEffectKeys),
-                                                                    ActionManagement (SAConManagementKey),
-                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                    ContainerAccessActionF (ObjectContainerAccessF),
-                                                                    GameComputation,
-                                                                    Object (_objectActionManagement))
-import           Model.GID                                         (GID)
+import           Control.Monad.Identity (Identity)
+import           GameState              (getObjectM)
+import           Model.Core             (ActionEffectKey (ContainerAccessActionKey),
+                                         ActionManagementFunctions,
+                                         ContainerAccessActionF (ObjectContainerAccessF),
+                                         GameComputation,
+                                         Object (_objectActionManagement))
+import           Model.GID              (GID)
 
 
--- ToDo: get back to this next
 openContainerF :: GID Object -> ContainerAccessActionF
 openContainerF objectGID = ObjectContainerAccessF openit
   where
-    openit :: GameComputation Identity ActionEffectResult
-    openit = do
+    openit :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+              -> GameComputation Identity ActionEffectKey
+    openit lookupActionF = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
-      let ActionManagementFunctions actionSet = actionManagement
-      -- Find the single AVManagementKey entry that matches the 'get' verb
-      let getActionGIDs = [gid | SAConManagementKey verb gid <- Data.Set.toList actionSet, verb == open]
-      pure $ ActionEffectResult
-        {
-          _actionEffectKeys = map ContainerAccessActionKey getActionGIDs
-        }
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show objectGID)
+        Just actionGID ->
+          let actionKey = ContainerAccessActionKey actionGID
+          in pure actionKey

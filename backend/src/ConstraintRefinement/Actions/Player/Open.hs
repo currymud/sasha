@@ -3,13 +3,13 @@ import           ConstraintRefinement.Actions.Utils                (AcquisitionE
                                                                     handleAcquisitionError)
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
-import           Data.Set                                          (Set)
 import           Data.Text                                         (Text, pack)
 import           GameState                                         (getObjectM,
                                                                     modifyNarration,
                                                                     parseAccessPhrase,
                                                                     updateActionConsequence)
 import           GameState.ActionManagement                        (findSAForContainersKey,
+                                                                    lookupContainerAccessVerbPhrase,
                                                                     processEffectsFromRegistry)
 import           GameState.Perception                              (youSeeM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
@@ -17,31 +17,23 @@ import           Model.Actions.Results                             (AccessRes (C
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     SimpleAccessRes (SimpleAccessRes, _saContainerKey))
 import           Model.Core                                        (ActionEffectKey,
-                                                                    ActionEffectMap (ActionEffectMap),
-                                                                    ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
+                                                                    ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
                                                                     FinalizeAccessNotInstrumentF,
                                                                     GameComputation,
                                                                     Object (_objectActionManagement),
                                                                     SimpleAccessSearchStrategy,
-                                                                    SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF),
-                                                                    SystemEffectKey,
-                                                                    SystemEffectRegistry,
-                                                                    TargetEffectKey)
+                                                                    SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
 import           Model.GID                                         (GID)
 import           Model.Parser.Composites.Verbs                     (ContainerAccessVerbPhrase)
 import           Model.Parser.GCase                                (NounKey)
 
-
 openDeniedF :: ContainerAccessActionF
-openDeniedF = CannotAccessF denied
+openDeniedF = PlayerCannotAccessF denied
   where
     denied :: ActionEffectKey -> GameComputation Identity ()
     denied actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg'
-    msg' :: Text
-    msg' = "You are in position to not be opening anything but your eyes."
 
 openEyesDenied :: SomaticAccessActionF
 openEyesDenied = CannotSomaticAccessF denied
@@ -85,14 +77,15 @@ openF = PlayerContainerAccessF openit
               objectActionLookup <- lookupAccessAction objectGID actionMap
               case objectActionLookup of
                 Left errM -> errM
+                Right (PlayerCannotAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerCannotAccessF action, which is invalid."
                 Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
                 Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
-                Right (CannotAccessF actionF) -> actionF actionEffectKey
-                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey actionF
+                Right (CannotAccessF actionF) -> actionF lookupActionF
+                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF lookupActionF)
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp
-
+        lookupActionF = lookupContainerAccessVerbPhrase avp
 lookupAccessAction :: GID Object
                         -> ContainerAccessActionMap
                         -> GameComputation Identity (Either (GameComputation Identity ()) ContainerAccessActionF)

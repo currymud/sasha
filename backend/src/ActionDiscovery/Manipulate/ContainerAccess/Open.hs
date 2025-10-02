@@ -9,14 +9,15 @@ import           GameState                     (getPlayerLocationM, getPlayerM,
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
 import           Model.Core                    (ActionEffectKey (ContainerAccessActionKey),
-                                                ActionEffectResult (ActionEffectResult),
+                                                ActionManagementFunctions,
                                                 ActionMaps (_containerAccessActionMap),
                                                 Config (_actionMaps),
-                                                ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerContainerAccessF),
+                                                ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
                                                 GameComputation,
                                                 Location (_objectSemanticMap),
                                                 Player (_playerActions),
                                                 SimpleAccessSearchStrategy)
+import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
 
 manageContainerAccessProcess :: ContainerAccessVerbPhrase
@@ -30,12 +31,15 @@ manageContainerAccessProcess cavp = do
       let actionEffectKey = ContainerAccessActionKey actionGID
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
+        Just (PlayerCannotAccessF actionF) -> actionF actionEffectKey
         Just (InstrumentContainerAccessF _) -> error "InstrumentContainerAccessF is not a player constructor"
-        Just (CannotAccessF actionF) -> actionF actionEffectKey
+        Just (CannotAccessF actionF) -> actionF lookupActionF
         Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
         Just (PlayerContainerAccessF actionF) -> do
           actionF actionEffectKey objectSearchStrategy actionMap cavp finalizeContainerAccess
-
+  where
+    lookupActionF :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+    lookupActionF = lookupContainerAccessVerbPhrase cavp
 -- | ToDo Clarification system. object identification assumes only one object in location matches nounkey.
 objectSearchStrategy :: SimpleAccessSearchStrategy
 objectSearchStrategy nounkey = do
@@ -46,9 +50,8 @@ objectSearchStrategy nounkey = do
     _ -> pure Nothing
 
 finalizeContainerAccess :: ActionEffectKey
-                           -> GameComputation Identity ActionEffectResult
+                           -> GameComputation Identity ActionEffectKey
                            -> GameComputation Identity ()
 finalizeContainerAccess actionEffectKey objectActionF = do
- (ActionEffectResult objectEffects) <- objectActionF
- let allEffects = actionEffectKey:objectEffects
- mapM_ processEffectsFromRegistry allEffects
+ objectEffects <- objectActionF
+ mapM_ processEffectsFromRegistry [actionEffectKey, objectEffects]

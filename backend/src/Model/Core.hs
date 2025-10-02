@@ -223,7 +223,7 @@ newtype ActionEffectResult = ActionEffectResult
 
 type FinalizeAccessNotInstrumentF :: Type
 type FinalizeAccessNotInstrumentF = ActionEffectKey
-                                      -> GameComputation Identity ActionEffectResult
+                                      -> GameComputation Identity ActionEffectKey
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
@@ -237,9 +237,13 @@ type ContainerAccessF = (ActionEffectKey
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
-  | ObjectContainerAccessF (GameComputation Identity ActionEffectResult)
-  | InstrumentContainerAccessF (GID Object -> GameComputation Identity ActionEffectResult)
-  | CannotAccessF          (ActionEffectKey -> GameComputation Identity ())
+  | PlayerCannotAccessF (ActionEffectKey -> GameComputation Identity ())
+  | ObjectContainerAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+                             -> (GameComputation Identity ActionEffectKey))
+  | InstrumentContainerAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+                                 -> GameComputation Identity ActionEffectKey)
+  | CannotAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+                    -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF

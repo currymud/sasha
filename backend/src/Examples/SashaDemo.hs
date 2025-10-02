@@ -6,6 +6,13 @@ import           Control.Monad                                           ((>=>))
 import qualified Data.Set
 
 -- Core imports
+import           EDSL.Effects.EffectAlgebra                              (alongside,
+                                                                          buildEffect,
+                                                                          buildEffects)
+import           EDSL.Effects.HasBehavior                                (HasBehavior (withBehavior),
+                                                                          MakeBehavior (makeBehavior))
+import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
+                                                                          MakeEffect (makeEffect))
 import           Examples.Defaults                                       (defaultLocation,
                                                                           defaultObject,
                                                                           defaultPlayer)
@@ -44,13 +51,6 @@ import           Model.EDSL.SashaLambdaDSL                               (SashaL
                                                                           withShortName,
                                                                           withTitle)
 import           Model.GID                                               (GID)
-import           EDSL.Effects.EffectAlgebra                                     (alongside,
-                                                                          buildEffect,
-                                                                          buildEffects)
-import           EDSL.Effects.HasBehavior                                       (HasBehavior (withBehavior),
-                                                                          MakeBehavior (makeBehavior))
-import           EDSL.Effects.HasEffect                                         (HasEffect (linkEffect),
-                                                                          MakeEffect (makeEffect))
 
 -- All the noun/verb imports from original
 import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
@@ -76,7 +76,7 @@ import           Model.Parser.Composites.Nouns                           (Contai
                                                                           ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
-import           Model.Parser.GCase                                      (NounKey (DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
+import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
@@ -84,6 +84,7 @@ import           ConstraintRefinement.Actions.Locations.Look             (lookF,
 import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF)
+import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
 import           ConstraintRefinement.Actions.Objects.Pocket.Open        (pocketOutOfReachF)
 import           ConstraintRefinement.Actions.Objects.Robe.Get           (getRobeDeniedF)
 import           ConstraintRefinement.Actions.Objects.Robe.Look          (notEvenRobeF)
@@ -127,7 +128,7 @@ sashaBedroomDemo = do
 
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
-  openPocketNoReachGID <- declareContainerAccessActionGID pocketOutOfReachF
+  openPocketNoReachGID <- declareContainerAccessActionGID (pocketOutOfReachF pocketGID)
 
   openEyesGID <- declareSomaticActionGID openEyes
   getDeniedFGID <- declareAcquisitionActionGID getDeniedF
@@ -137,7 +138,7 @@ sashaBedroomDemo = do
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
-
+  openContainerFGID <- declareContainerAccessActionGID (openContainerF pocketGID)
   registerLocation bedroomGID (buildLocation pitchBlackFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
@@ -157,6 +158,7 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID robeGID (ObjectiveKey robeOB)
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
+  registerObjectToLocation bedroomGID pocketGID (ContainerKey pocketCT)
 
   -- Floor is the anchor object (not supported by anything)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
@@ -175,7 +177,8 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobeForPlayer <- makeEffect getRobeAVP playerGetFGID
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeEffect get getRobeFGID
-
+  pocketOpenGetRobe <- makeEffect openPocketCVP openContainerFGID
+  playerOpenPocketAfterRobe <- makeEffect openPocketCVP accessContainerFGID
   -- Build composed effect computation
   buildEffects $
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
@@ -188,7 +191,10 @@ sashaBedroomDemo = do
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
     buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
-    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription))
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
+    buildEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe
+
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
@@ -216,6 +222,8 @@ sashaBedroomDemo = do
   linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))
 
+  linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
+    (NarrationEffect (LookInNarration pocketGID))
   finalizeGameState
   where
     closedEyes :: Text
