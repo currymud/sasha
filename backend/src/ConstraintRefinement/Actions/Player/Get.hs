@@ -23,7 +23,7 @@ import           Model.Core                                       (AcquisitionAc
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_objectSemanticMap),
-                                                                   Object (_objectActionManagement),
+                                                                   Object (_objectActionManagement, _shortName),
                                                                    SearchStrategy,
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
@@ -64,7 +64,8 @@ getF = AcquisitionActionF getit
                 (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
                 (LosesObjectF containerActionF) -> finalize actionEffectKey containerGID objectGID objectActionF containerActionF
                 _ -> throwError $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
-            _ -> throwError $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
+            (LosesObjectF _) -> error (("Programmer Error: Object " <> show objectGID) <> " has a LosesObjectF action, which is invalid for get actions.")
+            (AcquisitionActionF _) -> error (("Programmer Error: Object " <> show objectGID) <> " has an AcquisitionActionF action, which is invalid for get actions.")
         Complete (CompleteAcquisitionRes {..}) -> do
           -- Find both objects directly
           objectResult <- findObjectByKey _caObjectKey
@@ -72,22 +73,25 @@ getF = AcquisitionActionF getit
 
           case (objectResult, supportResult) of
             (Nothing, _) -> throwError "You don't see that object here."
-            (_, Nothing) -> throwError "You don't see that support here."
+            (Just oid, Nothing) -> error ("programer error: support object not found for" <> show oid)
             (Just objectGID, Just supportGID) -> do
               -- Validate the object is actually on/in the support
               world <- gets _world
               let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
               case Data.Map.Strict.lookup objectGID spatialMap of
-                Nothing -> throwError "Object has no spatial relationships"
+                Nothing -> error ("programmer error: " <> show objectGID <> " has no spatial relationships")
                 Just relationships -> do
                   let isOnSupport = any (\case
                         SupportedBy sid -> sid == supportGID
                         ContainedIn cid -> cid == supportGID
                         _ -> False) (Data.Set.toList relationships)
                   if not isOnSupport
-                    then throwError $
-                      "The " <> (Data.Text.pack . show) objectGID <>
-                      " is not on the " <> (Data.Text.pack . show) supportGID
+                    then do
+                      objName <- _shortName <$> getObjectM objectGID
+                      supportName <- _shortName <$> getObjectM supportGID
+                      throwError $
+                        "The " <> objName <>
+                        " is not on the " <> supportName <> "."
                     else do
                       -- Now proceed with the standard lookups
                       objectAction <- lookupAcquisitionAction objectGID actionMap
@@ -99,8 +103,8 @@ getF = AcquisitionActionF getit
                             (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
                             (LosesObjectF containerActionF) ->
                               finalize actionEffectKey supportGID objectGID objectActionF containerActionF
-                            _ -> throwError $
-                              "Container " <> (Data.Text.pack . show) supportGID <>
+                            _ -> error $
+                              "Programmer error. Container " <> show supportGID <>
                               " does not have a LosesObjectF action."
                         _ -> throwError $
                           "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
@@ -121,7 +125,7 @@ validateObjectSearch :: SearchStrategy
 validateObjectSearch searchStrategy nounKey = do
   maybeResult <- searchStrategy nounKey
   case maybeResult of
-    Nothing -> throwError "You don't see that here."
+    Nothing                        -> throwError "You don't see that here."
     Just (objectGID, containerGID) -> pure (objectGID, containerGID)
 
 lookupAcquisitionAction :: GID Object
