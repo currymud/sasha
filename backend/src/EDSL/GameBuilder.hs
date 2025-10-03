@@ -44,13 +44,13 @@ import           Model.Core                                                     
                                                                                    ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
-                                                                                   Location (_locationActionManagement, _objectSemanticMap, _title),
+                                                                                   Location (_locationActionManagement, _locationInventory, _objectSemanticMap, _title),
                                                                                    Narration (Narration),
                                                                                    Object (_description, _descriptives, _objectActionManagement, _shortName),
                                                                                    Player (_location, _playerActions),
                                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
                                                                                    TriggerRegistry (TriggerRegistry, _unTriggerRegistry),
-                                                                                   World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+                                                                                   World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings                                              (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.EDSL.SashaLambdaDSL                                        (SashaLambdaDSL (..))
 import           Model.GID                                                        (GID (GID))

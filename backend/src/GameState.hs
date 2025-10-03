@@ -66,14 +66,14 @@ import           Model.Core                    (AcquisitionActionF,
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
                                                 ImplicitStimulusActionF,
-                                                Location (_locationActionManagement),
+                                                Location (_locationActionManagement, _locationInventory),
                                                 Narration (Narration, _actionConsequence),
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
                                                 SpatialRelationship (Inventory),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
