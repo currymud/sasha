@@ -533,6 +533,7 @@ type Location :: Type
 data Location = Location {
     _title                    :: Text
   , _objectSemanticMap        :: Map NounKey (Set (GID Object))
+  , _locationInventory        :: Set (GID Object)
   , _locationActionManagement :: ActionManagementFunctions
 }
   deriving stock (Show, Eq, Ord)
@@ -552,6 +553,7 @@ data World = World
   , _locationMap            :: GIDToDataMap Location Location
   , _perceptionMap          :: Map DirectionalStimulusNounPhrase (Set (GID Object))
   , _spatialRelationshipMap :: SpatialRelationshipMap
+  , _globalSemanticMap      :: Map NounKey (Set (GID Object))
   }
   deriving stock (Show, Eq, Ord)
 
@@ -591,7 +593,7 @@ arbitraryText = pack <$> resize 15 (listOf (choose ('a', 'z')))
 
 -- Basic data type instances
 instance Arbitrary Location where
-  arbitrary = Location <$> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)
+  arbitrary = Location <$> arbitraryText <*> pure mempty <*> pure mempty <*> pure (ActionManagementFunctions mempty)
 
 instance Arbitrary Object where
   arbitrary = Object <$> arbitraryText <*> arbitraryText <*> pure mempty <*> pure (ActionManagementFunctions mempty)

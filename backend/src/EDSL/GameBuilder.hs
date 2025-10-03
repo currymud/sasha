@@ -44,13 +44,13 @@ import           Model.Core                                                     
                                                                                    ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
-                                                                                   Location (_locationActionManagement, _objectSemanticMap, _title),
+                                                                                   Location (_locationActionManagement, _locationInventory, _objectSemanticMap, _title),
                                                                                    Narration (Narration),
                                                                                    Object (_description, _descriptives, _objectActionManagement, _shortName),
                                                                                    Player (_location, _playerActions),
                                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
                                                                                    TriggerRegistry (TriggerRegistry, _unTriggerRegistry),
-                                                                                   World (_locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+                                                                                   World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings                                              (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
 import           Model.EDSL.SashaLambdaDSL                                        (SashaLambdaDSL (..))
 import           Model.GID                                                        (GID (GID))
@@ -506,13 +506,27 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   case Data.Map.Strict.lookup locGID currentLocationMap of
     Nothing -> throwError (InvalidLocationGID locGID "Location not registered")
     Just loc -> do
-      let currentSemanticMap = _objectSemanticMap loc
+      let -- Update old location semantic map
+          currentSemanticMap = _objectSemanticMap loc
           currentObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentSemanticMap
           updatedObjects = Data.Set.insert objGID currentObjects
           updatedSemanticMap = Data.Map.Strict.insert nounKey updatedObjects currentSemanticMap
-          updatedLoc = loc { _objectSemanticMap = updatedSemanticMap }
+          -- Update new location inventory
+          currentInventory = _locationInventory loc
+          updatedInventory = Data.Set.insert objGID currentInventory
+          -- Update location with both fields
+          updatedLoc = loc { _objectSemanticMap = updatedSemanticMap
+                           , _locationInventory = updatedInventory }
           updatedLocationMap = Data.Map.Strict.insert locGID updatedLoc currentLocationMap
-          updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
+          -- Update global semantic map
+          currentWorld = _world (_gameState state)
+          currentGlobalMap = _globalSemanticMap currentWorld
+          currentGlobalObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentGlobalMap
+          updatedGlobalObjects = Data.Set.insert objGID currentGlobalObjects
+          updatedGlobalMap = Data.Map.Strict.insert nounKey updatedGlobalObjects currentGlobalMap
+          -- Update world with both changes
+          updatedWorld = currentWorld { _locationMap = GIDToDataMap updatedLocationMap
+                                       , _globalSemanticMap = updatedGlobalMap }
           updatedGameState = (_gameState state) { _world = updatedWorld }
       put state { _gameState = updatedGameState }
 

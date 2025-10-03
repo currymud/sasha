@@ -17,11 +17,11 @@ import           GameState                     (getDescriptionM, getLocationM,
 import           GameState.Spatial             (findObjectInInventoryContainers)
 import           Model.Core                    (GameComputation,
                                                 GameState (_world),
-                                                Location (_objectSemanticMap),
+                                                Location (_locationInventory, _objectSemanticMap),
                                                 Object (_descriptives),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_perceptionMap, _spatialRelationshipMap))
+                                                World (_globalSemanticMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Nouns (DirectionalStimulusNounPhrase)
 import           Model.Parser.GCase            (NounKey)
@@ -33,12 +33,18 @@ findAccessibleObject nounKey = do
     Just oid -> pure (Just oid)
     Nothing -> do
       -- Try location objects (things on surfaces, in open containers, etc.)
+      world <- gets _world
       playerLocationGID <- getPlayerLocationGID
       location <- getLocationM playerLocationGID
-      let objectSemanticMap = _objectSemanticMap location
-      case Data.Map.Strict.lookup nounKey objectSemanticMap of
-        Just objSet | not (Data.Set.null objSet) ->
-          pure $ Just (Data.Set.elemAt 0 objSet)
+      let globalSemanticMap = _globalSemanticMap world
+          locationInventory = _locationInventory location
+      case Data.Map.Strict.lookup nounKey globalSemanticMap of
+        Just objSet | not (Data.Set.null objSet) -> do
+          -- Find first object that's in the current location's inventory
+          let availableObjects = Data.Set.filter (`Data.Set.member` locationInventory) objSet
+          if not (Data.Set.null availableObjects)
+            then pure $ Just (Data.Set.elemAt 0 availableObjects)
+            else pure Nothing
         _ -> pure Nothing
 
 -- | Perception Map Contract Definition

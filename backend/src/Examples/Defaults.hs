@@ -7,12 +7,12 @@ import qualified Data.Map.Strict
 import qualified Data.Set
 import           Data.Text           (Text)
 import           Model.Core          (ActionManagementFunctions (ActionManagementFunctions),
-                                      Location (Location, _locationActionManagement, _objectSemanticMap, _title),
+                                      Location (Location, _locationActionManagement, _locationInventory, _objectSemanticMap, _title),
                                       Narration (Narration),
                                       Object (Object, _description, _descriptives, _objectActionManagement, _shortName),
                                       Player (Player, _inventory, _location, _playerActions),
                                       SpatialRelationshipMap (SpatialRelationshipMap),
-                                      World (World, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
+                                      World (World, _globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings (GIDToDataMap (GIDToDataMap))
 import           Model.GID           (GID (GID))
 
@@ -28,6 +28,7 @@ defaultLocation :: Location
 defaultLocation = Location
   { _title = mempty
   , _objectSemanticMap = Data.Map.Strict.empty
+  , _locationInventory = Data.Set.empty
   , _locationActionManagement = ActionManagementFunctions Data.Set.empty
   }
 
@@ -37,6 +38,7 @@ defaultWorld = World
   , _locationMap = GIDToDataMap Data.Map.Strict.empty
   , _perceptionMap = mempty
   , _spatialRelationshipMap = SpatialRelationshipMap Data.Map.Strict.empty
+  , _globalSemanticMap = Data.Map.Strict.empty
   }
 
 defaultPlayer :: Player

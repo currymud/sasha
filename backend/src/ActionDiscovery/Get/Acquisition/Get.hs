@@ -6,7 +6,7 @@ import           Control.Monad.Identity             (Identity)
 import           Control.Monad.Reader.Class         (asks)
 import           Control.Monad.State                (gets)
 import qualified Data.Map.Strict
-import           Data.Set                           (Set, elemAt, null, toList)
+import           Data.Set                           (Set, elemAt, filter, member, null, toList)
 import qualified Data.Text
 import           GameState                          (getPlayerLocationM,
                                                      getPlayerM)
@@ -19,13 +19,13 @@ import           Model.Core                         (AcquisitionActionF (Acquisi
                                                      CoordinationResult (CoordinationResult),
                                                      GameComputation,
                                                      GameState (_world),
-                                                     Location (_objectSemanticMap),
+                                                     Location (_locationInventory, _objectSemanticMap),
                                                      Object,
                                                      Player (_playerActions),
                                                      SearchStrategy,
                                                      SpatialRelationship (ContainedIn, SupportedBy),
                                                      SpatialRelationshipMap (SpatialRelationshipMap),
-                                                     World (_spatialRelationshipMap))
+                                                     World (_globalSemanticMap, _spatialRelationshipMap))
 import           Model.GID                          (GID)
 import           Model.Parser.Composites.Verbs      (AcquisitionVerbPhrase)
 
@@ -55,24 +55,30 @@ manageAcquisitionProcess avp = do
               actionF actionEffectKey
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
--- | General case: Search current location's object semantic map
+-- | General case: Search global semantic map, verify in location inventory
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
+  world <- gets _world
   playerLocation <- getPlayerLocationM
-  let objectSemanticMap = _objectSemanticMap playerLocation
-  case Data.Map.Strict.lookup targetNounKey objectSemanticMap of
+  let globalSemanticMap = _globalSemanticMap world
+      locationInventory = _locationInventory playerLocation
+  case Data.Map.Strict.lookup targetNounKey globalSemanticMap of
     Just objSet | not (Data.Set.null objSet) -> do
-      let targetGID = Data.Set.elemAt 0 objSet
-      -- Find what contains/supports this object
-      world <- gets _world
-      let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-      case Data.Map.Strict.lookup targetGID spatialMap of
-        Just relationships -> do
-          let sources = getContainerSources relationships
-          case sources of
-            (sourceGID:_) -> pure $ Just (targetGID, sourceGID)
-            []            -> pure Nothing  -- Object exists but has no container
-        Nothing -> pure Nothing
+      -- Find first object that's in the current location's inventory
+      let availableObjects = Data.Set.filter (`Data.Set.member` locationInventory) objSet
+      if not (Data.Set.null availableObjects)
+        then do
+          let targetGID = Data.Set.elemAt 0 availableObjects
+          -- Find what contains/supports this object
+          let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+          case Data.Map.Strict.lookup targetGID spatialMap of
+            Just relationships -> do
+              let sources = getContainerSources relationships
+              case sources of
+                (sourceGID:_) -> pure $ Just (targetGID, sourceGID)
+                []            -> pure Nothing  -- Object exists but has no container
+            Nothing -> pure Nothing
+        else pure Nothing  -- Object exists but not in this location
     _ -> pure Nothing
   where
     getContainerSources :: Set SpatialRelationship -> [GID Object]
