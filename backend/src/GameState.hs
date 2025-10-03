@@ -11,6 +11,7 @@ module GameState ( addToInventoryM
                  , getPlayerM
                  , getPlayerLocationM
                  , getPlayerLocationGID
+                 , getWorldM
                  , modifyLocationMapM
                  , modifyLocationActionMapsM
                  , modifyLocationM
@@ -77,7 +78,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 PosturalActionF,
                                                 SpatialRelationship (Inventory),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                World (World, _globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
@@ -326,6 +327,9 @@ getLocationM lid = do
 
 getPlayerM :: GameComputation Identity Player
 getPlayerM = gets _player
+
+getWorldM :: GameComputation Identity World
+getWorldM = gets _world
 
 getObjectM :: GID Object -> GameComputation Identity Object
 getObjectM oid = do

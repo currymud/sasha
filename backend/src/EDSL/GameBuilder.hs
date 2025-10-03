@@ -506,13 +506,27 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   case Data.Map.Strict.lookup locGID currentLocationMap of
     Nothing -> throwError (InvalidLocationGID locGID "Location not registered")
     Just loc -> do
-      let currentSemanticMap = _objectSemanticMap loc
+      let -- Update old location semantic map
+          currentSemanticMap = _objectSemanticMap loc
           currentObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentSemanticMap
           updatedObjects = Data.Set.insert objGID currentObjects
           updatedSemanticMap = Data.Map.Strict.insert nounKey updatedObjects currentSemanticMap
-          updatedLoc = loc { _objectSemanticMap = updatedSemanticMap }
+          -- Update new location inventory
+          currentInventory = _locationInventory loc
+          updatedInventory = Data.Set.insert objGID currentInventory
+          -- Update location with both fields
+          updatedLoc = loc { _objectSemanticMap = updatedSemanticMap
+                           , _locationInventory = updatedInventory }
           updatedLocationMap = Data.Map.Strict.insert locGID updatedLoc currentLocationMap
-          updatedWorld = (_world (_gameState state)) { _locationMap = GIDToDataMap updatedLocationMap }
+          -- Update global semantic map
+          currentWorld = _world (_gameState state)
+          currentGlobalMap = _globalSemanticMap currentWorld
+          currentGlobalObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentGlobalMap
+          updatedGlobalObjects = Data.Set.insert objGID currentGlobalObjects
+          updatedGlobalMap = Data.Map.Strict.insert nounKey updatedGlobalObjects currentGlobalMap
+          -- Update world with both changes
+          updatedWorld = currentWorld { _locationMap = GIDToDataMap updatedLocationMap
+                                       , _globalSemanticMap = updatedGlobalMap }
           updatedGameState = (_gameState state) { _world = updatedWorld }
       put state { _gameState = updatedGameState }
 

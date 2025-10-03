@@ -5,15 +5,16 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           GameState                     (getPlayerLocationM, getPlayerM,
-                                                parseConsumptionPhrase)
+import           GameState                     (getPlayerLocationGID, getPlayerLocationM, getPlayerM,
+                                                getWorldM, parseConsumptionPhrase)
 import           Model.Core                    (ActionEffectKey (ConsumptionActionKey),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
                                                 ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
                                                 GameComputation,
-                                                Location (_objectSemanticMap),
-                                                Player (_playerActions))
+                                                Location (_locationInventory, _objectSemanticMap),
+                                                Player (_playerActions),
+                                                World (_globalSemanticMap))
 
 import           GameState.ActionManagement    (lookupConsumption)
 import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (ConsumptionVerbPhrase))
@@ -31,10 +32,18 @@ manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
         Just (PlayerConsumptionActionF actionFunc) -> do
           -- Build actionEffectKeys for the action function
           let (consumablePhrase, nounKey) = parseConsumptionPhrase cvp
+          world <- getWorldM
           location <- getPlayerLocationM
-          case Data.Map.Strict.lookup nounKey location._objectSemanticMap of
+          -- Check global semantic map for objects with this nounKey
+          case Data.Map.Strict.lookup nounKey (_globalSemanticMap world) of
             Just objSet | not (Data.Set.null objSet) -> do
-              let targetObjectGID = Data.Set.elemAt 0 objSet
-              actionFunc actionEffectKey targetObjectGID cvp
+              -- Find first object that's in the current location's inventory
+              let locationInventory = _locationInventory location
+                  availableObjects = Data.Set.filter (`Data.Set.member` locationInventory) objSet
+              if not (Data.Set.null availableObjects)
+                then do
+                  let targetObjectGID = Data.Set.elemAt 0 availableObjects
+                  actionFunc actionEffectKey targetObjectGID cvp
+                else error $ "Target object not found in this location: " <> show nounKey
             _ -> error $ "Target object not found for consumption: " <> show nounKey
         Just (CannotConsumeF actionF) -> actionF actionEffectKey
