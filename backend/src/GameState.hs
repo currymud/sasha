@@ -24,6 +24,10 @@ module GameState ( addToInventoryM
                  , modifyWorldM
                  , addObjectToLocationSemanticMapM
                  , removeObjectFromLocationSemanticMapM
+                 , addObjectToLocationInventory
+                 , removeObjectFromLocationInventory
+                 , addObjectToGlobalSemanticMap
+                 , removeObjectFromGlobalSemanticMap
                  , parseAccessPhrase
                  , parseObjectPhrase
                  , parseConsumablePhrase
@@ -486,6 +490,52 @@ removeObjectFromLocationSemanticMapM lid nounKey oid =
                     then Data.Map.Strict.delete nounKey currentMap
                     else Data.Map.Strict.insert nounKey updatedSet currentMap
     in loc { _objectSemanticMap = updatedMap }
+
+-- Add an object to a location's inventory
+addObjectToLocationInventory :: GID Location
+                            -> GID Object
+                            -> GameComputation Identity ()
+addObjectToLocationInventory lid oid =
+  modifyLocationM lid $ \loc ->
+    let currentInventory = _locationInventory loc
+        updatedInventory = Data.Set.insert oid currentInventory
+    in loc { _locationInventory = updatedInventory }
+
+-- Remove an object from a location's inventory
+removeObjectFromLocationInventory :: GID Location
+                                 -> GID Object
+                                 -> GameComputation Identity ()
+removeObjectFromLocationInventory lid oid =
+  modifyLocationM lid $ \loc ->
+    let currentInventory = _locationInventory loc
+        updatedInventory = Data.Set.delete oid currentInventory
+    in loc { _locationInventory = updatedInventory }
+
+-- Add an object to the global semantic map
+addObjectToGlobalSemanticMap :: NounKey
+                             -> GID Object
+                             -> GameComputation Identity ()
+addObjectToGlobalSemanticMap nounKey oid =
+  modifyWorldM $ \world ->
+    let currentMap = _globalSemanticMap world
+        currentSet = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentMap
+        updatedSet = Data.Set.insert oid currentSet
+        updatedMap = Data.Map.Strict.insert nounKey updatedSet currentMap
+    in world { _globalSemanticMap = updatedMap }
+
+-- Remove an object from the global semantic map
+removeObjectFromGlobalSemanticMap :: NounKey
+                                  -> GID Object
+                                  -> GameComputation Identity ()
+removeObjectFromGlobalSemanticMap nounKey oid =
+  modifyWorldM $ \world ->
+    let currentMap = _globalSemanticMap world
+        currentSet = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentMap
+        updatedSet = Data.Set.delete oid currentSet
+        updatedMap = if Data.Set.null updatedSet
+                     then Data.Map.Strict.delete nounKey currentMap
+                     else Data.Map.Strict.insert nounKey updatedSet currentMap
+    in world { _globalSemanticMap = updatedMap }
 
 clearNarration :: GameComputation Identity ()
 clearNarration = modifyNarration (const emptyNarration)
