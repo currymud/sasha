@@ -57,6 +57,7 @@ import           Grammar.Parser.Partitions.Nouns.Containers              (pocket
 import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroomDS,
                                                                           chairDS,
                                                                           floorDS,
+                                                                          pillDS,
                                                                           pocketDS,
                                                                           robeDS)
 import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
@@ -71,10 +72,12 @@ import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (invent
                                                                           isaLook)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs       (openSA)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
-import           Model.Parser.Composites.Nouns                           (ContainerPhrase (ContainerPhrase),
+import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                          ContainerPhrase (ContainerPhrase),
                                                                           NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                                           ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
@@ -99,6 +102,8 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
+import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -107,6 +112,8 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
 
+takePillCVP :: ConsumptionVerbPhrase
+takePillCVP = ConsumptionVerbPhrase takeCV (ConsumableNounPhrase (SimpleNounPhrase pillCS))
 -- | Main demo function with HasBehavior and HasEffect - same signature as original
 sashaBedroomDemo :: SashaLambdaDSL GameState
 sashaBedroomDemo = do
@@ -115,12 +122,14 @@ sashaBedroomDemo = do
   chairGID <- declareObjectGID (SimpleNounPhrase chairDS)
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
+  pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
 
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
   lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
   notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
   lookAtChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
   whatChairFGID <- declareDirectionalStimulusActionGID whatChairF
+
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
@@ -193,7 +202,8 @@ sashaBedroomDemo = do
     buildEffect (AcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
     buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
     buildEffect (AcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
-    buildEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe
+    buildEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe `alongside`
+    buildEffect (ContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
 
   -- Register narration effects for actions
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
@@ -224,6 +234,10 @@ sashaBedroomDemo = do
 
   linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
+
+  linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
+    (NarrationEffect (LookAtNarration pocketGID))
+
   finalizeGameState
   where
     closedEyes :: Text
@@ -235,6 +249,8 @@ sashaBedroomDemo = do
     robePocketDescription :: Text
     robePocketDescription = "The pocket is velcroed shut, "
                               <> "but there's an indentation of a pill on it."
+    openPocketDescription :: Text
+    openPocketDescription = "The pocket is open, revealing a pill."
 -- Helper functions using HasBehavior - much cleaner!
 buildLocation :: GID ImplicitStimulusActionF -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID =
