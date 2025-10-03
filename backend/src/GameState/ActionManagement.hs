@@ -10,7 +10,8 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
 import           GameState                     (getInventoryObjectsM,
-                                                getObjectM, modifyLocationM,
+                                                getObjectM, getTopLevelInventoryObjectsM,
+                                                modifyLocationM,
                                                 modifyNarration, modifyObjectM,
                                                 modifyPlayerM,
                                                 updateActionConsequence)
@@ -451,8 +452,8 @@ processNarrationEffect (StaticNarration text) =
   modifyNarration $ updateActionConsequence text
 
 processNarrationEffect InventoryNarration = do
-  inventoryObjects <- getInventoryObjectsM
-  case inventoryObjects of
+  topLevelInventoryObjects <- getTopLevelInventoryObjectsM
+  case topLevelInventoryObjects of
     [] -> modifyNarration $ updateActionConsequence "You've got nothing but a terrible headache and a slight pang of regret."
     objects -> do
       objectNames <- mapM (fmap _shortName . getObjectM) objects

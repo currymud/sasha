@@ -5,6 +5,7 @@ module GameState ( addToInventoryM
                  , getActionManagementM
                  , getDescriptionM
                  , getInventoryObjectsM
+                 , getTopLevelInventoryObjectsM
                  , getLocationActionMapsM
                  , getLocationM
                  , getLocationObjectIDsM
@@ -27,6 +28,8 @@ module GameState ( addToInventoryM
                  , removeObjectFromLocationSemanticMapM
                  , addObjectToLocationInventory
                  , removeObjectFromLocationInventory
+                 , addObjectToLocationInventoryWithHierarchy
+                 , removeObjectFromLocationInventoryWithHierarchy
                  , addObjectToGlobalSemanticMap
                  , removeObjectFromGlobalSemanticMap
                  , parseAccessPhrase
@@ -44,15 +47,18 @@ module GameState ( addToInventoryM
                  , processNegativePosturalEffect
                  , processConsumptionEffect
                  , removeFromInventoryM
+                 , addToInventoryWithHierarchy
+                 , removeFromInventoryWithHierarchy
+                 , getObjectHierarchy
                  , updateActionConsequence
                  ) where
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
-import           Data.Map.Strict               (elems)
+import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, delete, empty, fromList,
-                                                insert, member, null, toList)
+import           Data.Set                      (Set, delete, difference, elemAt, empty, fromList,
+                                                insert, member, null, singleton, toList, union, unions)
 import qualified Data.Set                      (filter)
 import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
@@ -76,7 +82,7 @@ import           Model.Core                    (AcquisitionActionF,
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
-                                                SpatialRelationship (Inventory),
+                                                SpatialRelationship (Contains, Inventory, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 World (World, _globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
@@ -294,6 +300,15 @@ getObjectsBySpatialRelationship targetRelationship = do
 -- Inventory-specific convenience functions
 getInventoryObjectsM :: GameComputation Identity [GID Object]
 getInventoryObjectsM = getObjectsBySpatialRelationship Inventory
+
+-- | Get only top-level inventory objects (those with Inventory relationship, not ContainedIn)
+getTopLevelInventoryObjectsM :: GameComputation Identity [GID Object]
+getTopLevelInventoryObjectsM = do
+  world <- getWorldM
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+  -- Objects with Inventory relationship are already top-level
+  pure [oid | (oid, relationships) <- Data.Map.Strict.toList spatialMap,
+              Inventory `Data.Set.member` relationships]
 
 getLocationObjectIDsM :: GID Location -> GameComputation Identity (Set TargetEffectKey)
 getLocationObjectIDsM lid = do
@@ -562,3 +577,76 @@ addToInventoryM oid = do
 removeFromInventoryM :: GID Object -> GameComputation Identity ()
 removeFromInventoryM oid = do
   modifySpatialRelationshipsForObjectM oid (Data.Set.delete Inventory)
+
+-- | Add an object and all its contained/supported objects to inventory
+addToInventoryWithHierarchy :: GID Object -> GameComputation Identity ()
+addToInventoryWithHierarchy oid = do
+  -- Get all objects that should move with this object
+  hierarchyObjects <- getObjectHierarchy oid
+  -- Add all objects to player inventory
+  player <- getPlayerM
+  let currentInventory = _inventory player
+      updatedInventory = Data.Set.union currentInventory hierarchyObjects
+  modifyPlayerM $ \p -> p { _inventory = updatedInventory }
+  -- Update spatial relationships for all objects
+  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.insert Inventory)) 
+        (Data.Set.toList hierarchyObjects)
+
+-- | Remove an object and all its contained/supported objects from inventory  
+removeFromInventoryWithHierarchy :: GID Object -> GameComputation Identity ()
+removeFromInventoryWithHierarchy oid = do
+  -- Get all objects that should move with this object
+  hierarchyObjects <- getObjectHierarchy oid
+  -- Remove all objects from player inventory
+  player <- getPlayerM
+  let currentInventory = _inventory player
+      updatedInventory = Data.Set.difference currentInventory hierarchyObjects
+  modifyPlayerM $ \p -> p { _inventory = updatedInventory }
+  -- Update spatial relationships for all objects
+  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.delete Inventory)) 
+        (Data.Set.toList hierarchyObjects)
+
+-- | Get an object and all objects contained within it or supported by it (recursively)
+getObjectHierarchy :: GID Object -> GameComputation Identity (Set (GID Object))
+getObjectHierarchy oid = do
+  world <- getWorldM
+  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
+  collectHierarchy (Data.Set.singleton oid) spatialMap Data.Set.empty
+  where
+    collectHierarchy :: Set (GID Object) -> Map (GID Object) (Set SpatialRelationship) -> Set (GID Object) -> GameComputation Identity (Set (GID Object))
+    collectHierarchy toProcess spatialMap processed = do
+      if Data.Set.null toProcess
+        then pure processed
+        else do
+          let currentObj = Data.Set.elemAt 0 toProcess
+              remainingToProcess = Data.Set.delete currentObj toProcess
+              newProcessed = Data.Set.insert currentObj processed
+          -- Find all objects contained in or supported by this object
+          case Data.Map.Strict.lookup currentObj spatialMap of
+            Nothing -> collectHierarchy remainingToProcess spatialMap newProcessed
+            Just relationships -> do
+              let containedObjects = Data.Set.unions [objSet | Contains objSet <- Data.Set.toList relationships]
+                  supportedObjects = Data.Set.unions [objSet | Supports objSet <- Data.Set.toList relationships]
+                  childObjects = Data.Set.union containedObjects supportedObjects
+                  newObjectsToProcess = Data.Set.difference childObjects newProcessed
+              collectHierarchy (Data.Set.union remainingToProcess newObjectsToProcess) spatialMap newProcessed
+
+-- | Add an object and all its contained/supported objects to a location's inventory
+addObjectToLocationInventoryWithHierarchy :: GID Location
+                                          -> GID Object
+                                          -> GameComputation Identity ()
+addObjectToLocationInventoryWithHierarchy lid oid = do
+  -- Get all objects that should move with this object
+  hierarchyObjects <- getObjectHierarchy oid
+  -- Add all objects to location inventory
+  mapM_ (addObjectToLocationInventory lid) (Data.Set.toList hierarchyObjects)
+
+-- | Remove an object and all its contained/supported objects from a location's inventory
+removeObjectFromLocationInventoryWithHierarchy :: GID Location
+                                               -> GID Object
+                                               -> GameComputation Identity ()
+removeObjectFromLocationInventoryWithHierarchy lid oid = do
+  -- Get all objects that should move with this object
+  hierarchyObjects <- getObjectHierarchy oid
+  -- Remove all objects from location inventory
+  mapM_ (removeObjectFromLocationInventory lid) (Data.Set.toList hierarchyObjects)
