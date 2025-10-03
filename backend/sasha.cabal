@@ -58,7 +58,6 @@ library
       ActionDiscovery.Movement.Postural.SitStand
       ActionDiscovery.Percieve.Look
       ConstraintRefinement.Actions.Player.Inventory
-      ConstraintRefinement.Actions.Utils
       ConstraintRefinement.Actions.Locations.Look
       ConstraintRefinement.Actions.Player.Get
       ConstraintRefinement.Actions.Player.Look

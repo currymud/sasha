@@ -1,7 +1,6 @@
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
 
-import           ConstraintRefinement.Actions.Utils (AcquisitionError (SpatialValidationFailed),
-                                                     handleAcquisitionError)
+import           Control.Monad.Error.Class          (throwError)
 import           Control.Monad.Identity             (Identity)
 import           Control.Monad.Reader.Class         (asks)
 import           Control.Monad.State                (gets)
@@ -96,14 +95,14 @@ finalizeAcquisition actionEffectKey containerGID objectGID objectActionF contain
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
-   Nothing -> handleAcquisitionError $ SpatialValidationFailed $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
+   Nothing -> throwError $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
    Just relationships -> do
      let isContainedInSource = any (\case
            ContainedIn oid -> oid == containerGID
            SupportedBy oid -> oid == containerGID
            _ -> False) (Data.Set.toList relationships)
      if not isContainedInSource
-     then handleAcquisitionError $ SpatialValidationFailed $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
+     then throwError $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
      else  do
        (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID

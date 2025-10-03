@@ -1,6 +1,5 @@
 module ConstraintRefinement.Actions.Player.Open where
-import           ConstraintRefinement.Actions.Utils                (AcquisitionError (ObjectNotFound),
-                                                                    handleAcquisitionError)
+import           Control.Monad.Error.Class                         (throwError)
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
 import           Data.Text                                         (Text, pack)
@@ -70,18 +69,15 @@ openF = PlayerContainerAccessF openit
     openit actionEffectKey searchStrategy actionMap avp finalize = do
       case caRes of
         SimpleAR (SimpleAccessRes {..}) -> do
-          osValidation <- validateObjectSearch searchStrategy _saContainerKey
-          case osValidation of
-            Left err' -> handleAcquisitionError err'
-            Right objectGID -> do
-              objectActionLookup <- lookupAccessAction objectGID actionMap
-              case objectActionLookup of
-                Left errM -> errM
-                Right (PlayerCannotAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerCannotAccessF action, which is invalid."
-                Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
-                Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
-                Right (CannotAccessF actionF) -> actionF lookupActionF
-                Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF lookupActionF)
+          objectGID <- validateObjectSearch searchStrategy _saContainerKey
+          objectActionLookup <- lookupAccessAction objectGID actionMap
+          case objectActionLookup of
+            Left errM -> errM
+            Right (PlayerCannotAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerCannotAccessF action, which is invalid."
+            Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
+            Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
+            Right (CannotAccessF actionF) -> actionF lookupActionF
+            Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF lookupActionF)
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp
@@ -101,9 +97,9 @@ lookupAccessAction objectGID actionMap = do
 
 validateObjectSearch :: SimpleAccessSearchStrategy
                           -> NounKey
-                          -> GameComputation Identity (Either AcquisitionError (GID Object))
+                          -> GameComputation Identity (GID Object)
 validateObjectSearch searchStrategy nounKey = do
   maybeResult <- searchStrategy nounKey
   case maybeResult of
-    Nothing        -> pure $ Left $ ObjectNotFound "You don't see that here."
-    Just objectGID -> pure $ Right objectGID
+    Nothing        -> throwError "You don't see that here."
+    Just objectGID -> pure objectGID
