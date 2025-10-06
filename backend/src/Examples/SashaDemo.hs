@@ -237,7 +237,8 @@ sashaBedroomDemo = do
 
   linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
-
+  linkEffect (AcquisitionalActionKey getRobeDeniedGID) robeGID
+    (NarrationEffect (StaticNarration "The difficulty of getting the robe is directly related to your eyes being closed."))
   finalizeGameState
   where
     closedEyes :: Text
