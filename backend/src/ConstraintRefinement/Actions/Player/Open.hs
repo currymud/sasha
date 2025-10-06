@@ -2,15 +2,12 @@ module ConstraintRefinement.Actions.Player.Open where
 import           Control.Monad.Error.Class                         (throwError)
 import           Control.Monad.Identity                            (Identity)
 import qualified Data.Map.Strict
-import           Data.Text                                         (Text, pack)
+import           Data.Text                                         (pack)
 import           GameState                                         (getObjectM,
-                                                                    modifyNarration,
-                                                                    parseAccessPhrase,
-                                                                    updateActionConsequence)
+                                                                    parseAccessPhrase)
 import           GameState.ActionManagement                        (findSAForContainersKey,
                                                                     lookupContainerAccessVerbPhrase,
                                                                     processEffectsFromRegistry)
-import           GameState.Perception                              (youSeeM)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Actions.Results                             (AccessRes (CompleteAR, SimpleAR),
                                                                     CompleteAccessRes (CompleteAccessRes),
@@ -40,17 +37,14 @@ openEyesDenied = CannotSomaticAccessF denied
    denied :: ActionEffectKey -> GameComputation Identity ()
    denied actionEffectKey = do
      processEffectsFromRegistry actionEffectKey
-     modifyNarration $ updateActionConsequence msg
-   msg :: Text
-   msg = "They're already open, relax."
 
 openEyes :: SomaticAccessActionF
 openEyes = PlayerSomaticAccessActionF opened
  where
    opened :: ActionEffectKey
              -> GameComputation Identity ()
-   opened actionEffectKeys = do
-     processEffectsFromRegistry actionEffectKeys
+   opened actionEffectKey = do
+     processEffectsFromRegistry actionEffectKey
 
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
@@ -67,28 +61,26 @@ openF = PlayerContainerAccessF openit
           objectGID <- validateObjectSearch searchStrategy _saContainerKey
           objectActionLookup <- lookupAccessAction objectGID actionMap
           case objectActionLookup of
-            Left errM -> errM
-            Right (PlayerCannotAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerCannotAccessF action, which is invalid."
-            Right (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
-            Right (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
-            Right (CannotAccessF actionF) -> actionF lookupActionF
-            Right (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF lookupActionF)
+            (PlayerCannotAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerCannotAccessF action, which is invalid."
+            (InstrumentContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has an InstrumentContainerAccessF action, which is invalid."
+            (PlayerContainerAccessF _) -> error $ "Container " ++ show objectGID ++ " has a PlayerContainerAccessF action, which is invalid."
+            (CannotAccessF actionF) -> actionF lookupActionF
+            (ObjectContainerAccessF actionF) -> finalize actionEffectKey (actionF lookupActionF)
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
       where
         caRes = parseAccessPhrase avp
         lookupActionF = lookupContainerAccessVerbPhrase avp
 lookupAccessAction :: GID Object
                         -> ContainerAccessActionMap
-                        -> GameComputation Identity (Either (GameComputation Identity ()) ContainerAccessActionF)
-lookupAccessAction objectGID actionMap = do
-  actionMgmt <- _objectActionManagement <$> getObjectM objectGID
+                        -> GameComputation Identity ContainerAccessActionF
+lookupAccessAction oid actionMap = do
+  actionMgmt <- _objectActionManagement <$> getObjectM oid
   case findSAForContainersKey openSA actionMgmt of
-    Nothing -> pure $ Left $ modifyNarration $ updateActionConsequence ((Data.Text.pack . show) objectGID <> " does not have a 'get' action.")
+    Nothing -> error ("Programmer error: " <> show oid <> " does not have a 'get' action.")
     Just actionGID -> do
       case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> pure $ Left $ modifyNarration $ updateActionConsequence $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
-        Just action -> do
-         pure $ Right action
+        Nothing -> error ("Programmer Error: No acquisition action found for GID: " <> show actionGID)
+        Just action -> pure action
 
 validateObjectSearch :: SimpleAccessSearchStrategy
                           -> NounKey

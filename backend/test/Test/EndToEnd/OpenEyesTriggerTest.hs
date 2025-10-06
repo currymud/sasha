@@ -25,7 +25,6 @@ testOpenEyesExecution = do
     Right finalState -> do
       let narration = _narration finalState
           consequences = _actionConsequence narration
-      print ("Consequences: " <> unpack (mconcat consequences))
       -- Should get success message (not empty, not error)
       consequences `shouldSatisfy` (== correctMatch)
   where
