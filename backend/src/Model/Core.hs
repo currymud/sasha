@@ -266,7 +266,13 @@ type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
 type AcquisitionF :: Type
-type AcquisitionF = (ActionEffectKey -> AcquisitionVerbActionMap -> SearchStrategy -> AcquisitionVerbPhrase -> FinalizeAcquisitionF -> GameComputation Identity ())
+type AcquisitionF = (ActionEffectKey
+                       -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                       -> AcquisitionVerbActionMap
+                       -> SearchStrategy
+                       -> AcquisitionVerbPhrase
+                       -> FinalizeAcquisitionF
+                       -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
 type FinalizeAcquisitionF = ActionEffectKey
@@ -281,7 +287,8 @@ data AcquisitionActionF
   = AcquisitionActionF AcquisitionF
   | CollectedF (GameComputation Identity CoordinationResult)
   | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
-  | NotGettableF (ActionEffectKey -> GameComputation Identity ())
+  | NotGettableF ((ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                   -> (GameComputation Identity ActionEffectKey))
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF

@@ -1,28 +1,39 @@
 module ConstraintRefinement.Actions.Objects.Robe.Get (getRobeDeniedF, alreadyHaveRobeF) where
 import           Control.Monad.Identity     (Identity)
 import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
+import           GameState                  (getObjectM, modifyNarration,
                                              updateActionConsequence)
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (AcquisitionActionF (NotGettableF),
-                                             ActionEffectKey, GameComputation)
+                                             ActionEffectKey (AcquisitionalActionKey),
+                                             ActionManagementFunctions,
+                                             GameComputation,
+                                             Object (_objectActionManagement))
+import           Model.GID                  (GID)
 
-alreadyHaveRobeF :: AcquisitionActionF
-alreadyHaveRobeF = NotGettableF haveRobe
+alreadyHaveRobeF :: GID Object -> AcquisitionActionF
+alreadyHaveRobeF oid = NotGettableF haveRobe
   where
-    haveRobe :: ActionEffectKey -> GameComputation Identity ()
-    haveRobe actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You are already wearing the robe."
+    haveRobe :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    haveRobe lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
 
-getRobeDeniedF :: AcquisitionActionF
-getRobeDeniedF = NotGettableF denied
+getRobeDeniedF :: GID Object ->  AcquisitionActionF
+getRobeDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You can't see it. You're dizzy with a hangover from the night before. Open your eyes."
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
+

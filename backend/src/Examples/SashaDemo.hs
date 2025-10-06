@@ -133,14 +133,14 @@ sashaBedroomDemo = do
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
   lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
   notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
-  getRobeDeniedGID <- declareAcquisitionActionGID getRobeDeniedF
+  getRobeDeniedGID <- declareAcquisitionActionGID (getRobeDeniedF robeGID)
 
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
   lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
   openPocketNoReachGID <- declareContainerAccessActionGID (pocketOutOfReachF pocketGID)
 
   openEyesGID <- declareSomaticActionGID openEyes
-  getDeniedFGID <- declareAcquisitionActionGID getDeniedF
+  getDeniedFGID <- declareAcquisitionActionGID (getDeniedF robeGID)
   playerGetFGID <- declareAcquisitionActionGID getF
   lookFGID <- declareImplicitStimulusActionGID lookF
   inventoryFGID <- declareImplicitStimulusActionGID defaultInventoryLookF

@@ -18,7 +18,8 @@ import           Model.Actions.Results                            (AcquisitionRe
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey))
 import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
-                                                                   ActionEffectKey,
+                                                                   ActionEffectKey (AcquisitionalActionKey),
+                                                                   ActionManagementFunctions,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
                                                                    GameState (_world),
@@ -32,36 +33,40 @@ import           Model.GID                                        (GID)
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                               (NounKey)
 
-getDeniedF :: AcquisitionActionF
-getDeniedF = NotGettableF denied
+getDeniedF :: GID Object -> AcquisitionActionF
+getDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
 
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
     getit :: ActionEffectKey
+               -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
-    getit actionEffectKey actionMap searchStrategy avp finalize = do
+    getit actionEffectKey lookupActionF actionMap searchStrategy avp finalize = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           (objectGID, containerGID) <- validateObjectSearch searchStrategy _saObjectKey
           objectAction <- lookupAcquisitionAction objectGID actionMap
           case objectAction of
-            (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
+            (NotGettableF objectNotGettableF) -> objectNotGettableF lookupActionF >>= processEffectsFromRegistry
             (CollectedF objectActionF) -> do
               containerAction <- lookupAcquisitionAction containerGID actionMap
               case containerAction of
-                (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
+                (NotGettableF cannotGetFromF) -> cannotGetFromF lookupActionF >>= processEffectsFromRegistry
                 (LosesObjectF containerActionF) -> finalize actionEffectKey containerGID objectGID objectActionF containerActionF
                 _ -> throwError $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
             (LosesObjectF _) -> error (("Programmer Error: Object " <> show objectGID) <> " has a LosesObjectF action, which is invalid for get actions.")
@@ -96,11 +101,11 @@ getF = AcquisitionActionF getit
                       -- Now proceed with the standard lookups
                       objectAction <- lookupAcquisitionAction objectGID actionMap
                       case objectAction of
-                        (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
+                        (NotGettableF objectNotGettableF) -> objectNotGettableF lookupActionF >>= processEffectsFromRegistry
                         (CollectedF objectActionF) -> do
                           containerAction <- lookupAcquisitionAction supportGID actionMap
                           case containerAction of
-                            (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
+                            (NotGettableF cannotGetFromF) -> cannotGetFromF lookupActionF >>= processEffectsFromRegistry
                             (LosesObjectF containerActionF) ->
                               finalize actionEffectKey supportGID objectGID objectActionF containerActionF
                             _ -> error $
