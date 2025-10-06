@@ -4,12 +4,10 @@ import           Control.Monad.Identity                           (Identity)
 import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           Data.Text                                        (Text, pack)
+import           Data.Text                                        (pack)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM,
-                                                                   modifyNarration,
-                                                                   parseAcquisitionPhrase,
-                                                                   updateActionConsequence)
+                                                                   parseAcquisitionPhrase)
 import           GameState.ActionManagement                       (findAVKey,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
