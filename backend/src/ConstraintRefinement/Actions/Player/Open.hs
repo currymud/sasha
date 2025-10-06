@@ -50,12 +50,7 @@ openEyes = PlayerSomaticAccessActionF opened
    opened :: ActionEffectKey
              -> GameComputation Identity ()
    opened actionEffectKeys = do
-     modifyNarration (updateActionConsequence msg)
-     youSeeM
      processEffectsFromRegistry actionEffectKeys
-     where
-       msg :: Text
-       msg = "You open your eyes, and the world comes into focus."
 
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit

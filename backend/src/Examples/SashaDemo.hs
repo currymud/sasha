@@ -206,6 +206,10 @@ sashaBedroomDemo = do
     buildEffect (ContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
 
   -- Register narration effects for actions
+  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
+  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect LookNarration)
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
   -- Inventory narration
