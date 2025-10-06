@@ -1,20 +1,26 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
 module ConstraintRefinement.Actions.Objects.Floor.Get (getFloorDeniedF) where
-import           Control.Monad.Identity     (Identity)
-import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
-                                             updateActionConsequence)
-import           GameState.ActionManagement (processEffectsFromRegistry)
-import           Model.Core                 (AcquisitionActionF (NotGettableF),
-                                             ActionEffectKey, GameComputation)
+import           Control.Monad.Identity (Identity)
+import           GameState              (getObjectM)
+import           Model.Core             (AcquisitionActionF (NotGettableF),
+                                         ActionEffectKey (AcquisitionalActionKey),
+                                         ActionManagementFunctions,
+                                         GameComputation,
+                                         Object (_objectActionManagement))
+import           Model.GID              (GID)
 
-getFloorDeniedF :: AcquisitionActionF
-getFloorDeniedF = NotGettableF denied
+getFloorDeniedF :: GID Object -> AcquisitionActionF
+getFloorDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try to pick up the floor. It doesn't budge. Physics wins again."
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
+--    msg :: Text
+--    msg = "You try to pick up the floor. It doesn't budge. Physics wins again."

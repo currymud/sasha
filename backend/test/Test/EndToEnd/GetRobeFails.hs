@@ -5,6 +5,7 @@ Tests that "get robe" fails initially with expected message
 
 module Test.EndToEnd.GetRobeFails (spec) where
 
+import qualified Data.List           (singleton)
 import qualified Data.Set            as Set
 import           Test.Hspec
 
@@ -26,10 +27,12 @@ testInitialGetRobeFailure = do
           inventory = _inventory player
 
       -- Should get failure message from getDeniedF
-      consequences `shouldContain` ["You try but feel dizzy and have to lay back down"]
+      consequences `shouldContain` cannotDo
 
       -- Inventory should remain empty
       inventory `shouldBe` Set.empty
+  where
+    cannotDo = Data.List.singleton "The difficulty of getting the robe is directly related to your eyes being closed."
 
 -- Test that initial game state is set up correctly
 testInitialGameStateSetup :: IO ()

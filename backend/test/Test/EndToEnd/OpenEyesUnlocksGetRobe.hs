@@ -7,6 +7,7 @@ Tests that after "open eyes", "get robe" succeeds with multi-entity coordination
 
 module Test.EndToEnd.OpenEyesUnlocksGetRobe (spec) where
 
+import qualified Data.List           (singleton)
 import qualified Data.Map.Strict     as Map
 import qualified Data.Set            as Set
 import           Data.Text           (Text, isInfixOf)
@@ -82,7 +83,7 @@ testCompleteFlow = do
               hasRobeInInventory finalState `shouldBe` True
   where
     initialFailure :: [Text]
-    initialFailure = ["You try but feel dizzy and have to lay back down"]
+    initialFailure = Data.List.singleton "The difficulty of getting the robe is directly related to your eyes being closed."
     finalSuccess :: [Text]
     finalSuccess = ["You pick it up."]
 

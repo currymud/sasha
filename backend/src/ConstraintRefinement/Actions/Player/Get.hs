@@ -1,6 +1,5 @@
 module ConstraintRefinement.Actions.Player.Get (getF,getDeniedF) where
-import           ConstraintRefinement.Actions.Utils               (AcquisitionError (ContainerMissingAction, InvalidActionType, ObjectNotFound, ObjectNotGettable, SpatialValidationFailed),
-                                                                   handleAcquisitionError)
+import           Control.Monad.Error.Class                        (throwError)
 import           Control.Monad.Identity                           (Identity)
 import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
@@ -19,12 +18,13 @@ import           Model.Actions.Results                            (AcquisitionRe
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey))
 import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
                                                                    AcquisitionVerbActionMap,
-                                                                   ActionEffectKey,
+                                                                   ActionEffectKey (AcquisitionalActionKey),
+                                                                   ActionManagementFunctions,
                                                                    FinalizeAcquisitionF,
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_objectSemanticMap),
-                                                                   Object (_objectActionManagement),
+                                                                   Object (_objectActionManagement, _shortName),
                                                                    SearchStrategy,
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
@@ -33,84 +33,85 @@ import           Model.GID                                        (GID)
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                               (NounKey)
 
-getDeniedF :: AcquisitionActionF
-getDeniedF = NotGettableF denied
+getDeniedF :: GID Object -> AcquisitionActionF
+getDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
 
 getF :: AcquisitionActionF
 getF = AcquisitionActionF getit
   where
     getit :: ActionEffectKey
+               -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
                -> AcquisitionVerbActionMap
                -> SearchStrategy
                -> AcquisitionVerbPhrase
                -> FinalizeAcquisitionF
                -> GameComputation Identity ()
-    getit actionEffectKey actionMap searchStrategy avp finalize = do
+    getit actionEffectKey lookupActionF actionMap searchStrategy avp finalize = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
-          osValidation <- validateObjectSearch searchStrategy _saObjectKey
-          case osValidation of
-            Left err' -> handleAcquisitionError err'
-            Right (objectGID, containerGID) -> do
-              objectActionLookup <- lookupAcquisitionAction objectGID actionMap
-              case objectActionLookup of
-                Left err' -> handleAcquisitionError err'
-                Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
-                Right (CollectedF objectActionF) -> do
-                  containerActionLookup <- lookupAcquisitionAction containerGID actionMap
-                  case containerActionLookup of
-                    Left err' -> handleAcquisitionError err'
-                    Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
-                    Right (LosesObjectF containerActionF) -> finalize actionEffectKey containerGID objectGID objectActionF containerActionF
-                    Right _ -> handleAcquisitionError $ InvalidActionType $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
-                Right _ -> handleAcquisitionError $ ObjectNotGettable $ "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
+          (objectGID, containerGID) <- validateObjectSearch searchStrategy _saObjectKey
+          objectAction <- lookupAcquisitionAction objectGID actionMap
+          case objectAction of
+            (NotGettableF objectNotGettableF) -> objectNotGettableF lookupActionF >>= processEffectsFromRegistry
+            (CollectedF objectActionF) -> do
+              containerAction <- lookupAcquisitionAction containerGID actionMap
+              case containerAction of
+                (NotGettableF cannotGetFromF) -> cannotGetFromF lookupActionF >>= processEffectsFromRegistry
+                (LosesObjectF containerActionF) -> finalize actionEffectKey containerGID objectGID objectActionF containerActionF
+                _ -> throwError $ "Container " <> (Data.Text.pack . show) containerGID <> " does not have a LosesObjectF action."
+            (LosesObjectF _) -> error (("Programmer Error: Object " <> show objectGID) <> " has a LosesObjectF action, which is invalid for get actions.")
+            (AcquisitionActionF _) -> error (("Programmer Error: Object " <> show objectGID) <> " has an AcquisitionActionF action, which is invalid for get actions.")
         Complete (CompleteAcquisitionRes {..}) -> do
           -- Find both objects directly
           objectResult <- findObjectByKey _caObjectKey
           supportResult <- findObjectByKey _caSupportKey
 
           case (objectResult, supportResult) of
-            (Nothing, _) -> handleAcquisitionError $ ObjectNotFound "You don't see that object here."
-            (_, Nothing) -> handleAcquisitionError $ ObjectNotFound "You don't see that support here."
+            (Nothing, _) -> throwError "You don't see that object here."
+            (Just oid, Nothing) -> error ("programer error: support object not found for" <> show oid)
             (Just objectGID, Just supportGID) -> do
               -- Validate the object is actually on/in the support
               world <- gets _world
               let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
               case Data.Map.Strict.lookup objectGID spatialMap of
-                Nothing -> handleAcquisitionError $ SpatialValidationFailed "Object has no spatial relationships"
+                Nothing -> error ("programmer error: " <> show objectGID <> " has no spatial relationships")
                 Just relationships -> do
                   let isOnSupport = any (\case
                         SupportedBy sid -> sid == supportGID
                         ContainedIn cid -> cid == supportGID
                         _ -> False) (Data.Set.toList relationships)
                   if not isOnSupport
-                    then handleAcquisitionError $ SpatialValidationFailed $
-                      "The " <> (Data.Text.pack . show) objectGID <>
-                      " is not on the " <> (Data.Text.pack . show) supportGID
+                    then do
+                      objName <- _shortName <$> getObjectM objectGID
+                      supportName <- _shortName <$> getObjectM supportGID
+                      throwError $
+                        "The " <> objName <>
+                        " is not on the " <> supportName <> "."
                     else do
                       -- Now proceed with the standard lookups
-                      objectActionLookup <- lookupAcquisitionAction objectGID actionMap
-                      case objectActionLookup of
-                        Left err' -> handleAcquisitionError err'
-                        Right (NotGettableF objectNotGettableF) -> objectNotGettableF actionEffectKey
-                        Right (CollectedF objectActionF) -> do
-                          containerActionLookup <- lookupAcquisitionAction supportGID actionMap
-                          case containerActionLookup of
-                            Left err' -> handleAcquisitionError err'
-                            Right (NotGettableF cannotGetFromF) -> cannotGetFromF actionEffectKey
-                            Right (LosesObjectF containerActionF) ->
+                      objectAction <- lookupAcquisitionAction objectGID actionMap
+                      case objectAction of
+                        (NotGettableF objectNotGettableF) -> objectNotGettableF lookupActionF >>= processEffectsFromRegistry
+                        (CollectedF objectActionF) -> do
+                          containerAction <- lookupAcquisitionAction supportGID actionMap
+                          case containerAction of
+                            (NotGettableF cannotGetFromF) -> cannotGetFromF lookupActionF >>= processEffectsFromRegistry
+                            (LosesObjectF containerActionF) ->
                               finalize actionEffectKey supportGID objectGID objectActionF containerActionF
-                            Right _ -> handleAcquisitionError $ InvalidActionType $
-                              "Container " <> (Data.Text.pack . show) supportGID <>
+                            _ -> error $
+                              "Programmer error. Container " <> show supportGID <>
                               " does not have a LosesObjectF action."
-                        Right _ -> handleAcquisitionError $ ObjectNotGettable $
+                        _ -> throwError $
                           "Object " <> (Data.Text.pack . show) objectGID <> " is not gettable."
           where
             findObjectByKey :: NounKey -> GameComputation Identity (Maybe (GID Object))
@@ -125,21 +126,21 @@ getF = AcquisitionActionF getit
 
 validateObjectSearch :: SearchStrategy
                           -> NounKey
-                          -> GameComputation Identity (Either AcquisitionError (GID Object, GID Object))
+                          -> GameComputation Identity (GID Object, GID Object)
 validateObjectSearch searchStrategy nounKey = do
   maybeResult <- searchStrategy nounKey
   case maybeResult of
-    Nothing -> pure $ Left $ ObjectNotFound "You don't see that here."
-    Just (objectGID, containerGID) -> pure $ Right (objectGID, containerGID)
+    Nothing                        -> throwError "You don't see that here."
+    Just (objectGID, containerGID) -> pure (objectGID, containerGID)
 
 lookupAcquisitionAction :: GID Object
                              -> AcquisitionVerbActionMap
-                             -> GameComputation Identity (Either AcquisitionError AcquisitionActionF)
+                             -> GameComputation Identity AcquisitionActionF
 lookupAcquisitionAction objectGID actionMap = do
   actionMgmt <- _objectActionManagement <$> getObjectM objectGID
   case findAVKey get actionMgmt of
-    Nothing -> pure $ Left $ ContainerMissingAction $ (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
+    Nothing -> throwError $ (Data.Text.pack . show) objectGID <> " does not have a 'get' action."
     Just actionGID -> do
       case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> pure $ Left $ InvalidActionType $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
-        Just action -> pure $ Right action
+        Nothing -> throwError $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
+        Just action -> pure action

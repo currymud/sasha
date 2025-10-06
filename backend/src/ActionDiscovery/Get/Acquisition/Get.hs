@@ -1,39 +1,37 @@
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
 
-import           ConstraintRefinement.Actions.Utils (AcquisitionError (SpatialValidationFailed),
-                                                     handleAcquisitionError)
-import           Control.Monad.Identity             (Identity)
-import           Control.Monad.Reader.Class         (asks)
-import           Control.Monad.State                (gets)
+import           Control.Monad.Error.Class     (throwError)
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.Reader.Class    (asks)
+import           Control.Monad.State           (gets)
 import qualified Data.Map.Strict
-import           Data.Set                           (Set, elemAt, filter, member, null, toList)
+import           Data.Set                      (Set, elemAt, filter, member,
+                                                null, toList)
 import qualified Data.Text
-import           GameState                          (getPlayerLocationM,
-                                                     getPlayerM)
-import           GameState.ActionManagement         (lookupAcquisitionPhrase,
-                                                     processEffectsFromRegistry)
-import           Model.Core                         (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                     ActionEffectKey (AcquisitionalActionKey),
-                                                     ActionMaps (_acquisitionActionMap),
-                                                     Config (_actionMaps),
-                                                     CoordinationResult (CoordinationResult),
-                                                     GameComputation,
-                                                     GameState (_world),
-                                                     Location (_locationInventory, _objectSemanticMap),
-                                                     Object,
-                                                     Player (_playerActions),
-                                                     SearchStrategy,
-                                                     SpatialRelationship (ContainedIn, SupportedBy),
-                                                     SpatialRelationshipMap (SpatialRelationshipMap),
-                                                     World (_globalSemanticMap, _spatialRelationshipMap))
-import           Model.GID                          (GID)
-import           Model.Parser.Composites.Verbs      (AcquisitionVerbPhrase)
+import           GameState                     (getPlayerLocationM, getPlayerM)
+import           GameState.ActionManagement    (lookupAcquisitionPhrase,
+                                                processEffectsFromRegistry)
+import           Model.Core                    (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
+                                                ActionEffectKey (AcquisitionalActionKey),
+                                                ActionMaps (_acquisitionActionMap),
+                                                Config (_actionMaps),
+                                                CoordinationResult (CoordinationResult),
+                                                GameComputation,
+                                                GameState (_world),
+                                                Location (_locationInventory, _objectSemanticMap),
+                                                Object, Player (_playerActions),
+                                                SearchStrategy,
+                                                SpatialRelationship (ContainedIn, SupportedBy),
+                                                SpatialRelationshipMap (SpatialRelationshipMap),
+                                                World (_globalSemanticMap, _spatialRelationshipMap))
+import           Model.GID                     (GID)
+import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
 
 -- we are removing processEffectsFromRegistry from here
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupAcquisitionPhrase avp availableActions of
+  case lookupActionF availableActions of
     Nothing -> error "Programmer Error: No acquisition action found for phrase: "
     Just actionGID -> do
       actionMap <- asks (_acquisitionActionMap . _actionMaps)
@@ -45,6 +43,7 @@ manageAcquisitionProcess avp = do
             (AcquisitionActionF actionFunc) -> do
                actionFunc
                  actionEffectKey
+                 lookupActionF
                  actionMap
                  locationSearchStrategy
                  avp
@@ -52,9 +51,11 @@ manageAcquisitionProcess avp = do
             (LosesObjectF _actionFunc) -> do
               error "Drop actions not yet implemented"
             (NotGettableF actionF) -> do
-              actionF actionEffectKey
+              actionF lookupActionF >>= processEffectsFromRegistry
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
+  where
+    lookupActionF = lookupAcquisitionPhrase avp
 -- | General case: Search global semantic map, verify in location inventory
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
@@ -96,14 +97,14 @@ finalizeAcquisition actionEffectKey containerGID objectGID objectActionF contain
   world <- gets _world
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
-   Nothing -> handleAcquisitionError $ SpatialValidationFailed $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
+   Nothing -> throwError $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
    Just relationships -> do
      let isContainedInSource = any (\case
            ContainedIn oid -> oid == containerGID
            SupportedBy oid -> oid == containerGID
            _ -> False) (Data.Set.toList relationships)
      if not isContainedInSource
-     then handleAcquisitionError $ SpatialValidationFailed $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
+     then throwError $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
      else  do
        (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
        (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID

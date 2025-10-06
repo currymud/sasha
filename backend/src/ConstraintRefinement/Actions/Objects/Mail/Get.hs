@@ -1,41 +1,60 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use mapM_" #-}
-module ConstraintRefinement.Actions.Objects.Mail.Get (getMailDeniedF,alreadyHaveMailF,getMailDizzyF) where
-import           Control.Monad.Identity     (Identity)
-import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
-                                             updateActionConsequence)
-import           GameState.ActionManagement (processEffectsFromRegistry)
-import           Model.Core                 (AcquisitionActionF (CollectedF, NotGettableF),
-                                             ActionEffectKey, GameComputation)
+module ConstraintRefinement.Actions.Objects.Mail.Get (getMailDeniedF,
+                                                      alreadyHaveMailF,
+                                                      getMailDizzyF) where
+import           Control.Monad.Identity (Identity)
+import           GameState              (getObjectM)
+import           Model.Core             (AcquisitionActionF (NotGettableF),
+                                         ActionEffectKey (AcquisitionalActionKey),
+                                         ActionManagementFunctions,
+                                         GameComputation,
+                                         Object (_objectActionManagement))
+import           Model.GID              (GID)
 
-
-alreadyHaveMailF :: AcquisitionActionF
-alreadyHaveMailF = NotGettableF haveMail
+alreadyHaveMailF :: GID Object -> AcquisitionActionF
+alreadyHaveMailF oid = NotGettableF denied
   where
-    haveMail :: ActionEffectKey -> GameComputation Identity ()
-    haveMail actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You are already have your mail. it'll probably be important later."
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
+--    msg :: Text
+--    msg = "You are already have your mail. it'll probably be important later."
 
-getMailDeniedF :: AcquisitionActionF
-getMailDeniedF = NotGettableF denied
+getMailDeniedF :: GID Object -> AcquisitionActionF
+getMailDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey  = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You can't reach it from your bed. You need to get up first."
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
 
-getMailDizzyF :: AcquisitionActionF
-getMailDizzyF = NotGettableF denied
+--    msg :: Text
+--    msg = "You can't reach it from your bed. You need to get up first."
+
+getMailDizzyF :: GID Object -> AcquisitionActionF
+getMailDizzyF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You stand up to go to the table, but you are still a bit dizzy and lay back down"
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
+
+--    msg :: Text
+--    msg = "You stand up to go to the table, but you are still a bit dizzy and lay back down"

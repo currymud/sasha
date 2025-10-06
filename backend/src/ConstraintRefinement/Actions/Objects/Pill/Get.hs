@@ -3,28 +3,39 @@
 module ConstraintRefinement.Actions.Objects.Pill.Get (getPillDeniedF,alreadyHavePillF) where
 import           Control.Monad.Identity     (Identity)
 import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
-                                             updateActionConsequence)
+import           GameState                  (getObjectM)
+
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (AcquisitionActionF (NotGettableF),
-                                             ActionEffectKey, GameComputation)
+                                             ActionEffectKey (AcquisitionalActionKey),
+                                             ActionManagementFunctions,
+                                             ContainerAccessActionF,
+                                             GameComputation,
+                                             Object (_objectActionManagement))
+import           Model.GID                  (GID)
 
-alreadyHavePillF :: AcquisitionActionF
-alreadyHavePillF = NotGettableF havePill
+alreadyHavePillF :: GID Object -> AcquisitionActionF
+alreadyHavePillF oid = NotGettableF havePill
   where
-    havePill :: ActionEffectKey -> GameComputation Identity ()
-    havePill actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You already have the pill in your inventory."
+    havePill :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    havePill lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
 
-getPillDeniedF :: AcquisitionActionF
-getPillDeniedF = NotGettableF denied
+getPillDeniedF :: GID Object -> AcquisitionActionF
+getPillDeniedF oid = NotGettableF denied
   where
-    denied :: ActionEffectKey -> GameComputation Identity ()
-    denied actionEffectKey = do
-      processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try but feel dizzy and have to lay back down"
+    denied :: (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                  -> GameComputation Identity ActionEffectKey
+    denied lookupActionF = do
+      actionManagement <- _objectActionManagement <$> getObjectM oid
+      case lookupActionF actionManagement of
+        Nothing -> error ("Programmer Error: No container access action found for object " ++ show oid)
+        Just actionGID ->
+          let actionKey = AcquisitionalActionKey actionGID
+          in pure actionKey
