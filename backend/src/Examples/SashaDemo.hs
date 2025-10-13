@@ -6,6 +6,7 @@ import           Control.Monad                                           ((>=>))
 import qualified Data.Set
 
 -- Core imports
+import           EDSL.Actions.HasAction                                  (declareAction)
 import           EDSL.Effects.EffectAlgebra                              (alongside,
                                                                           buildEffect,
                                                                           buildEffects)
@@ -32,13 +33,8 @@ import           Model.Core                                              (Acquis
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (..))
 import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
-                                                                          declareAcquisitionActionGID,
-                                                                          declareContainerAccessActionGID,
-                                                                          declareDirectionalStimulusActionGID,
-                                                                          declareImplicitStimulusActionGID,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
-                                                                          declareSomaticActionGID,
                                                                           finalizeGameState,
                                                                           registerLocation,
                                                                           registerObject,
@@ -123,30 +119,30 @@ sashaBedroomDemo = do
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
 
-  pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
-  lookAtFloorFGID <- declareDirectionalStimulusActionGID lookAtF
-  notEvenFloorFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
-  lookAtChairGID <- declareDirectionalStimulusActionGID lookAtF
-  whatChairFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
+  pitchBlackFGID <- declareAction pitchBlackF
+  lookAtFloorFGID <- declareAction lookAtF
+  notEvenFloorFGID <- declareAction cannotBeSeenF
+  lookAtChairGID <- declareAction lookAtF
+  whatChairFGID <- declareAction cannotBeSeenF
 
-  getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
-  lookAtRobeFGID <- declareDirectionalStimulusActionGID lookAtF
-  notEvenRobeFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
-  getRobeDeniedGID <- declareAcquisitionActionGID objectNotGettableF
+  getFromChairGID <- declareAction (getFromSupportF chairGID)
+  lookAtRobeFGID <- declareAction lookAtF
+  notEvenRobeFGID <- declareAction cannotBeSeenF
+  getRobeDeniedGID <- declareAction objectNotGettableF
 
-  getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
-  lookAtPocketGID <- declareDirectionalStimulusActionGID lookAtF
-  openPocketNoReachGID <- declareContainerAccessActionGID openContainerF
+  getRobeFGID <- declareAction (getObjectF robeGID)
+  lookAtPocketGID <- declareAction lookAtF
+  openPocketNoReachGID <- declareAction openContainerF
 
-  openEyesGID <- declareSomaticActionGID openEyes
-  getDeniedFGID <- declareAcquisitionActionGID getDeniedF
-  playerGetFGID <- declareAcquisitionActionGID getF
-  lookFGID <- declareImplicitStimulusActionGID lookF
-  inventoryFGID <- declareImplicitStimulusActionGID defaultInventoryLookF
-  dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
-  containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
-  accessContainerFGID <- declareContainerAccessActionGID openF
-  openContainerFGID <- declareContainerAccessActionGID openContainerF
+  openEyesGID <- declareAction openEyes
+  getDeniedFGID <- declareAction getDeniedF
+  playerGetFGID <- declareAction getF
+  lookFGID <- declareAction lookF
+  inventoryFGID <- declareAction defaultInventoryLookF
+  dsvEnabledLookGID <- declareAction dsvActionEnabled
+  containerAccessDeniedFGID <- declareAction openDeniedF
+  accessContainerFGID <- declareAction openF
+  openContainerFGID <- declareAction openContainerF
   registerLocation bedroomGID (buildLocation pitchBlackFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)

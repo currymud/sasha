@@ -135,6 +135,7 @@ library
       Model.Parser.Composites.Verbs
       Model.Parser.GCase
       Model.Parser.Lexer
+      EDSL.Actions.HasAction
       EDSL.Effects.EffectAlgebra
       EDSL.Effects.HasBehavior
       EDSL.Effects.HasEffect
