@@ -231,6 +231,8 @@ sashaBedroomDemo = do
   linkEffect (DirectionalStimulusActionKey lookAtPocketGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
 
+  linkEffect (DirectionalStimulusActionKey notEvenRobeFGID) robeGID
+    (NarrationEffect (StaticNarration closedEyes))
   -- Static narration for player's get action
   linkEffect (AcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))

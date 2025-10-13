@@ -2,7 +2,7 @@ module GameState.ActionManagement where
 import           Control.Applicative           ((<|>))
 import           Control.Monad                 (filterM, unless, when)
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (gets, modify')
+import           Control.Monad.State.Strict    (gets, modify')
 import qualified Data.Foldable
 import qualified Data.Map.Strict
 import           Data.Maybe                    (isJust, listToMaybe)

@@ -53,7 +53,7 @@ module GameState ( addToInventoryM
                  , updateActionConsequence
                  ) where
 import           Control.Monad.Identity        (Identity)
-import           Control.Monad.State           (gets, modify')
+import           Control.Monad.State.Strict    (gets, modify')
 import qualified Data.Bifunctor
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict

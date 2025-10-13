@@ -4,13 +4,13 @@
 End-to-End Test - Look at Robe Progression
 Tests that "look at robe" behaves differently:
 1. Before "open eyes" - should show darkness/cannot see
-2. After "open eyes" - should show initial robe description  
+2. After "open eyes" - should show initial robe description
 3. After "get robe" - should show updated description
 -}
 
 module Test.EndToEnd.LookAtRobeProgression (spec) where
 
-import           Data.Text      (Text, isInfixOf)
+import           Data.Text           (Text, isInfixOf)
 import           Test.Hspec
 
 import           Examples.Initialize (gameState)
@@ -25,9 +25,9 @@ testLookAtRobeBeforeOpenEyes = do
     Left err -> expectationFailure $ "Look at robe failed: " <> show err
     Right finalState -> do
       let consequences = _actionConsequence (_narration finalState)
-      
+
       -- Should show darkness/eyes closed message
-      consequences `shouldSatisfy` any (isInfixOf "eyes are all bleary")
+      consequences `shouldSatisfy` any (isInfixOf "The inability to see a dang-doodlything is directly related to your eyes being closed.")
 
 -- Test "look at robe" after opening eyes
 testLookAtRobeAfterOpenEyes :: IO ()
@@ -43,7 +43,7 @@ testLookAtRobeAfterOpenEyes = do
         Left err -> expectationFailure $ "Look at robe failed: " <> show err
         Right finalState -> do
           let consequences = _actionConsequence (_narration finalState)
-          
+
           -- Should show initial robe description (supported by chair)
           consequences `shouldSatisfy` any (isInfixOf "is on the")
 
@@ -66,7 +66,7 @@ testLookAtRobeAfterGetting = do
             Left err -> expectationFailure $ "Look at robe failed: " <> show err
             Right finalState -> do
               let consequences = _actionConsequence (_narration finalState)
-              
+
               -- Should show updated description with "make for wearin'"
               consequences `shouldSatisfy` any (isInfixOf "make for wearin'")
 
@@ -79,8 +79,8 @@ testCompleteProgression = do
     Left err -> expectationFailure $ "Initial look at robe failed: " <> show err
     Right initialState -> do
       let initialConsequences = _actionConsequence (_narration initialState)
-      initialConsequences `shouldSatisfy` any (isInfixOf "eyes are all bleary")
-      
+      initialConsequences `shouldSatisfy` any (isInfixOf "dang-doodlything")
+
       -- Step 2: Open eyes then look at robe
       eyesResult <- executeCommand "open eyes" gameState
       case eyesResult of
@@ -92,7 +92,7 @@ testCompleteProgression = do
             Right eyesLookState -> do
               let eyesConsequences = _actionConsequence (_narration eyesLookState)
               eyesConsequences `shouldSatisfy` any (isInfixOf "is on the")
-              
+
               -- Step 3: Get robe then look at it
               getRobeResult <- executeCommand "get robe" eyesState
               case getRobeResult of
@@ -108,7 +108,7 @@ testCompleteProgression = do
 spec :: Spec
 spec = describe "Look at Robe Progression" $ do
   it "Look at robe before open eyes shows darkness" testLookAtRobeBeforeOpenEyes
-  it "Look at robe after open eyes shows spatial relationship" testLookAtRobeAfterOpenEyes  
+  it "Look at robe after open eyes shows spatial relationship" testLookAtRobeAfterOpenEyes
   it "Look at robe after getting shows updated description" testLookAtRobeAfterGetting
   it "Complete progression through all three states" testCompleteProgression
 
