@@ -100,6 +100,7 @@ import           ConstraintRefinement.Actions.Player.Open                (openDe
                                                                           openF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
+import           GHC.TypeError                                           (ErrorMessage (Text))
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV)
 
@@ -239,14 +240,15 @@ sashaBedroomDemo = do
 
   linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
-  linkEffect (AcquisitionalActionKey getRobeDeniedGID) robeGID
-    (NarrationEffect (StaticNarration "The difficulty of getting the robe is directly related to your eyes being closed."))
-  linkEffect (AcquisitionalActionKey getDeniedFGID) (PlayerKeyLocation bedroomGID)
-    (NarrationEffect (StaticNarration "The difficulty of getting the robe is directly related to your eyes being closed."))
-  linkEffect (DirectionalStimulusActionKey notEvenRobeFGID) robeGID
-    (NarrationEffect (StaticNarration "One thing at a time. You've just woken up and your eyes are all bleary unfocused and closed. Maybe open them up and go from there?"))
+
+  linkEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject robeGID)
+    (NarrationEffect (StaticNarration "You pick up the robe."))
+  linkEffect (AcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
+    (NarrationEffect (StaticNarration getDenied))
   finalizeGameState
   where
+    getDenied :: Text
+    getDenied = "The difficulty of getting the robe is directly related to your eyes being closed."
     closedEyes :: Text
     closedEyes = "The inability to see a dang-doodly"
                     <> "thing is directly related to your eyes being closed."
