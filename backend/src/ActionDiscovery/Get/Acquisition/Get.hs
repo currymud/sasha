@@ -1,5 +1,6 @@
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess, manageAcquisitionProcessRoleBased) where
 
+import           Control.Applicative                              ((<|>))
 import           Control.Monad.Error.Class                        (throwError)
 import           Control.Monad.Identity                           (Identity)
 import           Control.Monad.Reader.Class                       (asks)
@@ -16,17 +17,22 @@ import           GameState                                        (getObjectM,
                                                                    parseAcquisitionPhrase)
 import           GameState.ActionManagement                       (findAVKey,
                                                                    findAgentAVKey,
+                                                                   findAgentAAKey,
                                                                    findObjectAVKey,
                                                                    findContainerAVKey,
                                                                    lookupAcquisitionPhrase,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CannotAcquireF, CollectedF, LosesObjectF, ObjectNotGettableF),
-                                                                   AgentAcquisitionActionF,
+                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
+                                                                   ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
+                                                                   ContainerAcquisitionActionF (ContainerLosesObjectF, ContainerCannotReleaseF),
                                                                    AcquisitionVerbActionMap,
                                                                    AgentAcquisitionActionMap,
+                                                                   ObjectAcquisitionActionMap,
+                                                                   ContainerAcquisitionActionMap,
                                                                    ActionEffectKey (AcquisitionalActionKey, AgentAcquisitionalActionKey),
-                                                                   ActionMaps (_acquisitionActionMap, _agentAcquisitionActionMap),
+                                                                   ActionMaps (_acquisitionActionMap, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap),
                                                                    Config (_actionMaps),
                                                                    CoordinationResult (CoordinationResult),
                                                                    GameComputation,
@@ -45,14 +51,13 @@ import           Model.Parser.Composites.Verbs                    (AcquisitionVe
 -- ToDo: Add Location related values,
 -- Location effects need to be included in the process
 -- Role-based acquisition process (preferred - no error-prone pattern matching)
--- Currently just redirects to the old system since we're using conversion functions
--- This will be fully implemented when we remove the conversion layer
 manageAcquisitionProcessRoleBased :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcessRoleBased avp = do
   availableActions <- _playerActions <$> getPlayerM
   
-  -- Try to find a role-based agent action first
-  case findAgentAVKey get availableActions of
+  -- Try to find a role-based agent action - first by verb phrase, then by verb
+  let agentGIDMaybe = findAgentAAKey avp availableActions <|> findAgentAVKey get availableActions
+  case agentGIDMaybe of
     Just agentGID -> do
       -- Use the role-based agent action map
       agentActionMap <- asks (_agentAcquisitionActionMap . _actionMaps)
@@ -61,19 +66,23 @@ manageAcquisitionProcessRoleBased avp = do
           let actionEffectKey = AgentAcquisitionalActionKey agentGID
           -- Execute the role-based agent action directly - no error-prone pattern matching!
           case agentAction of
-            -- AgentAcquisitionActionF only has valid agent actions - no error cases!
-            -- This is the type safety we achieved - impossible to have invalid actions here
-            _ -> do
-              -- For now, fall back to using the old acquisition system since we still need
-              -- to coordinate with object and container actions via the old maps
-              -- This will be fully role-based when all parts are converted
-              manageAcquisitionProcess avp
+            AgentAcquiresF acquisitionF -> do
+              -- Type-safe agent acquisition - no programmer errors possible here!
+              acquisitionF
+                actionEffectKey
+                lookupActionF
+                (lookupRoleBasedAcquisitionAction avp)
+                arRes
+            AgentCannotAcquireF actionF -> actionF actionEffectKey
         Nothing -> 
           -- Agent action not found in role-based map, fall back to old system
           manageAcquisitionProcess avp
     Nothing -> 
       -- No role-based agent action found, use traditional system
       manageAcquisitionProcess avp
+  where
+    arRes = parseAcquisitionPhrase avp
+    lookupActionF = lookupAcquisitionPhrase avp
 
 -- Original acquisition process (kept for backwards compatibility)
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
@@ -104,6 +113,44 @@ manageAcquisitionProcess avp = do
   where
     arRes = parseAcquisitionPhrase avp
     lookupActionF = lookupAcquisitionPhrase avp
+-- | Role-based acquisition action lookup - coordinates object and container actions
+lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase 
+                                -> GID Object 
+                                -> GameComputation Identity AcquisitionActionF
+lookupRoleBasedAcquisitionAction avp oid = do
+  actionMgmt <- _objectActionManagement <$> getObjectM oid
+  
+  -- First try to find a role-based object action
+  case findObjectAVKey get actionMgmt of
+    Just objectGID -> do
+      objectActionMap <- asks (_objectAcquisitionActionMap . _actionMaps)
+      case Data.Map.Strict.lookup objectGID objectActionMap of
+        Just objectAction -> do
+          -- Convert role-based object action to old AcquisitionActionF for coordination
+          case objectAction of
+            ObjectCollectedF actionF -> pure (CollectedF actionF)
+            ObjectNotCollectableF actionF -> pure (ObjectNotGettableF actionF)
+        Nothing -> tryContainerAction
+    Nothing -> tryContainerAction
+  where
+    tryContainerAction = do
+      actionMgmt <- _objectActionManagement <$> getObjectM oid
+      case findContainerAVKey get actionMgmt of
+        Just containerGID -> do
+          containerActionMap <- asks (_containerAcquisitionActionMap . _actionMaps)
+          case Data.Map.Strict.lookup containerGID containerActionMap of
+            Just containerAction -> do
+              case containerAction of
+                ContainerLosesObjectF actionF -> pure (LosesObjectF actionF)
+                ContainerCannotReleaseF actionF -> pure (CannotAcquireF actionF)
+            Nothing -> fallbackToOldLookup
+        Nothing -> fallbackToOldLookup
+    
+    fallbackToOldLookup = do
+      -- Fall back to old acquisition action lookup for backwards compatibility
+      actionMap <- asks (_acquisitionActionMap . _actionMaps)
+      lookupAcquisitionAction actionMap oid
+
 -- | General case: Search global semantic map, verify in location inventory
 lookupAcquisitionAction :: AcquisitionVerbActionMap
                              -> GID Object

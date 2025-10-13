@@ -11,8 +11,8 @@ import GameState (addToInventoryM, getObjectM, getPlayerLocationM, modifySpatial
 import GameState.ActionManagement (processEffectsFromRegistry)
 import Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import Model.Core (AgentAcquisitionActionF(..), ObjectAcquisitionActionF(..), 
-                   ContainerAcquisitionActionF(..), ActionEffectKey(AcquisitionalActionKey), 
-                   ActionManagement(AVManagementKey), ActionManagementFunctions(ActionManagementFunctions), 
+                   ContainerAcquisitionActionF(..), ActionEffectKey(AcquisitionalActionKey, ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey), 
+                   ActionManagement(AVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey), ActionManagementFunctions(ActionManagementFunctions), 
                    AcquisitionF, AcquisitionRes(..), SimpleAcquisitionRes(..), CompleteAcquisitionRes(..),
                    CoordinationResult(CoordinationResult, _actionEffectKeys, _computation),
                    GameComputation, GameState(_world), Location(_locationInventory, _objectSemanticMap),
@@ -137,10 +137,10 @@ objectCollectedF objectGID = ObjectCollectedF getit
     getit = do
       actionManagement <- _objectActionManagement <$> getObjectM objectGID
       let ActionManagementFunctions actionSet = actionManagement
-      let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
+      let getActionGIDs = [gid | ObjectAVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       pure $ CoordinationResult
         { _computation = addToInventoryM objectGID
-        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _actionEffectKeys = map ObjectAcquisitionalActionKey getActionGIDs
         }
 
 objectNotCollectableF :: ObjectAcquisitionActionF
@@ -151,9 +151,9 @@ containerLosesObjectF supportObjGID = ContainerLosesObjectF getit
   where
     getit :: GID Object -> GameComputation Identity CoordinationResult
     getit targetObjectGID = do
-      actionManagement <- _objectActionManagement <$> getObjectM targetObjectGID
+      actionManagement <- _objectActionManagement <$> getObjectM supportObjGID
       let ActionManagementFunctions actionSet = actionManagement
-      let getActionGIDs = [gid | AVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
+      let getActionGIDs = [gid | ContainerAVManagementKey verb gid <- Data.Set.toList actionSet, verb == get]
       let computation = do
             modifySpatialRelationshipsForObjectM targetObjectGID $ \rels ->
               Data.Set.filter (\case
@@ -168,7 +168,7 @@ containerLosesObjectF supportObjGID = ContainerLosesObjectF getit
             addToInventoryM targetObjectGID
       pure $ CoordinationResult
         { _computation = computation
-        , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
+        , _actionEffectKeys = map ContainerAcquisitionalActionKey getActionGIDs
         }
 
 containerCannotReleaseF :: ContainerAcquisitionActionF

@@ -38,7 +38,7 @@ import           Model.Core                                                     
                                                                                    ActionGID (AcquisitionActionGID, AgentAcquisitionActionGID, ObjectAcquisitionActionGID, ContainerAcquisitionActionGID, LocationAcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, AgentAAManagementKey, ObjectAAManagementKey, ContainerAAManagementKey, LocationAAManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                                   ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddAgentAcquisitionVerb, AddObjectAcquisitionVerb, AddContainerAcquisitionVerb, AddLocationAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddObjectAcquisitionVerbPhrase, AddContainerAcquisitionVerbPhrase, AddLocationAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                    ActionMaps (ActionMaps, _acquisitionActionMap, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    ActionEffectKey (AcquisitionalActionKey, AgentAcquisitionalActionKey, ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey, LocationAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
@@ -624,6 +624,31 @@ interpretDSL (CreateContainerAccessEffect verb actionGID) = do
 
 interpretDSL (CreateContainerAccessVerbPhraseEffect verbPhrase actionGID) = do
   pure (ActionManagementEffect (AddContainerAccess verbPhrase actionGID) (ContainerAccessActionGID actionGID))
+
+-- Role-based acquisition effect creation interpretations
+interpretDSL (CreateAgentAcquisitionVerbEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddAgentAcquisitionVerb verb actionGID) (AgentAcquisitionActionGID actionGID))
+
+interpretDSL (CreateObjectAcquisitionVerbEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddObjectAcquisitionVerb verb actionGID) (ObjectAcquisitionActionGID actionGID))
+
+interpretDSL (CreateContainerAcquisitionVerbEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddContainerAcquisitionVerb verb actionGID) (ContainerAcquisitionActionGID actionGID))
+
+interpretDSL (CreateLocationAcquisitionVerbEffect verb actionGID) = do
+  pure (ActionManagementEffect (AddLocationAcquisitionVerb verb actionGID) (LocationAcquisitionActionGID actionGID))
+
+interpretDSL (CreateAgentAcquisitionVerbPhraseEffect phrase actionGID) = do
+  pure (ActionManagementEffect (AddAgentAcquisitionVerbPhrase phrase actionGID) (AgentAcquisitionActionGID actionGID))
+
+interpretDSL (CreateObjectAcquisitionVerbPhraseEffect phrase actionGID) = do
+  pure (ActionManagementEffect (AddObjectAcquisitionVerbPhrase phrase actionGID) (ObjectAcquisitionActionGID actionGID))
+
+interpretDSL (CreateContainerAcquisitionVerbPhraseEffect phrase actionGID) = do
+  pure (ActionManagementEffect (AddContainerAcquisitionVerbPhrase phrase actionGID) (ContainerAcquisitionActionGID actionGID))
+
+interpretDSL (CreateLocationAcquisitionVerbPhraseEffect phrase actionGID) = do
+  pure (ActionManagementEffect (AddLocationAcquisitionVerbPhrase phrase actionGID) (LocationAcquisitionActionGID actionGID))
 
 interpretDSL (SetPerceptionMap perceptionEntries) = do
   state <- get

@@ -36,8 +36,8 @@ evalStimulusVerbPhrase (DirectionalStimulusContainmentPhrase dsv cp) = manageCon
 evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessProcess sav
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()
-evalAcquisitionVerbPhrase = manageAcquisitionProcess
--- Note: Can switch to manageAcquisitionProcessRoleBased when ready to use role-based system
+evalAcquisitionVerbPhrase = manageAcquisitionProcessRoleBased
+-- Using role-based acquisition process for type safety
 
 evalPosturalVerbPhrase :: PosturalVerbPhrase -> GameComputation Identity ()
 evalPosturalVerbPhrase = managePosturalProcess
