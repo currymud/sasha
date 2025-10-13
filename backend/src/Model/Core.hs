@@ -33,6 +33,10 @@ module Model.Core
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AcquisitionActionF(..)
+  , AgentAcquisitionActionF(..)
+  , ObjectAcquisitionActionF(..)
+  , ContainerAcquisitionActionF(..)
+  , LocationAcquisitionActionF(..)
   , ConsumptionActionF(..)
     -- * Action Maps
   , ActionMaps(..)
@@ -366,6 +370,27 @@ data AcquisitionActionF
   | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
   | ObjectNotGettableF (ActionEffectKey -> GameComputation Identity ())
   | CannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+
+-- Role-based acquisition action types (alongside existing AcquisitionActionF)
+type AgentAcquisitionActionF :: Type
+data AgentAcquisitionActionF
+  = AgentAcquiresF AcquisitionF  -- Agent coordinates acquisition between object and container
+  | AgentCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+
+type ObjectAcquisitionActionF :: Type  
+data ObjectAcquisitionActionF
+  = ObjectCollectedF (GameComputation Identity CoordinationResult)  -- Object is collected by agent
+  | ObjectNotCollectableF (ActionEffectKey -> GameComputation Identity ())
+
+type ContainerAcquisitionActionF :: Type
+data ContainerAcquisitionActionF  
+  = ContainerLosesObjectF (GID Object -> GameComputation Identity CoordinationResult)  -- Container releases object
+  | ContainerCannotReleaseF (ActionEffectKey -> GameComputation Identity ())
+
+type LocationAcquisitionActionF :: Type
+data LocationAcquisitionActionF
+  = LocationAcquisitionActionF (GameComputation Identity ())  -- Placeholder for location-level acquisition
+  | LocationCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
 
 type ConsumptionResult :: Type
 data ConsumptionResult = ConsumedResult
