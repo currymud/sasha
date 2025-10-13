@@ -115,9 +115,6 @@ import           ConstraintRefinement.Actions.RoleBased.Constructors  (agentGetF
                                                                           agentCannotAcquireF,
                                                                           objectNotCollectableF,
                                                                           containerCannotReleaseF)
-import           ConstraintRefinement.Actions.RoleBased.Conversions   (toAcquisitionActionF,
-                                                                          objectToAcquisitionActionF,
-                                                                          containerToAcquisitionActionF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
 import           GHC.TypeError                                           (ErrorMessage (Text))
