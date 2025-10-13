@@ -3,10 +3,7 @@ module ConstraintRefinement.Actions.Player.Inventory (defaultInventoryLookF, not
 import           Control.Monad.Identity     (Identity)
 import           Data.Kind                  (Type)
 import           Data.Text                  (Text)
-import qualified Data.Text                  as Text
-import           GameState                  (getInventoryObjectsM, getObjectM,
-                                             modifyNarration,
-                                             updateActionConsequence)
+import           GameState                  (getObjectM)
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (ActionEffectKey, GameComputation,
                                              ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF),

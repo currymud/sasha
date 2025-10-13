@@ -5,12 +5,14 @@ import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           GameState                     (getPlayerLocationGID, getPlayerLocationM, getPlayerM,
-                                                getWorldM, parseConsumptionPhrase)
+import           GameState                     (getPlayerLocationGID,
+                                                getPlayerLocationM, getPlayerM,
+                                                getWorldM,
+                                                parseConsumptionPhrase)
 import           Model.Core                    (ActionEffectKey (ConsumptionActionKey),
                                                 ActionMaps (_consumptionActionMap),
                                                 Config (_actionMaps),
-                                                ConsumptionActionF (CannotConsumeF, PlayerConsumptionActionF),
+                                                ConsumptionActionF (ObjectCannotBeConsumedF, ObjectConsumedF, PlayerCannotConsumeF, PlayerConsumptionActionF),
                                                 GameComputation,
                                                 Location (_locationInventory, _objectSemanticMap),
                                                 Player (_playerActions),
@@ -22,7 +24,7 @@ import           Model.Parser.Composites.Verbs (ConsumptionVerbPhrase (Consumpti
 manageConsumptionProcess :: ConsumptionVerbPhrase -> GameComputation Identity ()
 manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupConsumption verb availableActions of
+  case lookupConsumptionF availableActions of
     Nothing -> error "Programmer Error: No consumption action found for phrase"
     Just actionGID -> do
       actionMap <- asks (_consumptionActionMap . _actionMaps)
@@ -46,4 +48,8 @@ manageConsumptionProcess cvp@(ConsumptionVerbPhrase verb _)  = do
                   actionFunc actionEffectKey targetObjectGID cvp
                 else error $ "Target object not found in this location: " <> show nounKey
             _ -> error $ "Target object not found for consumption: " <> show nounKey
-        Just (CannotConsumeF actionF) -> actionF actionEffectKey
+        Just (ObjectConsumedF _) -> error "Programmer Error: ObjectConsumedF found in player actions"
+        Just (ObjectCannotBeConsumedF _) -> error "Programmer Error: ObjectCannotBeConsumedF found in player actions"
+        Just (PlayerCannotConsumeF actionF) -> actionF actionEffectKey
+  where
+    lookupConsumptionF = lookupConsumption verb

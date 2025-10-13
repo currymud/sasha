@@ -3,15 +3,14 @@ import           Control.Monad.Identity                           (Identity)
 import qualified Data.Set
 import           GameState                                        (addToInventoryM,
                                                                    getObjectM,
-                                                                   modifyNarration,
-                                                                   modifySpatialRelationshipsForObjectM,
-                                                                   updateActionConsequence)
+                                                                   modifySpatialRelationshipsForObjectM)
+import           GameState.ActionManagement                       (processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.Core                                       (AcquisitionActionF (CollectedF, LosesObjectF),
+import           Model.Core                                       (AcquisitionActionF (CollectedF, LosesObjectF, ObjectNotGettableF),
+                                                                   ActionEffectKey (AcquisitionalActionKey),
                                                                    ActionManagement (AVManagementKey),
                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                    CoordinationResult (CoordinationResult, _actionEffectKeys, _computation),
-                                                                   ActionEffectKey (AcquisitionalActionKey),
                                                                    GameComputation,
                                                                    Object (_objectActionManagement),
                                                                    SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
@@ -66,3 +65,5 @@ getFromSupportF supportObjGID = LosesObjectF getit
         , _actionEffectKeys = map AcquisitionalActionKey getActionGIDs
         }
 
+objectNotGettableF :: AcquisitionActionF
+objectNotGettableF = ObjectNotGettableF processEffectsFromRegistry

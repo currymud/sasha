@@ -1,10 +1,12 @@
 module ActionDiscovery.Manipulate.ContainerAccess.Open where
+import           Control.Monad.Error.Class     (MonadError (throwError))
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader          (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
 import           GameState                     (getPlayerLocationM, getPlayerM,
                                                 modifyNarration,
+                                                parseContainerAccessPhrase,
                                                 updateActionConsequence)
 import           GameState.ActionManagement    (lookupContainerAccessVerbPhrase,
                                                 processEffectsFromRegistry)
@@ -24,22 +26,23 @@ manageContainerAccessProcess :: ContainerAccessVerbPhrase
                                   -> GameComputation Identity ()
 manageContainerAccessProcess cavp = do
   availableActions <- _playerActions <$> getPlayerM
-  case lookupContainerAccessVerbPhrase cavp availableActions of
-    Nothing -> modifyNarration $ updateActionConsequence "This container cannot be opened."
+  case lookupActionF availableActions of
+    Nothing -> throwError "This cannot be opened."
     Just actionGID -> do
       actionMap <- asks (_containerAccessActionMap . _actionMaps)
       let actionEffectKey = ContainerAccessActionKey actionGID
       case Data.Map.Strict.lookup actionGID actionMap of
         Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
-        Just (PlayerCannotAccessF actionF) -> actionF actionEffectKey
         Just (InstrumentContainerAccessF _) -> error "InstrumentContainerAccessF is not a player constructor"
-        Just (CannotAccessF actionF) -> actionF lookupActionF
+        Just (CannotAccessF _) -> error "CannotAccessF is not a player constructor"
         Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
         Just (PlayerContainerAccessF actionF) -> do
-          actionF actionEffectKey objectSearchStrategy actionMap cavp finalizeContainerAccess
+          actionF actionEffectKey caRes actionMap lookupActionF
+        Just (PlayerCannotAccessF actionF) -> actionF actionEffectKey
   where
     lookupActionF :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
     lookupActionF = lookupContainerAccessVerbPhrase cavp
+    caRes = parseContainerAccessPhrase cavp
 -- | ToDo Clarification system. object identification assumes only one object in location matches nounkey.
 objectSearchStrategy :: SimpleAccessSearchStrategy
 objectSearchStrategy nounkey = do
