@@ -1,7 +1,7 @@
 module Evaluators.Player.General where
 import           ActionDiscovery.Administrative                  (manageAdministration)
 import           ActionDiscovery.Consume                         (manageConsumptionProcess)
-import           ActionDiscovery.Get.Acquisition.Get             (manageAcquisitionProcess)
+import           ActionDiscovery.Get.Acquisition.Get             (manageAcquisitionProcess, manageAcquisitionProcessRoleBased)
 import           ActionDiscovery.Manipulate.ContainerAccess.Open (manageContainerAccessProcess)
 import           ActionDiscovery.Manipulate.SomaticAccess.Open   (manageSomaticAccessProcess)
 import           ActionDiscovery.Movement.Postural.SitStand      (managePosturalProcess)
@@ -37,6 +37,7 @@ evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessPr
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()
 evalAcquisitionVerbPhrase = manageAcquisitionProcess
+-- Note: Can switch to manageAcquisitionProcessRoleBased when ready to use role-based system
 
 evalPosturalVerbPhrase :: PosturalVerbPhrase -> GameComputation Identity ()
 evalPosturalVerbPhrase = managePosturalProcess

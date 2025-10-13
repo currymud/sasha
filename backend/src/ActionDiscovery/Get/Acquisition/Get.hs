@@ -1,4 +1,4 @@
-module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
+module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess, manageAcquisitionProcessRoleBased) where
 
 import           Control.Monad.Error.Class                        (throwError)
 import           Control.Monad.Identity                           (Identity)
@@ -19,9 +19,11 @@ import           GameState.ActionManagement                       (findAVKey,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CannotAcquireF, CollectedF, LosesObjectF, ObjectNotGettableF),
+                                                                   AgentAcquisitionActionF,
                                                                    AcquisitionVerbActionMap,
+                                                                   AgentAcquisitionActionMap,
                                                                    ActionEffectKey (AcquisitionalActionKey),
-                                                                   ActionMaps (_acquisitionActionMap),
+                                                                   ActionMaps (_acquisitionActionMap, _agentAcquisitionActionMap),
                                                                    Config (_actionMaps),
                                                                    CoordinationResult (CoordinationResult),
                                                                    GameComputation,
@@ -39,6 +41,16 @@ import           Model.Parser.Composites.Verbs                    (AcquisitionVe
 
 -- ToDo: Add Location related values,
 -- Location effects need to be included in the process
+-- Role-based acquisition process (preferred - no error-prone pattern matching)
+-- Currently just redirects to the old system since we're using conversion functions
+-- This will be fully implemented when we remove the conversion layer
+manageAcquisitionProcessRoleBased :: AcquisitionVerbPhrase -> GameComputation Identity ()
+manageAcquisitionProcessRoleBased = manageAcquisitionProcess
+  -- Note: Full role-based implementation will be added when we remove conversion functions
+  -- For now, the role-based types are used at the declaration level (in SashaDemo.hs)
+  -- and converted back to AcquisitionActionF for compatibility
+
+-- Original acquisition process (kept for backwards compatibility)
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
