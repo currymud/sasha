@@ -5,6 +5,10 @@ import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
 import           Model.Core                    (AcquisitionActionF,
+                                                AgentAcquisitionActionF,
+                                                ObjectAcquisitionActionF,
+                                                ContainerAcquisitionActionF,
+                                                LocationAcquisitionActionF,
                                                 ActionManagement,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
@@ -67,6 +71,11 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> SashaLambdaDSL (GID DirectionalStimulusContainerActionF)
   DeclareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
   DeclareAcquisitionActionGID :: AcquisitionActionF -> SashaLambdaDSL (GID AcquisitionActionF)
+  -- Role-based acquisition action declarations
+  DeclareAgentAcquisitionActionGID :: AgentAcquisitionActionF -> SashaLambdaDSL (GID AgentAcquisitionActionF)
+  DeclareObjectAcquisitionActionGID :: ObjectAcquisitionActionF -> SashaLambdaDSL (GID ObjectAcquisitionActionF)
+  DeclareContainerAcquisitionActionGID :: ContainerAcquisitionActionF -> SashaLambdaDSL (GID ContainerAcquisitionActionF)
+  DeclareLocationAcquisitionActionGID :: LocationAcquisitionActionF -> SashaLambdaDSL (GID LocationAcquisitionActionF)
   DeclareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
   DeclarePosturalActionGID :: PosturalActionF -> SashaLambdaDSL (GID PosturalActionF)
   DeclareContainerAccessActionGID :: ContainerAccessActionF -> SashaLambdaDSL (GID ContainerAccessActionF)
@@ -174,6 +183,19 @@ declareSomaticActionGID = DeclareSomaticActionGID
 
 declareAcquisitionActionGID :: AcquisitionActionF -> SashaLambdaDSL (GID AcquisitionActionF)
 declareAcquisitionActionGID = DeclareAcquisitionActionGID
+
+-- Role-based acquisition action declaration functions
+declareAgentAcquisitionActionGID :: AgentAcquisitionActionF -> SashaLambdaDSL (GID AgentAcquisitionActionF)
+declareAgentAcquisitionActionGID = DeclareAgentAcquisitionActionGID
+
+declareObjectAcquisitionActionGID :: ObjectAcquisitionActionF -> SashaLambdaDSL (GID ObjectAcquisitionActionF)
+declareObjectAcquisitionActionGID = DeclareObjectAcquisitionActionGID
+
+declareContainerAcquisitionActionGID :: ContainerAcquisitionActionF -> SashaLambdaDSL (GID ContainerAcquisitionActionF)
+declareContainerAcquisitionActionGID = DeclareContainerAcquisitionActionGID
+
+declareLocationAcquisitionActionGID :: LocationAcquisitionActionF -> SashaLambdaDSL (GID LocationAcquisitionActionF)
+declareLocationAcquisitionActionGID = DeclareLocationAcquisitionActionGID
 
 declareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
 declareConsumptionActionGID = DeclareConsumptionActionGID

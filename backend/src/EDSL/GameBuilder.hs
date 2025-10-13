@@ -39,7 +39,7 @@ import           Model.Core                                                     
                                                                                    ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
-                                                                                   ActionMaps (ActionMaps, _acquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                                                                   ActionMaps (ActionMaps, _acquisitionActionMap, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
@@ -76,6 +76,10 @@ data BuilderState = BuilderState
   , _nextDirectionalContainerActionGID :: Int
   , _nextSomaticActionGID :: Int
   , _nextAcquisitionActionGID :: Int
+  , _nextAgentAcquisitionActionGID :: Int
+  , _nextObjectAcquisitionActionGID :: Int
+  , _nextContainerAcquisitionActionGID :: Int
+  , _nextLocationAcquisitionActionGID :: Int
   , _nextConsumptionActionGID :: Int
   , _nextContainerAccessActionGID :: Int
   , _nextPosturalActionGID :: Int
@@ -104,6 +108,10 @@ initialBuilderState gs = BuilderState
   , _nextDirectionalContainerActionGID = 1000
   , _nextSomaticActionGID = 1000
   , _nextAcquisitionActionGID = 1000
+  , _nextAgentAcquisitionActionGID = 2000
+  , _nextObjectAcquisitionActionGID = 3000
+  , _nextContainerAcquisitionActionGID = 4000
+  , _nextLocationAcquisitionActionGID = 5000
   , _nextConsumptionActionGID = 1000
   , _nextContainerAccessActionGID = 1000
   , _nextPosturalActionGID = 1000
@@ -114,6 +122,10 @@ initialBuilderState gs = BuilderState
       , _containerAccessActionMap = Data.Map.Strict.empty
       , _somaticStimulusActionMap = Data.Map.Strict.empty
       , _acquisitionActionMap = Data.Map.Strict.empty
+      , _agentAcquisitionActionMap = Data.Map.Strict.empty
+      , _objectAcquisitionActionMap = Data.Map.Strict.empty
+      , _containerAcquisitionActionMap = Data.Map.Strict.empty
+      , _locationAcquisitionActionMap = Data.Map.Strict.empty
       , _consumptionActionMap = Data.Map.Strict.empty
       , _posturalActionMap = Data.Map.Strict.empty
       }
@@ -338,6 +350,54 @@ interpretDSL (DeclareAcquisitionActionGID actionF) = do
                    (_acquisitionActionMap currentMaps)
       updatedMaps = currentMaps { _acquisitionActionMap = updatedMap }
   put state { _nextAcquisitionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareAgentAcquisitionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextAgentAcquisitionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_agentAcquisitionActionMap currentMaps)
+      updatedMaps = currentMaps { _agentAcquisitionActionMap = updatedMap }
+  put state { _nextAgentAcquisitionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareObjectAcquisitionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextObjectAcquisitionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_objectAcquisitionActionMap currentMaps)
+      updatedMaps = currentMaps { _objectAcquisitionActionMap = updatedMap }
+  put state { _nextObjectAcquisitionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareContainerAcquisitionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextContainerAcquisitionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_containerAcquisitionActionMap currentMaps)
+      updatedMaps = currentMaps { _containerAcquisitionActionMap = updatedMap }
+  put state { _nextContainerAcquisitionActionGID = gidValue + 1
+            , _actionMaps = updatedMaps }
+  pure newGID
+
+interpretDSL (DeclareLocationAcquisitionActionGID actionF) = do
+  state <- get
+  let gidValue = _nextLocationAcquisitionActionGID state
+      newGID = GID gidValue
+      currentMaps = _actionMaps state
+      updatedMap = Data.Map.Strict.insert newGID actionF
+                   (_locationAcquisitionActionMap currentMaps)
+      updatedMaps = currentMaps { _locationAcquisitionActionMap = updatedMap }
+  put state { _nextLocationAcquisitionActionGID = gidValue + 1
             , _actionMaps = updatedMaps }
   pure newGID
 

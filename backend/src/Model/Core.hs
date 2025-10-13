@@ -48,6 +48,10 @@ module Model.Core
   , SomaticAccessActionMap
   , PosturalActionMap
   , AcquisitionVerbActionMap
+  , AgentAcquisitionActionMap
+  , ObjectAcquisitionActionMap
+  , ContainerAcquisitionActionMap
+  , LocationAcquisitionActionMap
   , ConsumptionActionMap
     -- * Action Management
   , ActionManagement(..)
@@ -447,6 +451,19 @@ type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActi
 type AcquisitionVerbActionMap :: Type
 type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
 
+-- Role-based acquisition action maps
+type AgentAcquisitionActionMap :: Type
+type AgentAcquisitionActionMap = Map (GID AgentAcquisitionActionF) AgentAcquisitionActionF
+
+type ObjectAcquisitionActionMap :: Type
+type ObjectAcquisitionActionMap = Map (GID ObjectAcquisitionActionF) ObjectAcquisitionActionF
+
+type ContainerAcquisitionActionMap :: Type
+type ContainerAcquisitionActionMap = Map (GID ContainerAcquisitionActionF) ContainerAcquisitionActionF
+
+type LocationAcquisitionActionMap :: Type
+type LocationAcquisitionActionMap = Map (GID LocationAcquisitionActionF) LocationAcquisitionActionF
+
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
@@ -461,6 +478,10 @@ data ActionMaps = ActionMaps
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
+  , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
+  , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
+  , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
+  , _locationAcquisitionActionMap :: LocationAcquisitionActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
   , _posturalActionMap            :: PosturalActionMap
   }
