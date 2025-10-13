@@ -18,6 +18,9 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (AcquisitionActionF,
+                                                                          AgentAcquisitionActionF,
+                                                                          ObjectAcquisitionActionF,
+                                                                          ContainerAcquisitionActionF,
                                                                           ActionEffectKey (..),
                                                                           ContainerAccessActionF,
                                                                           DirectionalStimulusActionF,
@@ -94,6 +97,15 @@ import           ConstraintRefinement.Actions.Player.Look                (dsvAct
 import           ConstraintRefinement.Actions.Player.Open                (openDeniedF,
                                                                           openEyes,
                                                                           openF)
+import           ConstraintRefinement.Actions.RoleBased.Constructors  (agentGetF,
+                                                                          objectCollectedF,
+                                                                          containerLosesObjectF,
+                                                                          agentCannotAcquireF,
+                                                                          objectNotCollectableF,
+                                                                          containerCannotReleaseF)
+import           ConstraintRefinement.Actions.RoleBased.Conversions   (toAcquisitionActionF,
+                                                                          objectToAcquisitionActionF,
+                                                                          containerToAcquisitionActionF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
 import           GHC.TypeError                                           (ErrorMessage (Text))
@@ -125,18 +137,27 @@ sashaBedroomDemo = do
   lookAtChairGID <- declareAction lookAtF
   whatChairFGID <- declareAction cannotBeSeenF
 
-  getFromChairGID <- declareAction (getFromSupportF chairGID)
+  -- Use role-based container action for chair losing object
+  getFromChairRoleBasedGID <- declareAction (containerLosesObjectF chairGID)
+  getFromChairGID <- declareAction (containerToAcquisitionActionF (containerLosesObjectF chairGID))
   lookAtRobeFGID <- declareAction lookAtF
   notEvenRobeFGID <- declareAction cannotBeSeenF
-  getRobeDeniedGID <- declareAction objectNotGettableF
+  getRobeDeniedRoleBasedGID <- declareAction objectNotCollectableF
+  getRobeDeniedGID <- declareAction (objectToAcquisitionActionF objectNotCollectableF)
 
-  getRobeFGID <- declareAction (getObjectF robeGID)
+  -- Use role-based object action for robe being collected
+  getRobeRoleBasedGID <- declareAction (objectCollectedF robeGID)
+  getRobeFGID <- declareAction (objectToAcquisitionActionF (objectCollectedF robeGID))
   lookAtPocketGID <- declareAction lookAtF
   openPocketNoReachGID <- declareAction openContainerF
 
   openEyesGID <- declareAction openEyes
-  getDeniedFGID <- declareAction getDeniedF
-  playerGetFGID <- declareAction getF
+  -- Use role-based agent action for player acquisition denial  
+  getDeniedRoleBasedGID <- declareAction agentCannotAcquireF
+  getDeniedFGID <- declareAction (toAcquisitionActionF agentCannotAcquireF)
+  -- Use role-based agent action for player get coordination
+  playerGetRoleBasedGID <- declareAction agentGetF
+  playerGetFGID <- declareAction (toAcquisitionActionF agentGetF)
   lookFGID <- declareAction lookF
   inventoryFGID <- declareAction defaultInventoryLookF
   dsvEnabledLookGID <- declareAction dsvActionEnabled
