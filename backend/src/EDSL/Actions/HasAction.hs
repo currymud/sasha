@@ -4,12 +4,18 @@
 module EDSL.Actions.HasAction where
 
 import           Data.Kind                     (Constraint, Type)
-import           Model.Core                    (AcquisitionActionF, ConsumptionActionF,
+import           Model.Core                    (AcquisitionActionF, AgentAcquisitionActionF,
+                                                ObjectAcquisitionActionF, ContainerAcquisitionActionF,
+                                                LocationAcquisitionActionF, ConsumptionActionF,
                                                 ContainerAccessActionF, DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF, PosturalActionF,
                                                 SomaticAccessActionF)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 declareAcquisitionActionGID,
+                                                declareAgentAcquisitionActionGID,
+                                                declareObjectAcquisitionActionGID,
+                                                declareContainerAcquisitionActionGID,
+                                                declareLocationAcquisitionActionGID,
                                                 declareConsumptionActionGID,
                                                 declareContainerAccessActionGID,
                                                 declareDirectionalStimulusActionGID,
@@ -25,6 +31,19 @@ class HasAction actionType where
 
 instance HasAction AcquisitionActionF where
   declareAction = declareAcquisitionActionGID
+
+-- Role-based acquisition action instances
+instance HasAction AgentAcquisitionActionF where
+  declareAction = declareAgentAcquisitionActionGID
+
+instance HasAction ObjectAcquisitionActionF where
+  declareAction = declareObjectAcquisitionActionGID
+
+instance HasAction ContainerAcquisitionActionF where
+  declareAction = declareContainerAcquisitionActionGID
+
+instance HasAction LocationAcquisitionActionF where
+  declareAction = declareLocationAcquisitionActionGID
 
 instance HasAction ConsumptionActionF where
   declareAction = declareConsumptionActionGID

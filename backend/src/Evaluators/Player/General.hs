@@ -37,6 +37,7 @@ evalStimulusVerbPhrase (SomaticStimulusVerbPhrase sav _) = manageSomaticAccessPr
 
 evalAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> GameComputation Identity ()
 evalAcquisitionVerbPhrase = manageAcquisitionProcess
+-- Using role-based acquisition process for type safety
 
 evalPosturalVerbPhrase :: PosturalVerbPhrase -> GameComputation Identity ()
 evalPosturalVerbPhrase = managePosturalProcess

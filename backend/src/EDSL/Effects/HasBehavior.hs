@@ -5,8 +5,12 @@
 module EDSL.Effects.HasBehavior where
 
 import           Data.Kind                     (Constraint, Type)
-import           Model.Core                    (ActionManagement (..), Location,
-                                                Object, Player)
+import           Model.Core                    (ActionManagement (..), 
+                                                AgentAcquisitionActionF,
+                                                ObjectAcquisitionActionF,
+                                                ContainerAcquisitionActionF,
+                                                LocationAcquisitionActionF,
+                                                Location, Object, Player)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 withLocationBehavior,
                                                 withObjectBehavior,
@@ -60,3 +64,30 @@ instance HasBehavior Object where
 
 instance HasBehavior Player where
   withBehavior = flip withPlayerBehavior
+
+-- | Role-based behavior creation functions
+-- These allow creating ActionManagement for role-based action types
+makeAgentBehavior :: AcquisitionVerb -> GID AgentAcquisitionActionF -> ActionManagement
+makeAgentBehavior = AgentAVManagementKey
+
+makeObjectBehavior :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> ActionManagement  
+makeObjectBehavior = ObjectAVManagementKey
+
+makeContainerBehavior :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> ActionManagement
+makeContainerBehavior = ContainerAVManagementKey
+
+makeLocationBehavior :: AcquisitionVerb -> GID LocationAcquisitionActionF -> ActionManagement
+makeLocationBehavior = LocationAVManagementKey
+
+-- Role-based behavior creation for verb phrases
+makeAgentPhraseBehavior :: AcquisitionVerbPhrase -> GID AgentAcquisitionActionF -> ActionManagement
+makeAgentPhraseBehavior = AgentAAManagementKey
+
+makeObjectPhraseBehavior :: AcquisitionVerbPhrase -> GID ObjectAcquisitionActionF -> ActionManagement
+makeObjectPhraseBehavior = ObjectAAManagementKey
+
+makeContainerPhraseBehavior :: AcquisitionVerbPhrase -> GID ContainerAcquisitionActionF -> ActionManagement
+makeContainerPhraseBehavior = ContainerAAManagementKey
+
+makeLocationPhraseBehavior :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> ActionManagement
+makeLocationPhraseBehavior = LocationAAManagementKey

@@ -33,6 +33,10 @@ module Model.Core
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AcquisitionActionF(..)
+  , AgentAcquisitionActionF(..)
+  , ObjectAcquisitionActionF(..)
+  , ContainerAcquisitionActionF(..)
+  , LocationAcquisitionActionF(..)
   , ConsumptionActionF(..)
     -- * Action Maps
   , ActionMaps(..)
@@ -44,6 +48,10 @@ module Model.Core
   , SomaticAccessActionMap
   , PosturalActionMap
   , AcquisitionVerbActionMap
+  , AgentAcquisitionActionMap
+  , ObjectAcquisitionActionMap
+  , ContainerAcquisitionActionMap
+  , LocationAcquisitionActionMap
   , ConsumptionActionMap
     -- * Action Management
   , ActionManagement(..)
@@ -367,6 +375,27 @@ data AcquisitionActionF
   | ObjectNotGettableF (ActionEffectKey -> GameComputation Identity ())
   | CannotAcquireF (ActionEffectKey -> GameComputation Identity ())
 
+-- Role-based acquisition action types (alongside existing AcquisitionActionF)
+type AgentAcquisitionActionF :: Type
+data AgentAcquisitionActionF
+  = AgentAcquiresF AcquisitionF  -- Agent coordinates acquisition between object and container
+  | AgentCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+
+type ObjectAcquisitionActionF :: Type  
+data ObjectAcquisitionActionF
+  = ObjectCollectedF (GameComputation Identity CoordinationResult)  -- Object is collected by agent
+  | ObjectNotCollectableF (ActionEffectKey -> GameComputation Identity ())
+
+type ContainerAcquisitionActionF :: Type
+data ContainerAcquisitionActionF  
+  = ContainerLosesObjectF (GID Object -> GameComputation Identity CoordinationResult)  -- Container releases object
+  | ContainerCannotReleaseF (ActionEffectKey -> GameComputation Identity ())
+
+type LocationAcquisitionActionF :: Type
+data LocationAcquisitionActionF
+  = LocationAcquisitionActionF (GameComputation Identity ())  -- Placeholder for location-level acquisition
+  | LocationCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+
 type ConsumptionResult :: Type
 data ConsumptionResult = ConsumedResult
   { _consumptionComputation :: GameComputation Identity ()
@@ -422,6 +451,19 @@ type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActi
 type AcquisitionVerbActionMap :: Type
 type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
 
+-- Role-based acquisition action maps
+type AgentAcquisitionActionMap :: Type
+type AgentAcquisitionActionMap = Map (GID AgentAcquisitionActionF) AgentAcquisitionActionF
+
+type ObjectAcquisitionActionMap :: Type
+type ObjectAcquisitionActionMap = Map (GID ObjectAcquisitionActionF) ObjectAcquisitionActionF
+
+type ContainerAcquisitionActionMap :: Type
+type ContainerAcquisitionActionMap = Map (GID ContainerAcquisitionActionF) ContainerAcquisitionActionF
+
+type LocationAcquisitionActionMap :: Type
+type LocationAcquisitionActionMap = Map (GID LocationAcquisitionActionF) LocationAcquisitionActionF
+
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
@@ -436,6 +478,10 @@ data ActionMaps = ActionMaps
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _acquisitionActionMap         :: AcquisitionVerbActionMap
+  , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
+  , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
+  , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
+  , _locationAcquisitionActionMap :: LocationAcquisitionActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
   , _posturalActionMap            :: PosturalActionMap
   }
@@ -459,6 +505,11 @@ data ActionEffectKey
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
+  -- Role-based acquisition action keys
+  | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
+  | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
+  | ContainerAcquisitionalActionKey (GID ContainerAcquisitionActionF)
+  | LocationAcquisitionalActionKey (GID LocationAcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
   | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
@@ -555,6 +606,15 @@ data ActionManagementOperation
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
+  -- Role-based acquisition action management operations
+  | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
+  | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
+  | AddContainerAcquisitionVerb AcquisitionVerb (GID ContainerAcquisitionActionF)
+  | AddLocationAcquisitionVerb AcquisitionVerb (GID LocationAcquisitionActionF)
+  | AddAgentAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AgentAcquisitionActionF)
+  | AddObjectAcquisitionVerbPhrase AcquisitionVerbPhrase (GID ObjectAcquisitionActionF)
+  | AddContainerAcquisitionVerbPhrase AcquisitionVerbPhrase (GID ContainerAcquisitionActionF)
+  | AddLocationAcquisitionVerbPhrase AcquisitionVerbPhrase (GID LocationAcquisitionActionF)
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
   | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
@@ -567,6 +627,11 @@ data ActionGID
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   | AcquisitionActionGID (GID AcquisitionActionF)
+  -- Role-based acquisition action GIDs
+  | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
+  | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
+  | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
+  | LocationAcquisitionActionGID (GID LocationAcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
@@ -580,6 +645,15 @@ data ActionManagement
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)
   | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
+  -- Role-based acquisition action management keys
+  | AgentAVManagementKey AcquisitionVerb (GID AgentAcquisitionActionF)
+  | ObjectAVManagementKey AcquisitionVerb (GID ObjectAcquisitionActionF)
+  | ContainerAVManagementKey AcquisitionVerb (GID ContainerAcquisitionActionF)
+  | LocationAVManagementKey AcquisitionVerb (GID LocationAcquisitionActionF)
+  | AgentAAManagementKey AcquisitionVerbPhrase (GID AgentAcquisitionActionF)
+  | ObjectAAManagementKey AcquisitionVerbPhrase (GID ObjectAcquisitionActionF)
+  | ContainerAAManagementKey AcquisitionVerbPhrase (GID ContainerAcquisitionActionF)
+  | LocationAAManagementKey AcquisitionVerbPhrase (GID LocationAcquisitionActionF)
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
   | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
