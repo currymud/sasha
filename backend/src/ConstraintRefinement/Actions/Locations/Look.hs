@@ -1,10 +1,6 @@
 module ConstraintRefinement.Actions.Locations.Look where
 import           Control.Monad.Identity     (Identity)
-import           Data.Text                  (Text)
-import           GameState                  (modifyNarration,
-                                             updateActionConsequence)
 import           GameState.ActionManagement (processEffectsFromRegistry)
-import           GameState.Perception       (youSeeM)
 import           Model.Core                 (ActionEffectKey, GameComputation,
                                              ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF))
 

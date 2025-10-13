@@ -13,9 +13,8 @@ standDenied = CannotPosturalActionF denied
     denied :: ActionEffectKey -> GameComputation Identity ()
     denied actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You try to stand but the room starts spinning and you lay back down. There's some aspirin in your robe pocket."
+--    msg :: Text
+--    msg = "You try to stand but the room starts spinning and you lay back down. There's some aspirin in your robe pocket."
 
 standUp :: PosturalActionF
 standUp = PlayerPosturalActionF stood
@@ -23,9 +22,8 @@ standUp = PlayerPosturalActionF stood
     stood :: ActionEffectKey -> GameComputation Identity ()
     stood actionEffectKeys = do
       processEffectsFromRegistry actionEffectKeys
-      modifyNarration (updateActionConsequence msg)
-    msg :: Text
-    msg = "You stand up, feeling more alert and ready for action."
+--    msg :: Text
+--    msg = "You stand up, feeling more alert and ready for action."
 
 standUpDenied :: PosturalActionF
 standUpDenied = CannotPosturalActionF denied
@@ -33,6 +31,5 @@ standUpDenied = CannotPosturalActionF denied
     denied :: ActionEffectKey -> GameComputation Identity ()
     denied actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
-      modifyNarration $ updateActionConsequence msg
-    msg :: Text
-    msg = "You're already standing. No need to stand up again."
+--    msg :: Text
+--    msg = "You're already standing. No need to stand up again."
