@@ -18,9 +18,13 @@ import           GameState                     (getInventoryObjectsM,
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (AcquisitionActionF,
+                                                AgentAcquisitionActionF,
+                                                ObjectAcquisitionActionF,
+                                                ContainerAcquisitionActionF,
+                                                LocationAcquisitionActionF,
                                                 ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AAManagementKey, AVManagementKey, AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                 ConsumptionActionF,
@@ -596,6 +600,23 @@ findDSAKey verb (ActionManagementFunctions actionSet) =
 findAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
 findAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+-- Role-based acquisition action lookup functions
+findAgentAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AgentAcquisitionActionF)
+findAgentAVKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | AgentAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findObjectAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID ObjectAcquisitionActionF)
+findObjectAVKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | ObjectAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findContainerAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID ContainerAcquisitionActionF)
+findContainerAVKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | ContainerAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findLocationAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID LocationAcquisitionActionF)
+findLocationAVKey verb (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | LocationAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
 findISAKey :: ImplicitStimulusVerb -> ActionManagementFunctions -> Maybe (GID ImplicitStimulusActionF)
 findISAKey verb (ActionManagementFunctions actionSet) =

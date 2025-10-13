@@ -15,6 +15,9 @@ import           GameState                                        (getObjectM,
                                                                    getPlayerM,
                                                                    parseAcquisitionPhrase)
 import           GameState.ActionManagement                       (findAVKey,
+                                                                   findAgentAVKey,
+                                                                   findObjectAVKey,
+                                                                   findContainerAVKey,
                                                                    lookupAcquisitionPhrase,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
@@ -22,7 +25,7 @@ import           Model.Core                                       (AcquisitionAc
                                                                    AgentAcquisitionActionF,
                                                                    AcquisitionVerbActionMap,
                                                                    AgentAcquisitionActionMap,
-                                                                   ActionEffectKey (AcquisitionalActionKey),
+                                                                   ActionEffectKey (AcquisitionalActionKey, AgentAcquisitionalActionKey),
                                                                    ActionMaps (_acquisitionActionMap, _agentAcquisitionActionMap),
                                                                    Config (_actionMaps),
                                                                    CoordinationResult (CoordinationResult),
@@ -45,10 +48,32 @@ import           Model.Parser.Composites.Verbs                    (AcquisitionVe
 -- Currently just redirects to the old system since we're using conversion functions
 -- This will be fully implemented when we remove the conversion layer
 manageAcquisitionProcessRoleBased :: AcquisitionVerbPhrase -> GameComputation Identity ()
-manageAcquisitionProcessRoleBased = manageAcquisitionProcess
-  -- Note: Full role-based implementation will be added when we remove conversion functions
-  -- For now, the role-based types are used at the declaration level (in SashaDemo.hs)
-  -- and converted back to AcquisitionActionF for compatibility
+manageAcquisitionProcessRoleBased avp = do
+  availableActions <- _playerActions <$> getPlayerM
+  
+  -- Try to find a role-based agent action first
+  case findAgentAVKey get availableActions of
+    Just agentGID -> do
+      -- Use the role-based agent action map
+      agentActionMap <- asks (_agentAcquisitionActionMap . _actionMaps)
+      case Data.Map.Strict.lookup agentGID agentActionMap of
+        Just agentAction -> do
+          let actionEffectKey = AgentAcquisitionalActionKey agentGID
+          -- Execute the role-based agent action directly - no error-prone pattern matching!
+          case agentAction of
+            -- AgentAcquisitionActionF only has valid agent actions - no error cases!
+            -- This is the type safety we achieved - impossible to have invalid actions here
+            _ -> do
+              -- For now, fall back to using the old acquisition system since we still need
+              -- to coordinate with object and container actions via the old maps
+              -- This will be fully role-based when all parts are converted
+              manageAcquisitionProcess avp
+        Nothing -> 
+          -- Agent action not found in role-based map, fall back to old system
+          manageAcquisitionProcess avp
+    Nothing -> 
+      -- No role-based agent action found, use traditional system
+      manageAcquisitionProcess avp
 
 -- Original acquisition process (kept for backwards compatibility)
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()

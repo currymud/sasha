@@ -124,6 +124,15 @@ data SashaLambdaDSL :: Type -> Type where
   CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> SashaLambdaDSL Effect
   CreateAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL Effect
+  -- Role-based acquisition effect creation constructors
+  CreateAgentAcquisitionVerbEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateObjectAcquisitionVerbEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateContainerAcquisitionVerbEffect :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateLocationAcquisitionVerbEffect :: AcquisitionVerb -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateAgentAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateObjectAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateContainerAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+  CreateLocationAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> SashaLambdaDSL Effect
   CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
   CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
@@ -262,6 +271,31 @@ createAcquisitionVerbEffect = CreateAcquisitionVerbEffect
 
 createAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL Effect
 createAcquisitionVerbPhraseEffect = CreateAcquisitionVerbPhraseEffect
+
+-- Role-based acquisition effect creation helper functions
+createAgentAcquisitionVerbEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+createAgentAcquisitionVerbEffect = CreateAgentAcquisitionVerbEffect
+
+createObjectAcquisitionVerbEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
+createObjectAcquisitionVerbEffect = CreateObjectAcquisitionVerbEffect
+
+createContainerAcquisitionVerbEffect :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+createContainerAcquisitionVerbEffect = CreateContainerAcquisitionVerbEffect
+
+createLocationAcquisitionVerbEffect :: AcquisitionVerb -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
+createLocationAcquisitionVerbEffect = CreateLocationAcquisitionVerbEffect
+
+createAgentAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+createAgentAcquisitionVerbPhraseEffect = CreateAgentAcquisitionVerbPhraseEffect
+
+createObjectAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
+createObjectAcquisitionVerbPhraseEffect = CreateObjectAcquisitionVerbPhraseEffect
+
+createContainerAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+createContainerAcquisitionVerbPhraseEffect = CreateContainerAcquisitionVerbPhraseEffect
+
+createLocationAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
+createLocationAcquisitionVerbPhraseEffect = CreateLocationAcquisitionVerbPhraseEffect
 
 createAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL ActionManagement
 createAAManagement = CreateAAManagement

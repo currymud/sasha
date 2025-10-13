@@ -505,6 +505,11 @@ data ActionEffectKey
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AcquisitionalActionKey (GID AcquisitionActionF)
+  -- Role-based acquisition action keys
+  | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
+  | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
+  | ContainerAcquisitionalActionKey (GID ContainerAcquisitionActionF)
+  | LocationAcquisitionalActionKey (GID LocationAcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
   | PosturalActionKey (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
@@ -613,6 +618,11 @@ data ActionGID
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   | AcquisitionActionGID (GID AcquisitionActionF)
+  -- Role-based acquisition action GIDs
+  | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
+  | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
+  | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
+  | LocationAcquisitionActionGID (GID LocationAcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)

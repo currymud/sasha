@@ -35,13 +35,13 @@ import           GameState.Perception                                           
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
 import           Model.Core                                                       (TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    ActionEffectMap (ActionEffectMap),
-                                                                                   ActionGID (AcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                                   ActionManagement (AAManagementKey, AVManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                                                   ActionGID (AcquisitionActionGID, AgentAcquisitionActionGID, ObjectAcquisitionActionGID, ContainerAcquisitionActionGID, LocationAcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AAManagementKey, AVManagementKey, AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, AgentAAManagementKey, ObjectAAManagementKey, ContainerAAManagementKey, LocationAAManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
                                                                                    ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
                                                                                    ActionMaps (ActionMaps, _acquisitionActionMap, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
-                                                                                   ActionEffectKey (AcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
+                                                                                   ActionEffectKey (AcquisitionalActionKey, AgentAcquisitionalActionKey, ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey, LocationAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
                                                                                    Location (_locationActionManagement, _locationInventory, _objectSemanticMap, _title),
@@ -724,6 +724,11 @@ actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKe
 actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid
 actionGIDToKey (SomaticAccessActionGID gid)        = SomaticAccessActionKey gid
 actionGIDToKey (AcquisitionActionGID gid)          = AcquisitionalActionKey gid
+-- Role-based acquisition actions map to their respective action keys
+actionGIDToKey (AgentAcquisitionActionGID gid)     = AgentAcquisitionalActionKey gid
+actionGIDToKey (ObjectAcquisitionActionGID gid)    = ObjectAcquisitionalActionKey gid
+actionGIDToKey (ContainerAcquisitionActionGID gid) = ContainerAcquisitionalActionKey gid
+actionGIDToKey (LocationAcquisitionActionGID gid)  = LocationAcquisitionalActionKey gid
 actionGIDToKey (ConsumptionActionGID gid)          = ConsumptionActionKey gid
 actionGIDToKey (PosturalActionGID gid)             = PosturalActionKey gid
 actionGIDToKey (ContainerAccessActionGID gid)      = ContainerAccessActionKey gid

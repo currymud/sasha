@@ -6,10 +6,22 @@ module EDSL.Effects.HasEffect where
 import           Data.Kind                     (Constraint, Type)
 import           EDSL.Effects.TypeMappings     (ActionFunctionType)
 import           Model.Core                    (ActionEffectKey, Effect,
+                                                AgentAcquisitionActionF,
+                                                ObjectAcquisitionActionF,
+                                                ContainerAcquisitionActionF,
+                                                LocationAcquisitionActionF,
                                                 Location, Object, PlayerKey)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createAcquisitionVerbEffect,
                                                 createAcquisitionVerbPhraseEffect,
+                                                createAgentAcquisitionVerbEffect,
+                                                createObjectAcquisitionVerbEffect,
+                                                createContainerAcquisitionVerbEffect,
+                                                createLocationAcquisitionVerbEffect,
+                                                createAgentAcquisitionVerbPhraseEffect,
+                                                createObjectAcquisitionVerbPhraseEffect,
+                                                createContainerAcquisitionVerbPhraseEffect,
+                                                createLocationAcquisitionVerbPhraseEffect,
                                                 createContainerAccessEffect,
                                                 createContainerAccessVerbPhraseEffect,
                                                 createDirectionalStimulusEffect,
@@ -61,3 +73,30 @@ instance MakeEffect AcquisitionVerbPhrase where
 
 instance MakeEffect ContainerAccessVerbPhrase where
   makeEffect = createContainerAccessVerbPhraseEffect
+
+-- | Role-based effect creation functions
+-- These allow creating Effects for role-based action types
+makeAgentEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+makeAgentEffect = createAgentAcquisitionVerbEffect
+
+makeObjectEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect  
+makeObjectEffect = createObjectAcquisitionVerbEffect
+
+makeContainerEffect :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+makeContainerEffect = createContainerAcquisitionVerbEffect
+
+makeLocationEffect :: AcquisitionVerb -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
+makeLocationEffect = createLocationAcquisitionVerbEffect
+
+-- Role-based effect creation for verb phrases
+makeAgentPhraseEffect :: AcquisitionVerbPhrase -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
+makeAgentPhraseEffect = createAgentAcquisitionVerbPhraseEffect
+
+makeObjectPhraseEffect :: AcquisitionVerbPhrase -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
+makeObjectPhraseEffect = createObjectAcquisitionVerbPhraseEffect
+
+makeContainerPhraseEffect :: AcquisitionVerbPhrase -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
+makeContainerPhraseEffect = createContainerAcquisitionVerbPhraseEffect
+
+makeLocationPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
+makeLocationPhraseEffect = createLocationAcquisitionVerbPhraseEffect
