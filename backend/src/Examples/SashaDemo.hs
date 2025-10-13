@@ -138,25 +138,20 @@ sashaBedroomDemo = do
   whatChairFGID <- declareAction cannotBeSeenF
 
   -- Use role-based container action for chair losing object
-  getFromChairRoleBasedGID <- declareAction (containerLosesObjectF chairGID)
   getFromChairGID <- declareAction (containerToAcquisitionActionF (containerLosesObjectF chairGID))
   lookAtRobeFGID <- declareAction lookAtF
   notEvenRobeFGID <- declareAction cannotBeSeenF
-  getRobeDeniedRoleBasedGID <- declareAction objectNotCollectableF
   getRobeDeniedGID <- declareAction (objectToAcquisitionActionF objectNotCollectableF)
 
-  -- Use role-based object action for robe being collected
-  getRobeRoleBasedGID <- declareAction (objectCollectedF robeGID)
+  -- Use role-based object action for robe being collected  
   getRobeFGID <- declareAction (objectToAcquisitionActionF (objectCollectedF robeGID))
   lookAtPocketGID <- declareAction lookAtF
   openPocketNoReachGID <- declareAction openContainerF
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial  
-  getDeniedRoleBasedGID <- declareAction agentCannotAcquireF
   getDeniedFGID <- declareAction (toAcquisitionActionF agentCannotAcquireF)
   -- Use role-based agent action for player get coordination
-  playerGetRoleBasedGID <- declareAction agentGetF
   playerGetFGID <- declareAction (toAcquisitionActionF agentGetF)
   lookFGID <- declareAction lookF
   inventoryFGID <- declareAction defaultInventoryLookF
