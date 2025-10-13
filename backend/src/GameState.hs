@@ -32,7 +32,7 @@ module GameState ( addToInventoryM
                  , removeObjectFromLocationInventoryWithHierarchy
                  , addObjectToGlobalSemanticMap
                  , removeObjectFromGlobalSemanticMap
-                 , parseAccessPhrase
+                 , parseContainerAccessPhrase
                  , parseObjectPhrase
                  , parseConsumablePhrase
                  , parseContainerPhrase
@@ -57,21 +57,20 @@ import           Control.Monad.State           (gets, modify')
 import qualified Data.Bifunctor
 import           Data.Map.Strict               (Map, elems)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, delete, difference, elemAt, empty, fromList,
-                                                insert, member, null, singleton, toList, union, unions)
+import           Data.Set                      (Set, delete, difference, elemAt,
+                                                empty, fromList, insert, member,
+                                                null, singleton, toList, union,
+                                                unions)
 import qualified Data.Set                      (filter)
 import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
-import           Model.Actions.Results         (AccessRes (CompleteAR, SimpleAR),
+import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
+                                                AcquisitionActionF,
                                                 AcquisitionRes (Complete, Simple),
-                                                CompleteAccessRes (CompleteAccessRes),
-                                                CompleteAcquisitionRes (CompleteAcquisitionRes),
-                                                SimpleAccessRes (SimpleAccessRes),
-                                                SimpleAcquisitionRes (SimpleAcquisitionRes))
-import           Model.Core                    (AcquisitionActionF,
-                                                TargetEffectKey (ObjectKey),
                                                 ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
+                                                CompleteAccessRes (CompleteAccessRes),
+                                                CompleteAcquisitionRes (CompleteAcquisitionRes),
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 GameComputation,
@@ -82,8 +81,11 @@ import           Model.Core                    (AcquisitionActionF,
                                                 Object (_description, _descriptives, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
+                                                SimpleAccessRes (SimpleAccessRes),
+                                                SimpleAcquisitionRes (SimpleAcquisitionRes),
                                                 SpatialRelationship (Contains, Inventory, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
+                                                TargetEffectKey (ObjectKey),
                                                 World (World, _globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
@@ -132,8 +134,8 @@ parseConsumptionPhrase (ConsumptionVerbPhrase _ ophrase) = Data.Bifunctor.second
                (ConsumableNounPhrase (DescriptiveNounPhraseDet _ _ obj')) -> obj'
     in (ophrase, obj)
 
-parseAccessPhrase :: ContainerAccessVerbPhrase -> AccessRes
-parseAccessPhrase cavp = case cavp of
+parseContainerAccessPhrase :: ContainerAccessVerbPhrase -> AccessRes
+parseContainerAccessPhrase cavp = case cavp of
   SimpleAccessContainerVerbPhrase _ cphrase ->
     let ckey = parseContainerPhrase cphrase
     in SimpleAR $ SimpleAccessRes ckey cphrase
@@ -368,8 +370,8 @@ getLocationActionMapsM lid = do
   return $ _locationActionManagement location
 
 modifyLocationActionMapsM :: (ActionManagementFunctions -> ActionManagementFunctions)
-                        -> GID Location
-                        -> GameComputation Identity ()
+                               -> GID Location
+                               -> GameComputation Identity ()
 modifyLocationActionMapsM actionF lid = do
   world <- gets _world
   let locationMap = _getGIDToDataMap $ _locationMap world
@@ -382,8 +384,8 @@ modifyLocationActionMapsM actionF lid = do
   modify' (\gs -> gs { _world = updatedWorld })
 
 modifyLocationM :: GID Location
-                -> (Location -> Location)
-                -> GameComputation Identity ()
+                     -> (Location -> Location)
+                     -> GameComputation Identity ()
 modifyLocationM lid locationF = do
   world <- gets _world
   let locationMap = _getGIDToDataMap $ _locationMap world
@@ -589,10 +591,10 @@ addToInventoryWithHierarchy oid = do
       updatedInventory = Data.Set.union currentInventory hierarchyObjects
   modifyPlayerM $ \p -> p { _inventory = updatedInventory }
   -- Update spatial relationships for all objects
-  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.insert Inventory)) 
+  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.insert Inventory))
         (Data.Set.toList hierarchyObjects)
 
--- | Remove an object and all its contained/supported objects from inventory  
+-- | Remove an object and all its contained/supported objects from inventory
 removeFromInventoryWithHierarchy :: GID Object -> GameComputation Identity ()
 removeFromInventoryWithHierarchy oid = do
   -- Get all objects that should move with this object
@@ -603,7 +605,7 @@ removeFromInventoryWithHierarchy oid = do
       updatedInventory = Data.Set.difference currentInventory hierarchyObjects
   modifyPlayerM $ \p -> p { _inventory = updatedInventory }
   -- Update spatial relationships for all objects
-  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.delete Inventory)) 
+  mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.delete Inventory))
         (Data.Set.toList hierarchyObjects)
 
 -- | Get an object and all objects contained within it or supported by it (recursively)

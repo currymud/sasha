@@ -1,33 +1,44 @@
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
 
-import           Control.Monad.Error.Class     (throwError)
-import           Control.Monad.Identity        (Identity)
-import           Control.Monad.Reader.Class    (asks)
-import           Control.Monad.State           (gets)
+import           Control.Monad.Error.Class                        (throwError)
+import           Control.Monad.Identity                           (Identity)
+import           Control.Monad.Reader.Class                       (asks)
+import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
-import           Data.Set                      (Set, elemAt, filter, member,
-                                                null, toList)
+import           Data.Set                                         (Set, elemAt,
+                                                                   filter,
+                                                                   member, null,
+                                                                   toList)
 import qualified Data.Text
-import           GameState                     (getPlayerLocationM, getPlayerM)
-import           GameState.ActionManagement    (lookupAcquisitionPhrase,
-                                                processEffectsFromRegistry)
-import           Model.Core                    (AcquisitionActionF (AcquisitionActionF, CollectedF, LosesObjectF, NotGettableF),
-                                                ActionEffectKey (AcquisitionalActionKey),
-                                                ActionMaps (_acquisitionActionMap),
-                                                Config (_actionMaps),
-                                                CoordinationResult (CoordinationResult),
-                                                GameComputation,
-                                                GameState (_world),
-                                                Location (_locationInventory, _objectSemanticMap),
-                                                Object, Player (_playerActions),
-                                                SearchStrategy,
-                                                SpatialRelationship (ContainedIn, SupportedBy),
-                                                SpatialRelationshipMap (SpatialRelationshipMap),
-                                                World (_globalSemanticMap, _spatialRelationshipMap))
-import           Model.GID                     (GID)
-import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase)
+import           GameState                                        (getObjectM,
+                                                                   getPlayerLocationM,
+                                                                   getPlayerM,
+                                                                   parseAcquisitionPhrase)
+import           GameState.ActionManagement                       (findAVKey,
+                                                                   lookupAcquisitionPhrase,
+                                                                   processEffectsFromRegistry)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
+import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CannotAcquireF, CollectedF, LosesObjectF, ObjectNotGettableF),
+                                                                   AcquisitionVerbActionMap,
+                                                                   ActionEffectKey (AcquisitionalActionKey),
+                                                                   ActionMaps (_acquisitionActionMap),
+                                                                   Config (_actionMaps),
+                                                                   CoordinationResult (CoordinationResult),
+                                                                   GameComputation,
+                                                                   GameState (_world),
+                                                                   Location (_locationInventory, _objectSemanticMap),
+                                                                   Object (_objectActionManagement),
+                                                                   Player (_playerActions),
+                                                                   SearchStrategy,
+                                                                   SpatialRelationship (ContainedIn, SupportedBy),
+                                                                   SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                   World (_globalSemanticMap, _spatialRelationshipMap))
+import           Model.GID                                        (GID)
+import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 
--- we are removing processEffectsFromRegistry from here
+
+-- ToDo: Add Location related values,
+-- Location effects need to be included in the process
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
@@ -44,19 +55,31 @@ manageAcquisitionProcess avp = do
                actionFunc
                  actionEffectKey
                  lookupActionF
-                 actionMap
-                 locationSearchStrategy
-                 avp
-                 finalizeAcquisition
-            (LosesObjectF _actionFunc) -> do
-              error "Drop actions not yet implemented"
-            (NotGettableF actionF) -> do
-              actionF lookupActionF >>= processEffectsFromRegistry
+                 (lookupAcquisitionAction actionMap)
+                 arRes
+            (CannotAcquireF actionF) -> actionF actionEffectKey
+            (LosesObjectF _) ->
+              error "LosesObjectF should not be in player action map"
+            (ObjectNotGettableF _) ->
+              error "ObjectNotGettableF should not be in player action map"
             (CollectedF _) ->
               error "CollectedF should not be in player action map"
   where
+    arRes = parseAcquisitionPhrase avp
     lookupActionF = lookupAcquisitionPhrase avp
 -- | General case: Search global semantic map, verify in location inventory
+lookupAcquisitionAction :: AcquisitionVerbActionMap
+                             -> GID Object
+                             -> GameComputation Identity AcquisitionActionF
+lookupAcquisitionAction actionMap oid = do
+  actionMgmt <- _objectActionManagement <$> getObjectM oid
+  case findAVKey get actionMgmt of
+    Nothing -> throwError $ (Data.Text.pack . show) oid <> " does not have a 'get' action."
+    Just actionGID -> do
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> throwError $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
+        Just action -> pure action
+
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
   world <- gets _world
@@ -86,7 +109,6 @@ locationSearchStrategy targetNounKey = do
     getContainerSources relationships =
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
-
 finalizeAcquisition :: ActionEffectKey
                         -> GID Object
                         -> GID Object
@@ -98,6 +120,7 @@ finalizeAcquisition actionEffectKey containerGID objectGID objectActionF contain
   let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
   case Data.Map.Strict.lookup objectGID spatialMap of
    Nothing -> throwError $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
+   -- ToDo move relationships higher up, we can find out sooner.
    Just relationships -> do
      let isContainedInSource = any (\case
            ContainedIn oid -> oid == containerGID

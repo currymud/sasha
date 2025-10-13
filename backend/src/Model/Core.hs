@@ -87,7 +87,17 @@ module Model.Core
   , Config(..)
     -- * Intermediate Results
   , ActionEffectResult(..)
+  , ConsumptionResult(..)
   , CoordinationResult(..)
+  , AcquisitionRes(..)
+  , CompleteAcquisitionRes(..)
+  , SimpleAcquisitionRes(..)
+  , AccessRes(..)
+  , CompleteAccessRes(..)
+  , SimpleAccessRes(..)
+  , PlayerDirectionalStimulusContainerAction
+  , PlayerDirectionalStimulusAction
+  , ActionEffectKeyF
   ) where
 
 import           Control.Monad.Except          (ExceptT, MonadError)
@@ -112,7 +122,9 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 SimpleAccessVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns (ContainerPhrase,
-                                                DirectionalStimulusNounPhrase)
+                                                DirectionalStimulusNounPhrase,
+                                                InstrumentalAccessNounPhrase,
+                                                ObjectPhrase, SupportPhrase)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ConsumptionVerbPhrase,
                                                 ContainerAccessVerbPhrase)
@@ -198,18 +210,39 @@ data ImplicitStimulusActionF
   = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
+type PlayerDirectionalStimulusAction :: Type
+type PlayerDirectionalStimulusAction
+  = ActionEffectKey
+      -> GID Object
+      -> GID Location
+      -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF))
+      -> GameComputation Identity ()
+
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF (ActionEffectKey -> DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
+  = PlayerDirectionalStimulusActionF PlayerDirectionalStimulusAction
   | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
-  | CannotSeeF (ActionEffectKey -> GameComputation Identity ())
+  | PlayerCannotSeeF (ActionEffectKey -> (GameComputation Identity ()))
+  | ObjectCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
+
+type PlayerDirectionalStimulusContainerAction :: Type
+type PlayerDirectionalStimulusContainerAction
+       = ActionEffectKey
+           -> GID Object
+           -> GID Location
+           -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusContainerActionF))
+           -> GameComputation Identity ()
+
+type ActionEffectKeyF :: Type
+type ActionEffectKeyF = ActionEffectKey -> GameComputation Identity ()
 
 type DirectionalStimulusContainerActionF :: Type
 data DirectionalStimulusContainerActionF
-  = PlayerDirectionalStimulusContainerActionF (ActionEffectKey -> DirectionalStimulusVerb -> ContainerPhrase -> GameComputation Identity ())
-  | ObjectDirectionalStimulusContainerActionF (ActionEffectKey -> GameComputation Identity ())
-  | CannotSeeInF (ActionEffectKey -> GameComputation Identity ())
-
+  = PlayerDirectionalStimulusContainerActionF PlayerDirectionalStimulusContainerAction
+  | ObjectDirectionalStimulusContainerActionF ActionEffectKeyF
+  | LocationDirectionalStimulusContainerActionF ActionEffectKeyF
+  | PlayerCannotSeeInF ActionEffectKeyF
+  | ObjectCannotBeSeenInF ActionEffectKeyF
 type SimpleAccessSearchStrategy :: Type
 type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
@@ -227,23 +260,20 @@ type FinalizeAccessNotInstrumentF = ActionEffectKey
                                       -> GameComputation Identity ()
 
 type ContainerAccessF :: Type
-type ContainerAccessF = (ActionEffectKey
-                           -> SimpleAccessSearchStrategy
-                           -> ContainerAccessActionMap
-                           -> ContainerAccessVerbPhrase
-                           -> FinalizeAccessNotInstrumentF
-                           -> GameComputation Identity ())
+type ContainerAccessF
+  = ActionEffectKey
+      -> AccessRes
+      -> ContainerAccessActionMap
+      -> (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
+      -> GameComputation Identity ()
 
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF
   | PlayerCannotAccessF (ActionEffectKey -> GameComputation Identity ())
-  | ObjectContainerAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
-                             -> (GameComputation Identity ActionEffectKey))
-  | InstrumentContainerAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
-                                 -> GameComputation Identity ActionEffectKey)
-  | CannotAccessF ((ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
-                    -> GameComputation Identity ())
+  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ())
+  | InstrumentContainerAccessF (ActionEffectKey -> GameComputation Identity ())
+  | CannotAccessF (ActionEffectKey -> GameComputation Identity ())
 
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
@@ -261,18 +291,65 @@ data CoordinationResult = CoordinationResult
   , _actionEffectKeys :: [ActionEffectKey]
   }
 
+-- | Acquisition parsing result - Simple vs Complete acquisition commands
+type AcquisitionRes :: Type
+data AcquisitionRes
+  = Complete CompleteAcquisitionRes
+  | Simple SimpleAcquisitionRes
+  deriving stock (Show, Eq, Ord)
+
+-- | Complete acquisition: "get X from Y"
+type CompleteAcquisitionRes :: Type
+data CompleteAcquisitionRes = CompleteAcquisitionRes
+  { _caObjectKey     :: NounKey
+  , _caObjectPhrase  :: ObjectPhrase
+  , _caSupportKey    :: NounKey
+  , _caSupportPhrase :: SupportPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+-- | Simple acquisition: "get X"
+type SimpleAcquisitionRes :: Type
+data SimpleAcquisitionRes = SimpleAcquisitionRes
+  { _saObjectKey    :: NounKey
+  , _saObjectPhrase :: ObjectPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+-- | Access parsing result - Simple vs Complete access commands
+type AccessRes :: Type
+data AccessRes
+  = CompleteAR CompleteAccessRes
+  | SimpleAR SimpleAccessRes
+  deriving stock (Show, Eq, Ord)
+
+-- | Complete access: "open X with Y"
+type CompleteAccessRes :: Type
+data CompleteAccessRes = CompleteAccessRes
+  { _containerKey     :: NounKey
+  , _ContainerPhrase  :: ContainerPhrase
+  , _instrumentKey    :: NounKey
+  , _instrumentPhrase :: InstrumentalAccessNounPhrase
+  }
+  deriving stock (Show, Eq, Ord)
+
+-- | Simple access: "open X"
+type SimpleAccessRes :: Type
+data SimpleAccessRes = SimpleAccessRes
+  { _saContainerKey    :: NounKey
+  , _saContainerPhrase :: ContainerPhrase
+  }
+  deriving stock (Show, Eq, Ord)
 type SearchStrategy :: Type
 type SearchStrategy = NounKey
                         -> GameComputation Identity (Maybe (GID Object, GID Object))
 
 type AcquisitionF :: Type
 type AcquisitionF = (ActionEffectKey
-                       -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-                       -> AcquisitionVerbActionMap
-                       -> SearchStrategy
-                       -> AcquisitionVerbPhrase
-                       -> FinalizeAcquisitionF
-                       -> GameComputation Identity ())
+                      -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
+                      -> (GID Object -> GameComputation Identity AcquisitionActionF)
+                      -> AcquisitionRes
+                      -> GameComputation Identity ())
 
 type FinalizeAcquisitionF :: Type
 type FinalizeAcquisitionF = ActionEffectKey
@@ -287,13 +364,21 @@ data AcquisitionActionF
   = AcquisitionActionF AcquisitionF
   | CollectedF (GameComputation Identity CoordinationResult)
   | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
-  | NotGettableF ((ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-                   -> (GameComputation Identity ActionEffectKey))
+  | ObjectNotGettableF (ActionEffectKey -> GameComputation Identity ())
+  | CannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+
+type ConsumptionResult :: Type
+data ConsumptionResult = ConsumedResult
+  { _consumptionComputation :: GameComputation Identity ()
+  , _consumptionEffectKeys  :: ActionEffectKey
+  }
 
 type ConsumptionActionF :: Type
 data ConsumptionActionF
   = PlayerConsumptionActionF (ActionEffectKey -> GID Object -> ConsumptionVerbPhrase -> GameComputation Identity ())
-  | CannotConsumeF (ActionEffectKey -> GameComputation Identity ())
+  | PlayerCannotConsumeF (ActionEffectKey -> GameComputation Identity ())
+  | ObjectConsumedF (ActionEffectKey -> GameComputation Identity ConsumptionResult)
+  | ObjectCannotBeConsumedF (ActionEffectKey -> GameComputation Identity ActionEffectKey)
 
 type ProcessImplicitStimulusVerb :: Type
 newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb

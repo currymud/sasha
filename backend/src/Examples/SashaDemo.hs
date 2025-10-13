@@ -84,13 +84,11 @@ import           Model.Parser.GCase                                      (NounKe
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (lookF,
                                                                           pitchBlackF)
-import           ConstraintRefinement.Actions.Objects.Chair.Look         (whatChairF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
-                                                                          getObjectF)
+                                                                          getObjectF,
+                                                                          objectNotGettableF)
+import           ConstraintRefinement.Actions.Objects.Look               (cannotBeSeenF)
 import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
-import           ConstraintRefinement.Actions.Objects.Pocket.Open        (pocketOutOfReachF)
-import           ConstraintRefinement.Actions.Objects.Robe.Get           (getRobeDeniedF)
-import           ConstraintRefinement.Actions.Objects.Robe.Look          (notEvenRobeF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
 import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
@@ -125,29 +123,29 @@ sashaBedroomDemo = do
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
 
   pitchBlackFGID <- declareImplicitStimulusActionGID pitchBlackF
-  lookAtFloorFGID <- declareDirectionalStimulusActionGID (lookAtF floorGID)
-  notEvenFloorFGID <- declareDirectionalStimulusActionGID notEvenRobeF
-  lookAtChairGID <- declareDirectionalStimulusActionGID (lookAtF chairGID)
-  whatChairFGID <- declareDirectionalStimulusActionGID whatChairF
+  lookAtFloorFGID <- declareDirectionalStimulusActionGID lookAtF
+  notEvenFloorFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
+  lookAtChairGID <- declareDirectionalStimulusActionGID lookAtF
+  whatChairFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
 
   getFromChairGID <- declareAcquisitionActionGID (getFromSupportF chairGID)
-  lookAtRobeFGID <- declareDirectionalStimulusActionGID (lookAtF robeGID)
-  notEvenRobeFGID <- declareDirectionalStimulusActionGID notEvenRobeF
-  getRobeDeniedGID <- declareAcquisitionActionGID (getRobeDeniedF robeGID)
+  lookAtRobeFGID <- declareDirectionalStimulusActionGID lookAtF
+  notEvenRobeFGID <- declareDirectionalStimulusActionGID cannotBeSeenF
+  getRobeDeniedGID <- declareAcquisitionActionGID objectNotGettableF
 
   getRobeFGID <- declareAcquisitionActionGID (getObjectF robeGID)
-  lookAtPocketGID <- declareDirectionalStimulusActionGID (lookAtF pocketGID)
-  openPocketNoReachGID <- declareContainerAccessActionGID (pocketOutOfReachF pocketGID)
+  lookAtPocketGID <- declareDirectionalStimulusActionGID lookAtF
+  openPocketNoReachGID <- declareContainerAccessActionGID openContainerF
 
   openEyesGID <- declareSomaticActionGID openEyes
-  getDeniedFGID <- declareAcquisitionActionGID (getDeniedF robeGID)
+  getDeniedFGID <- declareAcquisitionActionGID getDeniedF
   playerGetFGID <- declareAcquisitionActionGID getF
   lookFGID <- declareImplicitStimulusActionGID lookF
   inventoryFGID <- declareImplicitStimulusActionGID defaultInventoryLookF
   dsvEnabledLookGID <- declareDirectionalStimulusActionGID dsvActionEnabled
   containerAccessDeniedFGID <- declareContainerAccessActionGID openDeniedF
   accessContainerFGID <- declareContainerAccessActionGID openF
-  openContainerFGID <- declareContainerAccessActionGID (openContainerF pocketGID)
+  openContainerFGID <- declareContainerAccessActionGID openContainerF
   registerLocation bedroomGID (buildLocation pitchBlackFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
@@ -243,6 +241,10 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AcquisitionalActionKey getRobeDeniedGID) robeGID
     (NarrationEffect (StaticNarration "The difficulty of getting the robe is directly related to your eyes being closed."))
+  linkEffect (AcquisitionalActionKey getDeniedFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration "The difficulty of getting the robe is directly related to your eyes being closed."))
+  linkEffect (DirectionalStimulusActionKey notEvenRobeFGID) robeGID
+    (NarrationEffect (StaticNarration "One thing at a time. You've just woken up and your eyes are all bleary unfocused and closed. Maybe open them up and go from there?"))
   finalizeGameState
   where
     closedEyes :: Text

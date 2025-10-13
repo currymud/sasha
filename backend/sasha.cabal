@@ -65,21 +65,9 @@ library
       ConstraintRefinement.Actions.Player.Stand
       ConstraintRefinement.Actions.Player.Take
       ConstraintRefinement.Actions.Objects.Get.Constructors
+      ConstraintRefinement.Actions.Objects.Look
       ConstraintRefinement.Actions.Objects.Open
       ConstraintRefinement.Actions.Objects.SupportLook
-      ConstraintRefinement.Actions.Objects.Chair.Look
-      ConstraintRefinement.Actions.Objects.Floor.Look
-      ConstraintRefinement.Actions.Objects.Floor.Get
-      ConstraintRefinement.Actions.Objects.Mail.Get
-      ConstraintRefinement.Actions.Objects.Mail.Look
-      ConstraintRefinement.Actions.Objects.Pill.Get
-      ConstraintRefinement.Actions.Objects.Pill.Look
-      ConstraintRefinement.Actions.Objects.Pill.Take
-      ConstraintRefinement.Actions.Objects.Pocket.Look
-      ConstraintRefinement.Actions.Objects.Pocket.Open
-      ConstraintRefinement.Actions.Objects.Robe.Get
-      ConstraintRefinement.Actions.Objects.Robe.Look
-      ConstraintRefinement.Actions.Objects.Table.Look
       ConstraintRefinement.Effects.Perception.Look
       EDSL.GameBuilder
       Error
@@ -132,7 +120,6 @@ library
       Grammar.Parser.Rules.Atomics.Utils
       Grammar.Parser.Rules.Composites.Nouns
       Grammar.Parser.Rules.Composites.Verbs
-      Model.Actions.Results
       Model.Core
       Model.Core.Mappings
       Model.EDSL.SashaLambdaDSL
