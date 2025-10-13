@@ -12,9 +12,9 @@ main = do
   -- Run Hspec tests
   hspec $ do
     runIO $ putStrLn "Running property tests..."
---    Test.Lexer.spec
---    Test.Parser.Atomics.Verbs.spec
+    Test.Lexer.spec
+    Test.Parser.Atomics.Verbs.spec
     Test.EndToEnd.GetRobeFails.spec
     Test.EndToEnd.LookAtRobeProgression.spec
---    Test.EndToEnd.OpenEyesTriggerTest.spec
---    Test.EndToEnd.OpenEyesUnlocksGetRobe.spec
+    Test.EndToEnd.OpenEyesTriggerTest.spec
+    Test.EndToEnd.OpenEyesUnlocksGetRobe.spec

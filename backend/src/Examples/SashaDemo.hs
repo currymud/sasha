@@ -242,9 +242,6 @@ sashaBedroomDemo = do
 
   linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
-
-  linkEffect (AcquisitionalActionKey getRobeFGID) (PlayerKeyObject robeGID)
-    (NarrationEffect (StaticNarration "You pick up the robe."))
   linkEffect (AcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
   finalizeGameState
@@ -256,7 +253,6 @@ sashaBedroomDemo = do
                     <> "thing is directly related to your eyes being closed."
     gotRobeDescription :: Text
     gotRobeDescription = "This robe was make for wearin'. There's something in the pocket."
-
     robePocketDescription :: Text
     robePocketDescription = "The pocket is velcroed shut, "
                               <> "but there's an indentation of a pill on it."
