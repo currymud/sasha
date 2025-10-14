@@ -19,11 +19,9 @@ import           GameState.ActionManagement                       (findAgentAVKe
                                                                    findAgentAAKey,
                                                                    findObjectAVKey,
                                                                    findContainerAVKey,
-                                                                   lookupAcquisitionPhrase,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.Core                                       (AcquisitionActionF (CannotAcquireF, CollectedF, LosesObjectF, ObjectNotGettableF),
-                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
+import           Model.Core                                       (AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
                                                                    ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
                                                                    ContainerAcquisitionActionF (ContainerLosesObjectF, ContainerCannotReleaseF),
                                                                    AgentAcquisitionActionMap,
@@ -76,44 +74,18 @@ manageAcquisitionProcess avp = do
       throwError "No agent acquisition action available for this action."
   where
     arRes = parseAcquisitionPhrase avp
-    lookupActionF = lookupAcquisitionPhrase avp
 
 -- | Role-based acquisition action lookup - coordinates object and container actions
-lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase 
-                                -> GID Object 
-                                -> GameComputation Identity AcquisitionActionF
+-- This function is no longer needed since we removed AcquisitionActionF
+-- lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase 
+--                                 -> GID Object 
+--                                 -> GameComputation Identity AcquisitionActionF
+-- This function is no longer needed since we removed AcquisitionActionF
+{-
 lookupRoleBasedAcquisitionAction avp oid = do
-  actionMgmt <- _objectActionManagement <$> getObjectM oid
-  
-  -- First try to find a role-based object action
-  case findObjectAVKey get actionMgmt of
-    Just objectGID -> do
-      objectActionMap <- asks (_objectAcquisitionActionMap . _actionMaps)
-      case Data.Map.Strict.lookup objectGID objectActionMap of
-        Just objectAction -> do
-          -- Convert role-based object action to old AcquisitionActionF for coordination
-          case objectAction of
-            ObjectCollectedF actionF -> pure (CollectedF actionF)
-            ObjectNotCollectableF actionF -> pure (ObjectNotGettableF actionF)
-        Nothing -> tryContainerAction
-    Nothing -> tryContainerAction
-  where
-    tryContainerAction = do
-      actionMgmt <- _objectActionManagement <$> getObjectM oid
-      case findContainerAVKey get actionMgmt of
-        Just containerGID -> do
-          containerActionMap <- asks (_containerAcquisitionActionMap . _actionMaps)
-          case Data.Map.Strict.lookup containerGID containerActionMap of
-            Just containerAction -> do
-              case containerAction of
-                ContainerLosesObjectF actionF -> pure (LosesObjectF actionF)
-                ContainerCannotReleaseF actionF -> pure (CannotAcquireF actionF)
-            Nothing -> fallbackToOldLookup
-        Nothing -> fallbackToOldLookup
-    
-    fallbackToOldLookup = do
-      -- No role-based actions found, this should not happen in a properly configured system
-      throwError "No role-based acquisition actions found for this object."
+  -- This compatibility bridge is no longer needed
+  throwError "AcquisitionActionF compatibility layer removed"
+-}
 
 
 locationSearchStrategy :: SearchStrategy

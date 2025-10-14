@@ -3,8 +3,7 @@
 module EDSL.Effects.TypeMappings where
 
 import           Data.Kind                     (Type)
-import           Model.Core                    (AcquisitionActionF,
-                                                AgentAcquisitionActionF,
+import           Model.Core                    (AgentAcquisitionActionF,
                                                 ObjectAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
                                                 LocationAcquisitionActionF,
@@ -25,10 +24,10 @@ type ActionFunctionType :: Type -> Type
 type family ActionFunctionType (verb :: Type) :: Type where
   ActionFunctionType ImplicitStimulusVerb = ImplicitStimulusActionF
   ActionFunctionType DirectionalStimulusVerb = DirectionalStimulusActionF
-  ActionFunctionType AcquisitionVerb = AcquisitionActionF
+  -- AcquisitionVerb maps are now role-based, see role-based mappings below
   ActionFunctionType SomaticAccessVerb = SomaticAccessActionF
   ActionFunctionType SimpleAccessVerb = ContainerAccessActionF
-  ActionFunctionType AcquisitionVerbPhrase = AcquisitionActionF
+  -- AcquisitionVerbPhrase maps are now role-based, see role-based mappings below
   ActionFunctionType ContainerAccessVerbPhrase = ContainerAccessActionF
   -- Role-based acquisition action type mappings
   -- These allow the type system to understand role-based actions

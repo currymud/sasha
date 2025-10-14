@@ -12,8 +12,6 @@ import           Model.Core                    (ActionEffectKey, Effect,
                                                 LocationAcquisitionActionF,
                                                 Location, Object, PlayerKey)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
-                                                createAcquisitionVerbEffect,
-                                                createAcquisitionVerbPhraseEffect,
                                                 createAgentAcquisitionVerbEffect,
                                                 createObjectAcquisitionVerbEffect,
                                                 createContainerAcquisitionVerbEffect,
@@ -62,14 +60,12 @@ instance MakeEffect ImplicitStimulusVerb where
 instance MakeEffect DirectionalStimulusVerb where
   makeEffect = createDirectionalStimulusEffect
 
-instance MakeEffect AcquisitionVerb where
-  makeEffect = createAcquisitionVerbEffect
+-- Old AcquisitionVerb instance removed - use role-based functions instead
 
 instance MakeEffect SimpleAccessVerb where
   makeEffect = createContainerAccessEffect
 
-instance MakeEffect AcquisitionVerbPhrase where
-  makeEffect = createAcquisitionVerbPhraseEffect
+-- Old AcquisitionVerbPhrase instance removed - use role-based functions instead
 
 instance MakeEffect ContainerAccessVerbPhrase where
   makeEffect = createContainerAccessVerbPhraseEffect

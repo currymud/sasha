@@ -29,8 +29,7 @@ import           EDSL.Effects.HasEffect                                  (HasEff
 import           Examples.Defaults                                       (defaultLocation,
                                                                           defaultObject,
                                                                           defaultPlayer)
-import           Model.Core                                              (AcquisitionActionF,
-                                                                          AgentAcquisitionActionF,
+import           Model.Core                                              (AgentAcquisitionActionF,
                                                                           ObjectAcquisitionActionF,
                                                                           ContainerAcquisitionActionF,
                                                                           ActionEffectKey (..),

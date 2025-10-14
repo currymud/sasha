@@ -42,7 +42,6 @@ module GameState ( addToInventoryM
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processSimpleContainerAccessEffect
-                 , processAcquisitionEffect
                  , processPositivePosturalEffect
                  , processNegativePosturalEffect
                  , processConsumptionEffect
@@ -65,9 +64,8 @@ import qualified Data.Set                      (filter)
 import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
-                                                AcquisitionActionF,
                                                 AcquisitionRes (Complete, Simple),
-                                                ActionManagement (AVManagementKey, CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
+                                                ActionManagement (CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 CompleteAccessRes (CompleteAccessRes),
                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
@@ -212,20 +210,6 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 -- GameState.hs - Updated effect processing functions
 
-processAcquisitionEffect :: AcquisitionVerb
-                         -> GID AcquisitionActionF
-                         -> GameComputation Identity ()
-processAcquisitionEffect avp newActionGID = do
-  modify' $ \gs ->
-    let player = gs._player
-        ActionManagementFunctions playerActionSet = _playerActions player
-        -- Remove any existing acquisition action for this phrase
-        filteredActions = Data.Set.filter (\case AVManagementKey p _ -> p /= avp; _ -> True) playerActionSet
-        -- Add the new action
-        updatedActions = Data.Set.insert (AVManagementKey avp newActionGID) filteredActions
-        updatedPlayerActions = ActionManagementFunctions updatedActions
-        updatedPlayer = player { _playerActions = updatedPlayerActions }
-    in gs { _player = updatedPlayer }
 
 processSimpleContainerAccessEffect :: SimpleAccessVerb
                          -> GID ContainerAccessActionF

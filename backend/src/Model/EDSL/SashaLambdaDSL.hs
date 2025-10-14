@@ -4,8 +4,7 @@ import           Control.Monad                 (foldM)
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
-import           Model.Core                    (AcquisitionActionF,
-                                                AgentAcquisitionActionF,
+import           Model.Core                    (AgentAcquisitionActionF,
                                                 ObjectAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
                                                 LocationAcquisitionActionF,
@@ -70,7 +69,6 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> SashaLambdaDSL (GID DirectionalStimulusActionF)
   DeclareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> SashaLambdaDSL (GID DirectionalStimulusContainerActionF)
   DeclareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
-  DeclareAcquisitionActionGID :: AcquisitionActionF -> SashaLambdaDSL (GID AcquisitionActionF)
   -- Role-based acquisition action declarations
   DeclareAgentAcquisitionActionGID :: AgentAcquisitionActionF -> SashaLambdaDSL (GID AgentAcquisitionActionF)
   DeclareObjectAcquisitionActionGID :: ObjectAcquisitionActionF -> SashaLambdaDSL (GID ObjectAcquisitionActionF)
@@ -88,8 +86,6 @@ data SashaLambdaDSL :: Type -> Type where
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
-  CreateAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> SashaLambdaDSL ActionManagement
-  CreateAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL ActionManagement
   CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
   CreateSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL ActionManagement
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
@@ -122,8 +118,6 @@ data SashaLambdaDSL :: Type -> Type where
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
-  CreateAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> SashaLambdaDSL Effect
-  CreateAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL Effect
   -- Role-based acquisition effect creation constructors
   CreateAgentAcquisitionVerbEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
   CreateObjectAcquisitionVerbEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
@@ -190,8 +184,6 @@ declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
 declareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
 declareSomaticActionGID = DeclareSomaticActionGID
 
-declareAcquisitionActionGID :: AcquisitionActionF -> SashaLambdaDSL (GID AcquisitionActionF)
-declareAcquisitionActionGID = DeclareAcquisitionActionGID
 
 -- Role-based acquisition action declaration functions
 declareAgentAcquisitionActionGID :: AgentAcquisitionActionF -> SashaLambdaDSL (GID AgentAcquisitionActionF)
@@ -230,8 +222,6 @@ createSSAManagement = CreateSSAManagement
 createSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL ActionManagement
 createSAConManagement = CreateSAConManagement
 
-createAVManagement :: AcquisitionVerb -> GID AcquisitionActionF -> SashaLambdaDSL ActionManagement
-createAVManagement = CreateAVManagement
 
 createCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
 createCAManagement = CreateCAManagement
@@ -266,11 +256,6 @@ createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
 createDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
 createDirectionalContainerStimulusEffect = CreateDirectionalContainerStimulusEffect
 
-createAcquisitionVerbEffect :: AcquisitionVerb -> GID AcquisitionActionF -> SashaLambdaDSL Effect
-createAcquisitionVerbEffect = CreateAcquisitionVerbEffect
-
-createAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL Effect
-createAcquisitionVerbPhraseEffect = CreateAcquisitionVerbPhraseEffect
 
 -- Role-based acquisition effect creation helper functions
 createAgentAcquisitionVerbEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
@@ -297,8 +282,6 @@ createContainerAcquisitionVerbPhraseEffect = CreateContainerAcquisitionVerbPhras
 createLocationAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
 createLocationAcquisitionVerbPhraseEffect = CreateLocationAcquisitionVerbPhraseEffect
 
-createAAManagement :: AcquisitionVerbPhrase -> GID AcquisitionActionF -> SashaLambdaDSL ActionManagement
-createAAManagement = CreateAAManagement
 
 createConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> SashaLambdaDSL Effect
 createConsumptionEffect = CreateConsumptionEffect

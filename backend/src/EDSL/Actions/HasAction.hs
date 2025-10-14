@@ -4,14 +4,13 @@
 module EDSL.Actions.HasAction where
 
 import           Data.Kind                     (Constraint, Type)
-import           Model.Core                    (AcquisitionActionF, AgentAcquisitionActionF,
+import           Model.Core                    (AgentAcquisitionActionF,
                                                 ObjectAcquisitionActionF, ContainerAcquisitionActionF,
                                                 LocationAcquisitionActionF, ConsumptionActionF,
                                                 ContainerAccessActionF, DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF, PosturalActionF,
                                                 SomaticAccessActionF)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
-                                                declareAcquisitionActionGID,
                                                 declareAgentAcquisitionActionGID,
                                                 declareObjectAcquisitionActionGID,
                                                 declareContainerAcquisitionActionGID,
@@ -28,9 +27,6 @@ import           Model.GID                     (GID)
 type HasAction :: Type -> Constraint
 class HasAction actionType where
   declareAction :: actionType -> SashaLambdaDSL (GID actionType)
-
-instance HasAction AcquisitionActionF where
-  declareAction = declareAcquisitionActionGID
 
 -- Role-based acquisition action instances
 instance HasAction AgentAcquisitionActionF where

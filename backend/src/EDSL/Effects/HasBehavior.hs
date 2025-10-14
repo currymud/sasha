@@ -41,8 +41,7 @@ instance MakeBehavior ImplicitStimulusVerb where
 instance MakeBehavior DirectionalStimulusVerb where
   makeBehavior = DSAManagementKey
 
-instance MakeBehavior AcquisitionVerb where
-  makeBehavior = AVManagementKey
+-- Old instance removed (AcquisitionVerb for AcquisitionActionF)
 
 instance MakeBehavior SomaticAccessVerb where
   makeBehavior = SSAManagementKey
@@ -50,8 +49,7 @@ instance MakeBehavior SomaticAccessVerb where
 instance MakeBehavior SimpleAccessVerb where
   makeBehavior = SAConManagementKey
 
-instance MakeBehavior AcquisitionVerbPhrase where
-  makeBehavior = AAManagementKey
+-- Old instance removed (AcquisitionVerbPhrase for AcquisitionActionF)
 
 instance MakeBehavior ContainerAccessVerbPhrase where
   makeBehavior = CONManagementKey

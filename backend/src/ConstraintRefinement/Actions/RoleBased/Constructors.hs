@@ -11,8 +11,8 @@ import GameState (addToInventoryM, getObjectM, getPlayerLocationM, modifySpatial
 import GameState.ActionManagement (processEffectsFromRegistry)
 import Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import Model.Core (AgentAcquisitionActionF(..), ObjectAcquisitionActionF(..), 
-                   ContainerAcquisitionActionF(..), ActionEffectKey(AcquisitionalActionKey, ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey), 
-                   ActionManagement(AVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey), ActionManagementFunctions(ActionManagementFunctions), 
+                   ContainerAcquisitionActionF(..), ActionEffectKey(ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey), 
+                   ActionManagement(ObjectAVManagementKey, ContainerAVManagementKey), ActionManagementFunctions(ActionManagementFunctions), 
                    AcquisitionF, AcquisitionRes(..), SimpleAcquisitionRes(..), CompleteAcquisitionRes(..),
                    CoordinationResult(CoordinationResult, _actionEffectKeys, _computation),
                    GameComputation, GameState(_world), Location(_locationInventory, _objectSemanticMap),
