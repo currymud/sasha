@@ -2,6 +2,7 @@ module ConstraintRefinement.Actions.Player.Get where
 
 import           Control.Monad.Except                             (MonadError (throwError))
 import           Control.Monad.Identity                           (Identity)
+import           Control.Monad.Reader                             (asks)
 import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
 import           Data.Set                                         (Set)
@@ -9,20 +10,27 @@ import qualified Data.Set
 import           Data.Text                                        (pack)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM)
-import           GameState.ActionManagement                       (findAVKey,
+import           GameState.ActionManagement                       (findContainerAVKey,
+                                                                   findObjectAVKey,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.Core                                       (AcquisitionActionF (AcquisitionActionF, CannotAcquireF, CollectedF, LosesObjectF, ObjectNotGettableF),
+import           Model.Core                                       (AcquisitionF,
                                                                    AcquisitionRes (Complete, Simple),
-                                                                   AcquisitionVerbActionMap,
-                                                                   ActionEffectKey (AcquisitionalActionKey),
+                                                                   ActionEffectKey (ContainerAcquisitionalActionKey, ObjectAcquisitionalActionKey),
                                                                    ActionManagementFunctions,
+                                                                   ActionMaps (_containerAcquisitionActionMap, _objectAcquisitionActionMap),
+                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caSupportKey),
+                                                                   Config (_actionMaps),
+                                                                   ContainerAcquisitionActionF (ContainerCannotReleaseF, ContainerLosesObjectF),
+                                                                   ContainerAcquisitionActionMap,
                                                                    CoordinationResult (CoordinationResult),
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_locationInventory, _objectSemanticMap),
                                                                    Object (_objectActionManagement, _shortName),
+                                                                   ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
+                                                                   ObjectAcquisitionActionMap,
                                                                    SearchStrategy,
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey),
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
@@ -32,43 +40,45 @@ import           Model.GID                                        (GID)
 import           Model.Parser.GCase                               (NounKey)
 
 
-getDeniedF :: AcquisitionActionF
-getDeniedF = CannotAcquireF processEffectsFromRegistry
+getDeniedF :: AgentAcquisitionActionF
+getDeniedF = AgentCannotAcquireF processEffectsFromRegistry
 
-getF :: AcquisitionActionF
-getF = AcquisitionActionF getit
+getF :: AgentAcquisitionActionF
+getF = AgentAcquiresF getit
   where
-    getit :: ActionEffectKey
-               -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-               -> (GID Object -> GameComputation Identity AcquisitionActionF)
-               -> AcquisitionRes
-               -> GameComputation Identity ()
-    getit actionEffectKey lookupKeyF lookupActionF ares = do
+    getit :: AcquisitionF
+    getit actionEffectKey ares = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           (oid, cid) <- validateObjectSearch _saObjectKey
-          objectAction <- lookupActionF oid
+          -- Get role-specific action maps
+          objActionMap <- getObjectAcquisitionActionMap
+          conActionMap <- getContainerAcquisitionActionMap
+
+          -- Get action management for lookups
           objActionManagement <- _objectActionManagement <$> getObjectM oid
           conActionManagement <- _objectActionManagement <$> getObjectM cid
-          case (lookupKeyF objActionManagement, lookupKeyF conActionManagement) of
-            (Nothing, _) -> error $ "Object " <> show oid <> " does not have action management."
-            (_, Nothing) -> error $ "Container " <> show cid <> " does not have action management."
-            (Just oKey, Just cKey) ->
-              let objEffectKey = AcquisitionalActionKey oKey
-                  containerEffectKey = AcquisitionalActionKey cKey
-               in case objectAction of
-                (ObjectNotGettableF objectNotGettableF) -> objectNotGettableF objEffectKey
+
+          -- Find role-specific action GIDs
+          case (findObjectAVKey get objActionManagement, findContainerAVKey get conActionManagement) of
+            (Nothing, _) -> error $ "Object " <> show oid <> " does not have object acquisition action."
+            (_, Nothing) -> error $ "Container " <> show cid <> " does not have container acquisition action."
+            (Just oKey, Just cKey) -> do
+              let objEffectKey = ObjectAcquisitionalActionKey oKey
+                  containerEffectKey = ContainerAcquisitionalActionKey cKey
+
+              -- Lookup role-specific actions
+              objectAction <- lookupObjectAcquisitionAction objActionMap oid
+              containerAction <- lookupContainerAcquisitionAction conActionMap cid
+
+              case objectAction of
+                (ObjectNotCollectableF objectNotGettableF) -> objectNotGettableF objEffectKey
                                                        >> processEffectsFromRegistry actionEffectKey
-                (CollectedF objectActionF) -> do
-                  containerAction <- lookupActionF cid
+                (ObjectCollectedF objectActionF) ->
                   case containerAction of
-                    (ObjectNotGettableF cannotGetFromF) -> cannotGetFromF containerEffectKey
+                    (ContainerCannotReleaseF cannotGetFromF) -> cannotGetFromF containerEffectKey
                                                        >> processEffectsFromRegistry actionEffectKey
-                    (LosesObjectF containerActionF) -> finalize actionEffectKey cid oid objectActionF containerActionF
-                    _ -> throwError $ "Container " <> (Data.Text.pack . show) cid <> " does not have a LosesObjectF action."
-                (LosesObjectF _) -> error (("Programmer Error: Object " <> show oid) <> " has a LosesObjectF action, which is invalid for get actions.")
-                (AcquisitionActionF _) -> error (("Programmer Error: Object " <> show oid) <> " has an AcquisitionActionF action, which is invalid for get actions.")
-                (CannotAcquireF _) -> error (("Programmer Error: Object " <> show oid) <> " has a CannotAcquireF action, which is invalid for get actions.")
+                    (ContainerLosesObjectF containerActionF) -> finalize actionEffectKey cid oid objectActionF containerActionF
         Complete (CompleteAcquisitionRes {..}) -> do
           -- Find both objects directly
           objectResult <- findObjectByKey _caObjectKey
@@ -96,38 +106,31 @@ getF = AcquisitionActionF getit
                         "The " <> objName <>
                         " is not on the " <> supportName <> "."
                     else do
-                      -- Now proceed with the standard lookups
-                      objectAction <- lookupActionF oid
+                      -- Get role-specific action maps
+                      objActionMap <- getObjectAcquisitionActionMap
+                      conActionMap <- getContainerAcquisitionActionMap
+                      -- Get action management for lookups
                       objActionManagement <- _objectActionManagement <$> getObjectM oid
                       conActionManagement <- _objectActionManagement <$> getObjectM cid
-                      case (lookupKeyF objActionManagement, lookupKeyF conActionManagement) of
-                        (Nothing, _) -> error $ "Object " <> show oid <> " does not have action management."
-                        (_, Nothing) -> error $ "Container " <> show cid <> " does not have action management."
-                        (Just oKey, Just cKey) ->
-                          let objEffectKey = AcquisitionalActionKey oKey
-                              containerEffectKey = AcquisitionalActionKey cKey
-                           in case objectAction of
-                             (ObjectNotGettableF objectNotGettableF) -> objectNotGettableF objEffectKey
-                                                                    >> processEffectsFromRegistry actionEffectKey
-                             (CollectedF objectActionF) -> do
-                                containerAction <- lookupActionF cid
-                                case containerAction of
-                                    (ObjectNotGettableF cannotGetFromF) -> cannotGetFromF containerEffectKey
-                                                                       >> processEffectsFromRegistry actionEffectKey
-                                    (LosesObjectF containerActionF) ->
-                                      finalize actionEffectKey cid oid objectActionF containerActionF
-                                    (AcquisitionActionF _) -> error $
-                                      "Programmer error. Container " <> show cid <>
-                                      " has an AcquisitionActionF action"
-                                    (CollectedF _) -> error $
-                                      "Programmer error. Container " <> show cid <>
-                                      " has a CollectedF action"
-                             (AcquisitionActionF _) -> error $
-                               "Programmer error. Object " <> show cid <>
-                               " has an AcquisitionActionF action"
-                             (LosesObjectF _) -> error $
-                               "Programmer error. Object " <> show cid <>
-                               " has a LosesObjectF action"
+                      -- Find role-specific action GIDs
+                      case (findObjectAVKey get objActionManagement, findContainerAVKey get conActionManagement) of
+                        (Nothing, _) -> error $ "Object " <> show oid <> " does not have object acquisition action."
+                        (_, Nothing) -> error $ "Container " <> show cid <> " does not have container acquisition action."
+                        (Just oKey, Just cKey) -> do
+                          let objEffectKey = ObjectAcquisitionalActionKey oKey
+                              containerEffectKey = ContainerAcquisitionalActionKey cKey
+                          -- Lookup role-specific actions
+                          objectAction <- lookupObjectAcquisitionAction objActionMap oid
+                          containerAction <- lookupContainerAcquisitionAction conActionMap cid
+                          case objectAction of
+                            (ObjectNotCollectableF objectNotGettableF) -> objectNotGettableF objEffectKey
+                                                                   >> processEffectsFromRegistry actionEffectKey
+                            (ObjectCollectedF objectActionF) ->
+                              case containerAction of
+                                (ContainerCannotReleaseF cannotGetFromF) -> cannotGetFromF containerEffectKey
+                                                                   >> processEffectsFromRegistry actionEffectKey
+                                (ContainerLosesObjectF containerActionF) ->
+                                  finalize actionEffectKey cid oid objectActionF containerActionF
 
           where
             findObjectByKey :: NounKey -> GameComputation Identity (Maybe (GID Object))
@@ -137,8 +140,6 @@ getF = AcquisitionActionF getit
               case Data.Map.Strict.lookup nounKey objectSemanticMap of
                 Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
                 _ -> pure Nothing
---      where
---        ares = parseAcquisitionPhrase avp
 -- | General case: Search global semantic map, verify in location inventory
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
@@ -178,17 +179,35 @@ validateObjectSearch nounKey = do
     Nothing                        -> throwError "You don't see that here."
     Just (objectGID, containerGID) -> pure (objectGID, containerGID)
 
-lookupAcquisitionAction :: AcquisitionVerbActionMap
+lookupObjectAcquisitionAction :: ObjectAcquisitionActionMap
                              -> GID Object
-                             -> GameComputation Identity AcquisitionActionF
-lookupAcquisitionAction actionMap oid = do
+                             -> GameComputation Identity ObjectAcquisitionActionF
+lookupObjectAcquisitionAction actionMap oid = do
   actionMgmt <- _objectActionManagement <$> getObjectM oid
-  case findAVKey get actionMgmt of
+  case findObjectAVKey get actionMgmt of
     Nothing -> throwError $ (Data.Text.pack . show) oid <> " does not have a 'get' action."
     Just actionGID -> do
       case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> throwError $ "No acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
+        Nothing -> throwError $ "No object acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
         Just action -> pure action
+
+lookupContainerAcquisitionAction :: ContainerAcquisitionActionMap
+                                -> GID Object
+                                -> GameComputation Identity ContainerAcquisitionActionF
+lookupContainerAcquisitionAction actionMap cid = do
+  actionMgmt <- _objectActionManagement <$> getObjectM cid
+  case findContainerAVKey get actionMgmt of
+    Nothing -> throwError $ (Data.Text.pack . show) cid <> " does not have a container 'get' action."
+    Just actionGID -> do
+      case Data.Map.Strict.lookup actionGID actionMap of
+        Nothing -> throwError $ "No container acquisition action found for GID: " <> (Data.Text.pack . show) actionGID
+        Just action -> pure action
+
+getObjectAcquisitionActionMap :: GameComputation Identity ObjectAcquisitionActionMap
+getObjectAcquisitionActionMap = asks (_objectAcquisitionActionMap . _actionMaps)
+
+getContainerAcquisitionActionMap :: GameComputation Identity ContainerAcquisitionActionMap
+getContainerAcquisitionActionMap = asks (_containerAcquisitionActionMap . _actionMaps)
 
 finalize :: ActionEffectKey
               -> GID Object

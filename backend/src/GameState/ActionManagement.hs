@@ -10,25 +10,23 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
 import           GameState                     (getInventoryObjectsM,
-                                                getObjectM, getTopLevelInventoryObjectsM,
+                                                getObjectM,
+                                                getTopLevelInventoryObjectsM,
                                                 modifyLocationM,
                                                 modifyNarration, modifyObjectM,
                                                 modifyPlayerM,
                                                 updateActionConsequence)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
-import           Model.Core                    (AcquisitionActionF,
-                                                AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
-                                                ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF,
-                                                ActionEffectKey,
+import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AAManagementKey, AVManagementKey, AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, AgentAAManagementKey, ObjectAAManagementKey, ContainerAAManagementKey, LocationAAManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionManagementOperation (AddAcquisitionVerb, AddAcquisitionVerbPhrase, AddAgentAcquisitionVerb, AddObjectAcquisitionVerb, AddContainerAcquisitionVerb, AddLocationAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddObjectAcquisitionVerbPhrase, AddContainerAcquisitionVerbPhrase, AddLocationAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddPositivePostural, AddSomaticAccess),
+                                                AgentAcquisitionActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
+                                                ContainerAcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
@@ -37,8 +35,10 @@ import           Model.Core                    (AcquisitionActionF,
                                                 GameState (_player, _systemEffectRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
+                                                LocationAcquisitionActionF,
                                                 NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
+                                                ObjectAcquisitionActionF,
                                                 Player (_inventory, _location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 PosturalActionF,
@@ -157,20 +157,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddSomaticAccess verb n
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerb verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (LocationKey lid) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (LocationKey lid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -204,7 +190,6 @@ processEffect (LocationKey _) (FieldUpdateEffect (LocationTitle targetLid newTit
 processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -247,20 +232,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddSomaticAccess verb new
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (ObjectKey oid) (ActionManagementEffect (AddAcquisitionVerb verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (ObjectKey oid) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (ObjectKey oid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -294,7 +265,6 @@ processEffect (ObjectKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -364,7 +334,6 @@ processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddDi
         updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -379,21 +348,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddSoma
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (PlayerKey pk) (ActionManagementEffect (AddAcquisitionVerb verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AVManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AVManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey _) (ActionManagementEffect (AddAcquisitionVerbPhrase phrase newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case AAManagementKey p _ -> p /= phrase; _ -> True) actionSet
-        updatedActions = Data.Set.insert (AAManagementKey phrase newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
--- Role-based acquisition action management effects for PlayerKey
 processEffect (PlayerKey _) (ActionManagementEffect (AddAgentAcquisitionVerb verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -504,7 +458,6 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- NARRATION EFFECTS
 processEffect _ (NarrationEffect narrationComputation) = do
   processNarrationEffect narrationComputation
 
@@ -611,21 +564,6 @@ lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
-lookupAcquisitionPhrase :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-lookupAcquisitionPhrase avp (ActionManagementFunctions actions) =
-  -- First try exact phrase match
-  listToMaybe [gid | AAManagementKey p gid <- Data.Set.toList actions, p == avp]
-    <|>
-  -- Try simplified phrase match (new!)
-  (case avp of
-    AcquisitionVerbPhrase verb objPhrase _ _ ->
-      listToMaybe [gid | AAManagementKey (SimpleAcquisitionVerbPhrase v op) gid <- Data.Set.toList actions,
-                         v == verb && op == objPhrase]
-    _ -> Nothing)
-    <|>
-  -- Then try just the verb
-  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actions, v == simplifyAcquisitionVerbPhrase avp]
-
 simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
 simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
 simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
@@ -646,7 +584,7 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
     listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actions, v == verb]
   NegativePosturalVerbPhrase verb _ ->
     listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actions, v == verb]
--- Convenience builders
+
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
 
@@ -654,11 +592,6 @@ findDSAKey :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID
 findDSAKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
-findAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AcquisitionActionF)
-findAVKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | AVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
-
--- Role-based acquisition action lookup functions
 findAgentAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AgentAcquisitionActionF)
 findAgentAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | AgentAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]

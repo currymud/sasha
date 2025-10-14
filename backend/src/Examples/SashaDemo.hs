@@ -13,28 +13,26 @@ import           EDSL.Effects.EffectAlgebra                              (alongs
 import           EDSL.Effects.HasBehavior                                (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior),
                                                                           makeAgentBehavior,
-                                                                          makeObjectBehavior,
-                                                                          makeContainerBehavior,
                                                                           makeAgentPhraseBehavior,
-                                                                          makeObjectPhraseBehavior,
-                                                                          makeContainerPhraseBehavior)
+                                                                          makeContainerBehavior,
+                                                                          makeContainerPhraseBehavior,
+                                                                          makeObjectBehavior,
+                                                                          makeObjectPhraseBehavior)
 import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
                                                                           MakeEffect (makeEffect),
                                                                           makeAgentEffect,
-                                                                          makeObjectEffect,
-                                                                          makeContainerEffect,
                                                                           makeAgentPhraseEffect,
-                                                                          makeObjectPhraseEffect,
-                                                                          makeContainerPhraseEffect)
+                                                                          makeContainerEffect,
+                                                                          makeContainerPhraseEffect,
+                                                                          makeObjectEffect,
+                                                                          makeObjectPhraseEffect)
 import           Examples.Defaults                                       (defaultLocation,
                                                                           defaultObject,
                                                                           defaultPlayer)
-import           Model.Core                                              (AcquisitionActionF,
+import           Model.Core                                              (ActionEffectKey (..),
                                                                           AgentAcquisitionActionF,
-                                                                          ObjectAcquisitionActionF,
-                                                                          ContainerAcquisitionActionF,
-                                                                          ActionEffectKey (..),
                                                                           ContainerAccessActionF,
+                                                                          ContainerAcquisitionActionF,
                                                                           DirectionalStimulusActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
@@ -43,6 +41,7 @@ import           Model.Core                                              (Acquis
                                                                           Location,
                                                                           NarrationComputation (..),
                                                                           Object,
+                                                                          ObjectAcquisitionActionF,
                                                                           Player,
                                                                           PlayerKey (..),
                                                                           SomaticAccessActionF,
@@ -109,12 +108,12 @@ import           ConstraintRefinement.Actions.Player.Look                (dsvAct
 import           ConstraintRefinement.Actions.Player.Open                (openDeniedF,
                                                                           openEyes,
                                                                           openF)
-import           ConstraintRefinement.Actions.RoleBased.Constructors  (agentGetF,
-                                                                          objectCollectedF,
+import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
+                                                                          agentGetF,
+                                                                          containerCannotReleaseF,
                                                                           containerLosesObjectF,
-                                                                          agentCannotAcquireF,
-                                                                          objectNotCollectableF,
-                                                                          containerCannotReleaseF)
+                                                                          objectCollectedF,
+                                                                          objectNotCollectableF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
 import           GHC.TypeError                                           (ErrorMessage (Text))
@@ -152,16 +151,16 @@ sashaBedroomDemo = do
   notEvenRobeFGID <- declareAction cannotBeSeenF
   getRobeDeniedGID <- declareAction objectNotCollectableF
 
-  -- Use role-based object action for robe being collected  
+  -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
   lookAtPocketGID <- declareAction lookAtF
   openPocketNoReachGID <- declareAction openContainerF
 
   openEyesGID <- declareAction openEyes
-  -- Use role-based agent action for player acquisition denial  
+  -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
   -- Use role-based agent action for player get coordination
-  playerGetFGID <- declareAction agentGetF
+  playerGetFGID <- declareAction getF
   lookFGID <- declareAction lookF
   inventoryFGID <- declareAction defaultInventoryLookF
   dsvEnabledLookGID <- declareAction dsvActionEnabled

@@ -5,27 +5,27 @@ module EDSL.Effects.HasEffect where
 
 import           Data.Kind                     (Constraint, Type)
 import           EDSL.Effects.TypeMappings     (ActionFunctionType)
-import           Model.Core                    (ActionEffectKey, Effect,
+import           Model.Core                    (ActionEffectKey,
                                                 AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
+                                                Effect, Location,
                                                 LocationAcquisitionActionF,
-                                                Location, Object, PlayerKey)
+                                                Object,
+                                                ObjectAcquisitionActionF,
+                                                PlayerKey)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
-                                                createAcquisitionVerbEffect,
-                                                createAcquisitionVerbPhraseEffect,
                                                 createAgentAcquisitionVerbEffect,
-                                                createObjectAcquisitionVerbEffect,
-                                                createContainerAcquisitionVerbEffect,
-                                                createLocationAcquisitionVerbEffect,
                                                 createAgentAcquisitionVerbPhraseEffect,
-                                                createObjectAcquisitionVerbPhraseEffect,
-                                                createContainerAcquisitionVerbPhraseEffect,
-                                                createLocationAcquisitionVerbPhraseEffect,
                                                 createContainerAccessEffect,
                                                 createContainerAccessVerbPhraseEffect,
+                                                createContainerAcquisitionVerbEffect,
+                                                createContainerAcquisitionVerbPhraseEffect,
                                                 createDirectionalStimulusEffect,
                                                 createImplicitStimulusEffect,
+                                                createLocationAcquisitionVerbEffect,
+                                                createLocationAcquisitionVerbPhraseEffect,
+                                                createObjectAcquisitionVerbEffect,
+                                                createObjectAcquisitionVerbPhraseEffect,
                                                 linkEffectToLocation,
                                                 linkEffectToObject,
                                                 linkEffectToPlayer)
@@ -62,14 +62,8 @@ instance MakeEffect ImplicitStimulusVerb where
 instance MakeEffect DirectionalStimulusVerb where
   makeEffect = createDirectionalStimulusEffect
 
-instance MakeEffect AcquisitionVerb where
-  makeEffect = createAcquisitionVerbEffect
-
 instance MakeEffect SimpleAccessVerb where
   makeEffect = createContainerAccessEffect
-
-instance MakeEffect AcquisitionVerbPhrase where
-  makeEffect = createAcquisitionVerbPhraseEffect
 
 instance MakeEffect ContainerAccessVerbPhrase where
   makeEffect = createContainerAccessVerbPhraseEffect
@@ -79,7 +73,7 @@ instance MakeEffect ContainerAccessVerbPhrase where
 makeAgentEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
 makeAgentEffect = createAgentAcquisitionVerbEffect
 
-makeObjectEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect  
+makeObjectEffect :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Effect
 makeObjectEffect = createObjectAcquisitionVerbEffect
 
 makeContainerEffect :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect

@@ -32,7 +32,6 @@ module Model.Core
   , ContainerAccessActionF(..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
-  , AcquisitionActionF(..)
   , AgentAcquisitionActionF(..)
   , ObjectAcquisitionActionF(..)
   , ContainerAcquisitionActionF(..)
@@ -47,7 +46,6 @@ module Model.Core
   , ContainerAccessActionMap
   , SomaticAccessActionMap
   , PosturalActionMap
-  , AcquisitionVerbActionMap
   , AgentAcquisitionActionMap
   , ObjectAcquisitionActionMap
   , ContainerAcquisitionActionMap
@@ -354,8 +352,6 @@ type SearchStrategy = NounKey
 
 type AcquisitionF :: Type
 type AcquisitionF = (ActionEffectKey
-                      -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-                      -> (GID Object -> GameComputation Identity AcquisitionActionF)
                       -> AcquisitionRes
                       -> GameComputation Identity ())
 
@@ -367,27 +363,19 @@ type FinalizeAcquisitionF = ActionEffectKey
                               -> (GID Object -> GameComputation Identity CoordinationResult)
                               -> GameComputation Identity ()
 
-type AcquisitionActionF :: Type
-data AcquisitionActionF
-  = AcquisitionActionF AcquisitionF
-  | CollectedF (GameComputation Identity CoordinationResult)
-  | LosesObjectF (GID Object -> GameComputation Identity CoordinationResult)
-  | ObjectNotGettableF (ActionEffectKey -> GameComputation Identity ())
-  | CannotAcquireF (ActionEffectKey -> GameComputation Identity ())
-
--- Role-based acquisition action types (alongside existing AcquisitionActionF)
+-- Role-based acquisition action types
 type AgentAcquisitionActionF :: Type
 data AgentAcquisitionActionF
   = AgentAcquiresF AcquisitionF  -- Agent coordinates acquisition between object and container
   | AgentCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
 
-type ObjectAcquisitionActionF :: Type  
+type ObjectAcquisitionActionF :: Type
 data ObjectAcquisitionActionF
   = ObjectCollectedF (GameComputation Identity CoordinationResult)  -- Object is collected by agent
   | ObjectNotCollectableF (ActionEffectKey -> GameComputation Identity ())
 
 type ContainerAcquisitionActionF :: Type
-data ContainerAcquisitionActionF  
+data ContainerAcquisitionActionF
   = ContainerLosesObjectF (GID Object -> GameComputation Identity CoordinationResult)  -- Container releases object
   | ContainerCannotReleaseF (ActionEffectKey -> GameComputation Identity ())
 
@@ -448,9 +436,6 @@ type SomaticAccessActionMap = Map (GID SomaticAccessActionF) SomaticAccessAction
 type SomaticStimulusActionMap :: Type
 type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
 
-type AcquisitionVerbActionMap :: Type
-type AcquisitionVerbActionMap = Map (GID AcquisitionActionF) AcquisitionActionF
-
 -- Role-based acquisition action maps
 type AgentAcquisitionActionMap :: Type
 type AgentAcquisitionActionMap = Map (GID AgentAcquisitionActionF) AgentAcquisitionActionF
@@ -477,7 +462,6 @@ data ActionMaps = ActionMaps
   , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
-  , _acquisitionActionMap         :: AcquisitionVerbActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
   , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
   , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
@@ -504,7 +488,6 @@ data ActionEffectKey
   | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
-  | AcquisitionalActionKey (GID AcquisitionActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
@@ -573,8 +556,6 @@ data SystemEffectConfig = SystemEffectConfig
   , _systemEffectManagement :: GameComputation Identity ()
   }
 
--- Registry types
-
 type EffectRegistry :: Type
 type EffectRegistry = Map ActionEffectKey ActionEffectMap
 
@@ -602,10 +583,8 @@ data ActionManagementOperation
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | AddDirectionalContainerStimulus DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
-  | AddAcquisitionVerb AcquisitionVerb (GID AcquisitionActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
-  | AddAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AcquisitionActionF)
   -- Role-based acquisition action management operations
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -626,7 +605,6 @@ data ActionGID
   | DirectionalActionGID (GID DirectionalStimulusActionF)
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
-  | AcquisitionActionGID (GID AcquisitionActionF)
   -- Role-based acquisition action GIDs
   | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
   | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
@@ -643,8 +621,6 @@ data ActionManagement
   | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
-  | AVManagementKey AcquisitionVerb (GID AcquisitionActionF)
-  | AAManagementKey AcquisitionVerbPhrase (GID AcquisitionActionF)
   -- Role-based acquisition action management keys
   | AgentAVManagementKey AcquisitionVerb (GID AgentAcquisitionActionF)
   | ObjectAVManagementKey AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -787,7 +763,7 @@ instance Arbitrary ActionEffectKey where
     , DirectionalStimulusContainerActionKey . GID <$> choose (1, 1000)
     , SomaticAccessActionKey . GID <$> choose (1, 1000)
     , ContainerAccessActionKey . GID <$> choose (1, 1000)
-    , AcquisitionalActionKey . GID <$> choose (1, 1000)
+    , AgentAcquisitionalActionKey . GID <$> choose (1, 1000)
     , ConsumptionActionKey . GID <$> choose (1, 1000)
     , PosturalActionKey . GID <$> choose (1, 1000)
     ]

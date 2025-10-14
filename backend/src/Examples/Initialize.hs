@@ -8,7 +8,7 @@ import           Evaluators.Player.General (eval)
 import           Examples.Defaults         (defaultNarration, defaultPlayer,
                                             defaultWorld)
 import           Examples.SashaDemo        (sashaBedroomDemo)
-import           Model.Core                (ActionMaps (ActionMaps, _acquisitionActionMap, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+import           Model.Core                (ActionMaps (ActionMaps, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                             Config (Config, _actionMaps),
                                             Evaluator (Evaluator),
                                             GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -43,7 +43,6 @@ config = Config { _actionMaps = forcedMaps }
       , _directionalStimulusActionMap = Data.Map.Strict.keys (_directionalStimulusActionMap maps) `deepseq` _directionalStimulusActionMap maps
       , _directionalStimulusContainerActionMap = Data.Map.Strict.keys (_directionalStimulusContainerActionMap maps) `deepseq` _directionalStimulusContainerActionMap maps
       , _somaticStimulusActionMap = Data.Map.Strict.keys (_somaticStimulusActionMap maps) `deepseq` _somaticStimulusActionMap maps
-      , _acquisitionActionMap = Data.Map.Strict.keys (_acquisitionActionMap maps) `deepseq` _acquisitionActionMap maps
       , _agentAcquisitionActionMap = Data.Map.Strict.keys (_agentAcquisitionActionMap maps) `deepseq` _agentAcquisitionActionMap maps
       , _objectAcquisitionActionMap = Data.Map.Strict.keys (_objectAcquisitionActionMap maps) `deepseq` _objectAcquisitionActionMap maps
       , _containerAcquisitionActionMap = Data.Map.Strict.keys (_containerAcquisitionActionMap maps) `deepseq` _containerAcquisitionActionMap maps
