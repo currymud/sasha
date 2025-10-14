@@ -614,6 +614,9 @@ type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
+  | AddLocationDirectionalStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
+  | AddObjectDirectionalStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | AddDirectionalContainerStimulus DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
@@ -647,10 +650,13 @@ data ActionGID
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
-
+-- AddAgentAcquisitionVerb
 type ActionManagement :: Type
 data ActionManagement
   = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AgentDSAManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
+  | LocationDSAManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
+  | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)

@@ -74,31 +74,13 @@ manageDirectionalStimulusProcess dsv dsnp = do
           actionFunc actionEffectKey oid lid lookupActionF
   where
     lookupActionF = lookupDirectionalStimulus dsv
-{-
- type PlayerDirectionalStimulusAction :: Type
-type PlayerDirectionalStimulusAction
-  = ActionEffectKey
-      -> GID Object
-      -> GID Location
-      -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF))
-      -> GameComputation Identity ()
--}
---      containerGID <- validateContainerLook cp
-            {-
-type DirectionalStimulusActionF :: Type
-data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF (ActionEffectKey -> DirectionalStimulusVerb -> DirectionalStimulusNounPhrase -> GameComputation Identity ())
-  | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
-  | PlayerCannotSeeF (ActionEffectKey -> (GameComputation Identity ()))
-  | ObjectCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
-
-type PlayerDirectionalStimulusContainerAction :: Type
-type PlayerDirectionalStimulusContainerAction
-       = ActionEffectKey
-           -> GID Object
-           -> GID Location
-           -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusContainerActionF))
-           -> GameComputation Identity ()
+      {-
+manageDirectionalStimulusProcess' :: DirectionalStimulusVerb
+                                      -> DirectionalStimulusNounPhrase
+                                      -> GameComputation Identity ()
+manageDirectionalStimulusProcess' dsv dsnp = do
+  availableActions <- _playerActions <$> getPlayerM
+  case lookupActionF availableActions of
 -}
 manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb
                                                -> ContainerPhrase
