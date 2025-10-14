@@ -66,11 +66,7 @@ manageAcquisitionProcess avp = do
           case agentAction of
             AgentAcquiresF acquisitionF -> do
               -- Type-safe agent acquisition - no programmer errors possible here!
-              acquisitionF
-                actionEffectKey
-                lookupActionF
-                (lookupRoleBasedAcquisitionAction avp)
-                arRes
+              acquisitionF actionEffectKey arRes
             AgentCannotAcquireF actionF -> actionF actionEffectKey
         Nothing -> 
           -- Agent action not found in role-based map

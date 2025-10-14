@@ -47,7 +47,7 @@ getF :: AgentAcquisitionActionF
 getF = AgentAcquiresF getit
   where
     getit :: AcquisitionF
-    getit actionEffectKey lookupKeyF lookupActionF ares = do
+    getit actionEffectKey ares = do
       case ares of
         Simple (SimpleAcquisitionRes {..}) -> do
           (oid, cid) <- validateObjectSearch _saObjectKey

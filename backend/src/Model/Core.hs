@@ -354,8 +354,6 @@ type SearchStrategy = NounKey
 
 type AcquisitionF :: Type
 type AcquisitionF = (ActionEffectKey
-                      -> (ActionManagementFunctions -> Maybe (GID AcquisitionActionF))
-                      -> (GID Object -> GameComputation Identity AcquisitionActionF)
                       -> AcquisitionRes
                       -> GameComputation Identity ())
 
