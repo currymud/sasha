@@ -28,6 +28,9 @@ module Model.Core
     -- * Action Function Types
   , ImplicitStimulusActionF(..)
   , DirectionalStimulusActionF(..)
+  , AgentDirectionalStimulusActionF(..)
+  , ObjectDirectionalStimulusActionF(..)
+  , LocationDirectionalStimulusActionF(..)
   , DirectionalStimulusContainerActionF(..)
   , ContainerAccessActionF(..)
   , SomaticAccessActionF(..)
@@ -41,6 +44,9 @@ module Model.Core
   , ActionMaps(..)
   , ActionEffectMap(..)
   , ImplicitStimulusActionMap
+  , AgentDirectionalStimulusActionMap
+  , LocationDirectionalStimulusActionMap
+  , ObjectDirectionalStimulusActionMap
   , DirectionalStimulusActionMap
   , DirectionalStimulusContainerActionMap
   , ContainerAccessActionMap
@@ -216,6 +222,7 @@ data ImplicitStimulusActionF
   = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
+
 type PlayerDirectionalStimulusAction :: Type
 type PlayerDirectionalStimulusAction
   = ActionEffectKey
@@ -230,6 +237,21 @@ data DirectionalStimulusActionF
   | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | PlayerCannotSeeF (ActionEffectKey -> (GameComputation Identity ()))
   | ObjectCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
+
+type AgentDirectionalStimulusActionF :: Type
+data AgentDirectionalStimulusActionF
+  = AgentCanLookAt PlayerDirectionalStimulusAction
+  | AgentCannotLookAt (ActionEffectKey -> GameComputation Identity ())
+
+type ObjectDirectionalStimulusActionF :: Type
+data ObjectDirectionalStimulusActionF
+  = ObjectCanBeSeenF (ActionEffectKey -> GameComputation Identity ())
+  | ObjectCannotBeSeenF' (ActionEffectKey -> GameComputation Identity ())
+
+type LocationDirectionalStimulusActionF :: Type
+data LocationDirectionalStimulusActionF
+  = LocationCanBeSeenF (ActionEffectKey -> GameComputation Identity ())
+  | LocationCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
 
 type PlayerDirectionalStimulusContainerAction :: Type
 type PlayerDirectionalStimulusContainerAction
@@ -449,6 +471,14 @@ type ContainerAcquisitionActionMap = Map (GID ContainerAcquisitionActionF) Conta
 type LocationAcquisitionActionMap :: Type
 type LocationAcquisitionActionMap = Map (GID LocationAcquisitionActionF) LocationAcquisitionActionF
 
+type AgentDirectionalStimulusActionMap :: Type
+type AgentDirectionalStimulusActionMap = Map (GID AgentDirectionalStimulusActionF) AgentDirectionalStimulusActionF
+
+type LocationDirectionalStimulusActionMap :: Type
+type LocationDirectionalStimulusActionMap = Map (GID LocationDirectionalStimulusActionF) LocationDirectionalStimulusActionF
+
+type ObjectDirectionalStimulusActionMap :: Type
+type ObjectDirectionalStimulusActionMap = Map (GID ObjectDirectionalStimulusActionF) ObjectDirectionalStimulusActionF
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
@@ -466,6 +496,9 @@ data ActionMaps = ActionMaps
   , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
   , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
   , _locationAcquisitionActionMap :: LocationAcquisitionActionMap
+  , _agentDirectionalStimulusActionMap :: AgentDirectionalStimulusActionMap
+  , _locationDirectionalStimulusActionMap :: LocationDirectionalStimulusActionMap
+  , _objectDirectionalStimulusActionMap :: ObjectDirectionalStimulusActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
   , _posturalActionMap            :: PosturalActionMap
   }
