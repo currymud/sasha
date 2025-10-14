@@ -5,12 +5,15 @@
 module EDSL.Effects.HasBehavior where
 
 import           Data.Kind                     (Constraint, Type)
-import           Model.Core                    (ActionManagement (..), 
+import           EDSL.Effects.TypeMappings     (ActionFunctionType)
+import           Model.Core                    (ActionManagement (..),
                                                 AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
+                                                Location,
                                                 LocationAcquisitionActionF,
-                                                Location, Object, Player)
+                                                Object,
+                                                ObjectAcquisitionActionF,
+                                                Player)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 withLocationBehavior,
                                                 withObjectBehavior,
@@ -23,7 +26,6 @@ import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
                                                 ContainerAccessVerbPhrase)
-import           EDSL.Effects.TypeMappings            (ActionFunctionType)
 
 -- | Class for creating ActionManagement with type-safe verb-to-GID mapping
 type MakeBehavior :: Type -> Constraint
@@ -41,15 +43,11 @@ instance MakeBehavior ImplicitStimulusVerb where
 instance MakeBehavior DirectionalStimulusVerb where
   makeBehavior = DSAManagementKey
 
--- Old instance removed (AcquisitionVerb for AcquisitionActionF)
-
 instance MakeBehavior SomaticAccessVerb where
   makeBehavior = SSAManagementKey
 
 instance MakeBehavior SimpleAccessVerb where
   makeBehavior = SAConManagementKey
-
--- Old instance removed (AcquisitionVerbPhrase for AcquisitionActionF)
 
 instance MakeBehavior ContainerAccessVerbPhrase where
   makeBehavior = CONManagementKey
@@ -68,7 +66,7 @@ instance HasBehavior Player where
 makeAgentBehavior :: AcquisitionVerb -> GID AgentAcquisitionActionF -> ActionManagement
 makeAgentBehavior = AgentAVManagementKey
 
-makeObjectBehavior :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> ActionManagement  
+makeObjectBehavior :: AcquisitionVerb -> GID ObjectAcquisitionActionF -> ActionManagement
 makeObjectBehavior = ObjectAVManagementKey
 
 makeContainerBehavior :: AcquisitionVerb -> GID ContainerAcquisitionActionF -> ActionManagement

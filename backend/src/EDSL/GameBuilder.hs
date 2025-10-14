@@ -33,15 +33,14 @@ import qualified Data.Set                                                       
                                                                                    union)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
-import           Model.Core                                                       (TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
+import           Model.Core                                                       (ActionEffectKey (AgentAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, ContainerAcquisitionalActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, LocationAcquisitionalActionKey, ObjectAcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    ActionEffectMap (ActionEffectMap),
-                                                                                   ActionGID (AgentAcquisitionActionGID, ObjectAcquisitionActionGID, ContainerAcquisitionActionGID, LocationAcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                                   ActionManagement (AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, AgentAAManagementKey, ObjectAAManagementKey, ContainerAAManagementKey, LocationAAManagementKey, CAManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                                                   ActionGID (AgentAcquisitionActionGID, ConsumptionActionGID, ContainerAccessActionGID, ContainerAcquisitionActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, LocationAcquisitionActionGID, ObjectAcquisitionActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AgentAAManagementKey, AgentAVManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddObjectAcquisitionVerb, AddContainerAcquisitionVerb, AddLocationAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddObjectAcquisitionVerbPhrase, AddContainerAcquisitionVerbPhrase, AddLocationAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
-                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _containerAcquisitionActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _locationAcquisitionActionMap, _objectAcquisitionActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
-                                                                                   ActionEffectKey (AgentAcquisitionalActionKey, ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey, LocationAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
                                                                                    Location (_locationActionManagement, _locationInventory, _objectSemanticMap, _title),
@@ -49,6 +48,7 @@ import           Model.Core                                                     
                                                                                    Object (_description, _descriptives, _objectActionManagement, _shortName),
                                                                                    Player (_location, _playerActions),
                                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
+                                                                                   TargetEffectKey (LocationKey, ObjectKey, PlayerKey),
                                                                                    TriggerRegistry (TriggerRegistry, _unTriggerRegistry),
                                                                                    World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap))
 import           Model.Core.Mappings                                              (GIDToDataMap (GIDToDataMap, _getGIDToDataMap))
@@ -554,15 +554,15 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
   case Data.Map.Strict.lookup locGID currentLocationMap of
     Nothing -> throwError (InvalidLocationGID locGID "Location not registered")
     Just loc -> do
-      let -- Update old location semantic map
+      let
           currentSemanticMap = _objectSemanticMap loc
           currentObjects = Data.Map.Strict.findWithDefault Data.Set.empty nounKey currentSemanticMap
           updatedObjects = Data.Set.insert objGID currentObjects
           updatedSemanticMap = Data.Map.Strict.insert nounKey updatedObjects currentSemanticMap
-          -- Update new location inventory
+
           currentInventory = _locationInventory loc
           updatedInventory = Data.Set.insert objGID currentInventory
-          -- Update location with both fields
+
           updatedLoc = loc { _objectSemanticMap = updatedSemanticMap
                            , _locationInventory = updatedInventory }
           updatedLocationMap = Data.Map.Strict.insert locGID updatedLoc currentLocationMap
@@ -579,8 +579,6 @@ interpretDSL (RegisterObjectToLocation locGID objGID nounKey) = do
       put state { _gameState = updatedGameState }
 
 interpretDSL DisplayVisibleObjects = pure youSeeM
-
-
 
 interpretDSL (CreateConsumptionEffect verb objGID actionGID) = do
   pure (ActionManagementEffect (AddConsumption verb objGID actionGID) (ConsumptionActionGID actionGID))
@@ -697,9 +695,6 @@ interpretDSL (WithLocationBehavior loc actionMgmt) = do
       updatedLoc = loc { _locationActionManagement = ActionManagementFunctions updatedSet }
   pure updatedLoc
 
--- DSL Field Setter Implementations for Step 8
--- Add these to the interpretDSL function in GameStateBuilder.hs
-
 -- Object field setters
 interpretDSL (WithShortName text obj) = do
   let updatedObj = obj { _shortName = text }
@@ -772,4 +767,3 @@ generateLocationGID = do
   let newGID = GID (_nextLocationGID state)
   put state { _nextLocationGID = _nextLocationGID state + 1 }
   pure newGID
-

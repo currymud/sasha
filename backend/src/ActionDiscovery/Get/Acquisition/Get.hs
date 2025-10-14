@@ -15,26 +15,26 @@ import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM,
                                                                    getPlayerM,
                                                                    parseAcquisitionPhrase)
-import           GameState.ActionManagement                       (findAgentAVKey,
-                                                                   findAgentAAKey,
-                                                                   findObjectAVKey,
+import           GameState.ActionManagement                       (findAgentAAKey,
+                                                                   findAgentAVKey,
                                                                    findContainerAVKey,
+                                                                   findObjectAVKey,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.Core                                       (AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
-                                                                   ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
-                                                                   ContainerAcquisitionActionF (ContainerLosesObjectF, ContainerCannotReleaseF),
+import           Model.Core                                       (ActionEffectKey (AgentAcquisitionalActionKey),
+                                                                   ActionMaps (_agentAcquisitionActionMap, _containerAcquisitionActionMap, _objectAcquisitionActionMap),
+                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
                                                                    AgentAcquisitionActionMap,
-                                                                   ObjectAcquisitionActionMap,
-                                                                   ContainerAcquisitionActionMap,
-                                                                   ActionEffectKey (AgentAcquisitionalActionKey),
-                                                                   ActionMaps (_agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap),
                                                                    Config (_actionMaps),
+                                                                   ContainerAcquisitionActionF (ContainerCannotReleaseF, ContainerLosesObjectF),
+                                                                   ContainerAcquisitionActionMap,
                                                                    CoordinationResult (CoordinationResult),
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_locationInventory, _objectSemanticMap),
                                                                    Object (_objectActionManagement),
+                                                                   ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
+                                                                   ObjectAcquisitionActionMap,
                                                                    Player (_playerActions),
                                                                    SearchStrategy,
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
@@ -50,9 +50,10 @@ import           Model.Parser.Composites.Verbs                    (AcquisitionVe
 manageAcquisitionProcess :: AcquisitionVerbPhrase -> GameComputation Identity ()
 manageAcquisitionProcess avp = do
   availableActions <- _playerActions <$> getPlayerM
-  
+
   -- Try to find a role-based agent action - first by verb phrase, then by verb
-  let agentGIDMaybe = findAgentAAKey avp availableActions <|> findAgentAVKey get availableActions
+  let agentGIDMaybe = findAgentAAKey avp availableActions
+                        <|> findAgentAVKey get availableActions
   case agentGIDMaybe of
     Just agentGID -> do
       -- Use the role-based agent action map
@@ -66,19 +67,19 @@ manageAcquisitionProcess avp = do
               -- Type-safe agent acquisition - no programmer errors possible here!
               acquisitionF actionEffectKey arRes
             AgentCannotAcquireF actionF -> actionF actionEffectKey
-        Nothing -> 
+        Nothing ->
           -- Agent action not found in role-based map
-          throwError "No agent acquisition action found for this action."
-    Nothing -> 
+          error "No agent acquisition action found for this action."
+    Nothing ->
       -- No role-based agent action found
-      throwError "No agent acquisition action available for this action."
+      error "No agent acquisition action available for this action."
   where
     arRes = parseAcquisitionPhrase avp
 
 -- | Role-based acquisition action lookup - coordinates object and container actions
 -- This function is no longer needed since we removed AcquisitionActionF
--- lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase 
---                                 -> GID Object 
+-- lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase
+--                                 -> GID Object
 --                                 -> GameComputation Identity AcquisitionActionF
 -- This function is no longer needed since we removed AcquisitionActionF
 {-

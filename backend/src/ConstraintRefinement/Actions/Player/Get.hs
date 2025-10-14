@@ -2,35 +2,35 @@ module ConstraintRefinement.Actions.Player.Get where
 
 import           Control.Monad.Except                             (MonadError (throwError))
 import           Control.Monad.Identity                           (Identity)
-import           Control.Monad.State                              (gets)
 import           Control.Monad.Reader                             (asks)
+import           Control.Monad.State                              (gets)
 import qualified Data.Map.Strict
 import           Data.Set                                         (Set)
 import qualified Data.Set
 import           Data.Text                                        (pack)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM)
-import           GameState.ActionManagement                       (findObjectAVKey,
-                                                                   findContainerAVKey,
+import           GameState.ActionManagement                       (findContainerAVKey,
+                                                                   findObjectAVKey,
                                                                    processEffectsFromRegistry)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
-import           Model.Core                                       (ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
-                                                                   ContainerAcquisitionActionF (ContainerLosesObjectF, ContainerCannotReleaseF),
-                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
-                                                                   AcquisitionF,
+import           Model.Core                                       (AcquisitionF,
                                                                    AcquisitionRes (Complete, Simple),
-                                                                   ObjectAcquisitionActionMap,
-                                                                   ContainerAcquisitionActionMap,
-                                                                   ActionEffectKey (ObjectAcquisitionalActionKey, ContainerAcquisitionalActionKey),
+                                                                   ActionEffectKey (ContainerAcquisitionalActionKey, ObjectAcquisitionalActionKey),
                                                                    ActionManagementFunctions,
-                                                                   ActionMaps (_objectAcquisitionActionMap, _containerAcquisitionActionMap),
-                                                                   Config (_actionMaps),
+                                                                   ActionMaps (_containerAcquisitionActionMap, _objectAcquisitionActionMap),
+                                                                   AgentAcquisitionActionF (AgentAcquiresF, AgentCannotAcquireF),
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes, _caObjectKey, _caSupportKey),
+                                                                   Config (_actionMaps),
+                                                                   ContainerAcquisitionActionF (ContainerCannotReleaseF, ContainerLosesObjectF),
+                                                                   ContainerAcquisitionActionMap,
                                                                    CoordinationResult (CoordinationResult),
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_locationInventory, _objectSemanticMap),
                                                                    Object (_objectActionManagement, _shortName),
+                                                                   ObjectAcquisitionActionF (ObjectCollectedF, ObjectNotCollectableF),
+                                                                   ObjectAcquisitionActionMap,
                                                                    SearchStrategy,
                                                                    SimpleAcquisitionRes (SimpleAcquisitionRes, _saObjectKey),
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
@@ -54,11 +54,11 @@ getF = AgentAcquiresF getit
           -- Get role-specific action maps
           objActionMap <- getObjectAcquisitionActionMap
           conActionMap <- getContainerAcquisitionActionMap
-          
+
           -- Get action management for lookups
           objActionManagement <- _objectActionManagement <$> getObjectM oid
           conActionManagement <- _objectActionManagement <$> getObjectM cid
-          
+
           -- Find role-specific action GIDs
           case (findObjectAVKey get objActionManagement, findContainerAVKey get conActionManagement) of
             (Nothing, _) -> error $ "Object " <> show oid <> " does not have object acquisition action."
@@ -66,15 +66,15 @@ getF = AgentAcquiresF getit
             (Just oKey, Just cKey) -> do
               let objEffectKey = ObjectAcquisitionalActionKey oKey
                   containerEffectKey = ContainerAcquisitionalActionKey cKey
-              
+
               -- Lookup role-specific actions
               objectAction <- lookupObjectAcquisitionAction objActionMap oid
               containerAction <- lookupContainerAcquisitionAction conActionMap cid
-              
+
               case objectAction of
                 (ObjectNotCollectableF objectNotGettableF) -> objectNotGettableF objEffectKey
                                                        >> processEffectsFromRegistry actionEffectKey
-                (ObjectCollectedF objectActionF) -> 
+                (ObjectCollectedF objectActionF) ->
                   case containerAction of
                     (ContainerCannotReleaseF cannotGetFromF) -> cannotGetFromF containerEffectKey
                                                        >> processEffectsFromRegistry actionEffectKey
@@ -109,11 +109,9 @@ getF = AgentAcquiresF getit
                       -- Get role-specific action maps
                       objActionMap <- getObjectAcquisitionActionMap
                       conActionMap <- getContainerAcquisitionActionMap
-                      
                       -- Get action management for lookups
                       objActionManagement <- _objectActionManagement <$> getObjectM oid
                       conActionManagement <- _objectActionManagement <$> getObjectM cid
-                      
                       -- Find role-specific action GIDs
                       case (findObjectAVKey get objActionManagement, findContainerAVKey get conActionManagement) of
                         (Nothing, _) -> error $ "Object " <> show oid <> " does not have object acquisition action."
@@ -121,15 +119,13 @@ getF = AgentAcquiresF getit
                         (Just oKey, Just cKey) -> do
                           let objEffectKey = ObjectAcquisitionalActionKey oKey
                               containerEffectKey = ContainerAcquisitionalActionKey cKey
-                          
                           -- Lookup role-specific actions
                           objectAction <- lookupObjectAcquisitionAction objActionMap oid
                           containerAction <- lookupContainerAcquisitionAction conActionMap cid
-                          
                           case objectAction of
                             (ObjectNotCollectableF objectNotGettableF) -> objectNotGettableF objEffectKey
                                                                    >> processEffectsFromRegistry actionEffectKey
-                            (ObjectCollectedF objectActionF) -> 
+                            (ObjectCollectedF objectActionF) ->
                               case containerAction of
                                 (ContainerCannotReleaseF cannotGetFromF) -> cannotGetFromF containerEffectKey
                                                                    >> processEffectsFromRegistry actionEffectKey
@@ -144,8 +140,6 @@ getF = AgentAcquiresF getit
               case Data.Map.Strict.lookup nounKey objectSemanticMap of
                 Just objSet | not (Data.Set.null objSet) -> pure $ Just (Data.Set.elemAt 0 objSet)
                 _ -> pure Nothing
---      where
---        ares = parseAcquisitionPhrase avp
 -- | General case: Search global semantic map, verify in location inventory
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do

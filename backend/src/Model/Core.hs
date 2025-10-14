@@ -369,13 +369,13 @@ data AgentAcquisitionActionF
   = AgentAcquiresF AcquisitionF  -- Agent coordinates acquisition between object and container
   | AgentCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
 
-type ObjectAcquisitionActionF :: Type  
+type ObjectAcquisitionActionF :: Type
 data ObjectAcquisitionActionF
   = ObjectCollectedF (GameComputation Identity CoordinationResult)  -- Object is collected by agent
   | ObjectNotCollectableF (ActionEffectKey -> GameComputation Identity ())
 
 type ContainerAcquisitionActionF :: Type
-data ContainerAcquisitionActionF  
+data ContainerAcquisitionActionF
   = ContainerLosesObjectF (GID Object -> GameComputation Identity CoordinationResult)  -- Container releases object
   | ContainerCannotReleaseF (ActionEffectKey -> GameComputation Identity ())
 
@@ -555,8 +555,6 @@ data SystemEffectConfig = SystemEffectConfig
   { _systemEffect           :: SystemEffect
   , _systemEffectManagement :: GameComputation Identity ()
   }
-
--- Registry types
 
 type EffectRegistry :: Type
 type EffectRegistry = Map ActionEffectKey ActionEffectMap

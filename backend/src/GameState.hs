@@ -84,13 +84,12 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
                                                 SpatialRelationship (Contains, Inventory, Supports),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 TargetEffectKey (ObjectKey),
-                                                World (World, _globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
+                                                World (_globalSemanticMap, _locationMap, _objectMap, _perceptionMap, _spatialRelationshipMap),
                                                 _objectSemanticMap)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, Surface)
-import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
-                                                ImplicitStimulusVerb,
+import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb,
                                                 NegativePosturalVerb,
                                                 PositivePosturalVerb,
                                                 SimpleAccessVerb)
@@ -111,7 +110,6 @@ import           Model.Parser.GCase            (NounKey (ConsumableNounKey, Cont
 getDescriptionM :: GID Object -> GameComputation Identity Text
 getDescriptionM oid = do
   _description <$> getObjectM oid
-
 
 parseAcquisitionPhrase :: AcquisitionVerbPhrase -> AcquisitionRes
 parseAcquisitionPhrase avp =  case avp of
@@ -208,8 +206,6 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       NounPhrase _ container                 -> ContainerKey container
       DescriptiveNounPhrase _ container      -> ContainerKey container
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
--- GameState.hs - Updated effect processing functions
-
 
 processSimpleContainerAccessEffect :: SimpleAccessVerb
                          -> GID ContainerAccessActionF
@@ -466,9 +462,6 @@ modifyWorldM worldF = do
   let updatedWorld = worldF currentWorld
   modify' (\gs -> gs { _world = updatedWorld })
 
--- Additional utility functions for common operations
-
--- Add an object to a location's semantic map
 addObjectToLocationSemanticMapM :: GID Location
                                 -> NounKey
                                 -> GID Object
@@ -481,7 +474,6 @@ addObjectToLocationSemanticMapM lid nounKey oid =
         updatedMap = Data.Map.Strict.insert nounKey updatedSet currentMap
     in loc { _objectSemanticMap = updatedMap }
 
--- Remove an object from a location's semantic map
 removeObjectFromLocationSemanticMapM :: GID Location
                                      -> NounKey
                                      -> GID Object
@@ -496,7 +488,6 @@ removeObjectFromLocationSemanticMapM lid nounKey oid =
                     else Data.Map.Strict.insert nounKey updatedSet currentMap
     in loc { _objectSemanticMap = updatedMap }
 
--- Add an object to a location's inventory
 addObjectToLocationInventory :: GID Location
                             -> GID Object
                             -> GameComputation Identity ()
@@ -506,7 +497,6 @@ addObjectToLocationInventory lid oid =
         updatedInventory = Data.Set.insert oid currentInventory
     in loc { _locationInventory = updatedInventory }
 
--- Remove an object from a location's inventory
 removeObjectFromLocationInventory :: GID Location
                                  -> GID Object
                                  -> GameComputation Identity ()
@@ -516,7 +506,6 @@ removeObjectFromLocationInventory lid oid =
         updatedInventory = Data.Set.delete oid currentInventory
     in loc { _locationInventory = updatedInventory }
 
--- Add an object to the global semantic map
 addObjectToGlobalSemanticMap :: NounKey
                              -> GID Object
                              -> GameComputation Identity ()
@@ -528,7 +517,6 @@ addObjectToGlobalSemanticMap nounKey oid =
         updatedMap = Data.Map.Strict.insert nounKey updatedSet currentMap
     in world { _globalSemanticMap = updatedMap }
 
--- Remove an object from the global semantic map
 removeObjectFromGlobalSemanticMap :: NounKey
                                   -> GID Object
                                   -> GameComputation Identity ()
@@ -559,40 +547,30 @@ addToInventoryM oid = do
   modifyPlayerM $ \p -> p { _inventory = Data.Set.insert oid inventory }
   modifySpatialRelationshipsForObjectM oid (Data.Set.insert Inventory)
 
--- Remove object from inventory
 removeFromInventoryM :: GID Object -> GameComputation Identity ()
 removeFromInventoryM oid = do
   modifySpatialRelationshipsForObjectM oid (Data.Set.delete Inventory)
 
--- | Add an object and all its contained/supported objects to inventory
 addToInventoryWithHierarchy :: GID Object -> GameComputation Identity ()
 addToInventoryWithHierarchy oid = do
-  -- Get all objects that should move with this object
   hierarchyObjects <- getObjectHierarchy oid
-  -- Add all objects to player inventory
   player <- getPlayerM
   let currentInventory = _inventory player
       updatedInventory = Data.Set.union currentInventory hierarchyObjects
   modifyPlayerM $ \p -> p { _inventory = updatedInventory }
-  -- Update spatial relationships for all objects
   mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.insert Inventory))
         (Data.Set.toList hierarchyObjects)
 
--- | Remove an object and all its contained/supported objects from inventory
 removeFromInventoryWithHierarchy :: GID Object -> GameComputation Identity ()
 removeFromInventoryWithHierarchy oid = do
-  -- Get all objects that should move with this object
   hierarchyObjects <- getObjectHierarchy oid
-  -- Remove all objects from player inventory
   player <- getPlayerM
   let currentInventory = _inventory player
       updatedInventory = Data.Set.difference currentInventory hierarchyObjects
   modifyPlayerM $ \p -> p { _inventory = updatedInventory }
-  -- Update spatial relationships for all objects
   mapM_ (\objId -> modifySpatialRelationshipsForObjectM objId (Data.Set.delete Inventory))
         (Data.Set.toList hierarchyObjects)
 
--- | Get an object and all objects contained within it or supported by it (recursively)
 getObjectHierarchy :: GID Object -> GameComputation Identity (Set (GID Object))
 getObjectHierarchy oid = do
   world <- getWorldM
@@ -617,22 +595,16 @@ getObjectHierarchy oid = do
                   newObjectsToProcess = Data.Set.difference childObjects newProcessed
               collectHierarchy (Data.Set.union remainingToProcess newObjectsToProcess) spatialMap newProcessed
 
--- | Add an object and all its contained/supported objects to a location's inventory
 addObjectToLocationInventoryWithHierarchy :: GID Location
                                           -> GID Object
                                           -> GameComputation Identity ()
 addObjectToLocationInventoryWithHierarchy lid oid = do
-  -- Get all objects that should move with this object
   hierarchyObjects <- getObjectHierarchy oid
-  -- Add all objects to location inventory
   mapM_ (addObjectToLocationInventory lid) (Data.Set.toList hierarchyObjects)
 
--- | Remove an object and all its contained/supported objects from a location's inventory
 removeObjectFromLocationInventoryWithHierarchy :: GID Location
                                                -> GID Object
                                                -> GameComputation Identity ()
 removeObjectFromLocationInventoryWithHierarchy lid oid = do
-  -- Get all objects that should move with this object
   hierarchyObjects <- getObjectHierarchy oid
-  -- Remove all objects from location inventory
   mapM_ (removeObjectFromLocationInventory lid) (Data.Set.toList hierarchyObjects)

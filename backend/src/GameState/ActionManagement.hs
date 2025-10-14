@@ -10,24 +10,23 @@ import           Data.Set                      (Set)
 import qualified Data.Set
 import           Data.Text                     (Text, intercalate)
 import           GameState                     (getInventoryObjectsM,
-                                                getObjectM, getTopLevelInventoryObjectsM,
+                                                getObjectM,
+                                                getTopLevelInventoryObjectsM,
                                                 modifyLocationM,
                                                 modifyNarration, modifyObjectM,
                                                 modifyPlayerM,
                                                 updateActionConsequence)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
-import           Model.Core                    (AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
-                                                ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF,
-                                                ActionEffectKey,
+import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAVManagementKey, ObjectAVManagementKey, ContainerAVManagementKey, LocationAVManagementKey, AgentAAManagementKey, ObjectAAManagementKey, ContainerAAManagementKey, LocationAAManagementKey, CAManagementKey, CONManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionManagementOperation (AddAgentAcquisitionVerb, AddObjectAcquisitionVerb, AddContainerAcquisitionVerb, AddLocationAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddObjectAcquisitionVerbPhrase, AddContainerAcquisitionVerbPhrase, AddLocationAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddNegativePostural, AddPositivePostural, AddSomaticAccess),
+                                                ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddPositivePostural, AddSomaticAccess),
+                                                AgentAcquisitionActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
+                                                ContainerAcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
@@ -36,8 +35,10 @@ import           Model.Core                    (AgentAcquisitionActionF,
                                                 GameState (_player, _systemEffectRegistry, _world),
                                                 ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
+                                                LocationAcquisitionActionF,
                                                 NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
+                                                ObjectAcquisitionActionF,
                                                 Player (_inventory, _location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 PosturalActionF,
@@ -156,8 +157,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddSomaticAccess verb n
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
--- Old AcquisitionActionF handlers removed
-
 processEffect (LocationKey lid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -191,7 +190,6 @@ processEffect (LocationKey _) (FieldUpdateEffect (LocationTitle targetLid newTit
 processEffect (LocationKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- OBJECT EFFECTS (updating object action management)
 processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -234,8 +232,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddSomaticAccess verb new
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
--- Old AcquisitionActionF handlers removed
-
 processEffect (ObjectKey oid) (ActionManagementEffect (AddConsumption verb targetOid newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -269,7 +265,6 @@ processEffect (ObjectKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 processEffect (ObjectKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- PLAYER EFFECTS (updating player action management)
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddContainerAccessVerb verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -339,7 +334,6 @@ processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddDi
         updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -354,9 +348,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddSoma
         updatedActions = Data.Set.insert (SSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
--- Old AcquisitionActionF handlers removed
-
--- Role-based acquisition action management effects for PlayerKey
 processEffect (PlayerKey _) (ActionManagementEffect (AddAgentAcquisitionVerb verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -467,7 +458,6 @@ processEffect (PlayerKey _) (FieldUpdateEffect (LocationTitle targetLid newTitle
 processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) = do
   modifyPlayerM $ \player -> player { _location = newLocationGID }
 
--- NARRATION EFFECTS
 processEffect _ (NarrationEffect narrationComputation) = do
   processNarrationEffect narrationComputation
 
@@ -574,8 +564,6 @@ lookupSomaticAccess :: SomaticAccessVerb -> ActionManagementFunctions -> Maybe (
 lookupSomaticAccess verb (ActionManagementFunctions actions) =
   listToMaybe [gid | SSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
--- Old lookupAcquisitionPhrase removed (used AcquisitionActionF)
-
 simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
 simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
 simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
@@ -596,7 +584,7 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
     listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actions, v == verb]
   NegativePosturalVerbPhrase verb _ ->
     listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actions, v == verb]
--- Convenience builders
+
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
 
@@ -604,9 +592,6 @@ findDSAKey :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID
 findDSAKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
--- Old findAVKey removed (used AcquisitionActionF)
-
--- Role-based acquisition action lookup functions
 findAgentAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AgentAcquisitionActionF)
 findAgentAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | AgentAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
