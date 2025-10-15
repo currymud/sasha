@@ -27,6 +27,8 @@ module Model.Core
   , identityToIO
     -- * Action Function Types
   , ImplicitStimulusActionF(..)
+  , AgentImplicitStimulusActionF(..)
+  , LocationImplicitStimulusActionF(..)
   , DirectionalStimulusActionF(..)
   , AgentDirectionalStimulusActionF(..)
   , ObjectDirectionalStimulusActionF(..)
@@ -44,6 +46,8 @@ module Model.Core
   , ActionMaps(..)
   , ActionEffectMap(..)
   , ImplicitStimulusActionMap
+  , AgentImplicitStimulusActionMap
+  , LocationImplicitStimulusActionMap
   , AgentDirectionalStimulusActionMap
   , LocationDirectionalStimulusActionMap
   , ObjectDirectionalStimulusActionMap
@@ -223,6 +227,15 @@ data ImplicitStimulusActionF
   = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
+type AgentImplicitStimulusActionF :: Type
+data AgentImplicitStimulusActionF
+  = AgentCanSeeF (ActionEffectKey -> GameComputation Identity ())
+  | AgentCannotSeeF (ActionEffectKey -> GameComputation Identity ())
+
+type LocationImplicitStimulusActionF :: Type
+data LocationImplicitStimulusActionF
+  = LocationCanBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
+  | LocationCannotBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
 
 type PlayerDirectionalStimulusAction :: Type
 type PlayerDirectionalStimulusAction
@@ -449,6 +462,12 @@ type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplici
 type ImplicitStimulusActionMap :: Type
 type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF
 
+type AgentImplicitStimulusActionMap :: Type
+type AgentImplicitStimulusActionMap = Map (GID AgentImplicitStimulusActionF) AgentImplicitStimulusActionF
+
+type LocationImplicitStimulusActionMap :: Type
+type LocationImplicitStimulusActionMap = Map (GID LocationImplicitStimulusActionF) LocationImplicitStimulusActionF
+
 type DirectionalStimulusActionMap :: Type
 type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
@@ -524,6 +543,8 @@ newtype Evaluator = Evaluator
 type ActionEffectKey :: Type
 data ActionEffectKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
+  | AgentImplicitStimulusActionKey (GID AgentImplicitStimulusActionF)
+  | LocationImplicitStimulusActionKey (GID LocationImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | AgentDirectionalStimulusActionKey (GID AgentDirectionalStimulusActionF)
   | LocationDirectionalStimulusActionKey (GID LocationDirectionalStimulusActionF)
@@ -623,6 +644,8 @@ newtype ActionKeyMap = ActionKeyMap
 type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
+  | AddAgentImplicitStimulus ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
+  | AddLocationImplicitStimulus ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
   | AddLocationDirectionalStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
@@ -648,6 +671,8 @@ data ActionManagementOperation
 type ActionGID :: Type
 data ActionGID
   = ImplicitActionGID (GID ImplicitStimulusActionF)
+  | AgentImplicitActionGID (GID AgentImplicitStimulusActionF)
+  | LocationImplicitActionGID (GID LocationImplicitStimulusActionF)
   | DirectionalActionGID (GID DirectionalStimulusActionF)
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
@@ -671,6 +696,8 @@ data ActionManagement
   | LocationDSAManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
   | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
+  | AgentISAManagementKey ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
+  | LocationISAManagementKey ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   -- Role-based acquisition action management keys
