@@ -4,26 +4,28 @@ import           Control.Monad                 (foldM)
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
-import           Model.Core                    (AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
-                                                ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF,
+import           Model.Core                    (ActionEffectKey,
                                                 ActionManagement,
+                                                AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
-                                                ObjectDirectionalStimulusActionF,
-                                                LocationDirectionalStimulusActionF,
                                                 AgentImplicitStimulusActionF,
-                                                LocationImplicitStimulusActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
+                                                ContainerAcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect, ActionEffectKey,
-                                                Evaluator, GameComputation,
-                                                GameState,
+                                                Effect, Evaluator,
+                                                GameComputation, GameState,
                                                 ImplicitStimulusActionF,
-                                                Location, Object, Player,
-                                                PlayerKey, PosturalActionF,
+                                                Location,
+                                                LocationAcquisitionActionF,
+                                                LocationDirectionalStimulusActionF,
+                                                LocationImplicitStimulusActionF,
+                                                Object,
+                                                ObjectAcquisitionActionF,
+                                                ObjectDirectionalStimulusActionF,
+                                                Player, PlayerKey,
+                                                PosturalActionF,
                                                 SomaticAccessActionF,
                                                 SpatialRelationship,
                                                 SystemEffect,
@@ -295,6 +297,13 @@ createDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID Direc
 createDirectionalContainerStimulusEffect = CreateDirectionalContainerStimulusEffect
 
 -- Role-based directional stimulus effect creation helper functions
+
+createAgentImplicitStimulusEffect :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL Effect
+createAgentImplicitStimulusEffect = CreateAgentImplicitStimulusEffect
+
+createLocationImplicitStimulusEffect :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL Effect
+createLocationImplicitStimulusEffect = CreateLocationImplicitStimulusEffect
+
 createAgentDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusActionF -> SashaLambdaDSL Effect
 createAgentDirectionalStimulusEffect = CreateAgentDirectionalStimulusEffect
 

@@ -5,7 +5,8 @@ import           Model.Core                 (ActionEffectKey,
                                              AgentImplicitStimulusActionF (AgentCannotSeeF),
                                              GameComputation,
                                              ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF),
-                                             LocationImplicitStimulusActionF (LocationCannotBeSeenImplicitF))
+                                             LocationDirectionalStimulusActionF (LocationCanBeSeenF),
+                                             LocationImplicitStimulusActionF (LocationCanBeSeenImplicitF, LocationCannotBeSeenImplicitF))
 -- deprecated
 pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF = CannotImplicitStimulusActionF pitchBlack'
@@ -25,4 +26,8 @@ lookF = PlayerImplicitStimulusActionF look
       processEffectsFromRegistry actionEffectKey
 
 allowLookF :: LocationImplicitStimulusActionF
-allowLookF = LocationCannotBeSeenImplicitF processEffectsFromRegistry
+allowLookF = LocationCanBeSeenImplicitF processEffectsFromRegistry
+
+locationAllowLookAtF :: LocationDirectionalStimulusActionF
+locationAllowLookAtF = LocationCanBeSeenF processEffectsFromRegistry
+

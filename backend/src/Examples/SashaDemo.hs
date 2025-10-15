@@ -27,6 +27,7 @@ import           EDSL.Effects.HasEffect                                  (HasEff
                                                                           MakeEffect (makeEffect),
                                                                           makeAgentDSEffect,
                                                                           makeAgentEffect,
+                                                                          makeAgentISEffect,
                                                                           makeAgentPhraseEffect,
                                                                           makeContainerEffect,
                                                                           makeContainerPhraseEffect,
@@ -106,22 +107,24 @@ import           Model.Parser.GCase                                      (NounKe
 
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (allowLookF,
+                                                                          locationAllowLookAtF,
                                                                           lookF,
                                                                           pitchBlackF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF,
                                                                           objectNotGettableF)
-import           ConstraintRefinement.Actions.Objects.Look               (cannotBeSeenF)
+import           ConstraintRefinement.Actions.Objects.Look               (objectCanBeSeenF,
+                                                                          objectCannotBeSeenF)
 import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
 import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
 import           ConstraintRefinement.Actions.Player.Look                (agentCannotLookF,
+                                                                          agentLookAtFailF,
                                                                           agentLookF,
                                                                           dsvActionEnabled,
                                                                           isvActionEnabled,
-                                                                          lookAtF,
-                                                                          lookatF')
+                                                                          lookAtF)
 import           ConstraintRefinement.Actions.Player.Open                (openDeniedF,
                                                                           openEyes,
                                                                           openF)
@@ -157,19 +160,20 @@ sashaBedroomDemo = do
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
   eyesClosedFGID <- declareAction agentCannotLookF
+
   pitchBlackFGID <- declareAction pitchBlackF
   locationLitFGID <- declareAction allowLookF
   -- Location directional stimulus actions
-  locationCanBeSeenGID <- declareAction (LocationCanBeSeenF processEffectsFromRegistry)
-  lookAtFloorFGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
-  notEvenFloorFGID <- declareAction (ObjectCannotBeSeenF' processEffectsFromRegistry)
-  lookAtChairGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
-  whatChairFGID <- declareAction (ObjectCannotBeSeenF' processEffectsFromRegistry)
+  locationCanBeSeenGID <- declareAction  locationAllowLookAtF
+  lookAtFloorFGID <- declareAction objectCanBeSeenF
+  notEvenFloorFGID <- declareAction objectCannotBeSeenF
+  lookAtChairGID <- declareAction objectCanBeSeenF
+  whatChairFGID <- declareAction objectCannotBeSeenF
 
   -- Use role-based container action for chair losing object
   getFromChairGID <- declareAction (containerLosesObjectF chairGID)
-  lookAtRobeFGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
-  notEvenRobeFGID <- declareAction (ObjectCannotBeSeenF' processEffectsFromRegistry)
+  lookAtRobeFGID <- declareAction objectCanBeSeenF
+  notEvenRobeFGID <- declareAction objectCannotBeSeenF
   getRobeDeniedGID <- declareAction objectNotCollectableF
 
   -- Use role-based object action for robe being collected
@@ -180,11 +184,12 @@ sashaBedroomDemo = do
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
+  lookAtDeniedFGID <- declareAction agentLookAtFailF
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
-  lookFGID <- declareAction lookF
   inventoryFGID <- declareAction agentLookF
-  dsvEnabledLookGID <- declareAction (AgentCanLookAtF processEffectsFromRegistry)
+  playerLookFGID <- declareAction agentLookF
+  playerLookAtFGID <- declareAction lookAtF
   containerAccessDeniedFGID <- declareAction openDeniedF
   accessContainerFGID <- declareAction openF
   openContainerFGID <- declareAction openContainerF
@@ -193,9 +198,8 @@ sashaBedroomDemo = do
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
-
   player <- buildBedroomPlayer bedroomGID eyesClosedFGID inventoryFGID openEyesGID
-                              dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
+                   lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
   registerObjectToLocation bedroomGID floorGID (DirectionalStimulusKey floorDS)
@@ -217,8 +221,8 @@ sashaBedroomDemo = do
   registerSpatial pocketGID (SupportedBy robeGID)
 
   -- Create all effects first
-  openEyesLookChangeEffectPlayer <- makeEffect isaLook lookFGID
-  openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook dsvEnabledLookGID
+  openEyesLookChangeEffectPlayer <- makeAgentISEffect isaLook playerLookFGID
+  openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook playerLookAtFGID
   openEyesLookChangeEffectFloor <- makeObjectDSEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeObjectDSEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeObjectDSEffect dsaLook lookAtRobeFGID
@@ -256,7 +260,7 @@ sashaBedroomDemo = do
   linkEffect (AgentImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect InventoryNarration)
 
-  linkEffect (ImplicitStimulusActionKey lookFGID) (PlayerKeyLocation bedroomGID)
+  linkEffect (AgentImplicitStimulusActionKey playerLookFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
 
   -- LookAt narration for objects
