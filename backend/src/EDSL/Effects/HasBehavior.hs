@@ -9,6 +9,9 @@ import           EDSL.Effects.TypeMappings     (ActionFunctionType)
 import           Model.Core                    (ActionManagement (..),
                                                 AgentAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
+                                                AgentDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusActionF,
+                                                LocationDirectionalStimulusActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
                                                 Object,
@@ -87,3 +90,13 @@ makeContainerPhraseBehavior = ContainerAAManagementKey
 
 makeLocationPhraseBehavior :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> ActionManagement
 makeLocationPhraseBehavior = LocationAAManagementKey
+
+-- Role-based directional stimulus behavior creation functions
+makeAgentDSBehavior :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusActionF -> ActionManagement
+makeAgentDSBehavior = AgentDSAManagementKey
+
+makeObjectDSBehavior :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusActionF -> ActionManagement
+makeObjectDSBehavior = ObjectDSAManagementKey
+
+makeLocationDSBehavior :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusActionF -> ActionManagement
+makeLocationDSBehavior = LocationDSAManagementKey
