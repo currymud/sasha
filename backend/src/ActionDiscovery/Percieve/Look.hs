@@ -24,7 +24,7 @@ import           GameState.ActionManagement    (lookupAgentDirectionalStimulus,
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentImplicitStimulusActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, LocationDirectionalStimulusActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
-                                                ActionMaps (_agentDirectionalStimulusActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitAgentStimulusActionMap, _implicitLocationStimulusActionMap, _implicitStimulusActionMap, _locationDirectionalStimulusActionMap, _objectDirectionalStimulusActionMap),
+                                                ActionMaps (_agentDirectionalStimulusActionMap, _agentImplicitStimulusActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _locationDirectionalStimulusActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
                                                 AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
                                                 Config (_actionMaps),
@@ -76,8 +76,8 @@ manageImplicitStimulusProcess' isv = do
     (Just agentActionGID, Just locationActionGID) -> do
       let agentActionEffectKey = AgentImplicitStimulusActionKey agentActionGID
           locationActionEffectKey = LocationImplicitStimulusActionKey locationActionGID
-      agentActionMap <- asks (_implicitAgentStimulusActionMap . _actionMaps)
-      locationActionMap <- asks (_implicitLocationStimulusActionMap . _actionMaps)
+      agentActionMap <- asks (_agentImplicitStimulusActionMap . _actionMaps)
+      locationActionMap <- asks (_locationImplicitStimulusActionMap . _actionMaps)
       agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
                      (Data.Map.Strict.lookup agentActionGID agentActionMap)
       locationAction <- maybe (error "Programmer Error: No location action found for GID") pure

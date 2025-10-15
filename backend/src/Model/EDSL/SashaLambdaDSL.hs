@@ -12,6 +12,8 @@ import           Model.Core                    (AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusActionF,
+                                                AgentImplicitStimulusActionF,
+                                                LocationImplicitStimulusActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 DirectionalStimulusActionF,
@@ -69,6 +71,9 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> SashaLambdaDSL (GID Location)
 
   DeclareImplicitStimulusActionGID :: ImplicitStimulusActionF -> SashaLambdaDSL (GID ImplicitStimulusActionF)
+  -- Role-based implicit stimulus action declarations
+  DeclareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
+  DeclareLocationImplicitStimulusActionGID :: LocationImplicitStimulusActionF -> SashaLambdaDSL (GID LocationImplicitStimulusActionF)
   DeclareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> SashaLambdaDSL (GID DirectionalStimulusActionF)
   -- Role-based directional stimulus action declarations
   DeclareAgentDirectionalStimulusActionGID :: AgentDirectionalStimulusActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusActionF)
@@ -90,6 +95,9 @@ data SashaLambdaDSL :: Type -> Type where
   WithTitle :: Text -> Location -> SashaLambdaDSL Location
 
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
+  -- Role-based implicit stimulus management creation
+  CreateAgentISAManagement :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
+  CreateLocationISAManagement :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
@@ -123,6 +131,9 @@ data SashaLambdaDSL :: Type -> Type where
   RegisterTrigger :: ActionEffectKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL Effect
+  -- Role-based implicit stimulus effect creation constructors
+  CreateAgentImplicitStimulusEffect :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL Effect
+  CreateLocationImplicitStimulusEffect :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   -- Role-based directional stimulus effect creation constructors
