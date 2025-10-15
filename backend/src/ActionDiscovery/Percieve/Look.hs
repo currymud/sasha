@@ -62,30 +62,6 @@ manageDirectionalStimulusProcess :: DirectionalStimulusVerb
                                       -> DirectionalStimulusNounPhrase
                                       -> GameComputation Identity ()
 manageDirectionalStimulusProcess dsv dsnp = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupActionF availableActions of
-    Nothing -> error "Programmer Error: No directional stimulus action found for verb: "
-    Just actionGID -> do
-      let actionEffectKey = DirectionalStimulusActionKey actionGID
-      actionMap <- asks (_directionalStimulusActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (ObjectDirectionalStimulusActionF _) ->
-          error "Programmer Error: ObjectDirectionalStimulusActionF found in players action map"
-        Just (ObjectCannotBeSeenF _) ->
-          error "Programmer Error: ObjectCannotBeSeenF found in players action map"
-        Just (PlayerCannotSeeF actionFunc) -> actionFunc actionEffectKey
-        Just (PlayerDirectionalStimulusActionF actionFunc) -> do
-          oid <- validateObjectLook dsnp
-          lid <- getPlayerLocationGID
-          actionFunc actionEffectKey oid lid lookupActionF
-  where
-    lookupActionF = lookupDirectionalStimulus dsv
-
-manageDirectionalStimulusProcess' :: DirectionalStimulusVerb
-                                      -> DirectionalStimulusNounPhrase
-                                      -> GameComputation Identity ()
-manageDirectionalStimulusProcess' dsv dsnp = do
   availableAgentActions <- _playerActions <$> getPlayerM
   objM <- getObjectM <$> validateObjectLook dsnp
   availableObjectActions <- _objectActionManagement <$> objM
