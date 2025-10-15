@@ -17,6 +17,7 @@ import           GameState.Perception          (findAccessibleObject,
 import           Model.Core                    (ActionEffectKey (DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey),
                                                 ActionManagementFunctions,
                                                 ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
+                                                AgentDirectionalStimulusActionF (AgentCanLookAtF),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (ObjectCannotBeSeenF, ObjectDirectionalStimulusActionF, PlayerCannotSeeF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (LocationDirectionalStimulusContainerActionF, ObjectCannotBeSeenInF, ObjectDirectionalStimulusContainerActionF, PlayerCannotSeeInF, PlayerDirectionalStimulusContainerActionF),
@@ -41,16 +42,6 @@ findContainer :: Data.Set.Set SpatialRelationship -> Maybe (GID Object)
 findContainer relationships =
       listToMaybe [cid | ContainedIn cid <- Data.Set.toList relationships] <|>
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
-        {-
-type PlayerDirectionalStimulusContainerAction :: Type
-type PlayerDirectionalStimulusContainerAction
-       = ActionEffectKey
-           -> GID Object
-           -> GID Location
-           -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusContainerActionF))
-           -> GameComputation Identity ()
--}
-
 
 lookInF :: DirectionalStimulusContainerActionF
 lookInF = PlayerDirectionalStimulusContainerActionF lookInAction
@@ -71,6 +62,8 @@ lookAtF = ObjectDirectionalStimulusActionF lookAction
     lookAction actionEffectKey  = do
       -- All narration now handled via effects
       processEffectsFromRegistry actionEffectKey
+lookatF' :: AgentDirectionalStimulusActionF
+lookatF' = AgentCanLookAtF processEffectsFromRegistry
 
 -- Helper function for supported objects (similar to getContainedObjects)
 getSupportedObjects :: GID Object

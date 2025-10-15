@@ -28,6 +28,9 @@ module Model.Core
     -- * Action Function Types
   , ImplicitStimulusActionF(..)
   , DirectionalStimulusActionF(..)
+  , AgentDirectionalStimulusActionF(..)
+  , ObjectDirectionalStimulusActionF(..)
+  , LocationDirectionalStimulusActionF(..)
   , DirectionalStimulusContainerActionF(..)
   , ContainerAccessActionF(..)
   , SomaticAccessActionF(..)
@@ -41,6 +44,9 @@ module Model.Core
   , ActionMaps(..)
   , ActionEffectMap(..)
   , ImplicitStimulusActionMap
+  , AgentDirectionalStimulusActionMap
+  , LocationDirectionalStimulusActionMap
+  , ObjectDirectionalStimulusActionMap
   , DirectionalStimulusActionMap
   , DirectionalStimulusContainerActionMap
   , ContainerAccessActionMap
@@ -103,6 +109,7 @@ module Model.Core
   , SimpleAccessRes(..)
   , PlayerDirectionalStimulusContainerAction
   , PlayerDirectionalStimulusAction
+  , AgentDirectionalStimulusAction
   , ActionEffectKeyF
   ) where
 
@@ -216,6 +223,7 @@ data ImplicitStimulusActionF
   = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
+
 type PlayerDirectionalStimulusAction :: Type
 type PlayerDirectionalStimulusAction
   = ActionEffectKey
@@ -224,12 +232,32 @@ type PlayerDirectionalStimulusAction
       -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF))
       -> GameComputation Identity ()
 
+type AgentDirectionalStimulusAction :: Type
+type AgentDirectionalStimulusAction
+  = ActionEffectKey
+      -> GameComputation Identity ()
+
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
   = PlayerDirectionalStimulusActionF PlayerDirectionalStimulusAction
   | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
   | PlayerCannotSeeF (ActionEffectKey -> (GameComputation Identity ()))
   | ObjectCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
+
+type AgentDirectionalStimulusActionF :: Type
+data AgentDirectionalStimulusActionF
+  = AgentCanLookAtF AgentDirectionalStimulusAction
+  | AgentCannotLookAtF (ActionEffectKey -> GameComputation Identity ())
+
+type ObjectDirectionalStimulusActionF :: Type
+data ObjectDirectionalStimulusActionF
+  = ObjectCanBeSeenF (ActionEffectKey -> GameComputation Identity ())
+  | ObjectCannotBeSeenF' (ActionEffectKey -> GameComputation Identity ())
+
+type LocationDirectionalStimulusActionF :: Type
+data LocationDirectionalStimulusActionF
+  = LocationCanBeSeenF (ActionEffectKey -> GameComputation Identity ())
+  | LocationCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
 
 type PlayerDirectionalStimulusContainerAction :: Type
 type PlayerDirectionalStimulusContainerAction
@@ -449,6 +477,15 @@ type ContainerAcquisitionActionMap = Map (GID ContainerAcquisitionActionF) Conta
 type LocationAcquisitionActionMap :: Type
 type LocationAcquisitionActionMap = Map (GID LocationAcquisitionActionF) LocationAcquisitionActionF
 
+type AgentDirectionalStimulusActionMap :: Type
+type AgentDirectionalStimulusActionMap = Map (GID AgentDirectionalStimulusActionF) AgentDirectionalStimulusActionF
+
+type LocationDirectionalStimulusActionMap :: Type
+type LocationDirectionalStimulusActionMap = Map (GID LocationDirectionalStimulusActionF) LocationDirectionalStimulusActionF
+
+type ObjectDirectionalStimulusActionMap :: Type
+type ObjectDirectionalStimulusActionMap = Map (GID ObjectDirectionalStimulusActionF) ObjectDirectionalStimulusActionF
+
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
@@ -466,6 +503,9 @@ data ActionMaps = ActionMaps
   , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
   , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
   , _locationAcquisitionActionMap :: LocationAcquisitionActionMap
+  , _agentDirectionalStimulusActionMap :: AgentDirectionalStimulusActionMap
+  , _locationDirectionalStimulusActionMap :: LocationDirectionalStimulusActionMap
+  , _objectDirectionalStimulusActionMap :: ObjectDirectionalStimulusActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
   , _posturalActionMap            :: PosturalActionMap
   }
@@ -485,6 +525,9 @@ type ActionEffectKey :: Type
 data ActionEffectKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
+  | AgentDirectionalStimulusActionKey (GID AgentDirectionalStimulusActionF)
+  | LocationDirectionalStimulusActionKey (GID LocationDirectionalStimulusActionF)
+  | ObjectDirectionalStimulusActionKey (GID ObjectDirectionalStimulusActionF)
   | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
@@ -581,6 +624,9 @@ type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
+  | AddLocationDirectionalStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
+  | AddObjectDirectionalStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | AddDirectionalContainerStimulus DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
@@ -606,6 +652,9 @@ data ActionGID
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   -- Role-based acquisition action GIDs
+  | AgentDirectionalActionGID (GID AgentDirectionalStimulusActionF)
+  | LocationDirectionalActionGID (GID LocationDirectionalStimulusActionF)
+  | ObjectDirectionalActionGID (GID ObjectDirectionalStimulusActionF)
   | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
   | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
   | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
@@ -614,10 +663,13 @@ data ActionGID
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
-
+-- AddAgentAcquisitionVerb
 type ActionManagement :: Type
 data ActionManagement
   = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
+  | AgentDSAManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
+  | LocationDSAManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
+  | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
   | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)

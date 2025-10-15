@@ -8,7 +8,7 @@ import           Evaluators.Player.General (eval)
 import           Examples.Defaults         (defaultNarration, defaultPlayer,
                                             defaultWorld)
 import           Examples.SashaDemo        (sashaBedroomDemo)
-import           Model.Core                (ActionMaps (ActionMaps, _agentAcquisitionActionMap, _objectAcquisitionActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+import           Model.Core                (ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentDirectionalStimulusActionMap, _objectAcquisitionActionMap, _objectDirectionalStimulusActionMap, _containerAcquisitionActionMap, _locationAcquisitionActionMap, _locationDirectionalStimulusActionMap, _consumptionActionMap, _containerAccessActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                             Config (Config, _actionMaps),
                                             Evaluator (Evaluator),
                                             GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -41,6 +41,9 @@ config = Config { _actionMaps = forcedMaps }
     forcedMaps = ActionMaps
       { _implicitStimulusActionMap = Data.Map.Strict.keys (_implicitStimulusActionMap maps) `deepseq` _implicitStimulusActionMap maps
       , _directionalStimulusActionMap = Data.Map.Strict.keys (_directionalStimulusActionMap maps) `deepseq` _directionalStimulusActionMap maps
+      , _agentDirectionalStimulusActionMap = Data.Map.Strict.keys (_agentDirectionalStimulusActionMap maps) `deepseq` _agentDirectionalStimulusActionMap maps
+      , _objectDirectionalStimulusActionMap = Data.Map.Strict.keys (_objectDirectionalStimulusActionMap maps) `deepseq` _objectDirectionalStimulusActionMap maps
+      , _locationDirectionalStimulusActionMap = Data.Map.Strict.keys (_locationDirectionalStimulusActionMap maps) `deepseq` _locationDirectionalStimulusActionMap maps
       , _directionalStimulusContainerActionMap = Data.Map.Strict.keys (_directionalStimulusContainerActionMap maps) `deepseq` _directionalStimulusContainerActionMap maps
       , _somaticStimulusActionMap = Data.Map.Strict.keys (_somaticStimulusActionMap maps) `deepseq` _somaticStimulusActionMap maps
       , _agentAcquisitionActionMap = Data.Map.Strict.keys (_agentAcquisitionActionMap maps) `deepseq` _agentAcquisitionActionMap maps

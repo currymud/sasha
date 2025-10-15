@@ -6,7 +6,11 @@ module EDSL.Actions.HasAction where
 import           Data.Kind                     (Constraint, Type)
 import           Model.Core                    (AgentAcquisitionActionF,
                                                 ObjectAcquisitionActionF, ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF, ConsumptionActionF,
+                                                LocationAcquisitionActionF,
+                                                AgentDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusActionF,
+                                                LocationDirectionalStimulusActionF,
+                                                ConsumptionActionF,
                                                 ContainerAccessActionF, DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF, PosturalActionF,
                                                 SomaticAccessActionF)
@@ -15,6 +19,9 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 declareObjectAcquisitionActionGID,
                                                 declareContainerAcquisitionActionGID,
                                                 declareLocationAcquisitionActionGID,
+                                                declareAgentDirectionalStimulusActionGID,
+                                                declareObjectDirectionalStimulusActionGID,
+                                                declareLocationDirectionalStimulusActionGID,
                                                 declareConsumptionActionGID,
                                                 declareContainerAccessActionGID,
                                                 declareDirectionalStimulusActionGID,
@@ -49,6 +56,16 @@ instance HasAction ContainerAccessActionF where
 
 instance HasAction DirectionalStimulusActionF where
   declareAction = declareDirectionalStimulusActionGID
+
+-- Role-based directional stimulus action instances
+instance HasAction AgentDirectionalStimulusActionF where
+  declareAction = declareAgentDirectionalStimulusActionGID
+
+instance HasAction ObjectDirectionalStimulusActionF where
+  declareAction = declareObjectDirectionalStimulusActionGID
+
+instance HasAction LocationDirectionalStimulusActionF where
+  declareAction = declareLocationDirectionalStimulusActionGID
 
 instance HasAction ImplicitStimulusActionF where
   declareAction = declareImplicitStimulusActionGID
