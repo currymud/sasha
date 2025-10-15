@@ -206,6 +206,13 @@ declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
 declareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
 declareSomaticActionGID = DeclareSomaticActionGID
 
+-- Role-based implicit stimulus action declaration functions
+declareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
+declareAgentImplicitStimulusActionGID = DeclareAgentImplicitStimulusActionGID
+
+declareLocationImplicitStimulusActionGID :: LocationImplicitStimulusActionF -> SashaLambdaDSL (GID LocationImplicitStimulusActionF)
+declareLocationImplicitStimulusActionGID = DeclareLocationImplicitStimulusActionGID
+
 -- Role-based directional stimulus action declaration functions
 declareAgentDirectionalStimulusActionGID :: AgentDirectionalStimulusActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusActionF)
 declareAgentDirectionalStimulusActionGID = DeclareAgentDirectionalStimulusActionGID
