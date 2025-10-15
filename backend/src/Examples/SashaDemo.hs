@@ -19,6 +19,7 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           makeContainerBehavior,
                                                                           makeContainerPhraseBehavior,
                                                                           makeLocationDSBehavior,
+                                                                          makeLocationISBehavior,
                                                                           makeObjectBehavior,
                                                                           makeObjectDSBehavior,
                                                                           makeObjectPhraseBehavior)
@@ -49,6 +50,7 @@ import           Model.Core                                              (Action
                                                                           ImplicitStimulusActionF,
                                                                           Location,
                                                                           LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
+                                                                          LocationImplicitStimulusActionF,
                                                                           NarrationComputation (..),
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
@@ -103,7 +105,8 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (lookF,
+import           ConstraintRefinement.Actions.Locations.Look             (allowLookF,
+                                                                          lookF,
                                                                           pitchBlackF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
                                                                           getObjectF,
@@ -113,7 +116,8 @@ import           ConstraintRefinement.Actions.Objects.Open               (openCo
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
 import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
-import           ConstraintRefinement.Actions.Player.Look                (agentLookF,
+import           ConstraintRefinement.Actions.Player.Look                (agentCannotLookF,
+                                                                          agentLookF,
                                                                           dsvActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAtF,
@@ -152,8 +156,9 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
-
+  eyesClosedFGID <- declareAction agentCannotLookF
   pitchBlackFGID <- declareAction pitchBlackF
+  locationLitFGID <- declareAction allowLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction (LocationCanBeSeenF processEffectsFromRegistry)
   lookAtFloorFGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
@@ -183,13 +188,13 @@ sashaBedroomDemo = do
   containerAccessDeniedFGID <- declareAction openDeniedF
   accessContainerFGID <- declareAction openF
   openContainerFGID <- declareAction openContainerF
-  registerLocation bedroomGID (buildLocation pitchBlackFGID locationCanBeSeenGID)
+  registerLocation bedroomGID (buildLocation locationLitFGID locationCanBeSeenGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
 
-  player <- buildBedroomPlayer bedroomGID pitchBlackFGID inventoryFGID openEyesGID
+  player <- buildBedroomPlayer bedroomGID eyesClosedFGID inventoryFGID openEyesGID
                               dsvEnabledLookGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
 
@@ -245,7 +250,7 @@ sashaBedroomDemo = do
     (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
-  linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
+  linkEffect (AgentImplicitStimulusActionKey eyesClosedFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
   -- Inventory narration
   linkEffect (AgentImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
@@ -294,12 +299,14 @@ sashaBedroomDemo = do
                               <> "but there's an indentation of a pill on it."
     openPocketDescription :: Text
     openPocketDescription = "The pocket is open, revealing a pill."
--- Helper functions using HasBehavior - much cleaner!
-buildLocation :: GID ImplicitStimulusActionF -> GID LocationDirectionalStimulusActionF -> SashaLambdaDSL Location
+
+buildLocation :: GID LocationImplicitStimulusActionF
+                   -> GID LocationDirectionalStimulusActionF
+                   -> SashaLambdaDSL Location
 buildLocation implicitLookResponseGID locationLookGID =
   defaultLocation &
     (withTitle "bedroom in bed" >=>
-    withBehavior (makeBehavior isaLook implicitLookResponseGID) >=>
+    withBehavior (makeLocationISBehavior isaLook implicitLookResponseGID) >=>
     withBehavior (makeLocationDSBehavior look locationLookGID))
 
 floorObj :: GID ObjectDirectionalStimulusActionF -> SashaLambdaDSL Object
@@ -336,7 +343,7 @@ pocketObj lookGID openGID = defaultObject &
   withBehavior (makeBehavior openSA openGID))
 
 buildBedroomPlayer :: GID Location
-                   -> GID ImplicitStimulusActionF
+                   -> GID AgentImplicitStimulusActionF
                    -> GID AgentImplicitStimulusActionF
                    -> GID SomaticAccessActionF
                    -> GID AgentDirectionalStimulusActionF
@@ -345,7 +352,7 @@ buildBedroomPlayer :: GID Location
                    -> SashaLambdaDSL Player
 buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID >>=
-  withBehavior (makeBehavior isaLook implicitLookResponseGID) >>=
+  withBehavior (makeAgentISBehavior isaLook implicitLookResponseGID) >>=
   withBehavior (makeAgentISBehavior inventory inventoryFGID) >>=
   withBehavior (makeAgentDSBehavior look directLookResponseGID) >>=
   withBehavior (makeBehavior saOpen openEyesGID) >>=
