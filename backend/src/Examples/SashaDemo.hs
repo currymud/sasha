@@ -14,6 +14,7 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           MakeBehavior (makeBehavior),
                                                                           makeAgentBehavior,
                                                                           makeAgentDSBehavior,
+                                                                          makeAgentISBehavior,
                                                                           makeAgentPhraseBehavior,
                                                                           makeContainerBehavior,
                                                                           makeContainerPhraseBehavior,
@@ -38,6 +39,7 @@ import           Examples.Defaults                                       (defaul
 import           Model.Core                                              (ActionEffectKey (..),
                                                                           AgentAcquisitionActionF,
                                                                           AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                                          AgentImplicitStimulusActionF,
                                                                           ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
                                                                           DirectionalStimulusActionF,
@@ -107,12 +109,12 @@ import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFro
                                                                           getObjectF,
                                                                           objectNotGettableF)
 import           ConstraintRefinement.Actions.Objects.Look               (cannotBeSeenF)
-import           GameState.ActionManagement                          (processEffectsFromRegistry)
 import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
                                                                           getF)
 import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
-import           ConstraintRefinement.Actions.Player.Look                (dsvActionEnabled,
+import           ConstraintRefinement.Actions.Player.Look                (agentLookF,
+                                                                          dsvActionEnabled,
                                                                           isvActionEnabled,
                                                                           lookAtF,
                                                                           lookatF')
@@ -127,6 +129,7 @@ import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentC
                                                                           objectNotCollectableF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
+import           GameState.ActionManagement                              (processEffectsFromRegistry)
 import           GHC.TypeError                                           (ErrorMessage (Text))
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
 import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV)
@@ -175,7 +178,7 @@ sashaBedroomDemo = do
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
   lookFGID <- declareAction lookF
-  inventoryFGID <- declareAction defaultInventoryLookF
+  inventoryFGID <- declareAction agentLookF
   dsvEnabledLookGID <- declareAction (AgentCanLookAtF processEffectsFromRegistry)
   containerAccessDeniedFGID <- declareAction openDeniedF
   accessContainerFGID <- declareAction openF
@@ -245,13 +248,13 @@ sashaBedroomDemo = do
   linkEffect (ImplicitStimulusActionKey pitchBlackFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
   -- Inventory narration
-  linkEffect (ImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
+  linkEffect (AgentImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect InventoryNarration)
 
   linkEffect (ImplicitStimulusActionKey lookFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
 
-  -- LookAt narration for objects  
+  -- LookAt narration for objects
   linkEffect (ObjectDirectionalStimulusActionKey lookAtFloorFGID) floorGID
     (NarrationEffect (LookAtNarration floorGID))
 
@@ -334,7 +337,7 @@ pocketObj lookGID openGID = defaultObject &
 
 buildBedroomPlayer :: GID Location
                    -> GID ImplicitStimulusActionF
-                   -> GID ImplicitStimulusActionF
+                   -> GID AgentImplicitStimulusActionF
                    -> GID SomaticAccessActionF
                    -> GID AgentDirectionalStimulusActionF
                    -> GID AgentAcquisitionActionF
@@ -343,7 +346,7 @@ buildBedroomPlayer :: GID Location
 buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID >>=
   withBehavior (makeBehavior isaLook implicitLookResponseGID) >>=
-  withBehavior (makeBehavior inventory inventoryFGID) >>=
+  withBehavior (makeAgentISBehavior inventory inventoryFGID) >>=
   withBehavior (makeAgentDSBehavior look directLookResponseGID) >>=
   withBehavior (makeBehavior saOpen openEyesGID) >>=
   withBehavior (makeAgentPhraseBehavior getRobeAVP getRobeFGID) >>=
