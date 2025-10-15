@@ -1,9 +1,12 @@
 module ConstraintRefinement.Actions.Locations.Look where
 import           Control.Monad.Identity     (Identity)
 import           GameState.ActionManagement (processEffectsFromRegistry)
-import           Model.Core                 (ActionEffectKey, GameComputation,
-                                             ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF))
-
+import           Model.Core                 (ActionEffectKey,
+                                             AgentImplicitStimulusActionF (AgentCannotSeeF),
+                                             GameComputation,
+                                             ImplicitStimulusActionF (CannotImplicitStimulusActionF, PlayerImplicitStimulusActionF),
+                                             LocationImplicitStimulusActionF (LocationCannotBeSeenImplicitF))
+-- deprecated
 pitchBlackF :: ImplicitStimulusActionF
 pitchBlackF = CannotImplicitStimulusActionF pitchBlack'
   where
@@ -11,9 +14,15 @@ pitchBlackF = CannotImplicitStimulusActionF pitchBlack'
     pitchBlack' actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
 
+locationNoSeeF :: LocationImplicitStimulusActionF
+locationNoSeeF = LocationCannotBeSeenImplicitF processEffectsFromRegistry
+
 lookF :: ImplicitStimulusActionF
 lookF = PlayerImplicitStimulusActionF look
   where
     look :: ActionEffectKey -> GameComputation Identity ()
     look actionEffectKey = do
       processEffectsFromRegistry actionEffectKey
+
+allowLookF :: LocationImplicitStimulusActionF
+allowLookF = LocationCannotBeSeenImplicitF processEffectsFromRegistry

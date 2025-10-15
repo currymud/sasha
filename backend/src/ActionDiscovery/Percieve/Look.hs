@@ -49,22 +49,8 @@ import           Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase
 import           Model.Parser.GCase            (NounKey (ContainerKey, DirectionalStimulusKey))
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb
-                                   -> GameComputation Identity ()
-manageImplicitStimulusProcess isv = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupImplicitStimulus isv availableActions of
-    Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in player "
-    Just actionGID -> do
-      actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
-      let actionEffectKey = ImplicitStimulusActionKey actionGID
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
-        Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc actionEffectKey
-        Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc actionEffectKey
-
-manageImplicitStimulusProcess' :: ImplicitStimulusVerb
                                     -> GameComputation Identity ()
-manageImplicitStimulusProcess' isv = do
+manageImplicitStimulusProcess isv = do
   availableAgentActions <- _playerActions <$> getPlayerM
   locationM <-  getLocationM <$> getPlayerLocationGID
   availableLocationActions <- _locationActionManagement <$> locationM

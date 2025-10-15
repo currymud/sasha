@@ -18,6 +18,7 @@ import           Model.Core                    (ActionEffectKey (DirectionalStim
                                                 ActionManagementFunctions,
                                                 ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (ObjectCannotBeSeenF, ObjectDirectionalStimulusActionF, PlayerCannotSeeF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (LocationDirectionalStimulusContainerActionF, ObjectCannotBeSeenInF, ObjectDirectionalStimulusContainerActionF, PlayerCannotSeeInF, PlayerDirectionalStimulusContainerActionF),
@@ -86,6 +87,12 @@ getContainedObjects objGID spatialMap =
     Just relationships ->
       [oid | Contains oidSet <- Data.Set.toList relationships,
              oid <- Data.Set.toList oidSet]
+
+agentLookF :: AgentImplicitStimulusActionF
+agentLookF = AgentCanSeeF processEffectsFromRegistry
+
+agentCannotLookF :: AgentImplicitStimulusActionF
+agentCannotLookF = AgentCannotSeeF processEffectsFromRegistry
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled
