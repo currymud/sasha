@@ -109,6 +109,7 @@ module Model.Core
   , SimpleAccessRes(..)
   , PlayerDirectionalStimulusContainerAction
   , PlayerDirectionalStimulusAction
+  , AgentDirectionalStimulusAction
   , ActionEffectKeyF
   ) where
 
@@ -231,6 +232,11 @@ type PlayerDirectionalStimulusAction
       -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF))
       -> GameComputation Identity ()
 
+type AgentDirectionalStimulusAction :: Type
+type AgentDirectionalStimulusAction
+  = ActionEffectKey
+      -> GameComputation Identity ()
+
 type DirectionalStimulusActionF :: Type
 data DirectionalStimulusActionF
   = PlayerDirectionalStimulusActionF PlayerDirectionalStimulusAction
@@ -240,8 +246,8 @@ data DirectionalStimulusActionF
 
 type AgentDirectionalStimulusActionF :: Type
 data AgentDirectionalStimulusActionF
-  = AgentCanLookAt PlayerDirectionalStimulusAction
-  | AgentCannotLookAt (ActionEffectKey -> GameComputation Identity ())
+  = AgentCanLookAtF AgentDirectionalStimulusAction
+  | AgentCannotLookAtF (ActionEffectKey -> GameComputation Identity ())
 
 type ObjectDirectionalStimulusActionF :: Type
 data ObjectDirectionalStimulusActionF
@@ -479,6 +485,7 @@ type LocationDirectionalStimulusActionMap = Map (GID LocationDirectionalStimulus
 
 type ObjectDirectionalStimulusActionMap :: Type
 type ObjectDirectionalStimulusActionMap = Map (GID ObjectDirectionalStimulusActionF) ObjectDirectionalStimulusActionF
+
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
@@ -518,6 +525,9 @@ type ActionEffectKey :: Type
 data ActionEffectKey
   = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
+  | AgentDirectionalStimulusActionKey (GID AgentDirectionalStimulusActionF)
+  | LocationDirectionalStimulusActionKey (GID LocationDirectionalStimulusActionF)
+  | ObjectDirectionalStimulusActionKey (GID ObjectDirectionalStimulusActionF)
   | DirectionalStimulusContainerActionKey (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
@@ -642,6 +652,9 @@ data ActionGID
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   -- Role-based acquisition action GIDs
+  | AgentDirectionalActionGID (GID AgentDirectionalStimulusActionF)
+  | LocationDirectionalActionGID (GID LocationDirectionalStimulusActionF)
+  | ObjectDirectionalActionGID (GID ObjectDirectionalStimulusActionF)
   | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
   | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
   | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
