@@ -70,7 +70,11 @@ manageDirectionalStimulusProcess dsv dsnp = do
   let lookupAgentAction = lookupAgentActionF availableAgentActions
       lookupObjectAction = lookupObjectActionF availableObjectActions
       lookupLocationAction = lookupLocationActionF availableLocationActions
-  case (lookupAgentAction, lookupLocationAction,lookupObjectAction) of
+  case (lookupAgentAction, lookupLocationAction, lookupObjectAction) of
+    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus action found for verb: "
+    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus action found for verb: "
+    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus action found for verb: "
+
     (Just agentActionGID, Just locationActionGID, Just objectActionGID) -> do
       let agentActionEffectKey = AgentDirectionalStimulusActionKey agentActionGID
           locationActionEffectKey = LocationDirectionalStimulusActionKey locationActionGID
@@ -78,27 +82,22 @@ manageDirectionalStimulusProcess dsv dsnp = do
       agentActionMap <- asks (_agentDirectionalStimulusActionMap . _actionMaps)
       locationActionMap <- asks (_locationDirectionalStimulusActionMap . _actionMaps)
       objectActionMap <- asks (_objectDirectionalStimulusActionMap . _actionMaps)
-      case Data.Map.Strict.lookup agentActionGID agentActionMap of
-        Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (AgentCannotLookAtF actionF) -> do
-          actionF agentActionEffectKey
-        Just (AgentCanLookAtF agentActionF) -> do
-          case Data.Map.Strict.lookup locationActionGID locationActionMap of
-            Nothing -> error "Programmer Error: No location directional stimulus action found for GID: "
-            Just (LocationCannotBeSeenF locationActionF) -> do
-              locationActionF locationActionEffectKey
-            Just (LocationCanBeSeenF locationActionF) -> do
-              case Data.Map.Strict.lookup objectActionGID objectActionMap of
-                Nothing -> error "Programmer Error: No object directional stimulus action found for GID: "
-                Just (ObjectCannotBeSeenF' objectActionF) -> do
-                  agentActionF agentActionEffectKey >> objectActionF objectActionEffectKey
-                Just (ObjectCanBeSeenF objectActionF) ->
-                  agentActionF agentActionEffectKey
-                    >> locationActionF locationActionEffectKey
-                    >> objectActionF objectActionEffectKey
-    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus action found for verb: "
-    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus action found for verb: "
-    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus action found for verb: "
+
+      agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
+                     (Data.Map.Strict.lookup agentActionGID agentActionMap)
+      locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
+                        (Data.Map.Strict.lookup locationActionGID locationActionMap)
+      objectAction <- maybe (error "Programmer Error: No object action found for GID") pure
+                      (Data.Map.Strict.lookup objectActionGID objectActionMap)
+
+      case (agentAction, locationAction, objectAction) of
+        (AgentCannotLookAtF actionF, _, _) -> actionF agentActionEffectKey
+        (AgentCanLookAtF _, LocationCannotBeSeenF locationActionF, _) ->
+          locationActionF locationActionEffectKey
+        (AgentCanLookAtF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->
+          agentActionF agentActionEffectKey >> objectActionF objectActionEffectKey
+        (AgentCanLookAtF agentActionF, LocationCanBeSeenF locationActionF, ObjectCanBeSeenF objectActionF) ->
+          agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF objectActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalStimulus dsv
     lookupLocationActionF = lookupLocationDirectionalStimulus dsv
