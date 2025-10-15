@@ -514,6 +514,8 @@ type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
+  , _implicitAgentStimulusActionMap :: AgentImplicitStimulusActionMap
+  , _implicitLocationStimulusActionMap :: LocationImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
