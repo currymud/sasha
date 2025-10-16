@@ -4,24 +4,28 @@ import           Control.Monad                 (foldM)
 import           Control.Monad.Identity        (Identity)
 import           Data.Kind                     (Type)
 import           Data.Text                     (Text)
-import           Model.Core                    (AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
-                                                ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF,
+import           Model.Core                    (ActionEffectKey,
                                                 ActionManagement,
+                                                AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
-                                                ObjectDirectionalStimulusActionF,
-                                                LocationDirectionalStimulusActionF,
+                                                AgentImplicitStimulusActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
+                                                ContainerAcquisitionActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
-                                                Effect, ActionEffectKey,
-                                                Evaluator, GameComputation,
-                                                GameState,
+                                                Effect, Evaluator,
+                                                GameComputation, GameState,
                                                 ImplicitStimulusActionF,
-                                                Location, Object, Player,
-                                                PlayerKey, PosturalActionF,
+                                                Location,
+                                                LocationAcquisitionActionF,
+                                                LocationDirectionalStimulusActionF,
+                                                LocationImplicitStimulusActionF,
+                                                Object,
+                                                ObjectAcquisitionActionF,
+                                                ObjectDirectionalStimulusActionF,
+                                                Player, PlayerKey,
+                                                PosturalActionF,
                                                 SomaticAccessActionF,
                                                 SpatialRelationship,
                                                 SystemEffect,
@@ -69,6 +73,9 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareLocationGID :: NounPhrase DirectionalStimulus -> SashaLambdaDSL (GID Location)
 
   DeclareImplicitStimulusActionGID :: ImplicitStimulusActionF -> SashaLambdaDSL (GID ImplicitStimulusActionF)
+  -- Role-based implicit stimulus action declarations
+  DeclareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
+  DeclareLocationImplicitStimulusActionGID :: LocationImplicitStimulusActionF -> SashaLambdaDSL (GID LocationImplicitStimulusActionF)
   DeclareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> SashaLambdaDSL (GID DirectionalStimulusActionF)
   -- Role-based directional stimulus action declarations
   DeclareAgentDirectionalStimulusActionGID :: AgentDirectionalStimulusActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusActionF)
@@ -90,6 +97,9 @@ data SashaLambdaDSL :: Type -> Type where
   WithTitle :: Text -> Location -> SashaLambdaDSL Location
 
   CreateISAManagement :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
+  -- Role-based implicit stimulus management creation
+  CreateAgentISAManagement :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
+  CreateLocationISAManagement :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
@@ -123,6 +133,9 @@ data SashaLambdaDSL :: Type -> Type where
   RegisterTrigger :: ActionEffectKey -> SystemEffectKey -> GID SystemEffect -> SystemEffectConfig -> SashaLambdaDSL ()
   -- Effect management
   CreateImplicitStimulusEffect :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> SashaLambdaDSL Effect
+  -- Role-based implicit stimulus effect creation constructors
+  CreateAgentImplicitStimulusEffect :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL Effect
+  CreateLocationImplicitStimulusEffect :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   -- Role-based directional stimulus effect creation constructors
@@ -194,6 +207,13 @@ declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
 
 declareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
 declareSomaticActionGID = DeclareSomaticActionGID
+
+-- Role-based implicit stimulus action declaration functions
+declareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
+declareAgentImplicitStimulusActionGID = DeclareAgentImplicitStimulusActionGID
+
+declareLocationImplicitStimulusActionGID :: LocationImplicitStimulusActionF -> SashaLambdaDSL (GID LocationImplicitStimulusActionF)
+declareLocationImplicitStimulusActionGID = DeclareLocationImplicitStimulusActionGID
 
 -- Role-based directional stimulus action declaration functions
 declareAgentDirectionalStimulusActionGID :: AgentDirectionalStimulusActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusActionF)
@@ -277,6 +297,13 @@ createDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID Direc
 createDirectionalContainerStimulusEffect = CreateDirectionalContainerStimulusEffect
 
 -- Role-based directional stimulus effect creation helper functions
+
+createAgentImplicitStimulusEffect :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL Effect
+createAgentImplicitStimulusEffect = CreateAgentImplicitStimulusEffect
+
+createLocationImplicitStimulusEffect :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL Effect
+createLocationImplicitStimulusEffect = CreateLocationImplicitStimulusEffect
+
 createAgentDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusActionF -> SashaLambdaDSL Effect
 createAgentDirectionalStimulusEffect = CreateAgentDirectionalStimulusEffect
 

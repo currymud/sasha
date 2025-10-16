@@ -10,6 +10,8 @@ import           Model.Core                    (AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusActionF,
+                                                AgentImplicitStimulusActionF,
+                                                LocationImplicitStimulusActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF, DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF, PosturalActionF,
@@ -22,6 +24,8 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 declareAgentDirectionalStimulusActionGID,
                                                 declareObjectDirectionalStimulusActionGID,
                                                 declareLocationDirectionalStimulusActionGID,
+                                                declareAgentImplicitStimulusActionGID,
+                                                declareLocationImplicitStimulusActionGID,
                                                 declareConsumptionActionGID,
                                                 declareContainerAccessActionGID,
                                                 declareDirectionalStimulusActionGID,
@@ -69,6 +73,13 @@ instance HasAction LocationDirectionalStimulusActionF where
 
 instance HasAction ImplicitStimulusActionF where
   declareAction = declareImplicitStimulusActionGID
+
+-- Role-based implicit stimulus action instances
+instance HasAction AgentImplicitStimulusActionF where
+  declareAction = declareAgentImplicitStimulusActionGID
+
+instance HasAction LocationImplicitStimulusActionF where
+  declareAction = declareLocationImplicitStimulusActionGID
 
 instance HasAction PosturalActionF where
   declareAction = declarePosturalActionGID

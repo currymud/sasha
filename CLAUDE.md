@@ -1,4 +1,3 @@
-
 When coming up with solutions, come up with only what is asked for. Do not embellish.
 
 When coming up with solutions, use the existing architecture, do not make up your own.

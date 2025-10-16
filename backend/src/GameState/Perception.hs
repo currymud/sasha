@@ -255,7 +255,6 @@ youSeeM = do
     concatMapM f xs = fmap concat (mapM f xs)
     {-
 youSeeM = do
-  trace "youSeeM: Starting execution" $ pure ()
 
   -- Get all currently perceivable objects from the perception map
   perceivableObjects <- GameState.Perception.getAllPerceivableObjects

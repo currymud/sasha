@@ -17,7 +17,8 @@ import           GameState.Perception          (findAccessibleObject,
 import           Model.Core                    (ActionEffectKey (DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey),
                                                 ActionManagementFunctions,
                                                 ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
-                                                AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
+                                                AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (ObjectCannotBeSeenF, ObjectDirectionalStimulusActionF, PlayerCannotSeeF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (LocationDirectionalStimulusContainerActionF, ObjectCannotBeSeenInF, ObjectDirectionalStimulusContainerActionF, PlayerCannotSeeInF, PlayerDirectionalStimulusContainerActionF),
@@ -56,14 +57,19 @@ lookInF = PlayerDirectionalStimulusContainerActionF lookInAction
       processEffectsFromRegistry actionEffectKey
 
 -}
+  {-
 lookAtF :: DirectionalStimulusActionF
 lookAtF = ObjectDirectionalStimulusActionF lookAction
   where
     lookAction actionEffectKey  = do
       -- All narration now handled via effects
       processEffectsFromRegistry actionEffectKey
-lookatF' :: AgentDirectionalStimulusActionF
-lookatF' = AgentCanLookAtF processEffectsFromRegistry
+      -}
+lookAtF :: AgentDirectionalStimulusActionF
+lookAtF = AgentCanLookAtF processEffectsFromRegistry
+
+agentLookAtFailF :: AgentDirectionalStimulusActionF
+agentLookAtFailF = AgentCannotLookAtF processEffectsFromRegistry
 
 -- Helper function for supported objects (similar to getContainedObjects)
 getSupportedObjects :: GID Object
@@ -86,6 +92,12 @@ getContainedObjects objGID spatialMap =
     Just relationships ->
       [oid | Contains oidSet <- Data.Set.toList relationships,
              oid <- Data.Set.toList oidSet]
+
+agentLookF :: AgentImplicitStimulusActionF
+agentLookF = AgentCanSeeF processEffectsFromRegistry
+
+agentCannotLookF :: AgentImplicitStimulusActionF
+agentCannotLookF = AgentCannotSeeF processEffectsFromRegistry
 
 isvActionEnabled :: ImplicitStimulusVerb -> ImplicitStimulusActionF
 isvActionEnabled isv = PlayerImplicitStimulusActionF actionEnabled

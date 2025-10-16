@@ -8,10 +8,12 @@ import           EDSL.Effects.TypeMappings     (ActionFunctionType)
 import           Model.Core                    (ActionEffectKey,
                                                 AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
+                                                AgentImplicitStimulusActionF,
                                                 ContainerAcquisitionActionF,
                                                 Effect, Location,
                                                 LocationAcquisitionActionF,
                                                 LocationDirectionalStimulusActionF,
+                                                LocationImplicitStimulusActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectDirectionalStimulusActionF,
@@ -20,6 +22,7 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createAgentAcquisitionVerbEffect,
                                                 createAgentAcquisitionVerbPhraseEffect,
                                                 createAgentDirectionalStimulusEffect,
+                                                createAgentImplicitStimulusEffect,
                                                 createContainerAccessEffect,
                                                 createContainerAccessVerbPhraseEffect,
                                                 createContainerAcquisitionVerbEffect,
@@ -29,6 +32,7 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createLocationAcquisitionVerbEffect,
                                                 createLocationAcquisitionVerbPhraseEffect,
                                                 createLocationDirectionalStimulusEffect,
+                                                createLocationImplicitStimulusEffect,
                                                 createObjectAcquisitionVerbEffect,
                                                 createObjectAcquisitionVerbPhraseEffect,
                                                 createObjectDirectionalStimulusEffect,
@@ -102,6 +106,16 @@ makeLocationPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActi
 makeLocationPhraseEffect = createLocationAcquisitionVerbPhraseEffect
 
 -- Role-based directional stimulus effect creation functions
+makeAgentISEffect :: ImplicitStimulusVerb
+                       -> GID AgentImplicitStimulusActionF
+                       -> SashaLambdaDSL Effect
+makeAgentISEffect = createAgentImplicitStimulusEffect
+
+makeLocationISEffect :: ImplicitStimulusVerb
+                          -> GID LocationImplicitStimulusActionF
+                          -> SashaLambdaDSL Effect
+makeLocationISEffect = createLocationImplicitStimulusEffect
+
 makeAgentDSEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusActionF -> SashaLambdaDSL Effect
 makeAgentDSEffect = createAgentDirectionalStimulusEffect
 

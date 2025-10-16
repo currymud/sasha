@@ -12,6 +12,8 @@ import           Model.Core                    (ActionManagement (..),
                                                 AgentDirectionalStimulusActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusActionF,
+                                                AgentImplicitStimulusActionF,
+                                                LocationImplicitStimulusActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
                                                 Object,
@@ -100,3 +102,10 @@ makeObjectDSBehavior = ObjectDSAManagementKey
 
 makeLocationDSBehavior :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusActionF -> ActionManagement
 makeLocationDSBehavior = LocationDSAManagementKey
+
+-- Role-based implicit stimulus behavior creation functions
+makeAgentISBehavior :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> ActionManagement
+makeAgentISBehavior = AgentISAManagementKey
+
+makeLocationISBehavior :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> ActionManagement
+makeLocationISBehavior = LocationISAManagementKey

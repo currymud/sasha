@@ -14,16 +14,19 @@ import           GameState                     (getLocationM, getObjectM,
                                                 getPlayerLocationGID,
                                                 getPlayerM)
 import           GameState.ActionManagement    (lookupAgentDirectionalStimulus,
+                                                lookupAgentImplicitStimulus,
                                                 lookupDirectionalContainerStimulus,
                                                 lookupDirectionalStimulus,
                                                 lookupImplicitStimulus,
                                                 lookupLocationDirectionalStimulus,
+                                                lookupLocationImplicitStimulus,
                                                 lookupObjectDirectionalStimulus)
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
-import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, LocationDirectionalStimulusActionKey, ObjectDirectionalStimulusActionKey),
-                                                ActionMaps (_agentDirectionalStimulusActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _locationDirectionalStimulusActionMap, _objectDirectionalStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentImplicitStimulusActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, LocationDirectionalStimulusActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
+                                                ActionMaps (_agentDirectionalStimulusActionMap, _agentImplicitStimulusActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _locationDirectionalStimulusActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
+                                                AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (ObjectCannotBeSeenF, ObjectDirectionalStimulusActionF, PlayerCannotSeeF, PlayerDirectionalStimulusActionF),
                                                 DirectionalStimulusContainerActionF (PlayerCannotSeeInF, PlayerDirectionalStimulusContainerActionF),
@@ -32,6 +35,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 ImplicitStimulusActionMap,
                                                 Location (_locationActionManagement),
                                                 LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
+                                                LocationImplicitStimulusActionF (LocationCanBeSeenImplicitF, LocationCannotBeSeenImplicitF),
                                                 Object (_objectActionManagement),
                                                 ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
                                                 Player (_playerActions))
@@ -45,19 +49,45 @@ import           Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase
 import           Model.Parser.GCase            (NounKey (ContainerKey, DirectionalStimulusKey))
 
 manageImplicitStimulusProcess :: ImplicitStimulusVerb
-                                   -> GameComputation Identity ()
+                                    -> GameComputation Identity ()
 manageImplicitStimulusProcess isv = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupImplicitStimulus isv availableActions of
-    Nothing -> error "Programmer Error: No implicit stimulus action found for verb: in player "
-    Just actionGID -> do
-      actionMap :: ImplicitStimulusActionMap <- asks (_implicitStimulusActionMap . _actionMaps)
-      let actionEffectKey = ImplicitStimulusActionKey actionGID
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No implicit stimulus action found for GID: "
-        Just (PlayerImplicitStimulusActionF actionFunc) -> actionFunc actionEffectKey
-        Just (CannotImplicitStimulusActionF actionFunc) -> actionFunc actionEffectKey
+  availableAgentActions <- _playerActions <$> getPlayerM
+  locationM <-  getLocationM <$> getPlayerLocationGID
+  availableLocationActions <- _locationActionManagement <$> locationM
+  let lookupAgentAction = lookupAgentActionF availableAgentActions
+      lookupLocationAction = lookupLocationActionF availableLocationActions
+  case (lookupAgentAction, lookupLocationAction) of
+    (Nothing,_) -> error "Programmer Error: No agent implicit stimulus action found for verb: "
+    (_,Nothing) -> error "Programmer Error: No location implicit stimulus action found for verb: "
+    (Just agentActionGID, Just locationActionGID) -> do
+      let agentActionEffectKey = AgentImplicitStimulusActionKey agentActionGID
+          locationActionEffectKey = LocationImplicitStimulusActionKey locationActionGID
+      agentActionMap <- asks (_agentImplicitStimulusActionMap . _actionMaps)
+      locationActionMap <- asks (_locationImplicitStimulusActionMap . _actionMaps)
+      agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
+                     (Data.Map.Strict.lookup agentActionGID agentActionMap)
+      locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
+                        (Data.Map.Strict.lookup locationActionGID locationActionMap)
+      case (agentAction, locationAction) of
+        (AgentCannotSeeF actionF, _) -> actionF agentActionEffectKey
+        (_, LocationCannotBeSeenImplicitF locationActionF) -> locationActionF locationActionEffectKey
+        (AgentCanSeeF agentActionF, LocationCanBeSeenImplicitF locationActionF) ->
+          agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey
+      pure ()
+  where
+    lookupAgentActionF = lookupAgentImplicitStimulus isv
+    lookupLocationActionF = lookupLocationImplicitStimulus isv
+      {-
+type AgentImplicitStimulusActionF :: Type
+data AgentImplicitStimulusActionF
+  = AgentCanSeeF (ActionEffectKey -> GameComputation Identity ())
+  | AgentCannotSeeF (ActionEffectKey -> GameComputation Identity ())
 
+type LocationImplicitStimulusActionF :: Type
+data LocationImplicitStimulusActionF
+  = LocationCanBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
+  | LocationCannotBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
+-}
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb
                                       -> DirectionalStimulusNounPhrase
                                       -> GameComputation Identity ()
@@ -91,7 +121,8 @@ manageDirectionalStimulusProcess dsv dsnp = do
                       (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
       case (agentAction, locationAction, objectAction) of
-        (AgentCannotLookAtF actionF, _, _) -> actionF agentActionEffectKey
+        (AgentCannotLookAtF actionF, _, _) ->
+          actionF agentActionEffectKey
         (AgentCanLookAtF _, LocationCannotBeSeenF locationActionF, _) ->
           locationActionF locationActionEffectKey
         (AgentCanLookAtF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->
