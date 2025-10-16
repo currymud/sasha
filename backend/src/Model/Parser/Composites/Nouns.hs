@@ -1,24 +1,5 @@
 {-# OPTIONS_GHC -Wno-missing-import-lists #-}
-module Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase ),
-                                      ContainerPhraseRules (ContainerPhraseRules, _containerRule),
-                                      DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
-                                      DirectionalStimulusNounRules (DirectionalStimulusNounRules, _directionalStimulusRule),
-                                      ConsumableNounPhrase (ConsumableNounPhrase),
-                                      ConsumableNounPhraseRules (ConsumableNounPhraseRules, _consumableNounPhraseRule),
-                                      InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
-                                      NounPhrase (SimpleNounPhrase,
-                                                  NounPhrase,
-                                                  DescriptiveNounPhrase,
-                                                  DescriptiveNounPhraseDet),
-                                      NounPhraseRules (NounPhraseRules, _determinerRule, _adjRule, _nounRule),
-                                      ObjectPhrase (ObjectPhrase),
-                                      ObjectPhraseRules (ObjectPhraseRules, _objectiveRule),
-                                      SomaticStimulusNounPhrase (SomaticStimulusNounPhrase),
-                                      SomaticStimulusNounRules (SomaticStimulusNounRules,_somaticStimulusRule ),
-                                      SupportPhraseRules (SupportPhraseRules,_surfacePhraseRule,_containerPhraseRule),
-                                      SupportPhrase (SurfaceSupport, ContainerSupport),
-                                      SurfacePhrase (SimpleSurfacePhrase, SurfacePhrase),
-                                      SurfacePhraseRules (SurfacePhraseRules,_surfaceRule,_surfaceMarkerRule)) where
+module Model.Parser.Composites.Nouns where
 import           Data.Kind                            (Type)
 import           Data.Text                            (Text, unwords)
 import           GHC.Generics                         (Generic)
@@ -83,6 +64,20 @@ data DirectionalStimulusNounRules r = DirectionalStimulusNounRules
   , _directionalStimulusMarkerRule :: Prod r Text Lexeme DirectionalStimulusMarker
   }
 
+type DirectionalStimulusContainerPhrase :: Type
+data DirectionalStimulusContainerPhrase =
+  DirectionalStimulusContainerPhrase ContainmentMarker ContainerPhrase
+  deriving stock (Show, Eq, Ord,Generic)
+
+instance ToText DirectionalStimulusContainerPhrase where
+  toText (DirectionalStimulusContainerPhrase marker containerPhrase) =
+    unwords [toText marker, toText containerPhrase]
+
+type DirectionalStimulusContainerRules :: (Type -> Type -> Type -> Type) -> Type
+data DirectionalStimulusContainerRules r = DirectionalStimulusContainerRules
+  { _containmentMarkerRule :: Prod r Text Lexeme ContainmentMarker
+  , _containerPhraseRule   :: Prod r Text Lexeme ContainerPhrase
+  }
 type ConsumableNounPhrase :: Type
 newtype ConsumableNounPhrase = ConsumableNounPhrase (NounPhrase Consumable)
   deriving stock (Show, Eq, Ord,Generic)

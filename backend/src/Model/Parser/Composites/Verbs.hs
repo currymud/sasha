@@ -17,6 +17,7 @@ import           Model.Parser.Atomics.Verbs        (AcquisitionVerb,
                                                     SomaticAccessVerb)
 import           Model.Parser.Composites.Nouns     (ConsumableNounPhrase,
                                                     ContainerPhrase,
+                                                    DirectionalStimulusContainerPhrase,
                                                     DirectionalStimulusNounPhrase,
                                                     InstrumentalAccessNounPhrase,
                                                     ObjectPhrase,
@@ -56,7 +57,7 @@ type StimulusVerbPhrase :: Type
 data StimulusVerbPhrase
   = ImplicitStimulusVerb ImplicitStimulusVerb
   | DirectStimulusVerbPhrase DirectionalStimulusVerb DirectionalStimulusNounPhrase
-  | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb ContainerPhrase
+  | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb DirectionalStimulusContainerPhrase
   | SomaticStimulusVerbPhrase SomaticAccessVerb SomaticStimulusNounPhrase
   deriving stock (Show, Eq, Ord, Generic)
 

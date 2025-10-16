@@ -18,6 +18,7 @@ import           Model.Core                    (ActionEffectKey (DirectionalStim
                                                 ActionManagementFunctions,
                                                 ActionMaps (_directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
+                                                AgentDirectionalStimulusContainerActionF (AgentCanLookInF),
                                                 AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
                                                 Config (_actionMaps),
                                                 DirectionalStimulusActionF (ObjectCannotBeSeenF, ObjectDirectionalStimulusActionF, PlayerCannotSeeF, PlayerDirectionalStimulusActionF),
@@ -44,27 +45,9 @@ findContainer relationships =
       listToMaybe [cid | ContainedIn cid <- Data.Set.toList relationships] <|>
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
-lookInF :: DirectionalStimulusContainerActionF
-lookInF = PlayerDirectionalStimulusContainerActionF lookInAction
-  where
-    lookInAction :: PlayerDirectionalStimulusContainerAction
-    lookInAction = error "lookInAction undefined"
-      {-
-    lookInAction actionEffectKey = do
-      -- All narration now handled via effects
-      -- ToDo
-      -- Get Key from Container
-      processEffectsFromRegistry actionEffectKey
+lookInF :: AgentDirectionalStimulusContainerActionF
+lookInF = AgentCanLookInF processEffectsFromRegistry
 
--}
-  {-
-lookAtF :: DirectionalStimulusActionF
-lookAtF = ObjectDirectionalStimulusActionF lookAction
-  where
-    lookAction actionEffectKey  = do
-      -- All narration now handled via effects
-      processEffectsFromRegistry actionEffectKey
-      -}
 lookAtF :: AgentDirectionalStimulusActionF
 lookAtF = AgentCanLookAtF processEffectsFromRegistry
 

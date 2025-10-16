@@ -108,6 +108,7 @@ import           Model.Parser.GCase                                      (NounKe
 -- Action functions from original
 import           ConstraintRefinement.Actions.Locations.Look             (allowLookF,
                                                                           locationAllowLookAtF,
+                                                                          locationAllowLookInF,
                                                                           lookF,
                                                                           pitchBlackF)
 import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
@@ -161,10 +162,10 @@ sashaBedroomDemo = do
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
   eyesClosedFGID <- declareAction agentCannotLookF
 
-  pitchBlackFGID <- declareAction pitchBlackF
   locationLitFGID <- declareAction allowLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction  locationAllowLookAtF
+  locationCanBeSeenInFGID <- declareAction locationAllowLookInF
   lookAtFloorFGID <- declareAction objectCanBeSeenF
   notEvenFloorFGID <- declareAction objectCannotBeSeenF
   lookAtChairGID <- declareAction objectCanBeSeenF
@@ -178,7 +179,7 @@ sashaBedroomDemo = do
 
   -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
-  lookAtPocketGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
+  lookAtPocketGID <- declareAction objectCanBeSeenF
   openPocketNoReachGID <- declareAction openContainerF
 
   openEyesGID <- declareAction openEyes

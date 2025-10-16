@@ -45,6 +45,7 @@ import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
 import           Model.Parser.Atomics.Verbs    (DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb)
 import           Model.Parser.Composites.Nouns (ContainerPhrase (ContainerPhrase),
+                                                DirectionalStimulusContainerPhrase (DirectionalStimulusContainerPhrase),
                                                 DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                 NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase))
 import           Model.Parser.GCase            (NounKey (ContainerKey, DirectionalStimulusKey))
@@ -126,30 +127,9 @@ manageDirectionalStimulusProcess dsv dsnp = do
     lookupObjectActionF = lookupObjectDirectionalStimulus dsv
 
 manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb
-                                               -> ContainerPhrase
-                                               -> GameComputation Identity ()
-manageContainerDirectionalStimulusProcess dsv cp = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupActionF availableActions of
-    Nothing -> error "Programmer Error: No container directional stimulus action found for verb: "
-    Just actionGID -> do
-      let actionEffectKey = DirectionalStimulusContainerActionKey actionGID
-      actionMap <- asks (_directionalStimulusContainerActionMap . _actionMaps)
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No directional stimulus action found for GID: "
-        Just (PlayerDirectionalStimulusContainerActionF actionFunc) -> do
-          cid <- validateContainerLook cp
-          lid <- getPlayerLocationGID
-          actionFunc actionEffectKey cid lid lookupActionF
-        Just (PlayerCannotSeeInF actionF)-> actionF actionEffectKey
-        Just _ -> error "Programmer Error: object action found in players action map"
-  where
-    lookupActionF = lookupDirectionalContainerStimulus dsv
-
-manageContainerDirectionalStimulusProcess' :: DirectionalStimulusVerb
-                                                -> ContainerPhrase
+                                                -> DirectionalStimulusContainerPhrase
                                                 -> GameComputation Identity ()
-manageContainerDirectionalStimulusProcess' dsv cp = do
+manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhrase _ cp) = do
   availableAgentActions <- _playerActions <$> getPlayerM
   objM <- getObjectM <$> validateContainerLook cp
   availableObjectActions <- _objectActionManagement <$> objM
