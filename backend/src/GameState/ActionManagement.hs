@@ -18,15 +18,17 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAContainerManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
+                                                AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
                                                 ConsumptionActionF,
                                                 ContainerAccessActionF,
                                                 ContainerAcquisitionActionF,
+                                                ContainerDirectionalStimulusContainerActionF,
                                                 DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
@@ -37,11 +39,13 @@ import           Model.Core                    (ActionEffectKey,
                                                 Location (_locationActionManagement),
                                                 LocationAcquisitionActionF,
                                                 LocationDirectionalStimulusActionF,
+                                                LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
                                                 NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 ObjectAcquisitionActionF,
                                                 ObjectDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusContainerActionF,
                                                 Player (_location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 PosturalActionF,
@@ -873,6 +877,30 @@ lookupObjectDirectionalStimulus :: DirectionalStimulusVerb
                                      -> Maybe (GID ObjectDirectionalStimulusActionF)
 lookupObjectDirectionalStimulus verb (ActionManagementFunctions actions) =
   listToMaybe [gid | ObjectDSAManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupAgentDirectionalContainerStimulus :: DirectionalStimulusVerb
+                                            -> ActionManagementFunctions
+                                            -> Maybe (GID AgentDirectionalStimulusContainerActionF)
+lookupAgentDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
+ listToMaybe [gid | AgentDSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupContainerDirectionalContainerStimulus :: DirectionalStimulusVerb
+                                            -> ActionManagementFunctions
+                                            -> Maybe (GID ContainerDirectionalStimulusContainerActionF)
+lookupContainerDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | ContainerDSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupLocationDirectionalContainerStimulus :: DirectionalStimulusVerb
+                                             -> ActionManagementFunctions
+                                             -> Maybe (GID LocationDirectionalStimulusContainerActionF)
+lookupLocationDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | LocationDSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookpObjectDirectionalContainerStimulus :: DirectionalStimulusVerb
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID ObjectDirectionalStimulusContainerActionF)
+lookpObjectDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | ObjectDSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupImplicitStimulus :: ImplicitStimulusVerb
                             -> ActionManagementFunctions
