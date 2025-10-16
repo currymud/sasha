@@ -256,6 +256,9 @@ sashaBedroomDemo = do
     (NarrationEffect LookNarration)
   linkEffect (AgentImplicitStimulusActionKey eyesClosedFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
+  -- Add narration for agent's directional stimulus when eyes closed
+  linkEffect (AgentDirectionalStimulusActionKey lookAtDeniedFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration closedEyes))
   -- Inventory narration
   linkEffect (AgentImplicitStimulusActionKey inventoryFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect InventoryNarration)

@@ -121,7 +121,8 @@ manageDirectionalStimulusProcess dsv dsnp = do
                       (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
       case (agentAction, locationAction, objectAction) of
-        (AgentCannotLookAtF actionF, _, _) -> actionF agentActionEffectKey
+        (AgentCannotLookAtF actionF, _, _) ->
+          actionF agentActionEffectKey
         (AgentCanLookAtF _, LocationCannotBeSeenF locationActionF, _) ->
           locationActionF locationActionEffectKey
         (AgentCanLookAtF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->

@@ -98,9 +98,8 @@ removeSystemEffect key effectGID = modify' $ \gs ->
 
 processEffectsFromRegistry :: ActionEffectKey -> GameComputation Identity ()
 processEffectsFromRegistry actionKey = do
-  do
-    maybeEffectMap <- lookupActionEffectsInRegistry actionKey
-    Data.Foldable.for_ maybeEffectMap processAllEffects
+  maybeEffectMap <- lookupActionEffectsInRegistry actionKey
+  Data.Foldable.for_ maybeEffectMap processAllEffects
 
 modifyObjectActionManagementM :: GID Object
                              -> (ActionManagementFunctions -> ActionManagementFunctions)
