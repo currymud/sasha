@@ -4,12 +4,15 @@ module EDSL.Effects.TypeMappings where
 
 import           Data.Kind                     (Type)
 import           Model.Core                    (AgentAcquisitionActionF,
-                                                ObjectAcquisitionActionF,
+                                                AgentDirectionalStimulusContainerActionF,
                                                 ContainerAcquisitionActionF,
-                                                LocationAcquisitionActionF,
                                                 ContainerAccessActionF,
+                                                ContainerDirectionalStimulusContainerActionF,
                                                 DirectionalStimulusActionF,
                                                 ImplicitStimulusActionF,
+                                                LocationAcquisitionActionF,
+                                                LocationDirectionalStimulusContainerActionF,
+                                                ObjectAcquisitionActionF,
                                                 SomaticAccessActionF)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
@@ -35,3 +38,7 @@ type family ActionFunctionType (verb :: Type) :: Type where
   ActionFunctionType ObjectAcquisitionActionF = ObjectAcquisitionActionF
   ActionFunctionType ContainerAcquisitionActionF = ContainerAcquisitionActionF
   ActionFunctionType LocationAcquisitionActionF = LocationAcquisitionActionF
+  -- Role-based directional container stimulus action type mappings
+  ActionFunctionType AgentDirectionalStimulusContainerActionF = AgentDirectionalStimulusContainerActionF
+  ActionFunctionType ContainerDirectionalStimulusContainerActionF = ContainerDirectionalStimulusContainerActionF
+  ActionFunctionType LocationDirectionalStimulusContainerActionF = LocationDirectionalStimulusContainerActionF
