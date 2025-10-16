@@ -77,17 +77,7 @@ manageImplicitStimulusProcess isv = do
   where
     lookupAgentActionF = lookupAgentImplicitStimulus isv
     lookupLocationActionF = lookupLocationImplicitStimulus isv
-      {-
-type AgentImplicitStimulusActionF :: Type
-data AgentImplicitStimulusActionF
-  = AgentCanSeeF (ActionEffectKey -> GameComputation Identity ())
-  | AgentCannotSeeF (ActionEffectKey -> GameComputation Identity ())
 
-type LocationImplicitStimulusActionF :: Type
-data LocationImplicitStimulusActionF
-  = LocationCanBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
-  | LocationCannotBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
--}
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb
                                       -> DirectionalStimulusNounPhrase
                                       -> GameComputation Identity ()
@@ -154,6 +144,11 @@ manageContainerDirectionalStimulusProcess dsv cp = do
         Just _ -> error "Programmer Error: object action found in players action map"
   where
     lookupActionF = lookupDirectionalContainerStimulus dsv
+
+manageContainerDirectionalStimulusProcess' :: DirectionalStimulusVerb
+                                                -> ContainerPhrase
+                                                -> GameComputation Identity ()
+manageContainerDirectionalStimulusProcess' dsv cp = undefined
 
 validateContainerLook :: ContainerPhrase
                       -> GameComputation Identity (GID Object)
