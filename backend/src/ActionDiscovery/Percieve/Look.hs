@@ -139,9 +139,9 @@ manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhras
       lookupObjectAction = lookupObjectActionF availableObjectActions
       lookupLocationAction = lookupLocationActionF availableLocationActions
   case (lookupAgentAction, lookupLocationAction, lookupObjectAction) of
-    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus action found for verb: "
-    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus action found for verb: "
-    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus action found for verb: "
+    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus container action found for verb: "
+    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus container action found for verb: "
+    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus container action found for verb: "
 
     (Just agentActionGID, Just locationActionGID, Just containerActionGID) -> do
       let agentActionEffectKey = AgentDirectionalStimulusContainerActionKey agentActionGID

@@ -1,27 +1,23 @@
-module Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (look,dsaLook, directionalStimulusVerbs) where
+module Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook, directionalStimulusVerbs) where
 
-import           Data.HashSet                                (HashSet,
-                                                              singleton)
-import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
-import           Model.Parser.Atomics.Verbs                  (DirectionalStimulusVerb (DirectionalStimulusVerb))
-import           Model.Parser.Lexer                          (Lexeme (LOOK))
+import           Data.HashSet               (HashSet, singleton)
+import           Model.Parser.Atomics.Verbs (DirectionalStimulusVerb (DirectionalStimulusVerb))
+import           Model.Parser.Lexer         (Lexeme (LOOK))
 
 #ifdef TESTING
-import qualified Data.HashSet                                as HS
-import           Data.Text                                   (Text)
-import           Relude.String.Conversion                    (ToText (toText))
-import           Test.QuickCheck                             (Arbitrary,
-                                                              elements)
-import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
+import qualified Data.HashSet               as HS
+import           Data.Text                  (Text)
+import           Relude.String.Conversion   (ToText (toText))
+import           Test.QuickCheck            (Arbitrary, elements)
+import           Test.QuickCheck.Arbitrary  (Arbitrary (arbitrary))
 #endif
 
-makeSemanticValues [| DirectionalStimulusVerb |] [LOOK]
 -- Verbs that can take directional prepositions like "at"
 directionalStimulusVerbs :: HashSet DirectionalStimulusVerb
-directionalStimulusVerbs = singleton look
+directionalStimulusVerbs = singleton dsaLook
 
 dsaLook :: DirectionalStimulusVerb
-dsaLook = look
+dsaLook = DirectionalStimulusVerb LOOK
 
 #ifdef TESTING
 
