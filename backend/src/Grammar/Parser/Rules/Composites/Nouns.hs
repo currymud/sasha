@@ -1,5 +1,6 @@
 module Grammar.Parser.Rules.Composites.Nouns (containerPhraseRules,
                                               directionalStimulusNounPhraseRules,
+                                              directionalStimulusContainerPhraseRules,
                                               consumableNounPhraseRules,
                                               instrumentalAccessNounPhraseRules,
                                               nounPhraseRule,
@@ -28,6 +29,7 @@ import           Model.Parser.Atomics.Prepositions                     (Containm
                                                                         SurfaceMarker (SurfaceMarker))
 import           Model.Parser.Composites.Nouns                         (ConsumableNounPhrase (ConsumableNounPhrase),
                                                                         ContainerPhrase (ContainerPhrase),
+                                                                        DirectionalStimulusContainerPhrase (DirectionalStimulusContainerPhrase),
                                                                         DirectionalStimulusNounPhrase (DirectionalStimulusNounPhrase),
                                                                         InstrumentalAccessNounPhrase (InstrumentalAccessNounPhrase),
                                                                         NounPhrase (DescriptiveNounPhrase, DescriptiveNounPhraseDet, NounPhrase, SimpleNounPhrase),
@@ -86,6 +88,12 @@ directionalStimulusNounPhraseRules determinerRule adjRule directionalStimulusMar
           , _adjRule = adjRule
           , _nounRule = directionalStimulusRule
           }
+
+directionalStimulusContainerPhraseRules :: Prod r Text Lexeme ContainmentMarker
+                                       -> Prod r Text Lexeme ContainerPhrase
+                                       -> Grammar r (Prod r Text Lexeme DirectionalStimulusContainerPhrase)
+directionalStimulusContainerPhraseRules containmentMarkerRule containerPhraseRule =
+  rule $ DirectionalStimulusContainerPhrase <$> containmentMarkerRule <*> containerPhraseRule
 
 consumableNounPhraseRules :: Prod r Text Lexeme Determiner
                                        -> Prod r Text Lexeme Adjective

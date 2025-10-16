@@ -2,6 +2,7 @@ module Main where
 
 import qualified Test.EndToEnd.GetRobeFails           (spec)
 import qualified Test.EndToEnd.LookAtRobeProgression  (spec)
+import qualified Test.EndToEnd.LookInPocketSequence   (spec)
 import qualified Test.EndToEnd.OpenEyesTriggerTest    (spec)
 import qualified Test.EndToEnd.OpenEyesUnlocksGetRobe (spec)
 import           Test.Hspec                           (hspec, runIO)
@@ -16,5 +17,6 @@ main = do
     Test.Parser.Atomics.Verbs.spec
     Test.EndToEnd.GetRobeFails.spec
     Test.EndToEnd.LookAtRobeProgression.spec
+    Test.EndToEnd.LookInPocketSequence.spec
     Test.EndToEnd.OpenEyesTriggerTest.spec
     Test.EndToEnd.OpenEyesUnlocksGetRobe.spec

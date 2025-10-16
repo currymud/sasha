@@ -8,16 +8,19 @@ import           Data.Kind                     (Constraint, Type)
 import           EDSL.Effects.TypeMappings     (ActionFunctionType)
 import           Model.Core                    (ActionManagement (..),
                                                 AgentAcquisitionActionF,
-                                                ContainerAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
-                                                ObjectDirectionalStimulusActionF,
-                                                LocationDirectionalStimulusActionF,
+                                                AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
-                                                LocationImplicitStimulusActionF,
+                                                ContainerAcquisitionActionF,
+                                                ContainerDirectionalStimulusContainerActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
+                                                LocationDirectionalStimulusActionF,
+                                                LocationDirectionalStimulusContainerActionF,
+                                                LocationImplicitStimulusActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
+                                                ObjectDirectionalStimulusActionF,
                                                 Player)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 withLocationBehavior,
@@ -102,6 +105,15 @@ makeObjectDSBehavior = ObjectDSAManagementKey
 
 makeLocationDSBehavior :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusActionF -> ActionManagement
 makeLocationDSBehavior = LocationDSAManagementKey
+
+makeAgentCDSBehavior :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> ActionManagement
+makeAgentCDSBehavior = AgentDSAContainerManagementKey
+
+makeContainerCDSBehavior :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> ActionManagement
+makeContainerCDSBehavior = ContainerDSAContainerManagementKey
+
+makeLocationCDSBehavior :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> ActionManagement
+makeLocationCDSBehavior = LocationDSAContainerManagementKey
 
 -- Role-based implicit stimulus behavior creation functions
 makeAgentISBehavior :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> ActionManagement

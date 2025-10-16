@@ -2,144 +2,155 @@
 
 module Examples.SashaDemo where
 
-import           Control.Monad                                           ((>=>))
+import           Control.Monad                                                    ((>=>))
 import qualified Data.Set
 
 -- Core imports
-import           EDSL.Actions.HasAction                                  (declareAction)
-import           EDSL.Effects.EffectAlgebra                              (alongside,
-                                                                          buildEffect,
-                                                                          buildEffects)
-import           EDSL.Effects.HasBehavior                                (HasBehavior (withBehavior),
-                                                                          MakeBehavior (makeBehavior),
-                                                                          makeAgentBehavior,
-                                                                          makeAgentDSBehavior,
-                                                                          makeAgentISBehavior,
-                                                                          makeAgentPhraseBehavior,
-                                                                          makeContainerBehavior,
-                                                                          makeContainerPhraseBehavior,
-                                                                          makeLocationDSBehavior,
-                                                                          makeLocationISBehavior,
-                                                                          makeObjectBehavior,
-                                                                          makeObjectDSBehavior,
-                                                                          makeObjectPhraseBehavior)
-import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
-                                                                          MakeEffect (makeEffect),
-                                                                          makeAgentDSEffect,
-                                                                          makeAgentEffect,
-                                                                          makeAgentISEffect,
-                                                                          makeAgentPhraseEffect,
-                                                                          makeContainerEffect,
-                                                                          makeContainerPhraseEffect,
-                                                                          makeLocationDSEffect,
-                                                                          makeObjectDSEffect,
-                                                                          makeObjectEffect,
-                                                                          makeObjectPhraseEffect)
-import           Examples.Defaults                                       (defaultLocation,
-                                                                          defaultObject,
-                                                                          defaultPlayer)
-import           Model.Core                                              (ActionEffectKey (..),
-                                                                          AgentAcquisitionActionF,
-                                                                          AgentDirectionalStimulusActionF (AgentCanLookAtF),
-                                                                          AgentImplicitStimulusActionF,
-                                                                          ContainerAccessActionF,
-                                                                          ContainerAcquisitionActionF,
-                                                                          DirectionalStimulusActionF,
-                                                                          Effect (..),
-                                                                          FieldUpdateOperation (ObjectDescription),
-                                                                          GameState,
-                                                                          ImplicitStimulusActionF,
-                                                                          Location,
-                                                                          LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
-                                                                          LocationImplicitStimulusActionF,
-                                                                          NarrationComputation (..),
-                                                                          Object,
-                                                                          ObjectAcquisitionActionF,
-                                                                          ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
-                                                                          Player,
-                                                                          PlayerKey (..),
-                                                                          SomaticAccessActionF,
-                                                                          SpatialRelationship (..))
-import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
-                                                                          declareLocationGID,
-                                                                          declareObjectGID,
-                                                                          finalizeGameState,
-                                                                          registerLocation,
-                                                                          registerObject,
-                                                                          registerObjectToLocation,
-                                                                          registerPlayer,
-                                                                          registerSpatial,
-                                                                          withDescription,
-                                                                          withDescriptives,
-                                                                          withPlayerLocation,
-                                                                          withShortName,
-                                                                          withTitle)
-import           Model.GID                                               (GID)
+import           EDSL.Actions.HasAction                                           (declareAction)
+import           EDSL.Effects.EffectAlgebra                                       (alongside,
+                                                                                   buildEffect,
+                                                                                   buildEffects)
+import           EDSL.Effects.HasBehavior                                         (HasBehavior (withBehavior),
+                                                                                   MakeBehavior (makeBehavior),
+                                                                                   makeAgentBehavior,
+                                                                                   makeAgentDSBehavior,
+                                                                                   makeAgentISBehavior,
+                                                                                   makeAgentPhraseBehavior,
+                                                                                   makeContainerBehavior,
+                                                                                   makeContainerPhraseBehavior,
+                                                                                   makeLocationCDSBehavior,
+                                                                                   makeLocationDSBehavior,
+                                                                                   makeLocationISBehavior,
+                                                                                   makeObjectBehavior,
+                                                                                   makeObjectDSBehavior,
+                                                                                   makeObjectPhraseBehavior)
+import           EDSL.Effects.HasEffect                                           (HasEffect (linkEffect),
+                                                                                   MakeEffect (makeEffect),
+                                                                                   makeAgentCDSEffect,
+                                                                                   makeAgentDSEffect,
+                                                                                   makeAgentEffect,
+                                                                                   makeAgentISEffect,
+                                                                                   makeAgentPhraseEffect,
+                                                                                   makeContainerCDSEffect,
+                                                                                   makeContainerEffect,
+                                                                                   makeContainerPhraseEffect,
+                                                                                   makeLocationDSEffect,
+                                                                                   makeObjectDSEffect,
+                                                                                   makeObjectEffect,
+                                                                                   makeObjectPhraseEffect)
+import           Examples.Defaults                                                (defaultLocation,
+                                                                                   defaultObject,
+                                                                                   defaultPlayer)
+import           Model.Core                                                       (ActionEffectKey (..),
+                                                                                   AgentAcquisitionActionF,
+                                                                                   AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                                                   AgentImplicitStimulusActionF,
+                                                                                   ContainerAccessActionF,
+                                                                                   ContainerAcquisitionActionF,
+                                                                                   DirectionalStimulusActionF,
+                                                                                   DirectionalStimulusContainerActionF,
+                                                                                   Effect (..),
+                                                                                   FieldUpdateOperation (ObjectDescription),
+                                                                                   GameState,
+                                                                                   ImplicitStimulusActionF,
+                                                                                   Location,
+                                                                                   LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
+                                                                                   LocationDirectionalStimulusContainerActionF,
+                                                                                   LocationImplicitStimulusActionF,
+                                                                                   NarrationComputation (..),
+                                                                                   Object,
+                                                                                   ObjectAcquisitionActionF,
+                                                                                   ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
+                                                                                   Player,
+                                                                                   PlayerKey (..),
+                                                                                   SomaticAccessActionF,
+                                                                                   SpatialRelationship (..))
+import           Model.EDSL.SashaLambdaDSL                                        (SashaLambdaDSL,
+                                                                                   declareLocationGID,
+                                                                                   declareObjectGID,
+                                                                                   finalizeGameState,
+                                                                                   registerLocation,
+                                                                                   registerObject,
+                                                                                   registerObjectToLocation,
+                                                                                   registerPlayer,
+                                                                                   registerSpatial,
+                                                                                   withDescription,
+                                                                                   withDescriptives,
+                                                                                   withPlayerLocation,
+                                                                                   withShortName,
+                                                                                   withTitle)
+import           Model.GID                                                        (GID)
 
 -- All the noun/verb imports from original
-import           Grammar.Parser.Partitions.Nouns.Containers              (pocketCT)
-import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus     (bedroomDS,
-                                                                          chairDS,
-                                                                          floorDS,
-                                                                          pillDS,
-                                                                          pocketDS,
-                                                                          robeDS)
-import           Grammar.Parser.Partitions.Nouns.Objectives              (chairOB,
-                                                                          floorOB,
-                                                                          pocketOB,
-                                                                          robeOB)
-import           Grammar.Parser.Partitions.Nouns.Surfaces                (chairSF)
-import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
-import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook,
-                                                                          look)
-import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory,
-                                                                          isaLook)
-import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs       (openSA)
-import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
-import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
-                                                                          ContainerPhrase (ContainerPhrase),
-                                                                          NounPhrase (SimpleNounPhrase),
-                                                                          ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
-                                                                          ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
-import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
+import           Grammar.Parser.Partitions.Nouns.Containers                       (pocketCT)
+import           Grammar.Parser.Partitions.Nouns.DirectionalStimulus              (bedroomDS,
+                                                                                   chairDS,
+                                                                                   floorDS,
+                                                                                   pillDS,
+                                                                                   pocketDS,
+                                                                                   robeDS)
+import           Grammar.Parser.Partitions.Nouns.Objectives                       (chairOB,
+                                                                                   floorOB,
+                                                                                   pocketOB,
+                                                                                   robeOB)
+import           Grammar.Parser.Partitions.Nouns.Surfaces                         (chairSF)
+import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs                 (get)
+import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb          (dsaLook)
+import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb             (inventory,
+                                                                                   isaLook)
+import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs                (openSA)
+import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs               (saOpen)
+import           Model.Parser.Composites.Nouns                                    (ConsumableNounPhrase (ConsumableNounPhrase),
+                                                                                   ContainerPhrase (ContainerPhrase),
+                                                                                   DirectionalStimulusContainerPhrase (DirectionalStimulusContainerPhrase),
+                                                                                   NounPhrase (SimpleNounPhrase),
+                                                                                   ObjectPhrase (ObjectPhrase))
+import           Model.Parser.Composites.Verbs                                    (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                                   ConsumptionVerbPhrase (ConsumptionVerbPhrase),
+                                                                                   ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase),
+                                                                                   StimulusVerbPhrase (DirectionalStimulusContainmentPhrase))
+import           Model.Parser.GCase                                               (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (allowLookF,
-                                                                          locationAllowLookAtF,
-                                                                          lookF,
-                                                                          pitchBlackF)
-import           ConstraintRefinement.Actions.Objects.Get.Constructors   (getFromSupportF,
-                                                                          getObjectF,
-                                                                          objectNotGettableF)
-import           ConstraintRefinement.Actions.Objects.Look               (objectCanBeSeenF,
-                                                                          objectCannotBeSeenF)
-import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
-import           ConstraintRefinement.Actions.Player.Get                 (getDeniedF,
-                                                                          getF)
-import           ConstraintRefinement.Actions.Player.Inventory           (defaultInventoryLookF)
-import           ConstraintRefinement.Actions.Player.Look                (agentCannotLookF,
-                                                                          agentLookAtFailF,
-                                                                          agentLookF,
-                                                                          dsvActionEnabled,
-                                                                          isvActionEnabled,
-                                                                          lookAtF)
-import           ConstraintRefinement.Actions.Player.Open                (openDeniedF,
-                                                                          openEyes,
-                                                                          openF)
-import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
-                                                                          agentGetF,
-                                                                          containerCannotReleaseF,
-                                                                          containerLosesObjectF,
-                                                                          objectCollectedF,
-                                                                          objectNotCollectableF)
-import           Data.Function                                           ((&))
-import           Data.Text                                               (Text)
-import           GameState.ActionManagement                              (processEffectsFromRegistry)
-import           GHC.TypeError                                           (ErrorMessage (Text))
-import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
-import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV)
+import           ConstraintRefinement.Actions.Locations.Look                      (allowLookF,
+                                                                                   locationAllowLookAtF,
+                                                                                   locationAllowLookInF,
+                                                                                   lookF,
+                                                                                   pitchBlackF)
+import           ConstraintRefinement.Actions.Objects.Get.Constructors            (getFromSupportF,
+                                                                                   getObjectF,
+                                                                                   objectNotGettableF)
+import           ConstraintRefinement.Actions.Objects.Look                        (containerCanBeSeenInF,
+                                                                                   containerCannotBeSeenInF,
+                                                                                   objectCanBeSeenF,
+                                                                                   objectCannotBeSeenF)
+import           ConstraintRefinement.Actions.Objects.Open                        (openContainerF)
+import           ConstraintRefinement.Actions.Player.Get                          (getDeniedF,
+                                                                                   getF)
+import           ConstraintRefinement.Actions.Player.Inventory                    (defaultInventoryLookF)
+import           ConstraintRefinement.Actions.Player.Look                         (agentCannotLookF,
+                                                                                   agentLookAtFailF,
+                                                                                   agentLookF,
+                                                                                   dsvActionEnabled,
+                                                                                   isvActionEnabled,
+                                                                                   lookAtF,
+                                                                                   lookInF)
+import           ConstraintRefinement.Actions.Player.Open                         (openDeniedF,
+                                                                                   openEyes,
+                                                                                   openF)
+import           ConstraintRefinement.Actions.RoleBased.Constructors              (agentCannotAcquireF,
+                                                                                   agentGetF,
+                                                                                   containerCannotReleaseF,
+                                                                                   containerLosesObjectF,
+                                                                                   objectCollectedF,
+                                                                                   objectNotCollectableF)
+import           Data.Function                                                    ((&))
+import           Data.Text                                                        (Text)
+import           GameState.ActionManagement                                       (processEffectsFromRegistry)
+import           GHC.TypeError                                                    (ErrorMessage (Text))
+import           Grammar.Parser.Partitions.Nouns.Consumables                      (pillCS)
+import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (inCM)
+import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs                 (takeCV)
 
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
@@ -147,6 +158,15 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 
 openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
+
+--  | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb DirectionalStimulusContainerPhrase
+{-
+type DirectionalStimulusNounPhrase :: Type
+data DirectionalStimulusNounPhrase =
+  DirectionalStimulusNounPhrase DirectionalStimulusMarker (NounPhrase DirectionalStimulus)
+  deriving stock (Show, Eq, Ord,Generic)
+ContainerPhrase (NounPhrase Container)
+-}
 
 takePillCVP :: ConsumptionVerbPhrase
 takePillCVP = ConsumptionVerbPhrase takeCV (ConsumableNounPhrase (SimpleNounPhrase pillCS))
@@ -161,10 +181,10 @@ sashaBedroomDemo = do
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
   eyesClosedFGID <- declareAction agentCannotLookF
 
-  pitchBlackFGID <- declareAction pitchBlackF
   locationLitFGID <- declareAction allowLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction  locationAllowLookAtF
+  locationCanBeSeenInFGID <- declareAction locationAllowLookInF
   lookAtFloorFGID <- declareAction objectCanBeSeenF
   notEvenFloorFGID <- declareAction objectCannotBeSeenF
   lookAtChairGID <- declareAction objectCanBeSeenF
@@ -178,22 +198,25 @@ sashaBedroomDemo = do
 
   -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
-  lookAtPocketGID <- declareAction (ObjectCanBeSeenF processEffectsFromRegistry)
+  lookAtPocketGID <- declareAction objectCanBeSeenF
+  lookInPocketGID <- declareAction containerCanBeSeenInF
   openPocketNoReachGID <- declareAction openContainerF
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
   lookAtDeniedFGID <- declareAction agentLookAtFailF
+  lookInPocketDeniedFGID <- declareAction containerCannotBeSeenInF
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
   inventoryFGID <- declareAction agentLookF
   playerLookFGID <- declareAction agentLookF
   playerLookAtFGID <- declareAction lookAtF
+  playerLookInFGID <- declareAction lookInF
   containerAccessDeniedFGID <- declareAction openDeniedF
   accessContainerFGID <- declareAction openF
   openContainerFGID <- declareAction openContainerF
-  registerLocation bedroomGID (buildLocation locationLitFGID locationCanBeSeenGID)
+  registerLocation bedroomGID (buildLocation locationLitFGID locationCanBeSeenGID locationCanBeSeenInFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
@@ -223,6 +246,8 @@ sashaBedroomDemo = do
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeAgentISEffect isaLook playerLookFGID
   openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook playerLookAtFGID
+  openEyesLookInChangeEffectPlayer <- makeAgentCDSEffect dsaLook playerLookInFGID
+
   openEyesLookChangeEffectFloor <- makeObjectDSEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeObjectDSEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeObjectDSEffect dsaLook lookAtRobeFGID
@@ -231,7 +256,10 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeObjectPhraseEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeObjectEffect get getRobeFGID
   pocketOpenGetRobe <- makeEffect openPocketCVP openContainerFGID
+  pocketLookInGetRobe <- makeAgentCDSEffect dsaLook playerLookInFGID
   playerOpenPocketAfterRobe <- makeEffect openPocketCVP accessContainerFGID
+  pocketClosed <- makeContainerCDSEffect dsaLook lookInPocketDeniedFGID
+--  closedPocket <- make
   -- Build composed effect computation
   buildEffects $
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
@@ -247,6 +275,8 @@ sashaBedroomDemo = do
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe `alongside`
+    buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) pocketLookInGetRobe `alongside`
+    buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketClosed `alongside`
     buildEffect (ContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
 
   -- Register narration effects for actions
@@ -265,7 +295,9 @@ sashaBedroomDemo = do
 
   linkEffect (AgentImplicitStimulusActionKey playerLookFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
-
+  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketDeniedFGID) pocketGID
+    (NarrationEffect (StaticNarration closedPocket))
+--lookInPocketDeniedFGID
   -- LookAt narration for objects
   linkEffect (ObjectDirectionalStimulusActionKey lookAtFloorFGID) floorGID
     (NarrationEffect (LookAtNarration floorGID))
@@ -307,28 +339,32 @@ sashaBedroomDemo = do
     openPocketDescription :: Text
     openPocketDescription = "The pocket is open, revealing a pill."
 
+    closedPocket :: Text
+    closedPocket = "The pocket is closed."
 buildLocation :: GID LocationImplicitStimulusActionF
                    -> GID LocationDirectionalStimulusActionF
+                    -> GID LocationDirectionalStimulusContainerActionF
                    -> SashaLambdaDSL Location
-buildLocation implicitLookResponseGID locationLookGID =
+buildLocation implicitLookResponseGID locationLookFGID locationLookInFGID =
   defaultLocation &
     (withTitle "bedroom in bed" >=>
     withBehavior (makeLocationISBehavior isaLook implicitLookResponseGID) >=>
-    withBehavior (makeLocationDSBehavior look locationLookGID))
+    withBehavior (makeLocationDSBehavior dsaLook locationLookFGID) >=>
+    withBehavior (makeLocationCDSBehavior dsaLook locationLookInFGID))
 
 floorObj :: GID ObjectDirectionalStimulusActionF -> SashaLambdaDSL Object
 floorObj lookGID = defaultObject &
   (withShortName "<OBJ-001>floor" >=>
   withDescription "The bedroom floor" >=>
   withDescriptives [SimpleNounPhrase floorDS] >=>
-  withBehavior (makeObjectDSBehavior look lookGID))
+  withBehavior (makeObjectDSBehavior dsaLook lookGID))
 
 chairObj :: GID ObjectDirectionalStimulusActionF -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Object
 chairObj lookGID getGID = defaultObject &
   (withShortName "<OBJ-002>chair" >=>
   withDescription "A simple wooden chair" >=>
   withDescriptives [SimpleNounPhrase chairDS] >=>
-  withBehavior (makeObjectDSBehavior look lookGID) >=>
+  withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeContainerBehavior get getGID) >=>
   withBehavior (makeContainerPhraseBehavior getRobeAVP getGID))
 
@@ -337,7 +373,7 @@ robeObj lookGID getGID = defaultObject &
   (withShortName "<OBJ-003>comfortable robe" >=>
   withDescription "The robe is draped on the chair" >=>
   withDescriptives [SimpleNounPhrase robeDS] >=>
-  withBehavior (makeObjectDSBehavior look lookGID) >=>
+  withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeObjectBehavior get getGID) >=>
   withBehavior (makeObjectPhraseBehavior getRobeAVP getGID))
 
@@ -346,7 +382,7 @@ pocketObj lookGID openGID = defaultObject &
   (withShortName "<OBJ-004>pocket" >=>
   withDescription "A pocket sewn into the robe" >=>
   withDescriptives [SimpleNounPhrase pocketDS] >=>
-  withBehavior (makeObjectDSBehavior look lookGID) >=>
+  withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeBehavior openSA openGID))
 
 buildBedroomPlayer :: GID Location
@@ -361,7 +397,7 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
   withPlayerLocation defaultPlayer bedroomGID >>=
   withBehavior (makeAgentISBehavior isaLook implicitLookResponseGID) >>=
   withBehavior (makeAgentISBehavior inventory inventoryFGID) >>=
-  withBehavior (makeAgentDSBehavior look directLookResponseGID) >>=
+  withBehavior (makeAgentDSBehavior dsaLook directLookResponseGID) >>=
   withBehavior (makeBehavior saOpen openEyesGID) >>=
   withBehavior (makeAgentPhraseBehavior getRobeAVP getRobeFGID) >>=
   withBehavior (makeAgentBehavior get getRobeFGID) >>=
