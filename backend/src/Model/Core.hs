@@ -77,7 +77,6 @@ module Model.Core
   , FinalizeAccessNotInstrumentF
   , ContainerAccessF
   , AcquisitionF
-  , FinalizeAcquisitionF
     -- * Perception
   , Perceptables(..)
     -- * Field Updates
@@ -371,14 +370,6 @@ type AcquisitionF :: Type
 type AcquisitionF = (ActionEffectKey
                       -> AcquisitionRes
                       -> GameComputation Identity ())
-
-type FinalizeAcquisitionF :: Type
-type FinalizeAcquisitionF = ActionEffectKey
-                              -> GID Object
-                              -> GID Object
-                              -> GameComputation Identity CoordinationResult
-                              -> (GID Object -> GameComputation Identity CoordinationResult)
-                              -> GameComputation Identity ()
 
 -- Role-based acquisition action types
 type AgentAcquisitionActionF :: Type
