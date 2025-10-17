@@ -18,10 +18,11 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
+                                                AgentContainerAccessActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
@@ -33,14 +34,17 @@ import           Model.Core                    (ActionEffectKey,
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_player, _systemEffectRegistry, _world),
+                                                InstrumentContainerAccessActionF,
                                                 Location (_locationActionManagement),
                                                 LocationAcquisitionActionF,
+                                                LocationContainerAccessActionF,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
                                                 NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 ObjectAcquisitionActionF,
+                                                ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 Player (_location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
@@ -851,6 +855,29 @@ lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
   listToMaybe [gid | CONManagementKey p gid <- Data.Set.toList actions, p == cavp]
 
+lookupAgentContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID AgentContainerAccessActionF)
+lookupAgentContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
+  listToMaybe [gid | AgentConManagementKey p gid <- Data.Set.toList actions, p == cavp]
+
+lookupInstrumentContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID InstrumentContainerAccessActionF)
+lookupInstrumentContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
+  listToMaybe [gid | InstrumentConManagementKey p gid <- Data.Set.toList actions, p == cavp]
+
+lookupLocationContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID LocationContainerAccessActionF)
+lookupLocationContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
+  listToMaybe [gid | LocationConManagementKey p gid <- Data.Set.toList actions, p == cavp]
+
+lookupObjectContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID ObjectContainerAccessActionF)
+lookupObjectContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
+  listToMaybe [gid | ObjectConManagementKey p gid <- Data.Set.toList actions, p == cavp]
 
 lookupAgentDirectionalStimulus :: DirectionalStimulusVerb
                                     -> ActionManagementFunctions
