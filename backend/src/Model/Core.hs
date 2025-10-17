@@ -656,6 +656,8 @@ data ActionManagementOperation
   | AddLocationContainerAccessSimpleVerb SimpleAccessVerb (GID LocationContainerAccessActionF)
   | AddObjectContainerAccessSimpleVerb SimpleAccessVerb (GID ObjectContainerAccessActionF)
   | AddObjectContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
+  | AddInstrumentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID InstrumentContainerAccessActionF)
+  | AddInstrumentContainerAccessSimpleVerb SimpleAccessVerb (GID InstrumentContainerAccessActionF)
 
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
