@@ -47,7 +47,6 @@ import           Model.Core                                              (Action
                                                                           AgentImplicitStimulusActionF,
                                                                           ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
-                                                                          DirectionalStimulusActionF,
                                                                           DirectionalStimulusContainerActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),

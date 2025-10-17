@@ -32,7 +32,6 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createContainerAcquisitionVerbEffect,
                                                 createContainerAcquisitionVerbPhraseEffect,
                                                 createContainerDirectionalContainerStimulusEffect,
-                                                createDirectionalStimulusEffect,
                                                 createLocationAcquisitionVerbEffect,
                                                 createLocationAcquisitionVerbPhraseEffect,
                                                 createLocationDirectionalContainerStimulusEffect,
@@ -70,9 +69,6 @@ instance HasEffect (GID Object) where
 
 instance HasEffect PlayerKey where
   linkEffect = linkEffectToPlayer
-
-instance MakeEffect DirectionalStimulusVerb where
-  makeEffect = createDirectionalStimulusEffect
 
 instance MakeEffect SimpleAccessVerb where
   makeEffect = createContainerAccessEffect

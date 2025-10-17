@@ -17,7 +17,6 @@ import           Model.Core                                        (AccessRes (C
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
-                                                                    DirectionalStimulusActionF,
                                                                     GameComputation,
                                                                     Location (_objectSemanticMap),
                                                                     Object (_objectActionManagement),

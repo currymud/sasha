@@ -14,7 +14,6 @@ import           Model.Core                    (ActionEffectKey,
                                                 ContainerAccessActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
-                                                DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect, Evaluator,
                                                 GameComputation, GameState,
@@ -77,7 +76,6 @@ data SashaLambdaDSL :: Type -> Type where
   -- Role-based implicit stimulus action declarations
   DeclareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
   DeclareLocationImplicitStimulusActionGID :: LocationImplicitStimulusActionF -> SashaLambdaDSL (GID LocationImplicitStimulusActionF)
-  DeclareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> SashaLambdaDSL (GID DirectionalStimulusActionF)
   -- Role-based directional stimulus action declarations
   DeclareAgentDirectionalStimulusActionGID :: AgentDirectionalStimulusActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusActionF)
   DeclareObjectDirectionalStimulusActionGID :: ObjectDirectionalStimulusActionF -> SashaLambdaDSL (GID ObjectDirectionalStimulusActionF)
@@ -104,7 +102,6 @@ data SashaLambdaDSL :: Type -> Type where
   -- Role-based implicit stimulus management creation
   CreateAgentISAManagement :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateLocationISAManagement :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
-  CreateDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL ActionManagement
   CreateDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   -- Role-based directional container stimulus management creation
   CreateAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
@@ -143,7 +140,6 @@ data SashaLambdaDSL :: Type -> Type where
   -- Role-based implicit stimulus effect creation constructors
   CreateAgentImplicitStimulusEffect :: ImplicitStimulusVerb -> GID AgentImplicitStimulusActionF -> SashaLambdaDSL Effect
   CreateLocationImplicitStimulusEffect :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL Effect
-  CreateDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
   CreateDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   -- Role-based directional stimulus effect creation constructors
   CreateAgentDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusActionF -> SashaLambdaDSL Effect
@@ -207,8 +203,6 @@ declareContainerGID = DeclareContainerGID
 declareLocationGID :: NounPhrase DirectionalStimulus -> SashaLambdaDSL (GID Location)
 declareLocationGID = DeclareLocationGID
 
-declareDirectionalStimulusActionGID :: DirectionalStimulusActionF -> SashaLambdaDSL (GID DirectionalStimulusActionF)
-declareDirectionalStimulusActionGID = DeclareDirectionalStimulusActionGID
 
 declareDirectionalContainerActionGID :: DirectionalStimulusContainerActionF -> SashaLambdaDSL (GID DirectionalStimulusContainerActionF)
 declareDirectionalContainerActionGID = DeclareDirectionalContainerActionGID
@@ -265,8 +259,6 @@ declarePosturalActionGID = DeclarePosturalActionGID
 declareContainerAccessActionGID :: ContainerAccessActionF -> SashaLambdaDSL (GID ContainerAccessActionF)
 declareContainerAccessActionGID = DeclareContainerAccessActionGID
 
-createDSAManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL ActionManagement
-createDSAManagement = CreateDSAManagement
 
 createDSAContainerManagement :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
 createDSAContainerManagement = CreateDSAContainerManagement
@@ -312,8 +304,6 @@ withPlayerBehavior = WithPlayerBehavior
 withPlayerBehaviors :: Player -> [ActionManagement] -> SashaLambdaDSL Player
 withPlayerBehaviors = foldM withPlayerBehavior
 
-createDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusActionF -> SashaLambdaDSL Effect
-createDirectionalStimulusEffect = CreateDirectionalStimulusEffect
 
 createDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID DirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
 createDirectionalContainerStimulusEffect = CreateDirectionalContainerStimulusEffect

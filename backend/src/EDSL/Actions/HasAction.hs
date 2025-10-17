@@ -12,7 +12,6 @@ import           Model.Core                    (AgentAcquisitionActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
                                                 ConsumptionActionF,
-                                                DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 LocationAcquisitionActionF,
                                                 LocationDirectionalStimulusActionF,
@@ -32,7 +31,6 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 declareContainerDirectionalContainerStimulusActionGID,
                                                 declareConsumptionActionGID,
                                                 declareDirectionalContainerActionGID,
-                                                declareDirectionalStimulusActionGID,
                                                 declareLocationAcquisitionActionGID,
                                                 declareLocationDirectionalStimulusActionGID,
                                                 declareLocationDirectionalContainerStimulusActionGID,
@@ -67,8 +65,6 @@ instance HasAction ConsumptionActionF where
 instance HasAction ContainerAccessActionF where
   declareAction = declareContainerAccessActionGID
 
-instance HasAction DirectionalStimulusActionF where
-  declareAction = declareDirectionalStimulusActionGID
 
 instance HasAction DirectionalStimulusContainerActionF where
   declareAction = declareDirectionalContainerActionGID

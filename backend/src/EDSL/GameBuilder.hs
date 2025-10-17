@@ -327,17 +327,6 @@ interpretDSL (DeclareLocationImplicitStimulusActionGID actionF) = do
             , _actionMaps = updatedMaps }
   pure newGID
 
-interpretDSL (DeclareDirectionalStimulusActionGID actionF) = do
-  state <- get
-  let gidValue = _nextDirectionalActionGID state
-      newGID = GID gidValue
-      currentMaps = _actionMaps state
-      updatedMap = Data.Map.Strict.insert newGID actionF
-                   (_directionalStimulusActionMap currentMaps)
-      updatedMaps = currentMaps { _directionalStimulusActionMap = updatedMap }
-  put state { _nextDirectionalActionGID = gidValue + 1
-            , _actionMaps = updatedMaps }
-  pure newGID
 
 interpretDSL (DeclareAgentDirectionalStimulusActionGID actionF) = do
   state <- get
@@ -705,8 +694,6 @@ interpretDSL (CreateAgentImplicitStimulusEffect verb actionGID) = do
 interpretDSL (CreateLocationImplicitStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddLocationImplicitStimulus verb actionGID) (LocationImplicitActionGID actionGID))
 
-interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddDirectionalStimulus verb actionGID) (DirectionalActionGID actionGID))
 
 interpretDSL (CreateAgentDirectionalStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAgentDirectionalStimulus verb actionGID) (AgentDirectionalActionGID actionGID))
@@ -785,8 +772,6 @@ interpretDSL (CreateAgentISAManagement verb actionGID) =
 interpretDSL (CreateLocationISAManagement verb actionGID) =
   pure (LocationISAManagementKey verb actionGID)
 
-interpretDSL (CreateDSAManagement verb actionGID) =
-  pure (DSAManagementKey verb actionGID)
 
 interpretDSL (CreateDSAContainerManagement verb actionGID) =
   pure (DSAContainerManagementKey verb actionGID)
