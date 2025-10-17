@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-missing-import-lists #-}
 
 module Examples.SashaDemo where
 
@@ -28,13 +30,9 @@ import           EDSL.Effects.HasEffect                                  (HasEff
                                                                           MakeEffect (makeEffect),
                                                                           makeAgentCDSEffect,
                                                                           makeAgentDSEffect,
-                                                                          makeAgentEffect,
                                                                           makeAgentISEffect,
                                                                           makeAgentPhraseEffect,
                                                                           makeContainerCDSEffect,
-                                                                          makeContainerEffect,
-                                                                          makeContainerPhraseEffect,
-                                                                          makeLocationDSEffect,
                                                                           makeObjectDSEffect,
                                                                           makeObjectEffect,
                                                                           makeObjectPhraseEffect)
@@ -47,18 +45,17 @@ import           Model.Core                                              (Action
                                                                           AgentImplicitStimulusActionF,
                                                                           ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
-                                                                          DirectionalStimulusContainerActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
                                                                           Location,
-                                                                          LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
+                                                                          LocationDirectionalStimulusActionF (LocationCannotBeSeenF),
                                                                           LocationDirectionalStimulusContainerActionF,
                                                                           LocationImplicitStimulusActionF,
                                                                           NarrationComputation (..),
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
-                                                                          ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
+                                                                          ObjectDirectionalStimulusActionF (ObjectCannotBeSeenF'),
                                                                           Player,
                                                                           PlayerKey (..),
                                                                           SomaticAccessActionF,
@@ -100,13 +97,11 @@ import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs       (openSA
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
                                                                           ContainerPhrase (ContainerPhrase),
-                                                                          DirectionalStimulusContainerPhrase (DirectionalStimulusContainerPhrase),
                                                                           NounPhrase (SimpleNounPhrase),
                                                                           ObjectPhrase (ObjectPhrase))
 import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
-                                                                          ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase),
-                                                                          StimulusVerbPhrase (DirectionalStimulusContainmentPhrase))
+                                                                          ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
