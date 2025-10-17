@@ -33,13 +33,13 @@ import qualified Data.Set                                                       
                                                                                    union)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
-import           Model.Core                                                       (ActionEffectKey (AgentAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, ContainerAcquisitionalActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, ImplicitStimulusActionKey, LocationAcquisitionalActionKey, ObjectAcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
+import           Model.Core                                                       (ActionEffectKey (AgentAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, ContainerAcquisitionalActionKey, LocationAcquisitionalActionKey, ObjectAcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    ActionEffectMap (ActionEffectMap),
-                                                                                   ActionGID (AgentAcquisitionActionGID, AgentDirectionalActionGID, AgentDirectionalContainerActionGID, AgentImplicitActionGID, ConsumptionActionGID, ContainerAccessActionGID, ContainerAcquisitionActionGID, ContainerDirectionalContainerActionGID, DirectionalActionGID, DirectionalContainerActionGID, ImplicitActionGID, LocationAcquisitionActionGID, LocationDirectionalActionGID, LocationDirectionalContainerActionGID, LocationImplicitActionGID, ObjectAcquisitionActionGID, ObjectDirectionalActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                                   ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                                                   ActionGID (AgentAcquisitionActionGID, AgentDirectionalActionGID, AgentDirectionalContainerActionGID, AgentImplicitActionGID, ConsumptionActionGID, ContainerAccessActionGID, ContainerAcquisitionActionGID, ContainerDirectionalContainerActionGID, LocationAcquisitionActionGID, LocationDirectionalActionGID, LocationDirectionalContainerActionGID, LocationImplicitActionGID, ObjectAcquisitionActionGID, ObjectDirectionalActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AgentDSAContainerManagementKey, AgentISAManagementKey, CAManagementKey, ContainerDSAContainerManagementKey, LocationDSAContainerManagementKey, LocationISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
-                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _consumptionActionMap, _containerAccessActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _implicitStimulusActionMap, _locationAcquisitionActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectAcquisitionActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _consumptionActionMap, _containerAccessActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _locationAcquisitionActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectAcquisitionActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -132,14 +132,11 @@ initialBuilderState gs = BuilderState
   , _nextContainerAccessActionGID = 1000
   , _nextPosturalActionGID = 1000
   , _actionMaps = ActionMaps
-        { _implicitStimulusActionMap = Data.Map.Strict.empty
-      , _agentImplicitStimulusActionMap = Data.Map.Strict.empty
+        { _agentImplicitStimulusActionMap = Data.Map.Strict.empty
       , _locationImplicitStimulusActionMap = Data.Map.Strict.empty
-      , _directionalStimulusActionMap = Data.Map.Strict.empty
       , _agentDirectionalStimulusActionMap = Data.Map.Strict.empty
       , _objectDirectionalStimulusActionMap = Data.Map.Strict.empty
       , _locationDirectionalStimulusActionMap = Data.Map.Strict.empty
-      , _directionalStimulusContainerActionMap = Data.Map.Strict.empty
       , _agentDirectionalStimulusContainerActionMap = Data.Map.Strict.empty
       , _containerDirectionalStimulusContainerActionMap = Data.Map.Strict.empty
       , _locationDirectionalStimulusContainerActionMap = Data.Map.Strict.empty
@@ -304,18 +301,6 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
-interpretDSL (DeclareImplicitStimulusActionGID actionF) = do
-  state <- get
-  let gidValue = _nextImplicitActionGID state
-      newGID = GID gidValue
-      currentMaps = _actionMaps state
-      updatedMap = Data.Map.Strict.insert newGID actionF
-                   (_implicitStimulusActionMap currentMaps)
-      updatedMaps = currentMaps { _implicitStimulusActionMap = updatedMap }
-  put state { _nextImplicitActionGID = gidValue + 1
-            , _actionMaps = updatedMaps }
-  pure newGID
-
 interpretDSL (DeclareAgentImplicitStimulusActionGID actionF) = do
   state <- get
   let gidValue = _nextAgentImplicitStimulusActionGID state
@@ -340,17 +325,6 @@ interpretDSL (DeclareLocationImplicitStimulusActionGID actionF) = do
             , _actionMaps = updatedMaps }
   pure newGID
 
-interpretDSL (DeclareDirectionalStimulusActionGID actionF) = do
-  state <- get
-  let gidValue = _nextDirectionalActionGID state
-      newGID = GID gidValue
-      currentMaps = _actionMaps state
-      updatedMap = Data.Map.Strict.insert newGID actionF
-                   (_directionalStimulusActionMap currentMaps)
-      updatedMaps = currentMaps { _directionalStimulusActionMap = updatedMap }
-  put state { _nextDirectionalActionGID = gidValue + 1
-            , _actionMaps = updatedMaps }
-  pure newGID
 
 interpretDSL (DeclareAgentDirectionalStimulusActionGID actionF) = do
   state <- get
@@ -385,18 +359,6 @@ interpretDSL (DeclareLocationDirectionalStimulusActionGID actionF) = do
                    (_locationDirectionalStimulusActionMap currentMaps)
       updatedMaps = currentMaps { _locationDirectionalStimulusActionMap = updatedMap }
   put state { _nextLocationDirectionalStimulusActionGID = gidValue + 1
-            , _actionMaps = updatedMaps }
-  pure newGID
-
-interpretDSL (DeclareDirectionalContainerActionGID actionF) = do
-  state <- get
-  let gidValue = _nextDirectionalContainerActionGID state
-      newGID = GID gidValue
-      currentMaps = _actionMaps state
-      updatedMap = Data.Map.Strict.insert newGID actionF
-                   (_directionalStimulusContainerActionMap currentMaps)
-      updatedMaps = currentMaps { _directionalStimulusContainerActionMap = updatedMap }
-  put state { _nextDirectionalContainerActionGID = gidValue + 1
             , _actionMaps = updatedMaps }
   pure newGID
 
@@ -712,17 +674,12 @@ interpretDSL (CreateNegativePosturalEffect verb actionGID) = do
 interpretDSL (CreateSomaticAccessEffect verb actionGID) = do
   pure (ActionManagementEffect (AddSomaticAccess verb actionGID) (SomaticAccessActionGID actionGID))
 
-interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddImplicitStimulus verb actionGID) (ImplicitActionGID actionGID))
-
 interpretDSL (CreateAgentImplicitStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAgentImplicitStimulus verb actionGID) (AgentImplicitActionGID actionGID))
 
 interpretDSL (CreateLocationImplicitStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddLocationImplicitStimulus verb actionGID) (LocationImplicitActionGID actionGID))
 
-interpretDSL (CreateDirectionalStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddDirectionalStimulus verb actionGID) (DirectionalActionGID actionGID))
 
 interpretDSL (CreateAgentDirectionalStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAgentDirectionalStimulus verb actionGID) (AgentDirectionalActionGID actionGID))
@@ -732,9 +689,6 @@ interpretDSL (CreateObjectDirectionalStimulusEffect verb actionGID) = do
 
 interpretDSL (CreateLocationDirectionalStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddLocationDirectionalStimulus verb actionGID) (LocationDirectionalActionGID actionGID))
-
-interpretDSL (CreateDirectionalContainerStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddDirectionalContainerStimulus verb actionGID) (DirectionalContainerActionGID actionGID))
 
 interpretDSL (CreateAgentDirectionalContainerStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAgentDirectionalContainerStimulus verb actionGID) (AgentDirectionalContainerActionGID actionGID))
@@ -795,20 +749,11 @@ interpretDSL (SetInitialNarration text) = do
       updatedGameState = (_gameState state) { _narration = initialNarration }
   put state { _gameState = updatedGameState }
 
-interpretDSL (CreateISAManagement verb actionGID) =
-  pure (ISAManagementKey verb actionGID)
-
 interpretDSL (CreateAgentISAManagement verb actionGID) =
   pure (AgentISAManagementKey verb actionGID)
 
 interpretDSL (CreateLocationISAManagement verb actionGID) =
   pure (LocationISAManagementKey verb actionGID)
-
-interpretDSL (CreateDSAManagement verb actionGID) =
-  pure (DSAManagementKey verb actionGID)
-
-interpretDSL (CreateDSAContainerManagement verb actionGID) =
-  pure (DSAContainerManagementKey verb actionGID)
 
 interpretDSL (CreateAgentDSAContainerManagement verb actionGID) =
   pure (AgentDSAContainerManagementKey verb actionGID)
@@ -821,8 +766,6 @@ interpretDSL (CreateLocationDSAContainerManagement verb actionGID) =
 
 interpretDSL (CreateSSAManagement verb actionGID) =
   pure (SSAManagementKey verb actionGID)
-
-
 
 interpretDSL (CreateCAManagement verbPhrase actionGID) =
   pure (CAManagementKey verbPhrase actionGID)
@@ -877,19 +820,6 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-actionGIDToKey :: ActionGID -> ActionEffectKey
-actionGIDToKey (ImplicitActionGID gid)             = ImplicitStimulusActionKey gid
-actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKey gid
-actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid
-actionGIDToKey (SomaticAccessActionGID gid)        = SomaticAccessActionKey gid
--- Role-based acquisition actions map to their respective action keys
-actionGIDToKey (AgentAcquisitionActionGID gid)     = AgentAcquisitionalActionKey gid
-actionGIDToKey (ObjectAcquisitionActionGID gid)    = ObjectAcquisitionalActionKey gid
-actionGIDToKey (ContainerAcquisitionActionGID gid) = ContainerAcquisitionalActionKey gid
-actionGIDToKey (LocationAcquisitionActionGID gid)  = LocationAcquisitionalActionKey gid
-actionGIDToKey (ConsumptionActionGID gid)          = ConsumptionActionKey gid
-actionGIDToKey (PosturalActionGID gid)             = PosturalActionKey gid
-actionGIDToKey (ContainerAccessActionGID gid)      = ContainerAccessActionKey gid
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
 validateObjectGIDDeclared gid = do

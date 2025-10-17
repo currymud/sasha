@@ -45,12 +45,6 @@ type HasBehavior :: Type -> Constraint
 class HasBehavior a where
   withBehavior :: ActionManagement -> a -> SashaLambdaDSL a
 
-instance MakeBehavior ImplicitStimulusVerb where
-  makeBehavior = ISAManagementKey
-
-instance MakeBehavior DirectionalStimulusVerb where
-  makeBehavior = DSAManagementKey
-
 instance MakeBehavior SomaticAccessVerb where
   makeBehavior = SSAManagementKey
 

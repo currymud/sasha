@@ -3,47 +3,41 @@
 
 module EDSL.Actions.HasAction where
 
-import           Data.Kind                     (Constraint, Type)
-import           Model.Core                    (AgentAcquisitionActionF,
-                                                AgentDirectionalStimulusActionF,
-                                                AgentDirectionalStimulusContainerActionF,
-                                                AgentImplicitStimulusActionF,
-                                                ContainerAccessActionF,
-                                                ContainerAcquisitionActionF,
-                                                ContainerDirectionalStimulusContainerActionF,
-                                                ConsumptionActionF,
-                                                DirectionalStimulusActionF,
-                                                DirectionalStimulusContainerActionF,
-                                                ImplicitStimulusActionF,
-                                                LocationAcquisitionActionF,
-                                                LocationDirectionalStimulusActionF,
-                                                LocationDirectionalStimulusContainerActionF,
-                                                LocationImplicitStimulusActionF,
-                                                ObjectAcquisitionActionF,
-                                                ObjectDirectionalStimulusActionF,
-                                                PosturalActionF,
-                                                SomaticAccessActionF)
-import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
-                                                declareAgentAcquisitionActionGID,
-                                                declareAgentDirectionalStimulusActionGID,
-                                                declareAgentDirectionalContainerStimulusActionGID,
-                                                declareAgentImplicitStimulusActionGID,
-                                                declareContainerAccessActionGID,
-                                                declareContainerAcquisitionActionGID,
-                                                declareContainerDirectionalContainerStimulusActionGID,
-                                                declareConsumptionActionGID,
-                                                declareDirectionalContainerActionGID,
-                                                declareDirectionalStimulusActionGID,
-                                                declareImplicitStimulusActionGID,
-                                                declareLocationAcquisitionActionGID,
-                                                declareLocationDirectionalStimulusActionGID,
-                                                declareLocationDirectionalContainerStimulusActionGID,
-                                                declareLocationImplicitStimulusActionGID,
-                                                declareObjectAcquisitionActionGID,
-                                                declareObjectDirectionalStimulusActionGID,
-                                                declarePosturalActionGID,
-                                                declareSomaticActionGID)
-import           Model.GID                     (GID)
+import           Data.Kind                 (Constraint, Type)
+import           Model.Core                (AgentAcquisitionActionF,
+                                            AgentDirectionalStimulusActionF,
+                                            AgentDirectionalStimulusContainerActionF,
+                                            AgentImplicitStimulusActionF,
+                                            ConsumptionActionF,
+                                            ContainerAccessActionF,
+                                            ContainerAcquisitionActionF,
+                                            ContainerDirectionalStimulusContainerActionF,
+                                            LocationAcquisitionActionF,
+                                            LocationDirectionalStimulusActionF,
+                                            LocationDirectionalStimulusContainerActionF,
+                                            LocationImplicitStimulusActionF,
+                                            ObjectAcquisitionActionF,
+                                            ObjectDirectionalStimulusActionF,
+                                            PosturalActionF,
+                                            SomaticAccessActionF)
+import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
+                                            declareAgentAcquisitionActionGID,
+                                            declareAgentDirectionalContainerStimulusActionGID,
+                                            declareAgentDirectionalStimulusActionGID,
+                                            declareAgentImplicitStimulusActionGID,
+                                            declareConsumptionActionGID,
+                                            declareContainerAccessActionGID,
+                                            declareContainerAcquisitionActionGID,
+                                            declareContainerDirectionalContainerStimulusActionGID,
+                                            declareLocationAcquisitionActionGID,
+                                            declareLocationDirectionalContainerStimulusActionGID,
+                                            declareLocationDirectionalStimulusActionGID,
+                                            declareLocationImplicitStimulusActionGID,
+                                            declareObjectAcquisitionActionGID,
+                                            declareObjectDirectionalStimulusActionGID,
+                                            declarePosturalActionGID,
+                                            declareSomaticActionGID)
+import           Model.GID                 (GID)
 
 -- | Unified interface for declaring actions
 type HasAction :: Type -> Constraint
@@ -69,12 +63,6 @@ instance HasAction ConsumptionActionF where
 instance HasAction ContainerAccessActionF where
   declareAction = declareContainerAccessActionGID
 
-instance HasAction DirectionalStimulusActionF where
-  declareAction = declareDirectionalStimulusActionGID
-
-instance HasAction DirectionalStimulusContainerActionF where
-  declareAction = declareDirectionalContainerActionGID
-
 -- Role-based directional stimulus action instances
 instance HasAction AgentDirectionalStimulusActionF where
   declareAction = declareAgentDirectionalStimulusActionGID
@@ -94,9 +82,6 @@ instance HasAction ContainerDirectionalStimulusContainerActionF where
 
 instance HasAction LocationDirectionalStimulusContainerActionF where
   declareAction = declareLocationDirectionalContainerStimulusActionGID
-
-instance HasAction ImplicitStimulusActionF where
-  declareAction = declareImplicitStimulusActionGID
 
 -- Role-based implicit stimulus action instances
 instance HasAction AgentImplicitStimulusActionF where

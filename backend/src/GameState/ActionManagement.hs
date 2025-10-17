@@ -18,9 +18,9 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, DSAContainerManagementKey, DSAManagementKey, ISAManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
-                                                ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddImplicitStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
+                                                ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
@@ -29,13 +29,10 @@ import           Model.Core                    (ActionEffectKey,
                                                 ContainerAccessActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
-                                                DirectionalStimulusActionF,
-                                                DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_player, _systemEffectRegistry, _world),
-                                                ImplicitStimulusActionF,
                                                 Location (_locationActionManagement),
                                                 LocationAcquisitionActionF,
                                                 LocationDirectionalStimulusActionF,
@@ -134,13 +131,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccess cavp
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (LocationKey lid) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -153,20 +143,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddLocationImplicitStim
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case LocationISAManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (LocationISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (LocationKey lid) (ActionManagementEffect (AddDirectionalContainerStimulus verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAContainerManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (LocationKey lid) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (LocationKey lid) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
@@ -223,13 +199,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccess cavp n
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (ObjectKey oid) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
   modifyObjectActionManagementM oid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -242,20 +211,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddLocationImplicitStimul
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case LocationISAManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (LocationISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-      let ActionManagementFunctions actionSet = actionMgmt
-          filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-          updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
-      in ActionManagementFunctions updatedActions
-
-processEffect (ObjectKey oid) (ActionManagementEffect (AddDirectionalContainerStimulus verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAContainerManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
@@ -325,19 +280,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddCont
         filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
-processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddImplicitStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
@@ -365,34 +307,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddLoca
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case LocationISAManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (LocationISAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddDirectionalStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddDirectionalContainerStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAContainerManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddDirectionalContainerStimulus verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case DSAContainerManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (DSAContainerManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddSomaticAccess verb newActionGID) _) = do
@@ -937,11 +851,6 @@ lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
   listToMaybe [gid | CONManagementKey p gid <- Data.Set.toList actions, p == cavp]
 
-lookupDirectionalStimulus :: DirectionalStimulusVerb
-                               -> ActionManagementFunctions
-                               -> Maybe (GID DirectionalStimulusActionF)
-lookupDirectionalStimulus verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupAgentDirectionalStimulus :: DirectionalStimulusVerb
                                     -> ActionManagementFunctions
@@ -979,12 +888,6 @@ lookupLocationDirectionalContainerStimulus :: DirectionalStimulusVerb
 lookupLocationDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
   listToMaybe [gid | LocationDSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
 
-lookupImplicitStimulus :: ImplicitStimulusVerb
-                            -> ActionManagementFunctions
-                            -> Maybe (GID ImplicitStimulusActionF)
-lookupImplicitStimulus verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | ISAManagementKey v gid <- Data.Set.toList actions, v == verb]
-
 lookupAgentImplicitStimulus :: ImplicitStimulusVerb
                                  -> ActionManagementFunctions
                                  -> Maybe (GID AgentImplicitStimulusActionF)
@@ -1007,12 +910,6 @@ simplifyAcquisitionVerbPhrase :: AcquisitionVerbPhrase -> AcquisitionVerb
 simplifyAcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase verb _) = verb
 simplifyAcquisitionVerbPhrase (AcquisitionVerbPhrase verb _ _ _)   = verb
 
-lookupDirectionalContainerStimulus :: DirectionalStimulusVerb
-                                        -> ActionManagementFunctions
-                                        -> Maybe (GID DirectionalStimulusContainerActionF)
-lookupDirectionalContainerStimulus verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | DSAContainerManagementKey v gid <- Data.Set.toList actions, v == verb]
-
 lookupConsumption :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 lookupConsumption verb (ActionManagementFunctions actions) =
   listToMaybe [gid | CAManagementKey v gid <- Data.Set.toList actions, v == verb]
@@ -1027,9 +924,6 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
 
-findDSAKey :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
-findDSAKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
 findAgentAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AgentAcquisitionActionF)
 findAgentAVKey verb (ActionManagementFunctions actionSet) =
@@ -1050,10 +944,6 @@ findContainerAVKey verb (ActionManagementFunctions actionSet) =
 findLocationAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID LocationAcquisitionActionF)
 findLocationAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | LocationAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
-
-findISAKey :: ImplicitStimulusVerb -> ActionManagementFunctions -> Maybe (GID ImplicitStimulusActionF)
-findISAKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | ISAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
 findSSAKey :: SomaticAccessVerb -> ActionManagementFunctions-> Maybe (GID SomaticAccessActionF)
 findSSAKey verb (ActionManagementFunctions actionSet) =

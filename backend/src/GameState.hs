@@ -1,5 +1,4 @@
 module GameState ( addToInventoryM
-                 , changeImplicit
                  , clearNarration
                  , getObjectM
                  , getActionManagementM
@@ -65,7 +64,7 @@ import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
-                                                ActionManagement (CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
+                                                ActionManagement (CAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 CompleteAccessRes (CompleteAccessRes),
                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
@@ -73,10 +72,9 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
                                                 ContainerAccessActionF,
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
-                                                ImplicitStimulusActionF,
                                                 Location (_locationActionManagement, _locationInventory),
                                                 Narration (Narration, _actionConsequence),
-                                                Object (_description, _descriptives, _objectActionManagement),
+                                                Object (_description, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
                                                 SimpleAccessRes (SimpleAccessRes),
@@ -89,8 +87,7 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, Surface)
-import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb,
-                                                NegativePosturalVerb,
+import           Model.Parser.Atomics.Verbs    (NegativePosturalVerb,
                                                 PositivePosturalVerb,
                                                 SimpleAccessVerb)
 import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
@@ -299,17 +296,6 @@ getLocationObjectIDsM lid = do
       objectGIDSets = Data.Map.Strict.elems objectSemanticMap
       allObjectGIDs = concatMap Data.Set.toList objectGIDSets
   pure $ Data.Set.fromList (map ObjectKey allObjectGIDs)
-
-changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
-changeImplicit verb newActionGID = do
-  playerLocationGID <- getPlayerLocationGID
-  modifyLocationM playerLocationGID $ \loc ->
-    let currentActions = _locationActionManagement loc
-        -- Remove old action for this verb and add new one
-        ActionManagementFunctions actionSet = currentActions
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
 
 -- There is some cruft forming
 getPlayerLocationGID :: GameComputation Identity (GID Location)
