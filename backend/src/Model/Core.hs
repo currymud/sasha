@@ -28,7 +28,6 @@ module Model.Core
     -- * Action Function Types
   , AgentImplicitStimulusActionF(..)
   , LocationImplicitStimulusActionF(..)
-  , DirectionalStimulusActionF(..)
   , AgentDirectionalStimulusActionF(..)
   , ObjectDirectionalStimulusActionF(..)
   , LocationDirectionalStimulusActionF(..)
@@ -52,7 +51,6 @@ module Model.Core
   , AgentDirectionalStimulusActionMap
   , LocationDirectionalStimulusActionMap
   , ObjectDirectionalStimulusActionMap
-  , DirectionalStimulusActionMap
   , DirectionalStimulusContainerActionMap
   , AgentDirectionalStimulusContainerActionMap
   , ContainerDirectionalStimulusContainerActionMap
@@ -114,7 +112,6 @@ module Model.Core
   , CompleteAccessRes(..)
   , SimpleAccessRes(..)
   , PlayerDirectionalStimulusContainerAction
-  , PlayerDirectionalStimulusAction
   , AgentDirectionalStimulusAction
   , ActionEffectKeyF
   ) where
@@ -234,25 +231,10 @@ data LocationImplicitStimulusActionF
   = LocationCanBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
   | LocationCannotBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
 
-type PlayerDirectionalStimulusAction :: Type
-type PlayerDirectionalStimulusAction
-  = ActionEffectKey
-      -> GID Object
-      -> GID Location
-      -> (ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF))
-      -> GameComputation Identity ()
-
 type AgentDirectionalStimulusAction :: Type
 type AgentDirectionalStimulusAction
   = ActionEffectKey
       -> GameComputation Identity ()
-
-type DirectionalStimulusActionF :: Type
-data DirectionalStimulusActionF
-  = PlayerDirectionalStimulusActionF PlayerDirectionalStimulusAction
-  | ObjectDirectionalStimulusActionF (ActionEffectKey -> GameComputation Identity ())
-  | PlayerCannotSeeF (ActionEffectKey -> (GameComputation Identity ()))
-  | ObjectCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
 
 type AgentDirectionalStimulusActionF :: Type
 data AgentDirectionalStimulusActionF
@@ -472,8 +454,6 @@ type AgentImplicitStimulusActionMap = Map (GID AgentImplicitStimulusActionF) Age
 type LocationImplicitStimulusActionMap :: Type
 type LocationImplicitStimulusActionMap = Map (GID LocationImplicitStimulusActionF) LocationImplicitStimulusActionF
 
-type DirectionalStimulusActionMap :: Type
-type DirectionalStimulusActionMap = Map (GID DirectionalStimulusActionF) DirectionalStimulusActionF
 
 type DirectionalStimulusContainerActionMap :: Type
 type DirectionalStimulusContainerActionMap = Map (GID DirectionalStimulusContainerActionF) DirectionalStimulusContainerActionF
@@ -528,7 +508,6 @@ type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _agentImplicitStimulusActionMap :: AgentImplicitStimulusActionMap
   , _locationImplicitStimulusActionMap :: LocationImplicitStimulusActionMap
-  , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
   , _agentDirectionalStimulusContainerActionMap :: AgentDirectionalStimulusContainerActionMap
   , _containerDirectionalStimulusContainerActionMap :: ContainerDirectionalStimulusContainerActionMap
@@ -561,7 +540,6 @@ type ActionEffectKey :: Type
 data ActionEffectKey
   = AgentImplicitStimulusActionKey (GID AgentImplicitStimulusActionF)
   | LocationImplicitStimulusActionKey (GID LocationImplicitStimulusActionF)
-  | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | AgentDirectionalStimulusActionKey (GID AgentDirectionalStimulusActionF)
   | LocationDirectionalStimulusActionKey (GID LocationDirectionalStimulusActionF)
   | ObjectDirectionalStimulusActionKey (GID ObjectDirectionalStimulusActionF)
@@ -664,7 +642,6 @@ type ActionManagementOperation :: Type
 data ActionManagementOperation
   = AddAgentImplicitStimulus ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
   | AddLocationImplicitStimulus ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
-  | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
   | AddLocationDirectionalStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
   | AddObjectDirectionalStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
@@ -692,7 +669,6 @@ type ActionGID :: Type
 data ActionGID
   = AgentImplicitActionGID (GID AgentImplicitStimulusActionF)
   | LocationImplicitActionGID (GID LocationImplicitStimulusActionF)
-  | DirectionalActionGID (GID DirectionalStimulusActionF)
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
   | SomaticAccessActionGID (GID SomaticAccessActionF)
   -- Role-based acquisition action GIDs
@@ -713,8 +689,7 @@ data ActionGID
 -- AddAgentAcquisitionVerb
 type ActionManagement :: Type
 data ActionManagement
-  = DSAManagementKey DirectionalStimulusVerb (GID DirectionalStimulusActionF)
-  | AgentDSAManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
+  = AgentDSAManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
   | LocationDSAManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
   | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
   | DSAContainerManagementKey DirectionalStimulusVerb (GID DirectionalStimulusContainerActionF)
@@ -862,8 +837,8 @@ instance Arbitrary PlayerKey where
 -- ActionEffectKey instances (using simple GID generation, not actual functions)
 instance Arbitrary ActionEffectKey where
   arbitrary = oneof
-    [ DirectionalStimulusActionKey . GID <$> choose (1, 1000)
-    , DirectionalStimulusContainerActionKey . GID <$> choose (1, 1000)
+    [
+     DirectionalStimulusContainerActionKey . GID <$> choose (1, 1000)
     , SomaticAccessActionKey . GID <$> choose (1, 1000)
     , ContainerAccessActionKey . GID <$> choose (1, 1000)
     , AgentAcquisitionalActionKey . GID <$> choose (1, 1000)

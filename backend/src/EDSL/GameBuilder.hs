@@ -33,13 +33,13 @@ import qualified Data.Set                                                       
                                                                                    union)
 import           GameState.Perception                                             (youSeeM)
 import           Grammar.Parser.Partitions.Prepositions.DirectionalStimulusMarker (atDS)
-import           Model.Core                                                       (ActionEffectKey (AgentAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, ContainerAcquisitionalActionKey, DirectionalStimulusActionKey, DirectionalStimulusContainerActionKey, LocationAcquisitionalActionKey, ObjectAcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
+import           Model.Core                                                       (ActionEffectKey (AgentAcquisitionalActionKey, ConsumptionActionKey, ContainerAccessActionKey, ContainerAcquisitionalActionKey, DirectionalStimulusContainerActionKey, LocationAcquisitionalActionKey, ObjectAcquisitionalActionKey, PosturalActionKey, SomaticAccessActionKey),
                                                                                    ActionEffectMap (ActionEffectMap),
-                                                                                   ActionGID (AgentAcquisitionActionGID, AgentDirectionalActionGID, AgentDirectionalContainerActionGID, AgentImplicitActionGID, ConsumptionActionGID, ContainerAccessActionGID, ContainerAcquisitionActionGID, ContainerDirectionalContainerActionGID, DirectionalActionGID, DirectionalContainerActionGID, LocationAcquisitionActionGID, LocationDirectionalActionGID, LocationDirectionalContainerActionGID, LocationImplicitActionGID, ObjectAcquisitionActionGID, ObjectDirectionalActionGID, PosturalActionGID, SomaticAccessActionGID),
-                                                                                   ActionManagement (AgentDSAContainerManagementKey, AgentISAManagementKey, CAManagementKey, ContainerDSAContainerManagementKey, DSAContainerManagementKey, DSAManagementKey, LocationDSAContainerManagementKey, LocationISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                                                   ActionGID (AgentAcquisitionActionGID, AgentDirectionalActionGID, AgentDirectionalContainerActionGID, AgentImplicitActionGID, ConsumptionActionGID, ContainerAccessActionGID, ContainerAcquisitionActionGID, ContainerDirectionalContainerActionGID, DirectionalContainerActionGID, LocationAcquisitionActionGID, LocationDirectionalActionGID, LocationDirectionalContainerActionGID, LocationImplicitActionGID, ObjectAcquisitionActionGID, ObjectDirectionalActionGID, PosturalActionGID, SomaticAccessActionGID),
+                                                                                   ActionManagement (AgentDSAContainerManagementKey, AgentISAManagementKey, CAManagementKey, ContainerDSAContainerManagementKey, DSAContainerManagementKey, LocationDSAContainerManagementKey, LocationISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                                                    ActionManagementFunctions (ActionManagementFunctions),
-                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddDirectionalContainerStimulus, AddDirectionalStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
-                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _consumptionActionMap, _containerAccessActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _directionalStimulusActionMap, _directionalStimulusContainerActionMap, _locationAcquisitionActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectAcquisitionActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+                                                                                   ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddDirectionalContainerStimulus, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
+                                                                                   ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _consumptionActionMap, _containerAccessActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _directionalStimulusContainerActionMap, _locationAcquisitionActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectAcquisitionActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                                                                    Effect (ActionManagementEffect, FieldUpdateEffect),
                                                                                    FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                                                    GameState (_actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -134,7 +134,6 @@ initialBuilderState gs = BuilderState
   , _actionMaps = ActionMaps
         { _agentImplicitStimulusActionMap = Data.Map.Strict.empty
       , _locationImplicitStimulusActionMap = Data.Map.Strict.empty
-      , _directionalStimulusActionMap = Data.Map.Strict.empty
       , _agentDirectionalStimulusActionMap = Data.Map.Strict.empty
       , _objectDirectionalStimulusActionMap = Data.Map.Strict.empty
       , _locationDirectionalStimulusActionMap = Data.Map.Strict.empty
@@ -843,18 +842,6 @@ interpretDSL (WithTitle text loc) = do
 interpretDSL (WithPlayerLocation player locGID) =
   pure ( player { _location = locGID })
 
-actionGIDToKey :: ActionGID -> ActionEffectKey
-actionGIDToKey (DirectionalActionGID gid)          = DirectionalStimulusActionKey gid
-actionGIDToKey (DirectionalContainerActionGID gid) = DirectionalStimulusContainerActionKey gid
-actionGIDToKey (SomaticAccessActionGID gid)        = SomaticAccessActionKey gid
--- Role-based acquisition actions map to their respective action keys
-actionGIDToKey (AgentAcquisitionActionGID gid)     = AgentAcquisitionalActionKey gid
-actionGIDToKey (ObjectAcquisitionActionGID gid)    = ObjectAcquisitionalActionKey gid
-actionGIDToKey (ContainerAcquisitionActionGID gid) = ContainerAcquisitionalActionKey gid
-actionGIDToKey (LocationAcquisitionActionGID gid)  = LocationAcquisitionalActionKey gid
-actionGIDToKey (ConsumptionActionGID gid)          = ConsumptionActionKey gid
-actionGIDToKey (PosturalActionGID gid)             = PosturalActionKey gid
-actionGIDToKey (ContainerAccessActionGID gid)      = ContainerAccessActionKey gid
 -- Helper to validate object GID was declared
 validateObjectGIDDeclared :: GID Object -> WorldBuilder ()
 validateObjectGIDDeclared gid = do
