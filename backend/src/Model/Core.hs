@@ -565,8 +565,7 @@ newtype Evaluator = Evaluator
 
 type ActionEffectKey :: Type
 data ActionEffectKey
-  = ImplicitStimulusActionKey (GID ImplicitStimulusActionF)
-  | AgentImplicitStimulusActionKey (GID AgentImplicitStimulusActionF)
+  = AgentImplicitStimulusActionKey (GID AgentImplicitStimulusActionF)
   | LocationImplicitStimulusActionKey (GID LocationImplicitStimulusActionF)
   | DirectionalStimulusActionKey (GID DirectionalStimulusActionF)
   | AgentDirectionalStimulusActionKey (GID AgentDirectionalStimulusActionF)
@@ -669,8 +668,7 @@ newtype ActionKeyMap = ActionKeyMap
 
 type ActionManagementOperation :: Type
 data ActionManagementOperation
-  = AddImplicitStimulus ImplicitStimulusVerb (GID ImplicitStimulusActionF)
-  | AddAgentImplicitStimulus ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
+  = AddAgentImplicitStimulus ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
   | AddLocationImplicitStimulus ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
   | AddDirectionalStimulus DirectionalStimulusVerb (GID DirectionalStimulusActionF)
   | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
@@ -698,8 +696,7 @@ data ActionManagementOperation
 
 type ActionGID :: Type
 data ActionGID
-  = ImplicitActionGID (GID ImplicitStimulusActionF)
-  | AgentImplicitActionGID (GID AgentImplicitStimulusActionF)
+  = AgentImplicitActionGID (GID AgentImplicitStimulusActionF)
   | LocationImplicitActionGID (GID LocationImplicitStimulusActionF)
   | DirectionalActionGID (GID DirectionalStimulusActionF)
   | DirectionalContainerActionGID (GID DirectionalStimulusContainerActionF)
@@ -733,7 +730,6 @@ data ActionManagement
   -- Implicit stimulus action management keys
   | AgentISAManagementKey ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
   | LocationISAManagementKey ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
-  | ISAManagementKey ImplicitStimulusVerb (GID ImplicitStimulusActionF)
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   -- Role-based acquisition action management keys
   | AgentAVManagementKey AcquisitionVerb (GID AgentAcquisitionActionF)
@@ -872,8 +868,7 @@ instance Arbitrary PlayerKey where
 -- ActionEffectKey instances (using simple GID generation, not actual functions)
 instance Arbitrary ActionEffectKey where
   arbitrary = oneof
-    [ ImplicitStimulusActionKey . GID <$> choose (1, 1000)
-    , DirectionalStimulusActionKey . GID <$> choose (1, 1000)
+    [ DirectionalStimulusActionKey . GID <$> choose (1, 1000)
     , DirectionalStimulusContainerActionKey . GID <$> choose (1, 1000)
     , SomaticAccessActionKey . GID <$> choose (1, 1000)
     , ContainerAccessActionKey . GID <$> choose (1, 1000)

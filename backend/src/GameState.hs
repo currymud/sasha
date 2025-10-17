@@ -64,7 +64,7 @@ import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
-                                                ActionManagement (CAManagementKey, ISAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
+                                                ActionManagement (CAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 CompleteAccessRes (CompleteAccessRes),
                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
@@ -72,10 +72,9 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
                                                 ContainerAccessActionF,
                                                 GameComputation,
                                                 GameState (_narration, _player, _world),
-                                                ImplicitStimulusActionF,
                                                 Location (_locationActionManagement, _locationInventory),
                                                 Narration (Narration, _actionConsequence),
-                                                Object (_description, _descriptives, _objectActionManagement),
+                                                Object (_description, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
                                                 PosturalActionF,
                                                 SimpleAccessRes (SimpleAccessRes),
@@ -88,8 +87,7 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
 import           Model.Core.Mappings           (GIDToDataMap, _getGIDToDataMap)
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, Surface)
-import           Model.Parser.Atomics.Verbs    (ImplicitStimulusVerb,
-                                                NegativePosturalVerb,
+import           Model.Parser.Atomics.Verbs    (NegativePosturalVerb,
                                                 PositivePosturalVerb,
                                                 SimpleAccessVerb)
 import           Model.Parser.Composites.Nouns (ConsumableNounPhrase (ConsumableNounPhrase),
