@@ -48,7 +48,6 @@ module Model.Core
     -- * Action Maps
   , ActionMaps(..)
   , ActionEffectMap(..)
-  , ImplicitStimulusActionMap
   , AgentImplicitStimulusActionMap
   , LocationImplicitStimulusActionMap
   , AgentDirectionalStimulusActionMap
@@ -75,8 +74,6 @@ module Model.Core
     -- * Processing Types
   , ProcessImplicitStimulusVerb(..)
   , ProcessDirectionalStimulusVerb(..)
-  , ProcessImplicitVerbMap
-  , ProcessImplicitVerbMaps
   , PlayerProcessImplicitVerbMap
   , SystemEffectMap
     -- * Search and Access Types
@@ -470,19 +467,10 @@ newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
                                           -> GameComputation Identity ()
   }
 
-type ProcessImplicitVerbMap :: Type
-type ProcessImplicitVerbMap = Map (GID ProcessImplicitStimulusVerb) (ImplicitStimulusVerb -> ImplicitStimulusActionF)
-
-type ProcessImplicitVerbMaps :: Type
-type ProcessImplicitVerbMaps = Map ImplicitStimulusVerb ProcessImplicitVerbMap
-
 type PlayerProcessImplicitVerbMap :: Type
 type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
 
 -- Action Maps
-
-type ImplicitStimulusActionMap :: Type
-type ImplicitStimulusActionMap = Map (GID ImplicitStimulusActionF) ImplicitStimulusActionF
 
 type AgentImplicitStimulusActionMap :: Type
 type AgentImplicitStimulusActionMap = Map (GID AgentImplicitStimulusActionF) AgentImplicitStimulusActionF
@@ -544,8 +532,7 @@ type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 
 type ActionMaps :: Type
 data ActionMaps = ActionMaps
-  { _implicitStimulusActionMap    :: ImplicitStimulusActionMap
-  , _agentImplicitStimulusActionMap :: AgentImplicitStimulusActionMap
+  { _agentImplicitStimulusActionMap :: AgentImplicitStimulusActionMap
   , _locationImplicitStimulusActionMap :: LocationImplicitStimulusActionMap
   , _directionalStimulusActionMap :: DirectionalStimulusActionMap
   , _directionalStimulusContainerActionMap :: DirectionalStimulusContainerActionMap
