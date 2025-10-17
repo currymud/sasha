@@ -29,7 +29,6 @@ import           Model.Core                    (ActionEffectKey,
                                                 ContainerAccessActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
-                                                DirectionalStimulusActionF,
                                                 DirectionalStimulusContainerActionF,
                                                 Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
@@ -909,11 +908,6 @@ lookupContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
 lookupContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
   listToMaybe [gid | CONManagementKey p gid <- Data.Set.toList actions, p == cavp]
 
-lookupDirectionalStimulus :: DirectionalStimulusVerb
-                               -> ActionManagementFunctions
-                               -> Maybe (GID DirectionalStimulusActionF)
-lookupDirectionalStimulus verb (ActionManagementFunctions actions) =
-  listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupAgentDirectionalStimulus :: DirectionalStimulusVerb
                                     -> ActionManagementFunctions
@@ -993,9 +987,6 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
 
-findDSAKey :: DirectionalStimulusVerb -> ActionManagementFunctions -> Maybe (GID DirectionalStimulusActionF)
-findDSAKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | DSAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
 findAgentAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID AgentAcquisitionActionF)
 findAgentAVKey verb (ActionManagementFunctions actionSet) =
