@@ -34,7 +34,6 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 declareConsumptionActionGID,
                                                 declareDirectionalContainerActionGID,
                                                 declareDirectionalStimulusActionGID,
-                                                declareImplicitStimulusActionGID,
                                                 declareLocationAcquisitionActionGID,
                                                 declareLocationDirectionalStimulusActionGID,
                                                 declareLocationDirectionalContainerStimulusActionGID,
@@ -94,9 +93,6 @@ instance HasAction ContainerDirectionalStimulusContainerActionF where
 
 instance HasAction LocationDirectionalStimulusContainerActionF where
   declareAction = declareLocationDirectionalContainerStimulusActionGID
-
-instance HasAction ImplicitStimulusActionF where
-  declareAction = declareImplicitStimulusActionGID
 
 -- Role-based implicit stimulus action instances
 instance HasAction AgentImplicitStimulusActionF where

@@ -304,18 +304,6 @@ interpretDSL (DeclareLocationGID nounPhrase) = do
       put state { _declaredLocationGIDs = Data.Map.Strict.insert nounPhrase newGID (_declaredLocationGIDs state) }
       pure newGID
 
-interpretDSL (DeclareImplicitStimulusActionGID actionF) = do
-  state <- get
-  let gidValue = _nextImplicitActionGID state
-      newGID = GID gidValue
-      currentMaps = _actionMaps state
-      updatedMap = Data.Map.Strict.insert newGID actionF
-                   (_implicitStimulusActionMap currentMaps)
-      updatedMaps = currentMaps { _implicitStimulusActionMap = updatedMap }
-  put state { _nextImplicitActionGID = gidValue + 1
-            , _actionMaps = updatedMaps }
-  pure newGID
-
 interpretDSL (DeclareAgentImplicitStimulusActionGID actionF) = do
   state <- get
   let gidValue = _nextAgentImplicitStimulusActionGID state
@@ -712,9 +700,6 @@ interpretDSL (CreateNegativePosturalEffect verb actionGID) = do
 interpretDSL (CreateSomaticAccessEffect verb actionGID) = do
   pure (ActionManagementEffect (AddSomaticAccess verb actionGID) (SomaticAccessActionGID actionGID))
 
-interpretDSL (CreateImplicitStimulusEffect verb actionGID) = do
-  pure (ActionManagementEffect (AddImplicitStimulus verb actionGID) (ImplicitActionGID actionGID))
-
 interpretDSL (CreateAgentImplicitStimulusEffect verb actionGID) = do
   pure (ActionManagementEffect (AddAgentImplicitStimulus verb actionGID) (AgentImplicitActionGID actionGID))
 
@@ -794,9 +779,6 @@ interpretDSL (SetInitialNarration text) = do
   let initialNarration = Narration (Data.List.singleton text) mempty
       updatedGameState = (_gameState state) { _narration = initialNarration }
   put state { _gameState = updatedGameState }
-
-interpretDSL (CreateISAManagement verb actionGID) =
-  pure (ISAManagementKey verb actionGID)
 
 interpretDSL (CreateAgentISAManagement verb actionGID) =
   pure (AgentISAManagementKey verb actionGID)

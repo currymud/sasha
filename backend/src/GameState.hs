@@ -1,5 +1,4 @@
 module GameState ( addToInventoryM
-                 , changeImplicit
                  , clearNarration
                  , getObjectM
                  , getActionManagementM
@@ -299,17 +298,6 @@ getLocationObjectIDsM lid = do
       objectGIDSets = Data.Map.Strict.elems objectSemanticMap
       allObjectGIDs = concatMap Data.Set.toList objectGIDSets
   pure $ Data.Set.fromList (map ObjectKey allObjectGIDs)
-
-changeImplicit :: ImplicitStimulusVerb -> GID ImplicitStimulusActionF -> GameComputation Identity ()
-changeImplicit verb newActionGID = do
-  playerLocationGID <- getPlayerLocationGID
-  modifyLocationM playerLocationGID $ \loc ->
-    let currentActions = _locationActionManagement loc
-        -- Remove old action for this verb and add new one
-        ActionManagementFunctions actionSet = currentActions
-        filteredActions = Data.Set.filter (\case ISAManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (ISAManagementKey verb newActionGID) filteredActions
-    in loc { _locationActionManagement = ActionManagementFunctions updatedActions }
 
 -- There is some cruft forming
 getPlayerLocationGID :: GameComputation Identity (GID Location)

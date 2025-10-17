@@ -1,5 +1,6 @@
 module ConstraintRefinement.Actions.Player.Inventory () where
 
+import           Control.Monad.Identity     (Identity)
 import           Data.Text                  (Text)
 import           GameState                  (getObjectM)
 import           Model.Core                 (GameComputation,
