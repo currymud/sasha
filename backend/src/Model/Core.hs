@@ -60,6 +60,7 @@ module Model.Core
   , ContainerAccessActionMap
   , AgentContainerAccessActionMap
   , LocationContainerAccessActionMap
+  , ObjectContainerAccessActionMap
   , SomaticAccessActionMap
   , PosturalActionMap
   , AgentAcquisitionActionMap
@@ -451,6 +452,9 @@ type AgentContainerAccessActionMap = Map (GID AgentContainerAccessActionF) Agent
 type LocationContainerAccessActionMap :: Type
 type LocationContainerAccessActionMap = Map (GID LocationContainerAccessActionF) LocationContainerAccessActionF
 
+type ObjectContainerAccessActionMap :: Type
+type ObjectContainerAccessActionMap  = Map (GID ObjectContainerAccessActionF) ObjectContainerAccessActionF
+
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
 
@@ -497,6 +501,7 @@ data ActionMaps = ActionMaps
   , _locationDirectionalStimulusContainerActionMap :: LocationDirectionalStimulusContainerActionMap
   , _agentContainerAccessActionMap    :: AgentContainerAccessActionMap
   , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
+  , _objectContainerAccessActionMap   :: ObjectContainerAccessActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
@@ -535,6 +540,7 @@ data ActionEffectKey
   | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
+  | ObjectContainerAccessActionKey (GID ObjectContainerAccessActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
@@ -640,6 +646,8 @@ data ActionManagementOperation
   | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
   | AddLocationContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
   | AddLocationContainerAccessSimpleVerb SimpleAccessVerb (GID LocationContainerAccessActionF)
+  | AddObjectContainerAccessSimpleVerb SimpleAccessVerb (GID ObjectContainerAccessActionF)
+  | AddObjectContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -674,6 +682,7 @@ data ActionGID
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | AgentContainerAccessActionGID (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionGID (GID LocationContainerAccessActionF)
+  | ObjectContainerAccessActionGID (GID ObjectContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 -- AddAgentAcquisitionVerb
@@ -703,6 +712,7 @@ data ActionManagement
   | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
   | AgentSAConManagementKey SimpleAccessVerb (GID AgentContainerAccessActionF)
   | LocationSAConManagementKey SimpleAccessVerb (GID LocationContainerAccessActionF)
+  | ObjectSAConManagementKey SimpleAccessVerb (GID ObjectContainerAccessActionF)
   | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
