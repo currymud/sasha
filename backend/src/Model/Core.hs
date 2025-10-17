@@ -38,6 +38,7 @@ module Model.Core
   , AgentContainerAccessActionF(..)
   , LocationContainerAccessActionF(..)
   , ObjectContainerAccessActionF(..)
+  , InstrumentContainerAccessActionF(..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AgentAcquisitionActionF(..)
@@ -58,6 +59,7 @@ module Model.Core
   , LocationDirectionalStimulusContainerActionMap
   , ContainerAccessActionMap
   , AgentContainerAccessActionMap
+  , LocationContainerAccessActionMap
   , SomaticAccessActionMap
   , PosturalActionMap
   , AgentAcquisitionActionMap
@@ -313,6 +315,11 @@ data ObjectContainerAccessActionF
   = ContainingObjectCanAccessF ActionEffectKeyF
   | ContainingObjectCannotAccessF ActionEffectKeyF
 
+type InstrumentContainerAccessActionF :: Type
+data InstrumentContainerAccessActionF
+  = InstrumentCanAccessF ActionEffectKeyF
+  | InstrumentCannotAccessF ActionEffectKeyF
+
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
   = PlayerSomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
@@ -441,6 +448,9 @@ type LocationDirectionalStimulusContainerActionMap = Map (GID LocationDirectiona
 type AgentContainerAccessActionMap :: Type
 type AgentContainerAccessActionMap = Map (GID AgentContainerAccessActionF) AgentContainerAccessActionF
 
+type LocationContainerAccessActionMap :: Type
+type LocationContainerAccessActionMap = Map (GID LocationContainerAccessActionF) LocationContainerAccessActionF
+
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
 
@@ -486,6 +496,7 @@ data ActionMaps = ActionMaps
   , _containerDirectionalStimulusContainerActionMap :: ContainerDirectionalStimulusContainerActionMap
   , _locationDirectionalStimulusContainerActionMap :: LocationDirectionalStimulusContainerActionMap
   , _agentContainerAccessActionMap    :: AgentContainerAccessActionMap
+  , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
@@ -523,6 +534,7 @@ data ActionEffectKey
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
+  | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
@@ -626,6 +638,8 @@ data ActionManagementOperation
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | AddAgentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
   | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
+  | AddLocationContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
+  | AddLocationContainerAccessSimpleVerb SimpleAccessVerb (GID LocationContainerAccessActionF)
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -659,6 +673,7 @@ data ActionGID
   | ConsumptionActionGID (GID ConsumptionActionF)
   | ContainerAccessActionGID (GID ContainerAccessActionF)
   | AgentContainerAccessActionGID (GID AgentContainerAccessActionF)
+  | LocationContainerAccessActionGID (GID LocationContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 -- AddAgentAcquisitionVerb
@@ -686,6 +701,8 @@ data ActionManagement
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
   | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
+  | AgentSAConManagementKey SimpleAccessVerb (GID AgentContainerAccessActionF)
+  | LocationSAConManagementKey SimpleAccessVerb (GID LocationContainerAccessActionF)
   | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
