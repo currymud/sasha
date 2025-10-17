@@ -35,6 +35,9 @@ module Model.Core
   , ContainerDirectionalStimulusContainerActionF(..)
   , LocationDirectionalStimulusContainerActionF(..)
   , ContainerAccessActionF(..)
+  , AgentContainerAccessActionF(..)
+  , LocationContainerAccessActionF(..)
+  , ObjectContainerAccessActionF(..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AgentAcquisitionActionF(..)
@@ -54,6 +57,7 @@ module Model.Core
   , ContainerDirectionalStimulusContainerActionMap
   , LocationDirectionalStimulusContainerActionMap
   , ContainerAccessActionMap
+  , AgentContainerAccessActionMap
   , SomaticAccessActionMap
   , PosturalActionMap
   , AgentAcquisitionActionMap
@@ -67,9 +71,6 @@ module Model.Core
   , ActionGID(..)
   , ActionManagementOperation(..)
     -- * Processing Types
-  , ProcessImplicitStimulusVerb(..)
-  , ProcessDirectionalStimulusVerb(..)
-  , PlayerProcessImplicitVerbMap
   , SystemEffectMap
     -- * Search and Access Types
   , SimpleAccessSearchStrategy
@@ -297,6 +298,21 @@ data ContainerAccessActionF
   | InstrumentContainerAccessF (ActionEffectKey -> GameComputation Identity ())
   | CannotAccessF (ActionEffectKey -> GameComputation Identity ())
 
+type AgentContainerAccessActionF :: Type
+data AgentContainerAccessActionF
+  = AgentCanAccessF ActionEffectKeyF
+  | AgentCannotAccessF ActionEffectKeyF
+
+type LocationContainerAccessActionF :: Type
+data LocationContainerAccessActionF
+  = LocationCanAccessContainerF ActionEffectKeyF
+  | LocationCannotAccessContainerF ActionEffectKeyF
+
+type ObjectContainerAccessActionF :: Type
+data ObjectContainerAccessActionF
+  = ContainingObjectCanAccessF ActionEffectKeyF
+  | ContainingObjectCannotAccessF ActionEffectKeyF
+
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
   = PlayerSomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
@@ -405,20 +421,6 @@ data ConsumptionActionF
   | ObjectConsumedF (ActionEffectKey -> GameComputation Identity ConsumptionResult)
   | ObjectCannotBeConsumedF (ActionEffectKey -> GameComputation Identity ActionEffectKey)
 
-type ProcessImplicitStimulusVerb :: Type
-newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb
-  { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()}
-
-type ProcessDirectionalStimulusVerb :: Type
-newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
-  { _unProcessDirectionalStimlusVerb :: DirectionalStimulusVerb
-                                          -> DirectionalStimulusNounPhrase
-                                          -> GameComputation Identity ()
-  }
-
-type PlayerProcessImplicitVerbMap :: Type
-type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
-
 -- Action Maps
 
 type AgentImplicitStimulusActionMap :: Type
@@ -435,6 +437,9 @@ type ContainerDirectionalStimulusContainerActionMap = Map (GID ContainerDirectio
 
 type LocationDirectionalStimulusContainerActionMap :: Type
 type LocationDirectionalStimulusContainerActionMap = Map (GID LocationDirectionalStimulusContainerActionF) LocationDirectionalStimulusContainerActionF
+
+type AgentContainerAccessActionMap :: Type
+type AgentContainerAccessActionMap = Map (GID AgentContainerAccessActionF) AgentContainerAccessActionF
 
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
@@ -480,6 +485,7 @@ data ActionMaps = ActionMaps
   , _agentDirectionalStimulusContainerActionMap :: AgentDirectionalStimulusContainerActionMap
   , _containerDirectionalStimulusContainerActionMap :: ContainerDirectionalStimulusContainerActionMap
   , _locationDirectionalStimulusContainerActionMap :: LocationDirectionalStimulusContainerActionMap
+  , _agentContainerAccessActionMap    :: AgentContainerAccessActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
@@ -516,6 +522,7 @@ data ActionEffectKey
   | LocationDirectionalStimulusContainerActionKey (GID LocationDirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
+  | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
@@ -617,6 +624,8 @@ data ActionManagementOperation
   | AddLocationDirectionalContainerStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
+  | AddAgentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
+  | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -649,6 +658,7 @@ data ActionGID
   | LocationAcquisitionActionGID (GID LocationAcquisitionActionF)
   | ConsumptionActionGID (GID ConsumptionActionF)
   | ContainerAccessActionGID (GID ContainerAccessActionF)
+  | AgentContainerAccessActionGID (GID AgentContainerAccessActionF)
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 -- AddAgentAcquisitionVerb
