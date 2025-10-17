@@ -52,7 +52,6 @@ import           Model.Core                                              (Action
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
-                                                                          ImplicitStimulusActionF,
                                                                           Location,
                                                                           LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
                                                                           LocationDirectionalStimulusContainerActionF,

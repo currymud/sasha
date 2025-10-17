@@ -26,7 +26,6 @@ module Model.Core
   , liftToDisplay
   , identityToIO
     -- * Action Function Types
-  , ImplicitStimulusActionF(..)
   , AgentImplicitStimulusActionF(..)
   , LocationImplicitStimulusActionF(..)
   , DirectionalStimulusActionF(..)
@@ -225,11 +224,6 @@ instance MonadTrans GameComputation where
   lift = GameComputation . lift . lift . lift
 
 -- Action function types
-type ImplicitStimulusActionF :: Type
-data ImplicitStimulusActionF
-  = PlayerImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
-  | CannotImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
-
 type AgentImplicitStimulusActionF :: Type
 data AgentImplicitStimulusActionF
   = AgentCanSeeF (ActionEffectKey -> GameComputation Identity ())
