@@ -14,6 +14,7 @@ import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
 import           Model.Core                                        (AccessRes (CompleteAR, SimpleAR),
                                                                     ActionEffectKey (ContainerAccessActionKey),
                                                                     ActionManagementFunctions,
+                                                                    AgentContainerAccessActionF (AgentCanAccessF, AgentCannotAccessF),
                                                                     CompleteAccessRes (CompleteAccessRes),
                                                                     ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
                                                                     ContainerAccessActionMap,
@@ -76,6 +77,12 @@ openF = PlayerContainerAccessF openit
                         (ObjectContainerAccessF actionF) -> actionF objectActionKey
               processEffectsFromRegistry playerActionEffectKey >> objectEffectF
         CompleteAR (CompleteAccessRes {..}) -> error "openF: Complete Access Result not implemented."
+
+openContainerF :: AgentContainerAccessActionF
+openContainerF = AgentCanAccessF processEffectsFromRegistry
+
+openContainerDeniedF :: AgentContainerAccessActionF
+openContainerDeniedF = AgentCannotAccessF processEffectsFromRegistry
 
 objectSearchStrategy :: SimpleAccessSearchStrategy
 objectSearchStrategy nounkey = do

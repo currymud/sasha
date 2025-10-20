@@ -35,6 +35,10 @@ module Model.Core
   , ContainerDirectionalStimulusContainerActionF(..)
   , LocationDirectionalStimulusContainerActionF(..)
   , ContainerAccessActionF(..)
+  , AgentContainerAccessActionF(..)
+  , LocationContainerAccessActionF(..)
+  , ObjectContainerAccessActionF(..)
+  , InstrumentContainerAccessActionF(..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AgentAcquisitionActionF(..)
@@ -54,6 +58,10 @@ module Model.Core
   , ContainerDirectionalStimulusContainerActionMap
   , LocationDirectionalStimulusContainerActionMap
   , ContainerAccessActionMap
+  , AgentContainerAccessActionMap
+  , LocationContainerAccessActionMap
+  , ObjectContainerAccessActionMap
+  , InstrumentContainerAccessActionMap
   , SomaticAccessActionMap
   , PosturalActionMap
   , AgentAcquisitionActionMap
@@ -67,9 +75,6 @@ module Model.Core
   , ActionGID(..)
   , ActionManagementOperation(..)
     -- * Processing Types
-  , ProcessImplicitStimulusVerb(..)
-  , ProcessDirectionalStimulusVerb(..)
-  , PlayerProcessImplicitVerbMap
   , SystemEffectMap
     -- * Search and Access Types
   , SimpleAccessSearchStrategy
@@ -297,6 +302,26 @@ data ContainerAccessActionF
   | InstrumentContainerAccessF (ActionEffectKey -> GameComputation Identity ())
   | CannotAccessF (ActionEffectKey -> GameComputation Identity ())
 
+type AgentContainerAccessActionF :: Type
+data AgentContainerAccessActionF
+  = AgentCanAccessF ActionEffectKeyF
+  | AgentCannotAccessF ActionEffectKeyF
+
+type LocationContainerAccessActionF :: Type
+data LocationContainerAccessActionF
+  = LocationCanAccessContainerF ActionEffectKeyF
+  | LocationCannotAccessContainerF ActionEffectKeyF
+
+type ObjectContainerAccessActionF :: Type
+data ObjectContainerAccessActionF
+  = ContainingObjectCanAccessF ActionEffectKeyF
+  | ContainingObjectCannotAccessF ActionEffectKeyF
+
+type InstrumentContainerAccessActionF :: Type
+data InstrumentContainerAccessActionF
+  = InstrumentCanAccessF ActionEffectKeyF
+  | InstrumentCannotAccessF ActionEffectKeyF
+
 type SomaticAccessActionF :: Type
 data SomaticAccessActionF
   = PlayerSomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
@@ -405,20 +430,6 @@ data ConsumptionActionF
   | ObjectConsumedF (ActionEffectKey -> GameComputation Identity ConsumptionResult)
   | ObjectCannotBeConsumedF (ActionEffectKey -> GameComputation Identity ActionEffectKey)
 
-type ProcessImplicitStimulusVerb :: Type
-newtype ProcessImplicitStimulusVerb = ProcessImplicitStimulusVerb
-  { _unProcessImplicitStimlusVerb :: ImplicitStimulusVerb -> GameComputation Identity ()}
-
-type ProcessDirectionalStimulusVerb :: Type
-newtype ProcessDirectionalStimulusVerb = ProcessDirectionalStimulusVerb
-  { _unProcessDirectionalStimlusVerb :: DirectionalStimulusVerb
-                                          -> DirectionalStimulusNounPhrase
-                                          -> GameComputation Identity ()
-  }
-
-type PlayerProcessImplicitVerbMap :: Type
-type PlayerProcessImplicitVerbMap = Map ImplicitStimulusVerb (GID ProcessImplicitStimulusVerb)
-
 -- Action Maps
 
 type AgentImplicitStimulusActionMap :: Type
@@ -435,6 +446,18 @@ type ContainerDirectionalStimulusContainerActionMap = Map (GID ContainerDirectio
 
 type LocationDirectionalStimulusContainerActionMap :: Type
 type LocationDirectionalStimulusContainerActionMap = Map (GID LocationDirectionalStimulusContainerActionF) LocationDirectionalStimulusContainerActionF
+
+type AgentContainerAccessActionMap :: Type
+type AgentContainerAccessActionMap = Map (GID AgentContainerAccessActionF) AgentContainerAccessActionF
+
+type LocationContainerAccessActionMap :: Type
+type LocationContainerAccessActionMap = Map (GID LocationContainerAccessActionF) LocationContainerAccessActionF
+
+type ObjectContainerAccessActionMap :: Type
+type ObjectContainerAccessActionMap  = Map (GID ObjectContainerAccessActionF) ObjectContainerAccessActionF
+
+type InstrumentContainerAccessActionMap :: Type
+type InstrumentContainerAccessActionMap = Map (GID InstrumentContainerAccessActionF) InstrumentContainerAccessActionF
 
 type ContainerAccessActionMap :: Type
 type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
@@ -480,6 +503,10 @@ data ActionMaps = ActionMaps
   , _agentDirectionalStimulusContainerActionMap :: AgentDirectionalStimulusContainerActionMap
   , _containerDirectionalStimulusContainerActionMap :: ContainerDirectionalStimulusContainerActionMap
   , _locationDirectionalStimulusContainerActionMap :: LocationDirectionalStimulusContainerActionMap
+  , _agentContainerAccessActionMap    :: AgentContainerAccessActionMap
+  , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
+  , _objectContainerAccessActionMap   :: ObjectContainerAccessActionMap
+  , _instrumentContainerAccessActionMap :: InstrumentContainerAccessActionMap
   , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
@@ -516,6 +543,9 @@ data ActionEffectKey
   | LocationDirectionalStimulusContainerActionKey (GID LocationDirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | ContainerAccessActionKey (GID ContainerAccessActionF)
+  | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
+  | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
+  | ObjectContainerAccessActionKey (GID ObjectContainerAccessActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
@@ -612,20 +642,34 @@ data ActionManagementOperation
   | AddAgentDirectionalStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
   | AddLocationDirectionalStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
   | AddObjectDirectionalStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
+
   | AddAgentDirectionalContainerStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusContainerActionF)
   | AddContainerDirectionalContainerStimulus DirectionalStimulusVerb (GID ContainerDirectionalStimulusContainerActionF)
   | AddLocationDirectionalContainerStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
+
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
   | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
+
+  | AddAgentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
+  | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
+  | AddLocationContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
+  | AddLocationContainerAccessSimpleVerb SimpleAccessVerb (GID LocationContainerAccessActionF)
+  | AddObjectContainerAccessSimpleVerb SimpleAccessVerb (GID ObjectContainerAccessActionF)
+  | AddObjectContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
+  | AddInstrumentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID InstrumentContainerAccessActionF)
+  | AddInstrumentContainerAccessSimpleVerb SimpleAccessVerb (GID InstrumentContainerAccessActionF)
+
   | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
   | AddContainerAcquisitionVerb AcquisitionVerb (GID ContainerAcquisitionActionF)
   | AddLocationAcquisitionVerb AcquisitionVerb (GID LocationAcquisitionActionF)
+
   | AddAgentAcquisitionVerbPhrase AcquisitionVerbPhrase (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerbPhrase AcquisitionVerbPhrase (GID ObjectAcquisitionActionF)
   | AddContainerAcquisitionVerbPhrase AcquisitionVerbPhrase (GID ContainerAcquisitionActionF)
   | AddLocationAcquisitionVerbPhrase AcquisitionVerbPhrase (GID LocationAcquisitionActionF)
+
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
   | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
@@ -640,15 +684,25 @@ data ActionGID
   | AgentDirectionalActionGID (GID AgentDirectionalStimulusActionF)
   | LocationDirectionalActionGID (GID LocationDirectionalStimulusActionF)
   | ObjectDirectionalActionGID (GID ObjectDirectionalStimulusActionF)
+
   | AgentAcquisitionActionGID (GID AgentAcquisitionActionF)
+  | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
+  | LocationAcquisitionActionGID (GID LocationAcquisitionActionF)
+
   | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
+
   | AgentDirectionalContainerActionGID (GID AgentDirectionalStimulusContainerActionF)
   | ContainerDirectionalContainerActionGID (GID ContainerDirectionalStimulusContainerActionF)
   | LocationDirectionalContainerActionGID (GID LocationDirectionalStimulusContainerActionF)
-  | ContainerAcquisitionActionGID (GID ContainerAcquisitionActionF)
-  | LocationAcquisitionActionGID (GID LocationAcquisitionActionF)
+
   | ConsumptionActionGID (GID ConsumptionActionF)
+
   | ContainerAccessActionGID (GID ContainerAccessActionF)
+  | AgentContainerAccessActionGID (GID AgentContainerAccessActionF)
+  | LocationContainerAccessActionGID (GID LocationContainerAccessActionF)
+  | ObjectContainerAccessActionGID (GID ObjectContainerAccessActionF)
+  | InstrumentContainerAccessActionGID (GID InstrumentContainerAccessActionF)
+
   | PosturalActionGID (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 -- AddAgentAcquisitionVerb
@@ -657,25 +711,40 @@ data ActionManagement
   = AgentDSAManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusActionF)
   | LocationDSAManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusActionF)
   | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
+
   | AgentDSAContainerManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusContainerActionF)
   | ContainerDSAContainerManagementKey DirectionalStimulusVerb (GID ContainerDirectionalStimulusContainerActionF)
   | LocationDSAContainerManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
-  -- Implicit stimulus action management keys
+
   | AgentISAManagementKey ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
   | LocationISAManagementKey ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
+
   | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
   -- Role-based acquisition action management keys
   | AgentAVManagementKey AcquisitionVerb (GID AgentAcquisitionActionF)
   | ObjectAVManagementKey AcquisitionVerb (GID ObjectAcquisitionActionF)
   | ContainerAVManagementKey AcquisitionVerb (GID ContainerAcquisitionActionF)
   | LocationAVManagementKey AcquisitionVerb (GID LocationAcquisitionActionF)
+
   | AgentAAManagementKey AcquisitionVerbPhrase (GID AgentAcquisitionActionF)
   | ObjectAAManagementKey AcquisitionVerbPhrase (GID ObjectAcquisitionActionF)
   | ContainerAAManagementKey AcquisitionVerbPhrase (GID ContainerAcquisitionActionF)
   | LocationAAManagementKey AcquisitionVerbPhrase (GID LocationAcquisitionActionF)
+
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
   | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
+
+  | AgentSAConManagementKey SimpleAccessVerb (GID AgentContainerAccessActionF)
+  | LocationSAConManagementKey SimpleAccessVerb (GID LocationContainerAccessActionF)
+  | ObjectSAConManagementKey SimpleAccessVerb (GID ObjectContainerAccessActionF)
+  | InstrumentSAConManagementKey SimpleAccessVerb (GID InstrumentContainerAccessActionF)
+
+  | AgentConManagementKey ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
+  | InstrumentConManagementKey ContainerAccessVerbPhrase (GID InstrumentContainerAccessActionF)
+  | LocationConManagementKey ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
+  | ObjectConManagementKey ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
+
   | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
