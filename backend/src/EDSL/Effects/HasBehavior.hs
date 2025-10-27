@@ -8,18 +8,22 @@ import           Data.Kind                     (Constraint, Type)
 import           EDSL.Effects.TypeMappings     (ActionFunctionType)
 import           Model.Core                    (ActionManagement (..),
                                                 AgentAcquisitionActionF,
+                                                AgentContainerAccessActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
+                                                InstrumentContainerAccessActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
+                                                LocationContainerAccessActionF,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
+                                                ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 Player)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
@@ -115,3 +119,29 @@ makeAgentISBehavior = AgentISAManagementKey
 
 makeLocationISBehavior :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> ActionManagement
 makeLocationISBehavior = LocationISAManagementKey
+
+-- Role-based container access behavior creation functions
+makeAgentContainerAccessBehavior :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> ActionManagement
+makeAgentContainerAccessBehavior = AgentSAConManagementKey
+
+makeLocationContainerAccessBehavior :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> ActionManagement
+makeLocationContainerAccessBehavior = LocationSAConManagementKey
+
+makeObjectContainerAccessBehavior :: SimpleAccessVerb -> GID ObjectContainerAccessActionF -> ActionManagement
+makeObjectContainerAccessBehavior = ObjectSAConManagementKey
+
+makeInstrumentContainerAccessBehavior :: SimpleAccessVerb -> GID InstrumentContainerAccessActionF -> ActionManagement
+makeInstrumentContainerAccessBehavior = InstrumentSAConManagementKey
+
+-- Role-based container access verb phrase behavior creation functions
+makeAgentContainerAccessPhraseBehavior :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> ActionManagement
+makeAgentContainerAccessPhraseBehavior = AgentConManagementKey
+
+makeLocationContainerAccessPhraseBehavior :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> ActionManagement
+makeLocationContainerAccessPhraseBehavior = LocationConManagementKey
+
+makeObjectContainerAccessPhraseBehavior :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> ActionManagement
+makeObjectContainerAccessPhraseBehavior = ObjectConManagementKey
+
+makeInstrumentContainerAccessPhraseBehavior :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> ActionManagement
+makeInstrumentContainerAccessPhraseBehavior = InstrumentConManagementKey
