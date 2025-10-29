@@ -45,13 +45,14 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (ActionEffectKey (..),
+                                                                          ActionGID (AgentContainerAccessActionGID),
+                                                                          ActionManagementOperation (AddAgentContainerAccessVerbPhrase),
                                                                           AgentAcquisitionActionF,
                                                                           AgentContainerAccessActionF,
                                                                           AgentDirectionalStimulusActionF (AgentCanLookAtF),
                                                                           AgentImplicitStimulusActionF,
                                                                           ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
-                                                                          ObjectContainerAccessActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
@@ -63,6 +64,7 @@ import           Model.Core                                              (Action
                                                                           NarrationComputation (..),
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
+                                                                          ObjectContainerAccessActionF,
                                                                           ObjectDirectionalStimulusActionF (ObjectCannotBeSeenF'),
                                                                           Player,
                                                                           PlayerKey (..),
@@ -131,7 +133,7 @@ import           ConstraintRefinement.Actions.Player.Look                (agentC
                                                                           lookAtF,
                                                                           lookInF)
 import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
-                                                                          openDeniedF,
+                                                                          openContainerF,
                                                                           openEyes)
 import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
                                                                           containerLosesObjectF,
@@ -148,15 +150,6 @@ getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase rob
 
 openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
-
---  | DirectionalStimulusContainmentPhrase DirectionalStimulusVerb DirectionalStimulusContainerPhrase
-{-
-type DirectionalStimulusNounPhrase :: Type
-data DirectionalStimulusNounPhrase =
-  DirectionalStimulusNounPhrase DirectionalStimulusMarker (NounPhrase DirectionalStimulus)
-  deriving stock (Show, Eq, Ord,Generic)
-ContainerPhrase (NounPhrase Container)
--}
 
 takePillCVP :: ConsumptionVerbPhrase
 takePillCVP = ConsumptionVerbPhrase takeCV (ConsumableNounPhrase (SimpleNounPhrase pillCS))
@@ -205,6 +198,7 @@ sashaBedroomDemo = do
   playerLookAtFGID <- declareAction lookAtF
   playerLookInFGID <- declareAction lookInF
   containerAccessDeniedFGID <- declareAction openContainerDeniedF
+  containerAccessAllowedFGID <- declareAction openContainerF
   accessContainerFGID <- declareAction openObjectContainerF
   openContainerFGID <- declareAction openObjectContainerF
   registerLocation bedroomGID (buildLocation locationLitFGID locationCanBeSeenGID locationCanBeSeenInFGID locationOpenContainerFGID)
@@ -250,7 +244,6 @@ sashaBedroomDemo = do
   pocketLookInGetRobe <- makeAgentCDSEffect dsaLook playerLookInFGID
   playerOpenPocketAfterRobe <- createObjectContainerAccessVerbPhraseEffect openPocketCVP accessContainerFGID
   pocketClosed <- makeContainerCDSEffect dsaLook lookInPocketDeniedFGID
---  closedPocket <- make
   -- Build composed effect computation
   buildEffects $
     buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
@@ -268,6 +261,7 @@ sashaBedroomDemo = do
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) pocketLookInGetRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketClosed `alongside`
+    buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyLocation bedroomGID) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase openPocketCVP containerAccessAllowedFGID) (AgentContainerAccessActionGID containerAccessAllowedFGID)) `alongside`
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
 
   -- Register narration effects for actions
@@ -307,6 +301,12 @@ sashaBedroomDemo = do
   -- Static narration for player's get action
   linkEffect (AgentAcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))
+
+  linkEffect (AgentContainerAccessActionKey containerAccessDeniedFGID) pocketGID
+    (NarrationEffect (StaticNarration "You cannot reach the pocket."))
+
+  linkEffect (AgentContainerAccessActionKey containerAccessAllowedFGID) pocketGID
+    (NarrationEffect (StaticNarration "You open the pocket."))
 
   linkEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
