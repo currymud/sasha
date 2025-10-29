@@ -52,11 +52,7 @@ class HasBehavior a where
 instance MakeBehavior SomaticAccessVerb where
   makeBehavior = SSAManagementKey
 
-instance MakeBehavior SimpleAccessVerb where
-  makeBehavior = SAConManagementKey
-
-instance MakeBehavior ContainerAccessVerbPhrase where
-  makeBehavior = CONManagementKey
+-- SimpleAccessVerb and ContainerAccessVerbPhrase instances removed - use role-specific functions instead
 
 instance HasBehavior Location where
   withBehavior = flip withLocationBehavior

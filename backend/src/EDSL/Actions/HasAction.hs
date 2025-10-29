@@ -5,6 +5,7 @@ module EDSL.Actions.HasAction where
 
 import           Data.Kind                 (Constraint, Type)
 import           Model.Core                (AgentAcquisitionActionF,
+                                            AgentContainerAccessActionF,
                                             AgentDirectionalStimulusActionF,
                                             AgentDirectionalStimulusContainerActionF,
                                             AgentImplicitStimulusActionF,
@@ -12,22 +13,29 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             ContainerAccessActionF,
                                             ContainerAcquisitionActionF,
                                             ContainerDirectionalStimulusContainerActionF,
+                                            InstrumentContainerAccessActionF,
                                             LocationAcquisitionActionF,
+                                            LocationContainerAccessActionF,
                                             LocationDirectionalStimulusActionF,
                                             LocationDirectionalStimulusContainerActionF,
                                             LocationImplicitStimulusActionF,
                                             ObjectAcquisitionActionF,
+                                            ObjectContainerAccessActionF,
                                             ObjectDirectionalStimulusActionF,
                                             PosturalActionF,
                                             SomaticAccessActionF)
 import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareAgentAcquisitionActionGID,
+                                            declareAgentContainerAccessActionGID,
                                             declareAgentDirectionalContainerStimulusActionGID,
                                             declareAgentDirectionalStimulusActionGID,
                                             declareAgentImplicitStimulusActionGID,
                                             declareConsumptionActionGID,
                                             declareContainerAccessActionGID,
                                             declareContainerAcquisitionActionGID,
+                                            declareInstrumentContainerAccessActionGID,
+                                            declareLocationContainerAccessActionGID,
+                                            declareObjectContainerAccessActionGID,
                                             declareContainerDirectionalContainerStimulusActionGID,
                                             declareLocationAcquisitionActionGID,
                                             declareLocationDirectionalContainerStimulusActionGID,
@@ -62,6 +70,19 @@ instance HasAction ConsumptionActionF where
 
 instance HasAction ContainerAccessActionF where
   declareAction = declareContainerAccessActionGID
+
+-- Role-based container access action instances
+instance HasAction AgentContainerAccessActionF where
+  declareAction = declareAgentContainerAccessActionGID
+
+instance HasAction LocationContainerAccessActionF where
+  declareAction = declareLocationContainerAccessActionGID
+
+instance HasAction ObjectContainerAccessActionF where
+  declareAction = declareObjectContainerAccessActionGID
+
+instance HasAction InstrumentContainerAccessActionF where
+  declareAction = declareInstrumentContainerAccessActionGID
 
 -- Role-based directional stimulus action instances
 instance HasAction AgentDirectionalStimulusActionF where

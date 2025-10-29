@@ -15,6 +15,8 @@ import           EDSL.Effects.EffectAlgebra                              (alongs
 import           EDSL.Effects.HasBehavior                                (HasBehavior (withBehavior),
                                                                           MakeBehavior (makeBehavior),
                                                                           makeAgentBehavior,
+                                                                          makeAgentContainerAccessBehavior,
+                                                                          makeAgentContainerAccessPhraseBehavior,
                                                                           makeAgentDSBehavior,
                                                                           makeAgentISBehavior,
                                                                           makeAgentPhraseBehavior,
@@ -24,6 +26,7 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           makeLocationDSBehavior,
                                                                           makeLocationISBehavior,
                                                                           makeObjectBehavior,
+                                                                          makeObjectContainerAccessBehavior,
                                                                           makeObjectDSBehavior,
                                                                           makeObjectPhraseBehavior)
 import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
@@ -41,10 +44,12 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultPlayer)
 import           Model.Core                                              (ActionEffectKey (..),
                                                                           AgentAcquisitionActionF,
+                                                                          AgentContainerAccessActionF,
                                                                           AgentDirectionalStimulusActionF (AgentCanLookAtF),
                                                                           AgentImplicitStimulusActionF,
                                                                           ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
+                                                                          ObjectContainerAccessActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
                                                                           GameState,
@@ -61,6 +66,8 @@ import           Model.Core                                              (Action
                                                                           SomaticAccessActionF,
                                                                           SpatialRelationship (..))
 import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
+                                                                          createObjectContainerAccessSimpleVerbEffect,
+                                                                          createObjectContainerAccessVerbPhraseEffect,
                                                                           declareLocationGID,
                                                                           declareObjectGID,
                                                                           finalizeGameState,
@@ -112,16 +119,16 @@ import           ConstraintRefinement.Actions.Objects.Look               (contai
                                                                           containerCannotBeSeenInF,
                                                                           objectCanBeSeenF,
                                                                           objectCannotBeSeenF)
-import           ConstraintRefinement.Actions.Objects.Open               (openContainerF)
+import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
 import           ConstraintRefinement.Actions.Player.Look                (agentCannotLookF,
                                                                           agentLookAtFailF,
                                                                           agentLookF,
                                                                           lookAtF,
                                                                           lookInF)
-import           ConstraintRefinement.Actions.Player.Open                (openDeniedF,
-                                                                          openEyes,
-                                                                          openF)
+import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
+                                                                          openDeniedF,
+                                                                          openEyes)
 import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
                                                                           containerLosesObjectF,
                                                                           objectCollectedF,
@@ -179,7 +186,7 @@ sashaBedroomDemo = do
   getRobeFGID <- declareAction (objectCollectedF robeGID)
   lookAtPocketGID <- declareAction objectCanBeSeenF
   lookInPocketGID <- declareAction containerCanBeSeenInF
-  openPocketNoReachGID <- declareAction openContainerF
+  openPocketNoReachGID <- declareAction openObjectContainerF
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
@@ -192,9 +199,9 @@ sashaBedroomDemo = do
   playerLookFGID <- declareAction agentLookF
   playerLookAtFGID <- declareAction lookAtF
   playerLookInFGID <- declareAction lookInF
-  containerAccessDeniedFGID <- declareAction openDeniedF
-  accessContainerFGID <- declareAction openF
-  openContainerFGID <- declareAction openContainerF
+  containerAccessDeniedFGID <- declareAction openContainerDeniedF
+  accessContainerFGID <- declareAction openObjectContainerF
+  openContainerFGID <- declareAction openObjectContainerF
   registerLocation bedroomGID (buildLocation locationLitFGID locationCanBeSeenGID locationCanBeSeenInFGID)
   registerObject floorGID (floorObj notEvenFloorFGID)
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
@@ -230,13 +237,13 @@ sashaBedroomDemo = do
   openEyesLookChangeEffectFloor <- makeObjectDSEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeObjectDSEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeObjectDSEffect dsaLook lookAtRobeFGID
-  openEyesOpenPocketChangesForPlayer <- makeEffect openSA accessContainerFGID
+  openEyesOpenPocketChangesForPlayer <- createObjectContainerAccessSimpleVerbEffect openSA accessContainerFGID
   robeOpenEyesLookChangesGetRobeForPlayer <- makeAgentPhraseEffect getRobeAVP playerGetFGID
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeObjectPhraseEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeObjectEffect get getRobeFGID
-  pocketOpenGetRobe <- makeEffect openPocketCVP openContainerFGID
+  pocketOpenGetRobe <- createObjectContainerAccessVerbPhraseEffect openPocketCVP openContainerFGID
   pocketLookInGetRobe <- makeAgentCDSEffect dsaLook playerLookInFGID
-  playerOpenPocketAfterRobe <- makeEffect openPocketCVP accessContainerFGID
+  playerOpenPocketAfterRobe <- createObjectContainerAccessVerbPhraseEffect openPocketCVP accessContainerFGID
   pocketClosed <- makeContainerCDSEffect dsaLook lookInPocketDeniedFGID
 --  closedPocket <- make
   -- Build composed effect computation
@@ -256,7 +263,7 @@ sashaBedroomDemo = do
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) playerOpenPocketAfterRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) pocketLookInGetRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketClosed `alongside`
-    buildEffect (ContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
 
   -- Register narration effects for actions
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
@@ -296,10 +303,10 @@ sashaBedroomDemo = do
   linkEffect (AgentAcquisitionalActionKey playerGetFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration "You pick it up."))
 
-  linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
+  linkEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
 
-  linkEffect (ContainerAccessActionKey openContainerFGID) pocketGID
+  linkEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AgentAcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
@@ -356,13 +363,13 @@ robeObj lookGID getGID = defaultObject &
   withBehavior (makeObjectBehavior get getGID) >=>
   withBehavior (makeObjectPhraseBehavior getRobeAVP getGID))
 
-pocketObj :: GID ObjectDirectionalStimulusActionF -> GID ContainerAccessActionF -> SashaLambdaDSL Object
+pocketObj :: GID ObjectDirectionalStimulusActionF -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Object
 pocketObj lookGID openGID = defaultObject &
   (withShortName "<OBJ-004>pocket" >=>
   withDescription "A pocket sewn into the robe" >=>
   withDescriptives [SimpleNounPhrase pocketDS] >=>
   withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
-  withBehavior (makeBehavior openSA openGID))
+  withBehavior (makeObjectContainerAccessBehavior openSA openGID))
 
 buildBedroomPlayer :: GID Location
                    -> GID AgentImplicitStimulusActionF
@@ -370,7 +377,7 @@ buildBedroomPlayer :: GID Location
                    -> GID SomaticAccessActionF
                    -> GID AgentDirectionalStimulusActionF
                    -> GID AgentAcquisitionActionF
-                   -> GID ContainerAccessActionF
+                   -> GID AgentContainerAccessActionF
                    -> SashaLambdaDSL Player
 buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
   withPlayerLocation defaultPlayer bedroomGID >>=
@@ -380,5 +387,5 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
   withBehavior (makeBehavior saOpen openEyesGID) >>=
   withBehavior (makeAgentPhraseBehavior getRobeAVP getRobeFGID) >>=
   withBehavior (makeAgentBehavior get getRobeFGID) >>=
-  withBehavior (makeBehavior openSA containerAccessDeniedF) >>=
-  withBehavior (makeBehavior openPocketCVP containerAccessDeniedF)
+  withBehavior (makeAgentContainerAccessBehavior openSA containerAccessDeniedF) >>=
+  withBehavior (makeAgentContainerAccessPhraseBehavior openPocketCVP containerAccessDeniedF)

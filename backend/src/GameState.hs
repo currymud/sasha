@@ -64,8 +64,9 @@ import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
-                                                ActionManagement (CAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
+                                                ActionManagement (AgentSAConManagementKey, CAManagementKey, NPManagementKey, PPManagementKey, SAConManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
+                                                AgentContainerAccessActionF,
                                                 CompleteAccessRes (CompleteAccessRes),
                                                 CompleteAcquisitionRes (CompleteAcquisitionRes),
                                                 ConsumptionActionF,
@@ -205,16 +206,16 @@ parseSupportPhrase supportPhrase = case supportPhrase of
       DescriptiveNounPhraseDet _ _ container -> ContainerKey container
 
 processSimpleContainerAccessEffect :: SimpleAccessVerb
-                         -> GID ContainerAccessActionF
+                         -> GID AgentContainerAccessActionF
                          -> GameComputation Identity ()
 processSimpleContainerAccessEffect sav newActionGID = do
   modify' $ \gs ->
     let player = gs._player
         ActionManagementFunctions playerActionSet = _playerActions player
         -- Remove any existing acquisition action for this phrase
-        filteredActions = Data.Set.filter (\case SAConManagementKey p _ -> p /= sav; _ -> True) playerActionSet
+        filteredActions = Data.Set.filter (\case AgentSAConManagementKey p _ -> p /= sav; _ -> True) playerActionSet
         -- Add the new action
-        updatedActions = Data.Set.insert (SAConManagementKey sav newActionGID) filteredActions
+        updatedActions = Data.Set.insert (AgentSAConManagementKey sav newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }
