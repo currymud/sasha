@@ -5,6 +5,7 @@ import qualified Test.EndToEnd.LookAtRobeProgression  (spec)
 import qualified Test.EndToEnd.LookInPocketSequence   (spec)
 import qualified Test.EndToEnd.OpenEyesTriggerTest    (spec)
 import qualified Test.EndToEnd.OpenEyesUnlocksGetRobe (spec)
+import qualified Test.EndToEnd.OpenPocketSequence     (spec)
 import           Test.Hspec                           (hspec, runIO)
 import qualified Test.Lexer
 import qualified Test.Parser.Atomics.Verbs
@@ -20,3 +21,4 @@ main = do
     Test.EndToEnd.LookInPocketSequence.spec
     Test.EndToEnd.OpenEyesTriggerTest.spec
     Test.EndToEnd.OpenEyesUnlocksGetRobe.spec
+    Test.EndToEnd.OpenPocketSequence.spec
