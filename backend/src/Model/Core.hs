@@ -294,6 +294,8 @@ type ContainerAccessF
       -> (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
       -> GameComputation Identity ()
 
+
+-- Depricated
 type ContainerAccessActionF :: Type
 data ContainerAccessActionF
   = PlayerContainerAccessF ContainerAccessF

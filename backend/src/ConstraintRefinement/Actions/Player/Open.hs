@@ -27,6 +27,8 @@ import           Model.Core                                        (AccessRes (C
 import           Model.GID                                         (GID)
 import           Model.Parser.GCase                                (NounKey)
 
+
+-- openDeniedF is being depricated
 openDeniedF :: ContainerAccessActionF
 openDeniedF = PlayerCannotAccessF denied
   where
@@ -49,6 +51,8 @@ openEyes = PlayerSomaticAccessActionF opened
    opened actionEffectKey = do
      processEffectsFromRegistry actionEffectKey
 
+
+-- openF is being depricated
 openF :: ContainerAccessActionF
 openF = PlayerContainerAccessF openit
   where
