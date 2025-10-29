@@ -40,7 +40,6 @@ module Model.Core
   , InstrumentContainerAccessActionF(..)
   , AgentPosturalActionF (..)
   , LocationPosturalActionF (..)
-  , ObjectPosturalActionF (..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AgentAcquisitionActionF(..)
@@ -326,11 +325,6 @@ data LocationPosturalActionF
   = LocationCanPosturalF (ActionEffectKey -> GameComputation Identity ())
   | LocationCannotPosturalF (ActionEffectKey -> GameComputation Identity ())
 
-type ObjectPosturalActionF :: Type
-data ObjectPosturalActionF
-  = ObjectCanPosturalF (ActionEffectKey -> GameComputation Identity ())
-  | ObjectCannotPosturalF (ActionEffectKey -> GameComputation Identity ())
-
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
   { _computation      :: GameComputation Identity ()
@@ -492,6 +486,12 @@ type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 type PosturalActionMap :: Type
 type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
 
+type AgentPosturalActionMap :: Type
+type AgentPosturalActionMap = Map (GID AgentPosturalActionF) AgentPosturalActionF
+
+type LocationPosturalActionMap :: Type
+type LocationPosturalActionMap = Map (GID LocationPosturalActionF) LocationPosturalActionF
+
 type ActionMaps :: Type
 data ActionMaps = ActionMaps
   { _agentImplicitStimulusActionMap :: AgentImplicitStimulusActionMap
@@ -513,6 +513,8 @@ data ActionMaps = ActionMaps
   , _objectDirectionalStimulusActionMap :: ObjectDirectionalStimulusActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
   , _posturalActionMap            :: PosturalActionMap
+  , _agentPosturalActionMap       :: AgentPosturalActionMap
+  , _locationPosturalActionMap    :: LocationPosturalActionMap
   }
 
 -- All Possible Actions
@@ -547,6 +549,8 @@ data ActionEffectKey
   | LocationAcquisitionalActionKey (GID LocationAcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
   | PosturalActionKey (GID PosturalActionF)
+  | AgentPosturalActionKey (GID AgentPosturalActionF)
+  | LocationPosturalActionKey (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)
 
 type PlayerKey :: Type
@@ -664,6 +668,10 @@ data ActionManagementOperation
 
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
   | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
+  | AddAgentPositivePostural PositivePosturalVerb (GID AgentPosturalActionF)
+  | AddLocationPositivePostural PositivePosturalVerb (GID LocationPosturalActionF)
+  | AddAgentNegativePostural NegativePosturalVerb (GID AgentPosturalActionF)
+  | AddLocationNegativePostural NegativePosturalVerb (GID LocationPosturalActionF)
   | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
@@ -695,6 +703,8 @@ data ActionGID
   | InstrumentContainerAccessActionGID (GID InstrumentContainerAccessActionF)
 
   | PosturalActionGID (GID PosturalActionF)
+  | AgentPosturalActionGID (GID AgentPosturalActionF)
+  | LocationPosturalActionGID (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)
 -- AddAgentAcquisitionVerb
 type ActionManagement :: Type
@@ -736,7 +746,11 @@ data ActionManagement
   | ObjectConManagementKey ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
 
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
+  | AgentPPManagementKey PositivePosturalVerb (GID AgentPosturalActionF)
+  | LocationPPManagementKey PositivePosturalVerb (GID LocationPosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
+  | AgentNPManagementKey NegativePosturalVerb (GID AgentPosturalActionF)
+  | LocationNPManagementKey NegativePosturalVerb (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionManagementFunctions :: Type
