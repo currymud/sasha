@@ -237,7 +237,8 @@ sashaBedroomDemo = do
   openEyesLookChangeEffectPlayer <- makeAgentISEffect isaLook playerLookFGID
   openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook playerLookAtFGID
   openEyesLookInChangeEffectPlayer <- makeAgentCDSEffect dsaLook playerLookInFGID
-
+  pillVisibleAfterOpenEffect <- makeObjectDSEffect dsaLook lookAtPillGID
+  pocketOpenForLookIn <- makeContainerCDSEffect dsaLook lookInPocketGID
   openEyesLookChangeEffectFloor <- makeObjectDSEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeObjectDSEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeObjectDSEffect dsaLook lookAtRobeFGID
@@ -268,7 +269,9 @@ sashaBedroomDemo = do
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketClosed `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyLocation bedroomGID) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase openPocketCVP containerAccessAllowedFGID) (AgentContainerAccessActionGID containerAccessAllowedFGID)) `alongside`
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription)) `alongside`
-    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID (FieldUpdateEffect (ObjectDescription pillGID "A small round pill, now within your reach."))
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID (FieldUpdateEffect (ObjectDescription pillGID "A small round pill, now within your reach.")) `alongside`
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID pillVisibleAfterOpenEffect `alongside`
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID pocketOpenForLookIn
   -- Register narration effects for actions
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
@@ -320,6 +323,9 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AgentAcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
+  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
+    (NarrationEffect (LookInNarration pocketGID))
+
   finalizeGameState
   where
     getDenied :: Text
