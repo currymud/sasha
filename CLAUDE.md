@@ -14,3 +14,5 @@ The effect ownership - no cross-scope effect processing
 You will not declare when a problem is fixed.
 You will not attempt to test code or compile it.
 You will only report when you have completed your task.
+
+- Do not try to buid the project or run tests

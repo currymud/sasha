@@ -11,8 +11,7 @@ import           GameState                                         (getObjectM,
                                                                     modifyNarration,
                                                                     parseContainerAccessPhrase,
                                                                     updateActionConsequence)
-import           GameState.ActionManagement                        (findSAForContainersKey,
-                                                                    lookupAgentContainerAccessVerbPhrase,
+import           GameState.ActionManagement                        (lookupAgentContainerAccessVerbPhrase,
                                                                     lookupContainerAccessVerbPhrase,
                                                                     lookupInstrumentContainerAccessVerbPhrase,
                                                                     lookupLocationContainerAccessVerbPhrase,
@@ -43,6 +42,7 @@ import           Model.GID                                         (GID)
 import           Model.Parser.Composites.Verbs                     (ContainerAccessVerbPhrase)
 import           Model.Parser.GCase                                (NounKey)
 
+-- manageContainerAccessProcess is being deprecated - use manageContainerAccessProcess' instead
 manageContainerAccessProcess :: ContainerAccessVerbPhrase
                                   -> GameComputation Identity ()
 manageContainerAccessProcess cavp = do
@@ -65,6 +65,7 @@ manageContainerAccessProcess cavp = do
     lookupActionF = lookupContainerAccessVerbPhrase cavp
     caRes = parseContainerAccessPhrase cavp
 
+-- Preferred role-based implementation using Agent, Location, and Object specific actions
 manageContainerAccessProcess' :: ContainerAccessVerbPhrase
                                    -> GameComputation Identity ()
 manageContainerAccessProcess' cavp = case caRes of

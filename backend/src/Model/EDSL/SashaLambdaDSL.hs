@@ -7,6 +7,7 @@ import           Data.Text                     (Text)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionManagement,
                                                 AgentAcquisitionActionF,
+                                                AgentContainerAccessActionF,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
@@ -16,13 +17,16 @@ import           Model.Core                    (ActionEffectKey,
                                                 ContainerDirectionalStimulusContainerActionF,
                                                 Effect, Evaluator,
                                                 GameComputation, GameState,
+                                                InstrumentContainerAccessActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
+                                                LocationContainerAccessActionF,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
+                                                ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 Player, PlayerKey,
                                                 PosturalActionF,
@@ -92,6 +96,10 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
   DeclarePosturalActionGID :: PosturalActionF -> SashaLambdaDSL (GID PosturalActionF)
   DeclareContainerAccessActionGID :: ContainerAccessActionF -> SashaLambdaDSL (GID ContainerAccessActionF)
+  DeclareAgentContainerAccessActionGID :: AgentContainerAccessActionF -> SashaLambdaDSL (GID AgentContainerAccessActionF)
+  DeclareLocationContainerAccessActionGID :: LocationContainerAccessActionF -> SashaLambdaDSL (GID LocationContainerAccessActionF)
+  DeclareObjectContainerAccessActionGID :: ObjectContainerAccessActionF -> SashaLambdaDSL (GID ObjectContainerAccessActionF)
+  DeclareInstrumentContainerAccessActionGID :: InstrumentContainerAccessActionF -> SashaLambdaDSL (GID InstrumentContainerAccessActionF)
   WithShortName :: Text -> Object -> SashaLambdaDSL Object
   WithDescription :: Text -> Object -> SashaLambdaDSL Object
   WithDescriptives :: [NounPhrase DirectionalStimulus] -> Object -> SashaLambdaDSL Object
@@ -107,6 +115,14 @@ data SashaLambdaDSL :: Type -> Type where
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
   CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
   CreateSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateAgentSAConManagement :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateLocationSAConManagement :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateObjectSAConManagement :: SimpleAccessVerb -> GID ObjectContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateInstrumentSAConManagement :: SimpleAccessVerb -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateAgentConManagement :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateLocationConManagement :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateObjectConManagement :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateInstrumentConManagement :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL ActionManagement
   CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
   CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
 
@@ -160,6 +176,14 @@ data SashaLambdaDSL :: Type -> Type where
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
   CreateContainerAccessEffect :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
   CreateContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateAgentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateAgentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateLocationContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateLocationContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateObjectContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateObjectContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateInstrumentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL Effect
+  CreateInstrumentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL Effect
 
   LinkFieldEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
   LinkFieldEffectToLocation :: ActionEffectKey -> GID Location -> Effect -> SashaLambdaDSL ()
@@ -251,6 +275,18 @@ declarePosturalActionGID = DeclarePosturalActionGID
 declareContainerAccessActionGID :: ContainerAccessActionF -> SashaLambdaDSL (GID ContainerAccessActionF)
 declareContainerAccessActionGID = DeclareContainerAccessActionGID
 
+declareAgentContainerAccessActionGID :: AgentContainerAccessActionF -> SashaLambdaDSL (GID AgentContainerAccessActionF)
+declareAgentContainerAccessActionGID = DeclareAgentContainerAccessActionGID
+
+declareLocationContainerAccessActionGID :: LocationContainerAccessActionF -> SashaLambdaDSL (GID LocationContainerAccessActionF)
+declareLocationContainerAccessActionGID = DeclareLocationContainerAccessActionGID
+
+declareObjectContainerAccessActionGID :: ObjectContainerAccessActionF -> SashaLambdaDSL (GID ObjectContainerAccessActionF)
+declareObjectContainerAccessActionGID = DeclareObjectContainerAccessActionGID
+
+declareInstrumentContainerAccessActionGID :: InstrumentContainerAccessActionF -> SashaLambdaDSL (GID InstrumentContainerAccessActionF)
+declareInstrumentContainerAccessActionGID = DeclareInstrumentContainerAccessActionGID
+
 -- Role-based directional container stimulus management creation helper functions
 createAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
 createAgentDSAContainerManagement = CreateAgentDSAContainerManagement
@@ -266,6 +302,30 @@ createSSAManagement = CreateSSAManagement
 
 createSAConManagement :: SimpleAccessVerb -> GID ContainerAccessActionF -> SashaLambdaDSL ActionManagement
 createSAConManagement = CreateSAConManagement
+
+createAgentSAConManagement :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createAgentSAConManagement = CreateAgentSAConManagement
+
+createLocationSAConManagement :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createLocationSAConManagement = CreateLocationSAConManagement
+
+createObjectSAConManagement :: SimpleAccessVerb -> GID ObjectContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createObjectSAConManagement = CreateObjectSAConManagement
+
+createInstrumentSAConManagement :: SimpleAccessVerb -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createInstrumentSAConManagement = CreateInstrumentSAConManagement
+
+createAgentConManagement :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createAgentConManagement = CreateAgentConManagement
+
+createLocationConManagement :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createLocationConManagement = CreateLocationConManagement
+
+createObjectConManagement :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createObjectConManagement = CreateObjectConManagement
+
+createInstrumentConManagement :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL ActionManagement
+createInstrumentConManagement = CreateInstrumentConManagement
 
 
 createCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
@@ -361,6 +421,30 @@ createContainerAccessEffect = CreateContainerAccessEffect
 
 createContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ContainerAccessActionF -> SashaLambdaDSL Effect
 createContainerAccessVerbPhraseEffect = CreateContainerAccessVerbPhraseEffect
+
+createAgentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
+createAgentContainerAccessSimpleVerbEffect = CreateAgentContainerAccessSimpleVerbEffect
+
+createAgentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
+createAgentContainerAccessVerbPhraseEffect = CreateAgentContainerAccessVerbPhraseEffect
+
+createLocationContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL Effect
+createLocationContainerAccessSimpleVerbEffect = CreateLocationContainerAccessSimpleVerbEffect
+
+createLocationContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> SashaLambdaDSL Effect
+createLocationContainerAccessVerbPhraseEffect = CreateLocationContainerAccessVerbPhraseEffect
+
+createObjectContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Effect
+createObjectContainerAccessSimpleVerbEffect = CreateObjectContainerAccessSimpleVerbEffect
+
+createObjectContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Effect
+createObjectContainerAccessVerbPhraseEffect = CreateObjectContainerAccessVerbPhraseEffect
+
+createInstrumentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL Effect
+createInstrumentContainerAccessSimpleVerbEffect = CreateInstrumentContainerAccessSimpleVerbEffect
+
+createInstrumentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL Effect
+createInstrumentContainerAccessVerbPhraseEffect = CreateInstrumentContainerAccessVerbPhraseEffect
 
 linkEffectToObject :: ActionEffectKey -> GID Object -> Effect -> SashaLambdaDSL ()
 linkEffectToObject = LinkEffectToObject

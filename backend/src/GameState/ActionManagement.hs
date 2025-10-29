@@ -18,7 +18,7 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, AgentSAConManagementKey, CAManagementKey, CONManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, InstrumentSAConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, LocationSAConManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, ObjectSAConManagementKey, PPManagementKey, SAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentContainerAccessSimpleVerb, AddAgentContainerAccessVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAccess, AddContainerAccessVerb, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddInstrumentContainerAccessSimpleVerb, AddInstrumentContainerAccessVerbPhrase, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationContainerAccessSimpleVerb, AddLocationContainerAccessVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectContainerAccessSimpleVerb, AddObjectContainerAccessVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
@@ -135,6 +135,62 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddContainerAccess cavp
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
+processEffect (LocationKey lid) (ActionManagementEffect (AddLocationContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddLocationContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddAgentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddObjectContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddObjectContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddInstrumentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddInstrumentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
 processEffect (LocationKey lid) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
   modifyLocationActionManagementM lid $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -201,6 +257,62 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddContainerAccess cavp n
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddObjectContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddObjectContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddInstrumentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddInstrumentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddLocationContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddLocationContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationConManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
@@ -283,6 +395,118 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddCont
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case CONManagementKey p _ -> p /= cavp; _ -> True) actionSet
         updatedActions = Data.Set.insert (CONManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddAgentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddAgentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddLocationContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddLocationContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddLocationContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddLocationContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddObjectContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddObjectContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddObjectContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddObjectContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case ObjectConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (ObjectConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddInstrumentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddInstrumentContainerAccessSimpleVerb verb newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentSAConManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentSAConManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddInstrumentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentConManagementKey cavp newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddInstrumentContainerAccessVerbPhrase cavp newActionGID) _) = do
+  modifyPlayerActionManagementM $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case InstrumentConManagementKey p _ -> p /= cavp; _ -> True) actionSet
+        updatedActions = Data.Set.insert (InstrumentConManagementKey cavp newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddAgentImplicitStimulus verb newActionGID) _) = do
@@ -878,6 +1102,30 @@ lookupObjectContainerAccessVerbPhrase :: ContainerAccessVerbPhrase
                                      -> Maybe (GID ObjectContainerAccessActionF)
 lookupObjectContainerAccessVerbPhrase cavp (ActionManagementFunctions actions) =
   listToMaybe [gid | ObjectConManagementKey p gid <- Data.Set.toList actions, p == cavp]
+
+lookupAgentContainerAccessSimpleVerb :: SimpleAccessVerb
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID AgentContainerAccessActionF)
+lookupAgentContainerAccessSimpleVerb verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | AgentSAConManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupLocationContainerAccessSimpleVerb :: SimpleAccessVerb
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID LocationContainerAccessActionF)
+lookupLocationContainerAccessSimpleVerb verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | LocationSAConManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupObjectContainerAccessSimpleVerb :: SimpleAccessVerb
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID ObjectContainerAccessActionF)
+lookupObjectContainerAccessSimpleVerb verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | ObjectSAConManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupInstrumentContainerAccessSimpleVerb :: SimpleAccessVerb
+                                     -> ActionManagementFunctions
+                                     -> Maybe (GID InstrumentContainerAccessActionF)
+lookupInstrumentContainerAccessSimpleVerb verb (ActionManagementFunctions actions) =
+  listToMaybe [gid | InstrumentSAConManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 lookupAgentDirectionalStimulus :: DirectionalStimulusVerb
                                     -> ActionManagementFunctions

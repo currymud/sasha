@@ -70,11 +70,7 @@ instance HasEffect (GID Object) where
 instance HasEffect PlayerKey where
   linkEffect = linkEffectToPlayer
 
-instance MakeEffect SimpleAccessVerb where
-  makeEffect = createContainerAccessEffect
-
-instance MakeEffect ContainerAccessVerbPhrase where
-  makeEffect = createContainerAccessVerbPhraseEffect
+-- SimpleAccessVerb and ContainerAccessVerbPhrase instances removed - use role-specific functions instead
 
 -- | Role-based effect creation functions
 -- These allow creating Effects for role-based action types
