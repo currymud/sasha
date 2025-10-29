@@ -326,6 +326,12 @@ sashaBedroomDemo = do
   linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
 
+  linkEffect (ObjectDirectionalStimulusActionKey lookAtPillDeniedGID) pillGID
+    (NarrationEffect (StaticNarration "The pill is in the closed pocket - you can't see it clearly."))
+
+  linkEffect (ObjectDirectionalStimulusActionKey lookAtPillGID) pillGID
+    (NarrationEffect (LookAtNarration pillGID))
+
   finalizeGameState
   where
     getDenied :: Text
