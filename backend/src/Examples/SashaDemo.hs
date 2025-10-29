@@ -224,14 +224,15 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
   registerObjectToLocation bedroomGID pocketGID (ContainerKey pocketCT)
-
+  registerObjectToLocation bedroomGID pillGID (DirectionalStimulusKey pillDS)
   -- Floor is the anchor object (not supported by anything)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
   registerSpatial pocketGID (SupportedBy robeGID)
-
+  registerSpatial pillGID (ContainedIn pocketGID)
+  registerSpatial pocketGID (Contains (Data.Set.singleton pillGID))
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeAgentISEffect isaLook playerLookFGID
   openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook playerLookAtFGID
