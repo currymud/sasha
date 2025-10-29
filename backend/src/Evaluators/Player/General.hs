@@ -2,7 +2,7 @@ module Evaluators.Player.General where
 import           ActionDiscovery.Administrative                  (manageAdministration)
 import           ActionDiscovery.Consume                         (manageConsumptionProcess)
 import           ActionDiscovery.Get.Acquisition.Get             (manageAcquisitionProcess)
-import           ActionDiscovery.Manipulate.ContainerAccess.Open (manageContainerAccessProcess')
+import           ActionDiscovery.Manipulate.ContainerAccess.Open (manageContainerAccessProcess)
 import           ActionDiscovery.Manipulate.SomaticAccess.Open   (manageSomaticAccessProcess)
 import           ActionDiscovery.Movement.Postural.SitStand      (managePosturalProcess)
 import           ActionDiscovery.Percieve.Look                   (manageContainerDirectionalStimulusProcess,
@@ -20,7 +20,7 @@ eval (Imperative imperative) = evalImperative imperative
 
 evalImperative :: Imperative -> GameComputation Identity ()
 evalImperative (Administrative av) = manageAdministration av
-evalImperative (ContainerAccessVerbPhrase' avp) =  manageContainerAccessProcess' avp
+evalImperative (ContainerAccessVerbPhrase' avp) =  manageContainerAccessProcess avp
 evalImperative (ConsumptionVerbPhrase' consumptionVerbPhrase) =  -- NEW
   manageConsumptionProcess consumptionVerbPhrase
 evalImperative (StimulusVerbPhrase stimulusVerbPhrase) =

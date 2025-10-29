@@ -34,7 +34,6 @@ module Model.Core
   , AgentDirectionalStimulusContainerActionF(..)
   , ContainerDirectionalStimulusContainerActionF(..)
   , LocationDirectionalStimulusContainerActionF(..)
-  , ContainerAccessActionF(..)
   , AgentContainerAccessActionF(..)
   , LocationContainerAccessActionF(..)
   , ObjectContainerAccessActionF(..)
@@ -60,7 +59,6 @@ module Model.Core
   , AgentDirectionalStimulusContainerActionMap
   , ContainerDirectionalStimulusContainerActionMap
   , LocationDirectionalStimulusContainerActionMap
-  , ContainerAccessActionMap
   , AgentContainerAccessActionMap
   , LocationContainerAccessActionMap
   , ObjectContainerAccessActionMap
@@ -83,7 +81,6 @@ module Model.Core
   , SimpleAccessSearchStrategy
   , SearchStrategy
   , FinalizeAccessNotInstrumentF
-  , ContainerAccessF
   , AcquisitionF
     -- * Perception
   , Perceptables(..)
@@ -289,24 +286,6 @@ type FinalizeAccessNotInstrumentF = ActionEffectKey
                                       -> GameComputation Identity ActionEffectKey
                                       -> GameComputation Identity ()
 
-type ContainerAccessF :: Type
-type ContainerAccessF
-  = ActionEffectKey
-      -> AccessRes
-      -> ContainerAccessActionMap
-      -> (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
-      -> GameComputation Identity ()
-
-
--- Depricated
-type ContainerAccessActionF :: Type
-data ContainerAccessActionF
-  = PlayerContainerAccessF ContainerAccessF
-  | PlayerCannotAccessF (ActionEffectKey -> GameComputation Identity ())
-  | ObjectContainerAccessF (ActionEffectKey -> GameComputation Identity ())
-  | InstrumentContainerAccessF (ActionEffectKey -> GameComputation Identity ())
-  | CannotAccessF (ActionEffectKey -> GameComputation Identity ())
-
 type AgentContainerAccessActionF :: Type
 data AgentContainerAccessActionF
   = AgentCanAccessF ActionEffectKeyF
@@ -479,9 +458,6 @@ type ObjectContainerAccessActionMap  = Map (GID ObjectContainerAccessActionF) Ob
 type InstrumentContainerAccessActionMap :: Type
 type InstrumentContainerAccessActionMap = Map (GID InstrumentContainerAccessActionF) InstrumentContainerAccessActionF
 
-type ContainerAccessActionMap :: Type
-type ContainerAccessActionMap = Map (GID ContainerAccessActionF) ContainerAccessActionF
-
 type SomaticAccessActionMap :: Type
 type SomaticAccessActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
 
@@ -527,7 +503,6 @@ data ActionMaps = ActionMaps
   , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
   , _objectContainerAccessActionMap   :: ObjectContainerAccessActionMap
   , _instrumentContainerAccessActionMap :: InstrumentContainerAccessActionMap
-  , _containerAccessActionMap     :: ContainerAccessActionMap
   , _somaticStimulusActionMap     :: SomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
   , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
@@ -562,7 +537,6 @@ data ActionEffectKey
   | ContainerDirectionalStimulusContainerActionKey (GID ContainerDirectionalStimulusContainerActionF)
   | LocationDirectionalStimulusContainerActionKey (GID LocationDirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
-  | ContainerAccessActionKey (GID ContainerAccessActionF)
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
   | ObjectContainerAccessActionKey (GID ObjectContainerAccessActionF)
@@ -668,7 +642,6 @@ data ActionManagementOperation
   | AddLocationDirectionalContainerStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
 
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
-  | AddContainerAccess ContainerAccessVerbPhrase (GID ContainerAccessActionF)
 
   | AddAgentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
   | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
@@ -679,7 +652,6 @@ data ActionManagementOperation
   | AddInstrumentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID InstrumentContainerAccessActionF)
   | AddInstrumentContainerAccessSimpleVerb SimpleAccessVerb (GID InstrumentContainerAccessActionF)
 
-  | AddContainerAccessVerb SimpleAccessVerb (GID ContainerAccessActionF)
   | AddAgentAcquisitionVerb AcquisitionVerb (GID AgentAcquisitionActionF)
   | AddObjectAcquisitionVerb AcquisitionVerb (GID ObjectAcquisitionActionF)
   | AddContainerAcquisitionVerb AcquisitionVerb (GID ContainerAcquisitionActionF)
@@ -717,7 +689,6 @@ data ActionGID
 
   | ConsumptionActionGID (GID ConsumptionActionF)
 
-  | ContainerAccessActionGID (GID ContainerAccessActionF)
   | AgentContainerAccessActionGID (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionGID (GID LocationContainerAccessActionF)
   | ObjectContainerAccessActionGID (GID ObjectContainerAccessActionF)
@@ -753,7 +724,6 @@ data ActionManagement
 
   | CAManagementKey ConsumptionVerb (GID ConsumptionActionF)
   | CVManagementKey ConsumptionVerbPhrase (GID ConsumptionActionF)
-  | SAConManagementKey SimpleAccessVerb (GID ContainerAccessActionF)
 
   | AgentSAConManagementKey SimpleAccessVerb (GID AgentContainerAccessActionF)
   | LocationSAConManagementKey SimpleAccessVerb (GID LocationContainerAccessActionF)
@@ -765,7 +735,6 @@ data ActionManagement
   | LocationConManagementKey ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
   | ObjectConManagementKey ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
 
-  | CONManagementKey ContainerAccessVerbPhrase (GID ContainerAccessActionF)
   | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
@@ -892,7 +861,6 @@ instance Arbitrary ActionEffectKey where
   arbitrary = oneof
     [
      SomaticAccessActionKey . GID <$> choose (1, 1000)
-    , ContainerAccessActionKey . GID <$> choose (1, 1000)
     , AgentAcquisitionalActionKey . GID <$> choose (1, 1000)
     , ConsumptionActionKey . GID <$> choose (1, 1000)
     , PosturalActionKey . GID <$> choose (1, 1000)

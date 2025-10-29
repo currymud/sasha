@@ -1,74 +1,41 @@
 module ActionDiscovery.Manipulate.ContainerAccess.Open where
-import           Control.Monad.Error.Class                         (MonadError (throwError))
-import           Control.Monad.Identity                            (Identity)
-import           Control.Monad.Reader                              (asks)
+import           Control.Monad.Error.Class     (MonadError (throwError))
+import           Control.Monad.Identity        (Identity)
+import           Control.Monad.Reader          (asks)
 import qualified Data.Map.Strict
 import qualified Data.Set
-import           Data.Text                                         (pack)
-import           GameState                                         (getObjectM,
-                                                                    getPlayerLocationM,
-                                                                    getPlayerM,
-                                                                    modifyNarration,
-                                                                    parseContainerAccessPhrase,
-                                                                    updateActionConsequence)
-import           GameState.ActionManagement                        (lookupAgentContainerAccessVerbPhrase,
-                                                                    lookupContainerAccessVerbPhrase,
-                                                                    lookupInstrumentContainerAccessVerbPhrase,
-                                                                    lookupLocationContainerAccessVerbPhrase,
-                                                                    lookupLocationImplicitStimulus,
-                                                                    lookupObjectContainerAccessVerbPhrase,
-                                                                    processEffectsFromRegistry)
-import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs (openSA)
-import           Model.Core                                        (AccessRes (CompleteAR, SimpleAR),
-                                                                    ActionEffectKey (AgentContainerAccessActionKey, ContainerAccessActionKey, LocationContainerAccessActionKey, ObjectContainerAccessActionKey),
-                                                                    ActionGID (ContainerAccessActionGID, LocationImplicitActionGID),
-                                                                    ActionManagementFunctions,
-                                                                    ActionMaps (_agentContainerAccessActionMap, _containerAccessActionMap, _locationContainerAccessActionMap, _objectContainerAccessActionMap),
-                                                                    AgentContainerAccessActionF (AgentCanAccessF, AgentCannotAccessF),
-                                                                    CompleteAccessRes (CompleteAccessRes),
-                                                                    Config (_actionMaps),
-                                                                    ContainerAccessActionF (CannotAccessF, InstrumentContainerAccessF, ObjectContainerAccessF, PlayerCannotAccessF, PlayerContainerAccessF),
-                                                                    GameComputation,
-                                                                    InstrumentContainerAccessActionF,
-                                                                    Location (_locationActionManagement, _objectSemanticMap),
-                                                                    LocationContainerAccessActionF (LocationCanAccessContainerF, LocationCannotAccessContainerF),
-                                                                    Object (_objectActionManagement),
-                                                                    ObjectContainerAccessActionF (ContainingObjectCanAccessF, ContainingObjectCannotAccessF),
-                                                                    ObjectContainerAccessActionMap,
-                                                                    Player (_playerActions),
-                                                                    SimpleAccessRes (SimpleAccessRes, _saContainerKey, _saContainerPhrase),
-                                                                    SimpleAccessSearchStrategy)
-import           Model.GID                                         (GID)
-import           Model.Parser.Composites.Verbs                     (ContainerAccessVerbPhrase)
-import           Model.Parser.GCase                                (NounKey)
-
--- manageContainerAccessProcess is being deprecated - use manageContainerAccessProcess' instead
-manageContainerAccessProcess :: ContainerAccessVerbPhrase
-                                  -> GameComputation Identity ()
-manageContainerAccessProcess cavp = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupActionF availableActions of
-    Nothing -> throwError "This cannot be opened."
-    Just actionGID -> do
-      actionMap <- asks (_containerAccessActionMap . _actionMaps)
-      let actionEffectKey = ContainerAccessActionKey actionGID
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error $ "Programmer Error: No container access action found for GID: " ++ show actionGID
-        Just (InstrumentContainerAccessF _) -> error "InstrumentContainerAccessF is not a player constructor"
-        Just (CannotAccessF _) -> error "CannotAccessF is not a player constructor"
-        Just (ObjectContainerAccessF _) -> error "ObjectContainerAccessF is not a player constructor"
-        Just (PlayerContainerAccessF actionF) -> do
-          actionF actionEffectKey caRes actionMap lookupActionF
-        Just (PlayerCannotAccessF actionF) -> actionF actionEffectKey
-  where
-    lookupActionF :: (ActionManagementFunctions -> Maybe (GID ContainerAccessActionF))
-    lookupActionF = lookupContainerAccessVerbPhrase cavp
-    caRes = parseContainerAccessPhrase cavp
+import           GameState                     (getObjectM, getPlayerLocationM,
+                                                getPlayerM,
+                                                parseContainerAccessPhrase)
+import           GameState.ActionManagement    (lookupAgentContainerAccessVerbPhrase,
+                                                lookupInstrumentContainerAccessVerbPhrase,
+                                                lookupLocationContainerAccessVerbPhrase,
+                                                lookupObjectContainerAccessVerbPhrase,
+                                                processEffectsFromRegistry)
+import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
+                                                ActionEffectKey (AgentContainerAccessActionKey, LocationContainerAccessActionKey, ObjectContainerAccessActionKey),
+                                                ActionManagementFunctions,
+                                                ActionMaps (_agentContainerAccessActionMap, _locationContainerAccessActionMap, _objectContainerAccessActionMap),
+                                                AgentContainerAccessActionF (AgentCanAccessF, AgentCannotAccessF),
+                                                CompleteAccessRes (CompleteAccessRes),
+                                                Config (_actionMaps),
+                                                GameComputation,
+                                                InstrumentContainerAccessActionF,
+                                                Location (_locationActionManagement, _objectSemanticMap),
+                                                LocationContainerAccessActionF (LocationCanAccessContainerF, LocationCannotAccessContainerF),
+                                                Object (_objectActionManagement),
+                                                ObjectContainerAccessActionF (ContainingObjectCanAccessF, ContainingObjectCannotAccessF),
+                                                Player (_playerActions),
+                                                SimpleAccessRes (SimpleAccessRes, _saContainerKey, _saContainerPhrase),
+                                                SimpleAccessSearchStrategy)
+import           Model.GID                     (GID)
+import           Model.Parser.Composites.Verbs (ContainerAccessVerbPhrase)
+import           Model.Parser.GCase            (NounKey)
 
 -- Preferred role-based implementation using Agent, Location, and Object specific actions
-manageContainerAccessProcess' :: ContainerAccessVerbPhrase
-                                   -> GameComputation Identity ()
-manageContainerAccessProcess' cavp = case caRes of
+manageContainerAccessProcess :: ContainerAccessVerbPhrase
+                                  -> GameComputation Identity ()
+manageContainerAccessProcess cavp = case caRes of
   SimpleAR (SimpleAccessRes {..}) -> do
     oid <- validateObjectSearch objectSearchStrategy _saContainerKey
     containerAvailableActions <- _objectActionManagement <$> getObjectM oid

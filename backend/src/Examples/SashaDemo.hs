@@ -32,7 +32,6 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           makeObjectDSBehavior,
                                                                           makeObjectPhraseBehavior)
 import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
-                                                                          MakeEffect (makeEffect),
                                                                           makeAgentCDSEffect,
                                                                           makeAgentDSEffect,
                                                                           makeAgentISEffect,
@@ -51,7 +50,6 @@ import           Model.Core                                              (Action
                                                                           AgentContainerAccessActionF,
                                                                           AgentDirectionalStimulusActionF (AgentCanLookAtF),
                                                                           AgentImplicitStimulusActionF,
-                                                                          ContainerAccessActionF,
                                                                           ContainerAcquisitionActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
