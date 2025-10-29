@@ -39,6 +39,9 @@ module Model.Core
   , LocationContainerAccessActionF(..)
   , ObjectContainerAccessActionF(..)
   , InstrumentContainerAccessActionF(..)
+  , AgentPosturalActionF (..)
+  , LocationPosturalActionF (..)
+  , ObjectPosturalActionF (..)
   , SomaticAccessActionF(..)
   , PosturalActionF(..)
   , AgentAcquisitionActionF(..)
@@ -333,6 +336,21 @@ type PosturalActionF :: Type
 data PosturalActionF
   = PlayerPosturalActionF (ActionEffectKey -> GameComputation Identity ())
   | CannotPosturalActionF (ActionEffectKey -> GameComputation Identity ())
+
+type AgentPosturalActionF :: Type
+data AgentPosturalActionF
+  = AgentCanPosturalF (ActionEffectKey -> GameComputation Identity ())
+  | AgentCannotPosturalF (ActionEffectKey -> GameComputation Identity ())
+
+type LocationPosturalActionF :: Type
+data LocationPosturalActionF
+  = LocationCanPosturalF (ActionEffectKey -> GameComputation Identity ())
+  | LocationCannotPosturalF (ActionEffectKey -> GameComputation Identity ())
+
+type ObjectPosturalActionF :: Type
+data ObjectPosturalActionF
+  = ObjectCanPosturalF (ActionEffectKey -> GameComputation Identity ())
+  | ObjectCannotPosturalF (ActionEffectKey -> GameComputation Identity ())
 
 type CoordinationResult :: Type
 data CoordinationResult = CoordinationResult
