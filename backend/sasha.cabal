@@ -190,6 +190,7 @@ library sasha-testing
       Test.EndToEnd.OpenEyesTriggerTest
       Test.EndToEnd.OpenEyesUnlocksGetRobe
       Test.EndToEnd.LookInPocketSequence
+      Test.EndToEnd.OpenPocketSequence
       Test.Lexer
       Test.Parser.Atomics.Adverbs
       Test.Parser.Atomics.Utils

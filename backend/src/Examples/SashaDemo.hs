@@ -183,6 +183,8 @@ sashaBedroomDemo = do
   -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
   lookAtPocketGID <- declareAction objectCanBeSeenF
+  lookAtPillGID <- declareAction objectCanBeSeenF
+  lookAtPillDeniedGID <- declareAction objectCannotBeSeenF
   lookInPocketGID <- declareAction containerCanBeSeenInF
   openPocketNoReachGID <- declareAction openObjectContainerF
 
@@ -197,6 +199,7 @@ sashaBedroomDemo = do
   playerLookFGID <- declareAction agentLookF
   playerLookAtFGID <- declareAction lookAtF
   playerLookInFGID <- declareAction lookInF
+
   containerAccessDeniedFGID <- declareAction openContainerDeniedF
   containerAccessAllowedFGID <- declareAction openContainerF
   accessContainerFGID <- declareAction openObjectContainerF
@@ -206,6 +209,7 @@ sashaBedroomDemo = do
   registerObject chairGID (chairObj whatChairFGID getFromChairGID)
   registerObject robeGID (robeObj notEvenRobeFGID getRobeDeniedGID)
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
+  registerObject pillGID (pillObj lookAtPillDeniedGID)
   player <- buildBedroomPlayer bedroomGID eyesClosedFGID inventoryFGID openEyesGID
                    lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID
   registerPlayer player
@@ -220,19 +224,21 @@ sashaBedroomDemo = do
   registerObjectToLocation bedroomGID pocketGID (DirectionalStimulusKey pocketDS)
   registerObjectToLocation bedroomGID pocketGID (ObjectiveKey pocketOB)
   registerObjectToLocation bedroomGID pocketGID (ContainerKey pocketCT)
-
+  registerObjectToLocation bedroomGID pillGID (DirectionalStimulusKey pillDS)
   -- Floor is the anchor object (not supported by anything)
   registerSpatial floorGID (Supports (Data.Set.singleton chairGID))
   registerSpatial chairGID (Supports (Data.Set.singleton robeGID))
   registerSpatial chairGID (SupportedBy floorGID)
   registerSpatial robeGID (SupportedBy chairGID)
   registerSpatial pocketGID (SupportedBy robeGID)
-
+  registerSpatial pillGID (ContainedIn pocketGID)
+  registerSpatial pocketGID (Contains (Data.Set.singleton pillGID))
   -- Create all effects first
   openEyesLookChangeEffectPlayer <- makeAgentISEffect isaLook playerLookFGID
   openEyesLookAtChangeEffectPlayer <- makeAgentDSEffect dsaLook playerLookAtFGID
   openEyesLookInChangeEffectPlayer <- makeAgentCDSEffect dsaLook playerLookInFGID
-
+  pillVisibleAfterOpenEffect <- makeObjectDSEffect dsaLook lookAtPillGID
+  pocketOpenForLookIn <- makeContainerCDSEffect dsaLook lookInPocketGID
   openEyesLookChangeEffectFloor <- makeObjectDSEffect dsaLook lookAtFloorFGID
   openeEyesLooKChangeEffectChair <- makeObjectDSEffect dsaLook lookAtChairGID
   openEyesLookChangeEffectRobe <- makeObjectDSEffect dsaLook lookAtRobeFGID
@@ -262,8 +268,10 @@ sashaBedroomDemo = do
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyObject pocketGID) pocketLookInGetRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketClosed `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) (PlayerKeyLocation bedroomGID) (ActionManagementEffect (AddAgentContainerAccessVerbPhrase openPocketCVP containerAccessAllowedFGID) (AgentContainerAccessActionGID containerAccessAllowedFGID)) `alongside`
-    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription))
-
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID openPocketDescription)) `alongside`
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID (FieldUpdateEffect (ObjectDescription pillGID "A small round pill, now within your reach.")) `alongside`
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID pillVisibleAfterOpenEffect `alongside`
+    buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID pocketOpenForLookIn
   -- Register narration effects for actions
   linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
@@ -315,6 +323,15 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AgentAcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
+  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
+    (NarrationEffect (LookInNarration pocketGID))
+
+  linkEffect (ObjectDirectionalStimulusActionKey lookAtPillDeniedGID) pillGID
+    (NarrationEffect (StaticNarration "The pill is in the closed pocket - you can't see it clearly."))
+
+  linkEffect (ObjectDirectionalStimulusActionKey lookAtPillGID) pillGID
+    (NarrationEffect (LookAtNarration pillGID))
+
   finalizeGameState
   where
     getDenied :: Text
@@ -369,6 +386,14 @@ robeObj lookGID getGID = defaultObject &
   withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeObjectBehavior get getGID) >=>
   withBehavior (makeObjectPhraseBehavior getRobeAVP getGID))
+
+pillObj :: GID ObjectDirectionalStimulusActionF -> SashaLambdaDSL Object
+pillObj lookFailGIDF = defaultObject &
+  (withShortName "<OBJ-005>pill" >=>
+  withDescription "A small round pill" >=>
+  withDescriptives [SimpleNounPhrase pillDS] >=>
+  withBehavior (makeObjectDSBehavior dsaLook lookFailGIDF))
+
 
 pocketObj :: GID ObjectDirectionalStimulusActionF -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Object
 pocketObj lookGID openGID = defaultObject &
