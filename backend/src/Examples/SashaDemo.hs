@@ -335,6 +335,8 @@ sashaBedroomDemo = do
   linkEffect (ObjectDirectionalStimulusActionKey lookAtPillGID) pillGID
     (NarrationEffect (LookAtNarration pillGID))
 
+  linkEffect (AgentPosturalActionKey cannotStandFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration "You try to stand up, but you feel too dizzy to do so."))
   finalizeGameState
   where
     getDenied :: Text
