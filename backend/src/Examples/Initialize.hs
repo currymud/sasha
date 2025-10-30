@@ -8,7 +8,7 @@ import           Evaluators.Player.General (eval)
 import           Examples.Defaults         (defaultNarration, defaultPlayer,
                                             defaultWorld)
 import           Examples.SashaDemo        (sashaBedroomDemo)
-import           Model.Core                (ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentContainerAccessActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _consumptionActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _instrumentContainerAccessActionMap, _locationAcquisitionActionMap, _locationContainerAccessActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectAcquisitionActionMap, _objectContainerAccessActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
+import           Model.Core                (ActionMaps (ActionMaps, _agentAcquisitionActionMap, _agentContainerAccessActionMap, _agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _agentPosturalActionMap, _consumptionActionMap, _containerAcquisitionActionMap, _containerDirectionalStimulusContainerActionMap, _instrumentContainerAccessActionMap, _locationAcquisitionActionMap, _locationContainerAccessActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _locationPosturalActionMap, _objectAcquisitionActionMap, _objectContainerAccessActionMap, _objectDirectionalStimulusActionMap, _posturalActionMap, _somaticStimulusActionMap),
                                             Config (Config, _actionMaps),
                                             Evaluator (Evaluator),
                                             GameState (GameState, _actionSystemEffectKeys, _effectRegistry, _evaluation, _narration, _player, _systemEffectRegistry, _triggerRegistry, _world),
@@ -51,6 +51,8 @@ config = Config { _actionMaps = forcedMaps }
       , _locationAcquisitionActionMap = Data.Map.Strict.keys (_locationAcquisitionActionMap maps) `deepseq` _locationAcquisitionActionMap maps
       , _consumptionActionMap = Data.Map.Strict.keys (_consumptionActionMap maps) `deepseq` _consumptionActionMap maps
       , _posturalActionMap = Data.Map.Strict.keys (_posturalActionMap maps) `deepseq` _posturalActionMap maps
+      , _agentPosturalActionMap = Data.Map.Strict.keys (_agentPosturalActionMap maps) `deepseq` _agentPosturalActionMap maps
+      , _locationPosturalActionMap = Data.Map.Strict.keys (_locationPosturalActionMap maps) `deepseq` _locationPosturalActionMap maps
       , _agentDirectionalStimulusContainerActionMap = Data.Map.Strict.keys (_agentDirectionalStimulusContainerActionMap maps) `deepseq` _agentDirectionalStimulusContainerActionMap maps
       , _containerDirectionalStimulusContainerActionMap = Data.Map.Strict.keys (_containerDirectionalStimulusContainerActionMap maps) `deepseq` _containerDirectionalStimulusContainerActionMap maps
       , _locationDirectionalStimulusContainerActionMap = Data.Map.Strict.keys (_locationDirectionalStimulusContainerActionMap maps) `deepseq` _locationDirectionalStimulusContainerActionMap maps

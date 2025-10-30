@@ -7,37 +7,22 @@ import           GameState                     (getLocationM,
                                                 getPlayerLocationGID,
                                                 getPlayerM)
 import           GameState.ActionManagement    (lookupAgentPostural,
-                                                lookupLocationPostural,
-                                                lookupPostural)
-import           Model.Core                    (ActionEffectKey (AgentPosturalActionKey, LocationPosturalActionKey, PosturalActionKey),
+                                                lookupLocationPostural)
+import           Model.Core                    (ActionEffectKey (AgentPosturalActionKey, LocationPosturalActionKey),
                                                 ActionMaps (_agentPosturalActionMap, _locationPosturalActionMap, _posturalActionMap),
                                                 AgentPosturalActionF (AgentCanPosturalF, AgentCannotPosturalF),
                                                 Config (_actionMaps),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
                                                 LocationPosturalActionF (LocationCanPosturalF, LocationCannotPosturalF),
-                                                Player (_playerActions),
-                                                PosturalActionF (CannotPosturalActionF, PlayerPosturalActionF))
+                                                Player (_playerActions))
 import           Model.GID                     (GID)
 import           Model.Parser.Composites.Verbs (PosturalVerbPhrase)
 
-managePosturalProcess :: PosturalVerbPhrase -> GameComputation Identity ()
-managePosturalProcess posturalPhrase = do
-  availableActions <- _playerActions <$> getPlayerM
-  case lookupPostural posturalPhrase availableActions of
-    Nothing -> error "Programmer Error: No postural action found for phrase: "
-    Just actionGID -> do
-      actionMap <- asks (_posturalActionMap . _actionMaps)
-      let actionEffectKey = PosturalActionKey actionGID
-      case Data.Map.Strict.lookup actionGID actionMap of
-        Nothing -> error "Programmer Error: No postural action found for GID: "
-        Just (PlayerPosturalActionF actionFunc) -> do
-          actionFunc actionEffectKey
-        Just (CannotPosturalActionF actionFunc) -> actionFunc actionEffectKey
 
 -- Simplified version with helper functions
-managePosturalProcess' :: PosturalVerbPhrase -> GameComputation Identity ()
-managePosturalProcess' posturalPhrase = do
+managePosturalProcess :: PosturalVerbPhrase -> GameComputation Identity ()
+managePosturalProcess posturalPhrase = do
   -- Get available actions
   playerAvailableActions <- _playerActions <$> getPlayerM
   locationAvailableActions <- _locationActionManagement <$> (getPlayerLocationGID >>= getLocationM)

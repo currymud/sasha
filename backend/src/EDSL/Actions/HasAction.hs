@@ -9,6 +9,7 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             AgentDirectionalStimulusActionF,
                                             AgentDirectionalStimulusContainerActionF,
                                             AgentImplicitStimulusActionF,
+                                            AgentPosturalActionF,
                                             ConsumptionActionF,
                                             ContainerAcquisitionActionF,
                                             ContainerDirectionalStimulusContainerActionF,
@@ -18,6 +19,7 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             LocationDirectionalStimulusActionF,
                                             LocationDirectionalStimulusContainerActionF,
                                             LocationImplicitStimulusActionF,
+                                            LocationPosturalActionF,
                                             ObjectAcquisitionActionF,
                                             ObjectContainerAccessActionF,
                                             ObjectDirectionalStimulusActionF,
@@ -29,6 +31,7 @@ import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareAgentDirectionalContainerStimulusActionGID,
                                             declareAgentDirectionalStimulusActionGID,
                                             declareAgentImplicitStimulusActionGID,
+                                            declareAgentPosturalActionGID,
                                             declareConsumptionActionGID,
                                             declareContainerAcquisitionActionGID,
                                             declareContainerDirectionalContainerStimulusActionGID,
@@ -38,6 +41,7 @@ import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareLocationDirectionalContainerStimulusActionGID,
                                             declareLocationDirectionalStimulusActionGID,
                                             declareLocationImplicitStimulusActionGID,
+                                            declareLocationPosturalActionGID,
                                             declareObjectAcquisitionActionGID,
                                             declareObjectContainerAccessActionGID,
                                             declareObjectDirectionalStimulusActionGID,
@@ -108,6 +112,13 @@ instance HasAction LocationImplicitStimulusActionF where
 
 instance HasAction PosturalActionF where
   declareAction = declarePosturalActionGID
+
+-- Role-based postural action instances
+instance HasAction AgentPosturalActionF where
+  declareAction = declareAgentPosturalActionGID
+
+instance HasAction LocationPosturalActionF where
+  declareAction = declareLocationPosturalActionGID
 
 instance HasAction SomaticAccessActionF where
   declareAction = declareSomaticActionGID

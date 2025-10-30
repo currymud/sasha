@@ -11,6 +11,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
+                                                AgentPosturalActionF,
                                                 ConsumptionActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
@@ -23,6 +24,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
+                                                LocationPosturalActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
@@ -94,6 +96,8 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareLocationAcquisitionActionGID :: LocationAcquisitionActionF -> SashaLambdaDSL (GID LocationAcquisitionActionF)
   DeclareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
   DeclarePosturalActionGID :: PosturalActionF -> SashaLambdaDSL (GID PosturalActionF)
+  DeclareAgentPosturalActionGID :: AgentPosturalActionF -> SashaLambdaDSL (GID AgentPosturalActionF)
+  DeclareLocationPosturalActionGID :: LocationPosturalActionF -> SashaLambdaDSL (GID LocationPosturalActionF)
   DeclareAgentContainerAccessActionGID :: AgentContainerAccessActionF -> SashaLambdaDSL (GID AgentContainerAccessActionF)
   DeclareLocationContainerAccessActionGID :: LocationContainerAccessActionF -> SashaLambdaDSL (GID LocationContainerAccessActionF)
   DeclareObjectContainerAccessActionGID :: ObjectContainerAccessActionF -> SashaLambdaDSL (GID ObjectContainerAccessActionF)
@@ -278,6 +282,12 @@ declareObjectContainerAccessActionGID = DeclareObjectContainerAccessActionGID
 
 declareInstrumentContainerAccessActionGID :: InstrumentContainerAccessActionF -> SashaLambdaDSL (GID InstrumentContainerAccessActionF)
 declareInstrumentContainerAccessActionGID = DeclareInstrumentContainerAccessActionGID
+
+declareAgentPosturalActionGID :: AgentPosturalActionF -> SashaLambdaDSL (GID AgentPosturalActionF)
+declareAgentPosturalActionGID = DeclareAgentPosturalActionGID
+
+declareLocationPosturalActionGID :: LocationPosturalActionF -> SashaLambdaDSL (GID LocationPosturalActionF)
+declareLocationPosturalActionGID = DeclareLocationPosturalActionGID
 
 -- Role-based directional container stimulus management creation helper functions
 createAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement

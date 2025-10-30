@@ -72,7 +72,9 @@ instance ToText ConsumptionVerbPhrase where
 
 type PosturalVerbPhrase :: Type
 data PosturalVerbPhrase
-  = PositivePosturalVerbPhrase PositivePosturalVerb PositivePosturalDirection      -- "stand up"
+  = SimplePositivePosturalVerbPhrase PositivePosturalVerb
+  | SimpleNegativePosturalVerbPhrase NegativePosturalVerb
+  | PositivePosturalVerbPhrase PositivePosturalVerb PositivePosturalDirection      -- "stand up"
   | NegativePosturalVerbPhrase NegativePosturalVerb NegativePosturalDirection -- "sit down"
   deriving stock (Show, Eq, Ord, Generic)
 
@@ -81,7 +83,10 @@ instance ToText PosturalVerbPhrase where
     toText verb <> " " <> toText direction
   toText (NegativePosturalVerbPhrase verb direction) =
     toText verb <> " " <> toText direction
-
+  toText (SimplePositivePosturalVerbPhrase verb) =
+    toText verb
+  toText (SimpleNegativePosturalVerbPhrase verb) =
+    toText verb
 instance ToText StimulusVerbPhrase where
   toText (ImplicitStimulusVerb verb) =
     toText verb
