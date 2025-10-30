@@ -582,6 +582,7 @@ data NarrationComputation
   | InventoryNarration
   | LookNarration
   | LookAtNarration (GID Object)
+  | LookAtNarrationShallow (GID Object)  -- Look at without showing contents
   | LookInNarration (GID Object)
   deriving stock (Show, Eq, Ord)
 

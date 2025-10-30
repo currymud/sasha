@@ -42,7 +42,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
                                                 LocationPosturalActionF,
-                                                NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
+                                                NarrationComputation (InventoryNarration, LookAtNarration, LookAtNarrationShallow, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
@@ -848,6 +848,64 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddLoca
         updatedActions = Data.Set.insert (LocationNPManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
+-- LocationKey patterns for role-based postural actions
+processEffect (LocationKey lid) (ActionManagementEffect (AddAgentPositivePostural verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentPPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentPPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddLocationPositivePostural verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationPPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationPPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddAgentNegativePostural verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentNPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentNPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (LocationKey lid) (ActionManagementEffect (AddLocationNegativePostural verb newActionGID) _) = do
+  modifyLocationActionManagementM lid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationNPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationNPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+-- ObjectKey patterns for role-based postural actions
+processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentPositivePostural verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentPPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentPPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddLocationPositivePostural verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationPPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationPPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddAgentNegativePostural verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case AgentNPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (AgentNPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
+processEffect (ObjectKey oid) (ActionManagementEffect (AddLocationNegativePostural verb newActionGID) _) = do
+  modifyObjectActionManagementM oid $ \actionMgmt ->
+    let ActionManagementFunctions actionSet = actionMgmt
+        filteredActions = Data.Set.filter (\case LocationNPManagementKey v _ -> v /= verb; _ -> True) actionSet
+        updatedActions = Data.Set.insert (LocationNPManagementKey verb newActionGID) filteredActions
+    in ActionManagementFunctions updatedActions
+
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddConsumption verb _targetOid newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
     let ActionManagementFunctions actionSet = actionMgmt
@@ -1050,6 +1108,11 @@ processNarrationEffect (LookAtNarration objGID) = do
             Inventory -> pure () -- won't reach here due to if/else
     Nothing ->
      error ("Object not found in spatial relationships." ++ show objGID)
+
+processNarrationEffect (LookAtNarrationShallow objGID) = do
+  obj <- getObjectM objGID
+  -- Just show the object's description, no spatial relationships or contents
+  modifyNarration $ updateActionConsequence $ _description obj
 
 processNarrationEffect (LookInNarration objGID) = do
   world <- gets _world
