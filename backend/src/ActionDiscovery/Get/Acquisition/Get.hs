@@ -76,19 +76,6 @@ manageAcquisitionProcess avp = do
   where
     arRes = parseAcquisitionPhrase avp
 
--- | Role-based acquisition action lookup - coordinates object and container actions
--- This function is no longer needed since we removed AcquisitionActionF
--- lookupRoleBasedAcquisitionAction :: AcquisitionVerbPhrase
---                                 -> GID Object
---                                 -> GameComputation Identity AcquisitionActionF
--- This function is no longer needed since we removed AcquisitionActionF
-{-
-lookupRoleBasedAcquisitionAction avp oid = do
-  -- This compatibility bridge is no longer needed
-  throwError "AcquisitionActionF compatibility layer removed"
--}
-
-
 locationSearchStrategy :: SearchStrategy
 locationSearchStrategy targetNounKey = do
   world <- gets _world
@@ -118,27 +105,3 @@ locationSearchStrategy targetNounKey = do
     getContainerSources relationships =
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
-finalizeAcquisition :: ActionEffectKey
-                        -> GID Object
-                        -> GID Object
-                        -> GameComputation Identity CoordinationResult
-                        -> (GID Object -> GameComputation Identity CoordinationResult)
-                        -> GameComputation Identity ()
-finalizeAcquisition actionEffectKey containerGID objectGID objectActionF containerActionF = do
-  world <- gets _world
-  let SpatialRelationshipMap spatialMap = _spatialRelationshipMap world
-  case Data.Map.Strict.lookup objectGID spatialMap of
-   Nothing -> throwError $ "No spatial relationships found for object " <> (Data.Text.pack . show) objectGID
-   -- ToDo move relationships higher up, we can find out sooner.
-   Just relationships -> do
-     let isContainedInSource = any (\case
-           ContainedIn oid -> oid == containerGID
-           SupportedBy oid -> oid == containerGID
-           _ -> False) (Data.Set.toList relationships)
-     if not isContainedInSource
-     then throwError $ "Object " <> (Data.Text.pack . show) objectGID <> " is not in or on container " <> (Data.Text.pack . show) containerGID
-     else  do
-       (CoordinationResult playerGetObjectF objectEffects) <- objectActionF
-       (CoordinationResult containerRemoveObjectF containerEffects) <- containerActionF objectGID
-       let allEffects = actionEffectKey:(objectEffects <> containerEffects)
-       mapM_ processEffectsFromRegistry allEffects >> containerRemoveObjectF >> playerGetObjectF

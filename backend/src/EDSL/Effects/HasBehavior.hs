@@ -12,6 +12,7 @@ import           Model.Core                    (ActionManagement (..),
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
+                                                AgentPosturalActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
                                                 InstrumentContainerAccessActionF,
@@ -21,6 +22,7 @@ import           Model.Core                    (ActionManagement (..),
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
+                                                LocationPosturalActionF,
                                                 Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
@@ -34,6 +36,7 @@ import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
                                                 ImplicitStimulusVerb,
+                                                PositivePosturalVerb,
                                                 SimpleAccessVerb,
                                                 SomaticAccessVerb)
 import           Model.Parser.Composites.Verbs (AcquisitionVerbPhrase,
@@ -141,3 +144,10 @@ makeObjectContainerAccessPhraseBehavior = ObjectConManagementKey
 
 makeInstrumentContainerAccessPhraseBehavior :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> ActionManagement
 makeInstrumentContainerAccessPhraseBehavior = InstrumentConManagementKey
+
+-- Role-based postural behavior creation functions
+makeAgentPosturalBehavior :: PositivePosturalVerb -> GID AgentPosturalActionF -> ActionManagement
+makeAgentPosturalBehavior = AgentPPManagementKey
+
+makeLocationPosturalBehavior :: PositivePosturalVerb -> GID LocationPosturalActionF -> ActionManagement
+makeLocationPosturalBehavior = LocationPPManagementKey

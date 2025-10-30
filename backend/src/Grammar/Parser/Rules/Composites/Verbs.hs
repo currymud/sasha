@@ -60,7 +60,7 @@ import           Model.Parser.Composites.Verbs                                  
                                                                                    ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                                                    ContainerAccessVerbPhrase (ContainerAccessVerbPhrase, SimpleAccessContainerVerbPhrase),
                                                                                    Imperative (AcquisitionVerbPhrase', Administrative, ConsumptionVerbPhrase', ContainerAccessVerbPhrase', PosturalVerbPhrase, StimulusVerbPhrase),
-                                                                                   PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase),
+                                                                                   PosturalVerbPhrase (NegativePosturalVerbPhrase, PositivePosturalVerbPhrase, SimpleNegativePosturalVerbPhrase, SimplePositivePosturalVerbPhrase),
                                                                                    StimulusVerbPhrase (DirectStimulusVerbPhrase, DirectionalStimulusContainmentPhrase, ImplicitStimulusVerb, SomaticStimulusVerbPhrase))
 import           Text.Earley.Grammar                                              (Grammar,
                                                                                    Prod,
@@ -154,6 +154,8 @@ posturalVerbPhraseRules = do
   negativePosturalDirection <- negativePosturalDirectionRule
   rule $ PositivePosturalVerbPhrase <$> positivePosturalVerb <*> positivePosturalDirection
       <|> NegativePosturalVerbPhrase <$> negativePosturalVerb <*> negativePosturalDirection
+      <|> SimplePositivePosturalVerbPhrase <$> positivePosturalVerb
+      <|> SimpleNegativePosturalVerbPhrase <$> negativePosturalVerb
 
 imperativeRules :: Grammar r (Prod r Text Lexeme Imperative)
 imperativeRules = do

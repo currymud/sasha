@@ -4,7 +4,7 @@ import           Data.HashSet                                (HashSet, fromList)
 import           Grammar.Parser.Partitions.Templates.Atomics (makeSemanticValues)
 import           Model.Parser.Atomics.Verbs                  (NegativePosturalVerb (NegativePosturalVerb),
                                                               PositivePosturalVerb (PositivePosturalVerb))
-import           Model.Parser.Lexer                          (Lexeme (SIT, STAND))
+import           Model.Parser.Lexer                          (Lexeme (GET, SIT, STAND))
 
 #ifdef TESTING
 import qualified Data.HashSet                                as HS
@@ -15,11 +15,11 @@ import           Test.QuickCheck                             (Arbitrary,
 import           Test.QuickCheck.Arbitrary                   (Arbitrary (arbitrary))
 #endif
 
-makeSemanticValues [| PositivePosturalVerb |] [STAND]
+makeSemanticValues [| PositivePosturalVerb |] [STAND, GET]
 makeSemanticValues [| NegativePosturalVerb |] [SIT]
 
 positivePosturalVerbs :: HashSet PositivePosturalVerb
-positivePosturalVerbs = fromList [stand]
+positivePosturalVerbs = fromList [stand, get]
 
 negativePosturalVerbs :: HashSet NegativePosturalVerb
 negativePosturalVerbs = fromList [sit]

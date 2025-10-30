@@ -9,8 +9,8 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             AgentDirectionalStimulusActionF,
                                             AgentDirectionalStimulusContainerActionF,
                                             AgentImplicitStimulusActionF,
+                                            AgentPosturalActionF,
                                             ConsumptionActionF,
-                                            ContainerAccessActionF,
                                             ContainerAcquisitionActionF,
                                             ContainerDirectionalStimulusContainerActionF,
                                             InstrumentContainerAccessActionF,
@@ -19,6 +19,7 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             LocationDirectionalStimulusActionF,
                                             LocationDirectionalStimulusContainerActionF,
                                             LocationImplicitStimulusActionF,
+                                            LocationPosturalActionF,
                                             ObjectAcquisitionActionF,
                                             ObjectContainerAccessActionF,
                                             ObjectDirectionalStimulusActionF,
@@ -30,18 +31,19 @@ import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareAgentDirectionalContainerStimulusActionGID,
                                             declareAgentDirectionalStimulusActionGID,
                                             declareAgentImplicitStimulusActionGID,
+                                            declareAgentPosturalActionGID,
                                             declareConsumptionActionGID,
-                                            declareContainerAccessActionGID,
                                             declareContainerAcquisitionActionGID,
-                                            declareInstrumentContainerAccessActionGID,
-                                            declareLocationContainerAccessActionGID,
-                                            declareObjectContainerAccessActionGID,
                                             declareContainerDirectionalContainerStimulusActionGID,
+                                            declareInstrumentContainerAccessActionGID,
                                             declareLocationAcquisitionActionGID,
+                                            declareLocationContainerAccessActionGID,
                                             declareLocationDirectionalContainerStimulusActionGID,
                                             declareLocationDirectionalStimulusActionGID,
                                             declareLocationImplicitStimulusActionGID,
+                                            declareLocationPosturalActionGID,
                                             declareObjectAcquisitionActionGID,
+                                            declareObjectContainerAccessActionGID,
                                             declareObjectDirectionalStimulusActionGID,
                                             declarePosturalActionGID,
                                             declareSomaticActionGID)
@@ -67,9 +69,6 @@ instance HasAction LocationAcquisitionActionF where
 
 instance HasAction ConsumptionActionF where
   declareAction = declareConsumptionActionGID
-
-instance HasAction ContainerAccessActionF where
-  declareAction = declareContainerAccessActionGID
 
 -- Role-based container access action instances
 instance HasAction AgentContainerAccessActionF where
@@ -113,6 +112,13 @@ instance HasAction LocationImplicitStimulusActionF where
 
 instance HasAction PosturalActionF where
   declareAction = declarePosturalActionGID
+
+-- Role-based postural action instances
+instance HasAction AgentPosturalActionF where
+  declareAction = declareAgentPosturalActionGID
+
+instance HasAction LocationPosturalActionF where
+  declareAction = declareLocationPosturalActionGID
 
 instance HasAction SomaticAccessActionF where
   declareAction = declareSomaticActionGID

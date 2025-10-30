@@ -20,6 +20,7 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           makeAgentDSBehavior,
                                                                           makeAgentISBehavior,
                                                                           makeAgentPhraseBehavior,
+                                                                          makeAgentPosturalBehavior,
                                                                           makeContainerBehavior,
                                                                           makeContainerPhraseBehavior,
                                                                           makeLocationCDSBehavior,
@@ -32,7 +33,6 @@ import           EDSL.Effects.HasBehavior                                (HasBeh
                                                                           makeObjectDSBehavior,
                                                                           makeObjectPhraseBehavior)
 import           EDSL.Effects.HasEffect                                  (HasEffect (linkEffect),
-                                                                          MakeEffect (makeEffect),
                                                                           makeAgentCDSEffect,
                                                                           makeAgentDSEffect,
                                                                           makeAgentISEffect,
@@ -51,7 +51,7 @@ import           Model.Core                                              (Action
                                                                           AgentContainerAccessActionF,
                                                                           AgentDirectionalStimulusActionF (AgentCanLookAtF),
                                                                           AgentImplicitStimulusActionF,
-                                                                          ContainerAccessActionF,
+                                                                          AgentPosturalActionF,
                                                                           ContainerAcquisitionActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
@@ -105,6 +105,7 @@ import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory,
                                                                           isaLook)
+import           Grammar.Parser.Partitions.Verbs.PosturalVerbs           (stand)
 import           Grammar.Parser.Partitions.Verbs.SimpleAccessVerbs       (openSA)
 import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen)
 import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
@@ -135,6 +136,7 @@ import           ConstraintRefinement.Actions.Player.Look                (agentC
 import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
                                                                           openContainerF,
                                                                           openEyes)
+import           ConstraintRefinement.Actions.Player.Stand               (standF)
 import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
                                                                           containerLosesObjectF,
                                                                           objectCollectedF,
@@ -163,7 +165,8 @@ sashaBedroomDemo = do
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
   eyesClosedFGID <- declareAction agentCannotLookF
-
+  cannotStandFGID <- declareAction standF
+  canStandFGID <- declareAction standF
   locationLitFGID <- declareAction allowLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction  locationAllowLookAtF
@@ -211,7 +214,7 @@ sashaBedroomDemo = do
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
   registerObject pillGID (pillObj lookAtPillDeniedGID)
   player <- buildBedroomPlayer bedroomGID eyesClosedFGID inventoryFGID openEyesGID
-                   lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID
+                   lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID cannotStandFGID
   registerPlayer player
 
   registerObjectToLocation bedroomGID floorGID (DirectionalStimulusKey floorDS)
@@ -332,6 +335,8 @@ sashaBedroomDemo = do
   linkEffect (ObjectDirectionalStimulusActionKey lookAtPillGID) pillGID
     (NarrationEffect (LookAtNarration pillGID))
 
+  linkEffect (AgentPosturalActionKey cannotStandFGID) (PlayerKeyLocation bedroomGID)
+    (NarrationEffect (StaticNarration "You try to stand up, but you feel too dizzy to do so."))
   finalizeGameState
   where
     getDenied :: Text
@@ -411,8 +416,9 @@ buildBedroomPlayer :: GID Location
                    -> GID AgentDirectionalStimulusActionF
                    -> GID AgentAcquisitionActionF
                    -> GID AgentContainerAccessActionF
+                   -> GID AgentPosturalActionF
                    -> SashaLambdaDSL Player
-buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF =
+buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID directLookResponseGID getRobeFGID containerAccessDeniedF cannotStandFGID =
   withPlayerLocation defaultPlayer bedroomGID >>=
   withBehavior (makeAgentISBehavior isaLook implicitLookResponseGID) >>=
   withBehavior (makeAgentISBehavior inventory inventoryFGID) >>=
@@ -421,4 +427,5 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
   withBehavior (makeAgentPhraseBehavior getRobeAVP getRobeFGID) >>=
   withBehavior (makeAgentBehavior get getRobeFGID) >>=
   withBehavior (makeAgentContainerAccessBehavior openSA containerAccessDeniedF) >>=
-  withBehavior (makeAgentContainerAccessPhraseBehavior openPocketCVP containerAccessDeniedF)
+  withBehavior (makeAgentContainerAccessPhraseBehavior openPocketCVP containerAccessDeniedF) >>=
+  withBehavior (makeAgentPosturalBehavior stand cannotStandFGID)

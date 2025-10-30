@@ -27,8 +27,6 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createAgentDirectionalContainerStimulusEffect,
                                                 createAgentDirectionalStimulusEffect,
                                                 createAgentImplicitStimulusEffect,
-                                                createContainerAccessEffect,
-                                                createContainerAccessVerbPhraseEffect,
                                                 createContainerAcquisitionVerbEffect,
                                                 createContainerAcquisitionVerbPhraseEffect,
                                                 createContainerDirectionalContainerStimulusEffect,
@@ -69,8 +67,6 @@ instance HasEffect (GID Object) where
 
 instance HasEffect PlayerKey where
   linkEffect = linkEffectToPlayer
-
--- SimpleAccessVerb and ContainerAccessVerbPhrase instances removed - use role-specific functions instead
 
 -- | Role-based effect creation functions
 -- These allow creating Effects for role-based action types

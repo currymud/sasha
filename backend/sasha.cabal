@@ -60,6 +60,7 @@ library
       ConstraintRefinement.Actions.Player.Inventory
       ConstraintRefinement.Actions.Locations.Look
       ConstraintRefinement.Actions.Locations.Open
+      ConstraintRefinement.Actions.Locations.Stand
       ConstraintRefinement.Actions.Player.Get
       ConstraintRefinement.Actions.Player.Look
       ConstraintRefinement.Actions.Player.Open
