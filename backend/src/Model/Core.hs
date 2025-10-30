@@ -536,6 +536,7 @@ data ActionEffectKey
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
   | ObjectContainerAccessActionKey (GID ObjectContainerAccessActionF)
+  | InstrumentContainerAccessActionKey (GID InstrumentContainerAccessActionF)
   -- Role-based acquisition action keys
   | AgentAcquisitionalActionKey (GID AgentAcquisitionActionF)
   | ObjectAcquisitionalActionKey (GID ObjectAcquisitionActionF)
