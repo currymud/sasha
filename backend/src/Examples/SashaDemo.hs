@@ -214,7 +214,7 @@ sashaBedroomDemo = do
   registerObject pocketGID (pocketObj lookAtPocketGID openPocketNoReachGID)
   registerObject pillGID (pillObj lookAtPillDeniedGID)
   player <- buildBedroomPlayer bedroomGID eyesClosedFGID inventoryFGID openEyesGID
-                   lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID cannotStandFGID
+              lookAtDeniedFGID getDeniedFGID containerAccessDeniedFGID cannotStandFGID
   registerPlayer player
 
   registerObjectToLocation bedroomGID floorGID (DirectionalStimulusKey floorDS)
@@ -305,7 +305,7 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration robeGID))
 
   linkEffect (ObjectDirectionalStimulusActionKey lookAtPocketGID) pocketGID
-    (NarrationEffect (LookAtNarration pocketGID))
+    (NarrationEffect (LookAtNarrationShallow pocketGID))
 
   linkEffect (ObjectDirectionalStimulusActionKey notEvenRobeFGID) robeGID
     (NarrationEffect (StaticNarration closedEyes))
@@ -398,7 +398,6 @@ pillObj lookFailGIDF = defaultObject &
   withDescription "A small round pill" >=>
   withDescriptives [SimpleNounPhrase pillDS] >=>
   withBehavior (makeObjectDSBehavior dsaLook lookFailGIDF))
-
 
 pocketObj :: GID ObjectDirectionalStimulusActionF -> GID ObjectContainerAccessActionF -> SashaLambdaDSL Object
 pocketObj lookGID openGID = defaultObject &
