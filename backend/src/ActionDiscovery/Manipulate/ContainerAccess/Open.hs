@@ -10,8 +10,7 @@ import           GameState                     (getObjectM, getPlayerLocationM,
 import           GameState.ActionManagement    (lookupAgentContainerAccessVerbPhrase,
                                                 lookupInstrumentContainerAccessVerbPhrase,
                                                 lookupLocationContainerAccessVerbPhrase,
-                                                lookupObjectContainerAccessVerbPhrase,
-                                                processEffectsFromRegistry)
+                                                lookupObjectContainerAccessVerbPhrase)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
                                                 ActionEffectKey (AgentContainerAccessActionKey, LocationContainerAccessActionKey, ObjectContainerAccessActionKey),
                                                 ActionManagementFunctions,
@@ -102,9 +101,3 @@ validateObjectSearch searchStrategy nounKey = do
   case maybeResult of
     Nothing        -> throwError "You don't see that here."
     Just objectGID -> pure objectGID
-finalizeContainerAccess :: ActionEffectKey
-                           -> GameComputation Identity ActionEffectKey
-                           -> GameComputation Identity ()
-finalizeContainerAccess actionEffectKey objectActionF = do
- objectEffects <- objectActionF
- mapM_ processEffectsFromRegistry [actionEffectKey, objectEffects]

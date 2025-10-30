@@ -79,7 +79,6 @@ module Model.Core
     -- * Search and Access Types
   , SimpleAccessSearchStrategy
   , SearchStrategy
-  , FinalizeAccessNotInstrumentF
   , AcquisitionF
     -- * Perception
   , Perceptables(..)
@@ -279,11 +278,6 @@ newtype ActionEffectResult = ActionEffectResult
   { _actionEffectKeys :: [ActionEffectKey]
   }
   deriving stock (Show, Eq, Ord)
-
-type FinalizeAccessNotInstrumentF :: Type
-type FinalizeAccessNotInstrumentF = ActionEffectKey
-                                      -> GameComputation Identity ActionEffectKey
-                                      -> GameComputation Identity ()
 
 type AgentContainerAccessActionF :: Type
 data AgentContainerAccessActionF
