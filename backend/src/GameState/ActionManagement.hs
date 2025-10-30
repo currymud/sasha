@@ -18,7 +18,7 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, AgentSAConManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, InstrumentSAConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, LocationSAConManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, ObjectSAConManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, AgentNPManagementKey, AgentPPManagementKey, AgentSAConManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, InstrumentSAConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, LocationNPManagementKey, LocationPPManagementKey, LocationSAConManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, ObjectSAConManagementKey, PPManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentContainerAccessSimpleVerb, AddAgentContainerAccessVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddConsumption, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddInstrumentContainerAccessSimpleVerb, AddInstrumentContainerAccessVerbPhrase, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationContainerAccessSimpleVerb, AddLocationContainerAccessVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectContainerAccessSimpleVerb, AddObjectContainerAccessVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
@@ -26,6 +26,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentDirectionalStimulusActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
+                                                AgentPosturalActionF,
                                                 ConsumptionActionF,
                                                 ContainerAcquisitionActionF,
                                                 ContainerDirectionalStimulusContainerActionF,
@@ -40,6 +41,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
+                                                LocationPosturalActionF,
                                                 NarrationComputation (InventoryNarration, LookAtNarration, LookInNarration, LookNarration, StaticNarration),
                                                 Object (_description, _objectActionManagement, _shortName),
                                                 ObjectAcquisitionActionF,
@@ -1133,6 +1135,24 @@ lookupPostural phrase (ActionManagementFunctions actions) = case phrase of
     listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actions, v == verb]
   NegativePosturalVerbPhrase verb _ ->
     listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupAgentPostural :: PosturalVerbPhrase
+                         -> ActionManagementFunctions
+                         -> Maybe (GID AgentPosturalActionF)
+lookupAgentPostural phrase (ActionManagementFunctions actions) = case phrase of
+  PositivePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | AgentPPManagementKey v gid <- Data.Set.toList actions, v == verb]
+  NegativePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | AgentNPManagementKey v gid <- Data.Set.toList actions, v == verb]
+
+lookupLocationPostural :: PosturalVerbPhrase
+                         -> ActionManagementFunctions
+                         -> Maybe (GID LocationPosturalActionF)
+lookupLocationPostural phrase (ActionManagementFunctions actions) = case phrase of
+  PositivePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | LocationPPManagementKey v gid <- Data.Set.toList actions, v == verb]
+  NegativePosturalVerbPhrase verb _ ->
+    listToMaybe [gid | LocationNPManagementKey v gid <- Data.Set.toList actions, v == verb]
 
 emptyActionManagement :: ActionManagementFunctions
 emptyActionManagement = ActionManagementFunctions Data.Set.empty
