@@ -253,19 +253,16 @@ type SimpleAccessSearchStrategy = NounKey
                                     -> GameComputation Identity (Maybe (GID Object))
 
 type AgentDirectionalStimulusContainerActionF :: Type
-data AgentDirectionalStimulusContainerActionF
-  = AgentCanLookInF ActionEffectKeyF
-  | AgentCannotLookInF ActionEffectKeyF
+newtype AgentDirectionalStimulusContainerActionF
+  = AgentDirectionalStimulusContainerActionF { _unADSCA :: ActionEffectKeyF}
 
 type LocationDirectionalStimulusContainerActionF :: Type
-data LocationDirectionalStimulusContainerActionF
-  = LocationCanBeSeenInF ActionEffectKeyF
-  | LocationCannotBeSeenInF ActionEffectKeyF
+newtype LocationDirectionalStimulusContainerActionF
+  = LocationLookedInF { _unLDSCA :: ActionEffectKeyF}
 
 type ContainerDirectionalStimulusContainerActionF :: Type
-data ContainerDirectionalStimulusContainerActionF
-  = ContainerCanBeSeenInF ActionEffectKeyF
-  | ContainerCannotBeSeenInF' ActionEffectKeyF
+newtype ContainerDirectionalStimulusContainerActionF
+  = ContainerLookedInF ActionEffectKeyF
 
 -- | Unified result type for actions that produce effect keys
 type ActionEffectResult :: Type

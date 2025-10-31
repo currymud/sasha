@@ -1,13 +1,10 @@
-module ConstraintRefinement.Actions.Objects.Look (objectLookedAtF,containerCanBeSeenInF,containerCannotBeSeenInF) where
+module ConstraintRefinement.Actions.Objects.Look (objectLookedAtF,objectLookedInF) where
 import           GameState.ActionManagement (processEffectsFromRegistry)
-import           Model.Core                 (ContainerDirectionalStimulusContainerActionF (ContainerCanBeSeenInF, ContainerCannotBeSeenInF'),
+import           Model.Core                 (ContainerDirectionalStimulusContainerActionF (ContainerLookedInF),
                                              ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF))
 
 objectLookedAtF :: ObjectDirectionalStimulusActionF
 objectLookedAtF = ObjectDirectionalStimulusActionF processEffectsFromRegistry
 
-containerCanBeSeenInF :: ContainerDirectionalStimulusContainerActionF
-containerCanBeSeenInF = ContainerCanBeSeenInF processEffectsFromRegistry
-
-containerCannotBeSeenInF :: ContainerDirectionalStimulusContainerActionF
-containerCannotBeSeenInF = ContainerCannotBeSeenInF' processEffectsFromRegistry
+objectLookedInF :: ContainerDirectionalStimulusContainerActionF
+objectLookedInF = ContainerLookedInF processEffectsFromRegistry

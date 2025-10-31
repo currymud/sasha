@@ -27,14 +27,14 @@ import           GameState.Perception          (findAccessibleObject,
 import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, ContainerDirectionalStimulusContainerActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
                                                 ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _containerDirectionalStimulusContainerActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (_unADSA),
-                                                AgentDirectionalStimulusContainerActionF (AgentCanLookInF, AgentCannotLookInF),
+                                                AgentDirectionalStimulusContainerActionF (AgentDirectionalStimulusContainerActionF),
                                                 AgentImplicitStimulusActionF (_unAISA),
                                                 Config (_actionMaps),
-                                                ContainerDirectionalStimulusContainerActionF (ContainerCanBeSeenInF, ContainerCannotBeSeenInF'),
+                                                ContainerDirectionalStimulusContainerActionF (ContainerLookedInF),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
                                                 LocationDirectionalStimulusActionF (_unLDSA),
-                                                LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
+                                                LocationDirectionalStimulusContainerActionF (LocationLookedInF),
                                                 LocationImplicitStimulusActionF (_unLISA),
                                                 Object (_objectActionManagement),
                                                 ObjectDirectionalStimulusActionF (_unODSA),
@@ -147,13 +147,7 @@ manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhras
                       (Data.Map.Strict.lookup containerActionGID containerActionMap)
 
       case (agentAction, locationAction, containerAction) of
-        (AgentCannotLookInF actionF, _, _) ->
-          actionF agentActionEffectKey
-        (AgentCanLookInF _, LocationCannotBeSeenInF locationActionF, _) ->
-          locationActionF locationActionEffectKey
-        (AgentCanLookInF agentActionF, LocationCanBeSeenInF _, ContainerCannotBeSeenInF' objectActionF) ->
-          agentActionF agentActionEffectKey >> objectActionF containerActionEffectKey
-        (AgentCanLookInF agentActionF, LocationCanBeSeenInF locationActionF, ContainerCanBeSeenInF objectActionF) ->
+        (AgentDirectionalStimulusContainerActionF agentActionF, LocationLookedInF locationActionF, ContainerLookedInF objectActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF containerActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalContainerStimulus dsv

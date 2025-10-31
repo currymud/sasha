@@ -10,7 +10,7 @@ import           GameState.ActionManagement    (processEffectsFromRegistry)
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.Core                    (AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
-                                                AgentDirectionalStimulusContainerActionF (AgentCanLookInF),
+                                                AgentDirectionalStimulusContainerActionF (AgentDirectionalStimulusContainerActionF),
                                                 AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
                                                 GameComputation, Object,
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
@@ -27,8 +27,8 @@ findContainer relationships =
       listToMaybe [cid | ContainedIn cid <- Data.Set.toList relationships] <|>
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
-lookInF :: AgentDirectionalStimulusContainerActionF
-lookInF = AgentCanLookInF processEffectsFromRegistry
+agentLookInF :: AgentDirectionalStimulusContainerActionF
+agentLookInF = AgentDirectionalStimulusContainerActionF processEffectsFromRegistry
 
 agentLookAtF :: AgentDirectionalStimulusActionF
 agentLookAtF = AgentDirectionalStimulusActionF processEffectsFromRegistry

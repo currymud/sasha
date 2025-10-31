@@ -118,18 +118,17 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (locationAllowLookInF,
-                                                                          locationLookAtF,
-                                                                          locationLookF)
+import           ConstraintRefinement.Actions.Locations.Look             (locationLookAtF,
+                                                                          locationLookF,
+                                                                          locationLookInF)
 import           ConstraintRefinement.Actions.Locations.Open             (openLocationF)
-import           ConstraintRefinement.Actions.Objects.Look               (containerCanBeSeenInF,
-                                                                          containerCannotBeSeenInF,
-                                                                          objectLookedAtF)
+import           ConstraintRefinement.Actions.Objects.Look               (objectLookedAtF,
+                                                                          objectLookedInF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
 import           ConstraintRefinement.Actions.Player.Look                (agentLookAtF,
                                                                           agentLookF,
-                                                                          lookInF)
+                                                                          agentLookInF)
 import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
                                                                           openContainerF,
                                                                           openEyes)
@@ -167,7 +166,7 @@ sashaBedroomDemo = do
   locationLitFGID <- declareAction locationLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction  locationLookAtF
-  locationCanBeSeenInFGID <- declareAction locationAllowLookInF
+  locationCanBeSeenInFGID <- declareAction locationLookInF
   locationOpenContainerFGID <- declareAction openLocationF
   lookAtFloorFGID <- declareAction objectLookedAtF
   notEvenFloorFGID <- declareAction objectLookedAtF
@@ -185,20 +184,20 @@ sashaBedroomDemo = do
   lookAtPocketGID <- declareAction objectLookedAtF
   lookAtPillGID <- declareAction objectLookedAtF
   lookAtPillDeniedGID <- declareAction objectLookedAtF
-  lookInPocketGID <- declareAction containerCanBeSeenInF
+  lookInPocketGID <- declareAction objectLookedInF
   openPocketNoReachGID <- declareAction openObjectContainerF
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
   lookAtDeniedFGID <- declareAction agentLookAtF
-  lookInPocketDeniedFGID <- declareAction containerCannotBeSeenInF
+  lookInPocketDeniedFGID <- declareAction objectLookedInF
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
   inventoryFGID <- declareAction agentLookF
   playerLookFGID <- declareAction agentLookF
   playerLookAtFGID <- declareAction agentLookAtF
-  playerLookInFGID <- declareAction lookInF
+  playerLookInFGID <- declareAction agentLookInF
 
   containerAccessDeniedFGID <- declareAction openContainerDeniedF
   containerAccessAllowedFGID <- declareAction openContainerF
