@@ -118,9 +118,9 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (allowLookF,
-                                                                          locationAllowLookAtF,
-                                                                          locationAllowLookInF)
+import           ConstraintRefinement.Actions.Locations.Look             (locationAllowLookAtF,
+                                                                          locationAllowLookInF,
+                                                                          locationLookF)
 import           ConstraintRefinement.Actions.Locations.Open             (openLocationF)
 import           ConstraintRefinement.Actions.Objects.Look               (containerCanBeSeenInF,
                                                                           containerCannotBeSeenInF,
@@ -166,7 +166,7 @@ sashaBedroomDemo = do
   eyesClosedFGID <- declareAction agentLookF
   cannotStandFGID <- declareAction standF
   canStandFGID <- declareAction standF
-  locationLitFGID <- declareAction allowLookF
+  locationLitFGID <- declareAction locationLookF
   -- Location directional stimulus actions
   locationCanBeSeenGID <- declareAction  locationAllowLookAtF
   locationCanBeSeenInFGID <- declareAction locationAllowLookInF

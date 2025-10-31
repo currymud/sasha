@@ -225,9 +225,8 @@ newtype AgentImplicitStimulusActionF
   = AgentImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
 type LocationImplicitStimulusActionF :: Type
-data LocationImplicitStimulusActionF
-  = LocationCanBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
-  | LocationCannotBeSeenImplicitF (ActionEffectKey -> GameComputation Identity ())
+newtype LocationImplicitStimulusActionF
+  = LocationImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
 
 type AgentDirectionalStimulusAction :: Type
 type AgentDirectionalStimulusAction

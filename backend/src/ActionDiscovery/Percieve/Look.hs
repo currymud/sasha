@@ -34,7 +34,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 Location (_locationActionManagement),
                                                 LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
                                                 LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
-                                                LocationImplicitStimulusActionF (LocationCanBeSeenImplicitF, LocationCannotBeSeenImplicitF),
+                                                LocationImplicitStimulusActionF (LocationImplicitStimulusActionF),
                                                 Object (_objectActionManagement),
                                                 ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
                                                 Player (_playerActions))
@@ -69,10 +69,8 @@ manageImplicitStimulusProcess isv = do
       locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
                         (Data.Map.Strict.lookup locationActionGID locationActionMap)
       case (agentAction, locationAction) of
-        (AgentImplicitStimulusActionF actionF, LocationCannotBeSeenImplicitF locationActionF) ->
+        (AgentImplicitStimulusActionF actionF, LocationImplicitStimulusActionF locationActionF) ->
           actionF agentActionEffectKey >> locationActionF locationActionEffectKey
-        (AgentImplicitStimulusActionF agentActionF, LocationCanBeSeenImplicitF locationActionF) ->
-          agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey
   where
     lookupAgentActionF = lookupAgentImplicitStimulus isv
     lookupLocationActionF = lookupLocationImplicitStimulus isv

@@ -2,13 +2,10 @@ module ConstraintRefinement.Actions.Locations.Look where
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
                                              LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
-                                             LocationImplicitStimulusActionF (LocationCanBeSeenImplicitF, LocationCannotBeSeenImplicitF))
+                                             LocationImplicitStimulusActionF (LocationImplicitStimulusActionF))
 
-locationNoSeeF :: LocationImplicitStimulusActionF
-locationNoSeeF = LocationCannotBeSeenImplicitF processEffectsFromRegistry
-
-allowLookF :: LocationImplicitStimulusActionF
-allowLookF = LocationCanBeSeenImplicitF processEffectsFromRegistry
+locationLookF :: LocationImplicitStimulusActionF
+locationLookF = LocationImplicitStimulusActionF processEffectsFromRegistry
 
 locationAllowLookAtF :: LocationDirectionalStimulusActionF
 locationAllowLookAtF = LocationCanBeSeenF processEffectsFromRegistry
