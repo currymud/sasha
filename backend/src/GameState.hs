@@ -41,8 +41,6 @@ module GameState ( addToInventoryM
                  , parseAcquisitionPhrase
                  , parseConsumptionPhrase
                  , processSimpleContainerAccessEffect
-                 , processPositivePosturalEffect
-                 , processNegativePosturalEffect
                  , processConsumptionEffect
                  , removeFromInventoryM
                  , addToInventoryWithHierarchy
@@ -64,7 +62,7 @@ import           Data.Text                     (Text, pack)
 import           Error                         (throwMaybeM)
 import           Model.Core                    (AccessRes (CompleteAR, SimpleAR),
                                                 AcquisitionRes (Complete, Simple),
-                                                ActionManagement (AgentSAConManagementKey, CAManagementKey, NPManagementKey, PPManagementKey),
+                                                ActionManagement (AgentSAConManagementKey, CAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 AgentContainerAccessActionF,
                                                 CompleteAccessRes (CompleteAccessRes),
@@ -233,36 +231,6 @@ processConsumptionEffect cvp newActionGID = do
         filteredActions = Data.Set.filter (\case CAManagementKey v _ -> v /= verb; _ -> True) playerActionSet
         -- Add the new action with just the verb
         updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
-        updatedPlayerActions = ActionManagementFunctions updatedActions
-        updatedPlayer = player { _playerActions = updatedPlayerActions }
-    in gs { _player = updatedPlayer }
-
-processPositivePosturalEffect :: PositivePosturalVerb
-                               -> GID PosturalActionF
-                               -> GameComputation Identity ()
-processPositivePosturalEffect verb newActionGID = do
-  modify' $ \gs ->
-    let player = gs._player
-        ActionManagementFunctions playerActionSet = _playerActions player
-        -- Remove any existing positive postural action for this verb
-        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
-        -- Add the new action
-        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-        updatedPlayerActions = ActionManagementFunctions updatedActions
-        updatedPlayer = player { _playerActions = updatedPlayerActions }
-    in gs { _player = updatedPlayer }
-
-processNegativePosturalEffect :: NegativePosturalVerb
-                               -> GID PosturalActionF
-                               -> GameComputation Identity ()
-processNegativePosturalEffect verb newActionGID = do
-  modify' $ \gs ->
-    let player = gs._player
-        ActionManagementFunctions playerActionSet = _playerActions player
-        -- Remove any existing negative postural action for this verb
-        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) playerActionSet
-        -- Add the new action
-        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
         updatedPlayerActions = ActionManagementFunctions updatedActions
         updatedPlayer = player { _playerActions = updatedPlayerActions }
     in gs { _player = updatedPlayer }

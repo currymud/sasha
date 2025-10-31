@@ -741,10 +741,8 @@ data ActionManagement
   | LocationConManagementKey ContainerAccessVerbPhrase (GID LocationContainerAccessActionF)
   | ObjectConManagementKey ContainerAccessVerbPhrase (GID ObjectContainerAccessActionF)
 
-  | PPManagementKey PositivePosturalVerb (GID PosturalActionF)
   | AgentPPManagementKey PositivePosturalVerb (GID AgentPosturalActionF)
   | LocationPPManagementKey PositivePosturalVerb (GID LocationPosturalActionF)
-  | NPManagementKey NegativePosturalVerb (GID PosturalActionF)
   | AgentNPManagementKey NegativePosturalVerb (GID AgentPosturalActionF)
   | LocationNPManagementKey NegativePosturalVerb (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)

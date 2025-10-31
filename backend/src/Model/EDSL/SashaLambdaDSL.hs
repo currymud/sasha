@@ -24,8 +24,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
-                                                LocationPosturalActionF,
-                                                Object,
+                                                LocationPosturalActionF, Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
@@ -124,8 +123,6 @@ data SashaLambdaDSL :: Type -> Type where
   CreateLocationConManagement :: ContainerAccessVerbPhrase -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
   CreateObjectConManagement :: ContainerAccessVerbPhrase -> GID ObjectContainerAccessActionF -> SashaLambdaDSL ActionManagement
   CreateInstrumentConManagement :: ContainerAccessVerbPhrase -> GID InstrumentContainerAccessActionF -> SashaLambdaDSL ActionManagement
-  CreatePPManagement :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
-  CreateNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
 
   SetPerceptionMap :: [(DirectionalStimulusNounPhrase, [GID Object])] -> SashaLambdaDSL ()
   SetEvaluator :: Evaluator -> SashaLambdaDSL ()
@@ -328,12 +325,6 @@ createInstrumentConManagement = CreateInstrumentConManagement
 
 createCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
 createCAManagement = CreateCAManagement
-
-createPPManagement :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
-createPPManagement = CreatePPManagement
-
-createNPManagement :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL ActionManagement
-createNPManagement = CreateNPManagement
 
 withPlayerLocation :: Player -> GID Location ->  SashaLambdaDSL Player
 withPlayerLocation = WithPlayerLocation
