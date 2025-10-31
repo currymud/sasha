@@ -65,7 +65,7 @@ import           Model.Core                                              (Action
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
                                                                           ObjectContainerAccessActionF,
-                                                                          ObjectDirectionalStimulusActionF (ObjectCannotBeSeenF'),
+                                                                          ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                                                           Player,
                                                                           PlayerKey (..),
                                                                           SomaticAccessActionF,
@@ -124,8 +124,7 @@ import           ConstraintRefinement.Actions.Locations.Look             (locati
 import           ConstraintRefinement.Actions.Locations.Open             (openLocationF)
 import           ConstraintRefinement.Actions.Objects.Look               (containerCanBeSeenInF,
                                                                           containerCannotBeSeenInF,
-                                                                          objectCanBeSeenF,
-                                                                          objectCannotBeSeenF)
+                                                                          objectLookedAtF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
 import           ConstraintRefinement.Actions.Player.Look                (agentLookAtF,
@@ -170,22 +169,22 @@ sashaBedroomDemo = do
   locationCanBeSeenGID <- declareAction  locationAllowLookAtF
   locationCanBeSeenInFGID <- declareAction locationAllowLookInF
   locationOpenContainerFGID <- declareAction openLocationF
-  lookAtFloorFGID <- declareAction objectCanBeSeenF
-  notEvenFloorFGID <- declareAction objectCannotBeSeenF
-  lookAtChairGID <- declareAction objectCanBeSeenF
-  whatChairFGID <- declareAction objectCannotBeSeenF
+  lookAtFloorFGID <- declareAction objectLookedAtF
+  notEvenFloorFGID <- declareAction objectLookedAtF
+  lookAtChairGID <- declareAction objectLookedAtF
+  whatChairFGID <- declareAction objectLookedAtF
 
   -- Use role-based container action for chair losing object
   getFromChairGID <- declareAction (containerLosesObjectF chairGID)
-  lookAtRobeFGID <- declareAction objectCanBeSeenF
-  notEvenRobeFGID <- declareAction objectCannotBeSeenF
+  lookAtRobeFGID <- declareAction objectLookedAtF
+  notEvenRobeFGID <- declareAction objectLookedAtF
   getRobeDeniedGID <- declareAction objectNotCollectableF
 
   -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
-  lookAtPocketGID <- declareAction objectCanBeSeenF
-  lookAtPillGID <- declareAction objectCanBeSeenF
-  lookAtPillDeniedGID <- declareAction objectCannotBeSeenF
+  lookAtPocketGID <- declareAction objectLookedAtF
+  lookAtPillGID <- declareAction objectLookedAtF
+  lookAtPillDeniedGID <- declareAction objectLookedAtF
   lookInPocketGID <- declareAction containerCanBeSeenInF
   openPocketNoReachGID <- declareAction openObjectContainerF
 

@@ -36,7 +36,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
                                                 LocationImplicitStimulusActionF (LocationImplicitStimulusActionF),
                                                 Object (_objectActionManagement),
-                                                ObjectDirectionalStimulusActionF (ObjectCanBeSeenF, ObjectCannotBeSeenF'),
+                                                ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                                 Player (_playerActions))
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
@@ -108,11 +108,7 @@ manageDirectionalStimulusProcess dsv dsnp = do
                       (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
       case (agentAction, locationAction, objectAction) of
-        (AgentDirectionalStimulusActionF _, LocationCannotBeSeenF locationActionF, _) ->
-          locationActionF locationActionEffectKey
-        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->
-          agentActionF agentActionEffectKey >> objectActionF objectActionEffectKey
-        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF locationActionF, ObjectCanBeSeenF objectActionF) ->
+        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF locationActionF, ObjectDirectionalStimulusActionF objectActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF objectActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalStimulus dsv
