@@ -25,7 +25,7 @@ import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, ContainerDirectionalStimulusContainerActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
                                                 ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _containerDirectionalStimulusContainerActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
-                                                AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
+                                                AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
                                                 AgentDirectionalStimulusContainerActionF (AgentCanLookInF, AgentCannotLookInF),
                                                 AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
                                                 Config (_actionMaps),
@@ -108,13 +108,11 @@ manageDirectionalStimulusProcess dsv dsnp = do
                       (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
       case (agentAction, locationAction, objectAction) of
-        (AgentCannotLookAtF actionF, _, _) ->
-          actionF agentActionEffectKey
-        (AgentCanLookAtF _, LocationCannotBeSeenF locationActionF, _) ->
+        (AgentDirectionalStimulusActionF _, LocationCannotBeSeenF locationActionF, _) ->
           locationActionF locationActionEffectKey
-        (AgentCanLookAtF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->
+        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF _, ObjectCannotBeSeenF' objectActionF) ->
           agentActionF agentActionEffectKey >> objectActionF objectActionEffectKey
-        (AgentCanLookAtF agentActionF, LocationCanBeSeenF locationActionF, ObjectCanBeSeenF objectActionF) ->
+        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF locationActionF, ObjectCanBeSeenF objectActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF objectActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalStimulus dsv

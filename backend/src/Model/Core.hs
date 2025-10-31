@@ -234,9 +234,8 @@ type AgentDirectionalStimulusAction
       -> GameComputation Identity ()
 
 type AgentDirectionalStimulusActionF :: Type
-data AgentDirectionalStimulusActionF
-  = AgentCanLookAtF AgentDirectionalStimulusAction
-  | AgentCannotLookAtF (ActionEffectKey -> GameComputation Identity ())
+newtype AgentDirectionalStimulusActionF
+  = AgentDirectionalStimulusActionF AgentDirectionalStimulusAction
 
 type ObjectDirectionalStimulusActionF :: Type
 data ObjectDirectionalStimulusActionF

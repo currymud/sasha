@@ -45,11 +45,11 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (ActionEffectKey (..),
-                                                                          ActionGID (AgentContainerAccessActionGID),
+                                                                          ActionGID (AgentContainerAccessActionGID, AgentDirectionalActionGID),
                                                                           ActionManagementOperation (AddAgentContainerAccessVerbPhrase),
                                                                           AgentAcquisitionActionF,
                                                                           AgentContainerAccessActionF,
-                                                                          AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                                          AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
                                                                           AgentImplicitStimulusActionF,
                                                                           AgentPosturalActionF,
                                                                           ContainerAcquisitionActionF,
@@ -128,9 +128,8 @@ import           ConstraintRefinement.Actions.Objects.Look               (contai
                                                                           objectCannotBeSeenF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
-import           ConstraintRefinement.Actions.Player.Look                (agentLookAtFailF,
+import           ConstraintRefinement.Actions.Player.Look                (agentLookAtF,
                                                                           agentLookF,
-                                                                          lookAtF,
                                                                           lookInF)
 import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
                                                                           openContainerF,
@@ -193,13 +192,13 @@ sashaBedroomDemo = do
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
-  lookAtDeniedFGID <- declareAction agentLookAtFailF
+  lookAtDeniedFGID <- declareAction agentLookAtF
   lookInPocketDeniedFGID <- declareAction containerCannotBeSeenInF
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
   inventoryFGID <- declareAction agentLookF
   playerLookFGID <- declareAction agentLookF
-  playerLookAtFGID <- declareAction lookAtF
+  playerLookAtFGID <- declareAction agentLookAtF
   playerLookInFGID <- declareAction lookInF
 
   containerAccessDeniedFGID <- declareAction openContainerDeniedF
