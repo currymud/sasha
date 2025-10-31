@@ -1,0 +1,50 @@
+● Update Todos
+  ⎿  ☒ COMPLETED: Step 1 - Role-based types defined in Model/Core.hs              
+     ☒ COMPLETED: Step 2 - processEffect handlers for all role-based operations
+     ☒ COMPLETED: Step 3 - Role-based lookup functions added
+     ☒ COMPLETED: Step 4 - EDSL updated (SashaLambdaDSL, GameBuilder, HasBehavior)
+     ☐ NEXT: Step 5.1 - Update ConstraintRefinement/Actions/Player/Open.hs
+     ☐ NEXT: Step 5.2 - Update ConstraintRefinement/Actions/Objects/Open.hs
+     ☐ NEXT: Step 5.3 - Update ActionDiscovery/Manipulate/ContainerAccess/Open.hs
+     ☐ NEXT: Step 5.4 - Update Examples/SashaDemo.hs
+     ☐ NEXT: Step 5.5 - Update GameState.hs
+     ☐ NEXT: Step 6 - Update EDSL usage patterns (HasAction, TypeMappings)
+     ☐ NEXT: Step 7 - Final cleanup - remove old types and functions
+
+● Current Migration Status - ContainerAccessActionF to Role-Based System
+
+  ✅ Completed Work:
+
+  1. Role-based types and keys defined in Model/Core.hs
+  2. ProcessEffect handlers added for all role-based container access operations in GameState/ActionManagement.hs
+  3. Lookup functions created for role-based types (SimpleVerb and VerbPhrase variants)
+  4. EDSL fully updated:
+    - SashaLambdaDSL: Added declarations, management, and effects
+    - GameBuilder: Added interpretDSL patterns and GID counters
+    - HasBehavior: Added role-based behavior creation functions
+
+  🔄 Current State:
+
+  - Both systems coexist - old ContainerAccessActionF and new role-based types work in parallel
+  - Build integrity maintained - no breaking changes yet
+  - Backward compatibility preserved - existing code still functions
+
+  📝 Next Steps (Step 5 - Usage Sites):
+
+  Starting point for next session should be updating the usage sites in order:
+  1. Player/Open.hs - Convert to AgentContainerAccessActionF
+  2. Objects/Open.hs - Update openContainerF
+  3. ActionDiscovery/Open.hs - Use role-specific lookups
+  4. SashaDemo.hs - Update function signatures
+  5. GameState.hs - Update player action management
+
+  🎯 Key Migration Pattern:
+
+  - Player → Agent role
+  - Location → Location role
+  - Object → Object role
+  - Instrument → Instrument role
+
+  The migration is approximately 40% complete with the foundational work done. The remaining 60% involves updating usage sites and
+   final cleanup.
+

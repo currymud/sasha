@@ -18,7 +18,7 @@ import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
 import           Model.Core                    (ActionEffectKey,
                                                 ActionEffectMap (ActionEffectMap),
-                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, AgentNPManagementKey, AgentPPManagementKey, AgentSAConManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, InstrumentSAConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, LocationNPManagementKey, LocationPPManagementKey, LocationSAConManagementKey, NPManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, ObjectSAConManagementKey, PPManagementKey, SSAManagementKey),
+                                                ActionManagement (AgentAAManagementKey, AgentAVManagementKey, AgentConManagementKey, AgentDSAContainerManagementKey, AgentDSAManagementKey, AgentISAManagementKey, AgentNPManagementKey, AgentPPManagementKey, AgentSAConManagementKey, CAManagementKey, ContainerAAManagementKey, ContainerAVManagementKey, ContainerDSAContainerManagementKey, InstrumentConManagementKey, InstrumentSAConManagementKey, LocationAAManagementKey, LocationAVManagementKey, LocationConManagementKey, LocationDSAContainerManagementKey, LocationDSAManagementKey, LocationISAManagementKey, LocationNPManagementKey, LocationPPManagementKey, LocationSAConManagementKey, ObjectAAManagementKey, ObjectAVManagementKey, ObjectConManagementKey, ObjectDSAManagementKey, ObjectSAConManagementKey, SSAManagementKey),
                                                 ActionManagementFunctions (ActionManagementFunctions),
                                                 ActionManagementOperation (AddAgentAcquisitionVerb, AddAgentAcquisitionVerbPhrase, AddAgentContainerAccessSimpleVerb, AddAgentContainerAccessVerbPhrase, AddAgentDirectionalContainerStimulus, AddAgentDirectionalStimulus, AddAgentImplicitStimulus, AddAgentNegativePostural, AddAgentPositivePostural, AddConsumption, AddContainerAcquisitionVerb, AddContainerAcquisitionVerbPhrase, AddContainerDirectionalContainerStimulus, AddInstrumentContainerAccessSimpleVerb, AddInstrumentContainerAccessVerbPhrase, AddLocationAcquisitionVerb, AddLocationAcquisitionVerbPhrase, AddLocationContainerAccessSimpleVerb, AddLocationContainerAccessVerbPhrase, AddLocationDirectionalContainerStimulus, AddLocationDirectionalStimulus, AddLocationImplicitStimulus, AddLocationNegativePostural, AddLocationPositivePostural, AddNegativePostural, AddObjectAcquisitionVerb, AddObjectAcquisitionVerbPhrase, AddObjectContainerAccessSimpleVerb, AddObjectContainerAccessVerbPhrase, AddObjectDirectionalStimulus, AddPositivePostural, AddSomaticAccess),
                                                 AgentAcquisitionActionF,
@@ -207,20 +207,6 @@ processEffect (LocationKey lid) (ActionManagementEffect (AddConsumption verb tar
         updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (LocationKey lid) (ActionManagementEffect (AddPositivePostural verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (LocationKey lid) (ActionManagementEffect (AddNegativePostural verb newActionGID) _) = do
-  modifyLocationActionManagementM lid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 processEffect (LocationKey _) (FieldUpdateEffect (ObjectShortName targetOid newShortName)) = do
   modifyObjectM targetOid $ \obj -> obj { _shortName = newShortName }
 
@@ -315,20 +301,6 @@ processEffect (ObjectKey oid) (ActionManagementEffect (AddConsumption verb targe
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case CAManagementKey v _ -> v /= verb; _ -> True) actionSet
         updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (ObjectKey oid) (ActionManagementEffect (AddPositivePostural verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (ObjectKey oid) (ActionManagementEffect (AddNegativePostural verb newActionGID) _) = do
-  modifyObjectActionManagementM oid $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (ObjectKey _) (FieldUpdateEffect (ObjectShortName targetOid newShortName)) = do
@@ -770,27 +742,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddCons
         updatedActions = Data.Set.insert (CAManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
-processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddPositivePostural verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddPositivePostural verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case PPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (PPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddNegativePostural verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
 -- Role-based postural action management patterns
 processEffect (PlayerKey (PlayerKeyLocation lid)) (ActionManagementEffect (AddAgentPositivePostural verb newActionGID) _) = do
   modifyPlayerActionManagementM $ \actionMgmt ->
@@ -1023,13 +974,6 @@ processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddCont
     let ActionManagementFunctions actionSet = actionMgmt
         filteredActions = Data.Set.filter (\case ContainerAAManagementKey p _ -> p /= phrase; _ -> True) actionSet
         updatedActions = Data.Set.insert (ContainerAAManagementKey phrase newActionGID) filteredActions
-    in ActionManagementFunctions updatedActions
-
-processEffect (PlayerKey (PlayerKeyObject oid)) (ActionManagementEffect (AddNegativePostural verb newActionGID) _) = do
-  modifyPlayerActionManagementM $ \actionMgmt ->
-    let ActionManagementFunctions actionSet = actionMgmt
-        filteredActions = Data.Set.filter (\case NPManagementKey v _ -> v /= verb; _ -> True) actionSet
-        updatedActions = Data.Set.insert (NPManagementKey verb newActionGID) filteredActions
     in ActionManagementFunctions updatedActions
 
 processEffect (PlayerKey _) (FieldUpdateEffect (ObjectShortName targetOid newShortName)) = do
@@ -1306,11 +1250,3 @@ findSSAKey verb (ActionManagementFunctions actionSet) =
 findCAKey :: ConsumptionVerb -> ActionManagementFunctions -> Maybe (GID ConsumptionActionF)
 findCAKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | CAManagementKey v gid <- Data.Set.toList actionSet, v == verb]
-
-findPPKey :: PositivePosturalVerb -> ActionManagementFunctions -> Maybe (GID PosturalActionF)
-findPPKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | PPManagementKey v gid <- Data.Set.toList actionSet, v == verb]
-
-findNPKey :: NegativePosturalVerb -> ActionManagementFunctions -> Maybe (GID PosturalActionF)
-findNPKey verb (ActionManagementFunctions actionSet) =
-  listToMaybe [gid | NPManagementKey v gid <- Data.Set.toList actionSet, v == verb]
