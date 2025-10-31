@@ -11,7 +11,7 @@ import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.Core                    (AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
                                                 AgentDirectionalStimulusContainerActionF (AgentCanLookInF),
-                                                AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
+                                                AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
                                                 GameComputation, Object,
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
 import           Model.GID                     (GID)
@@ -59,10 +59,7 @@ getContainedObjects objGID spatialMap =
              oid <- Data.Set.toList oidSet]
 
 agentLookF :: AgentImplicitStimulusActionF
-agentLookF = AgentCanSeeF processEffectsFromRegistry
-
-agentCannotLookF :: AgentImplicitStimulusActionF
-agentCannotLookF = AgentCannotSeeF processEffectsFromRegistry
+agentLookF = AgentImplicitStimulusActionF processEffectsFromRegistry
 
 extractContainerNoun :: ContainerPhrase -> NounKey
 extractContainerNoun (ContainerPhrase nounPhrase) = extractContainerNounFromPhrase nounPhrase

@@ -27,7 +27,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _containerDirectionalStimulusContainerActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
                                                 AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
                                                 AgentDirectionalStimulusContainerActionF (AgentCanLookInF, AgentCannotLookInF),
-                                                AgentImplicitStimulusActionF (AgentCanSeeF, AgentCannotSeeF),
+                                                AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
                                                 Config (_actionMaps),
                                                 ContainerDirectionalStimulusContainerActionF (ContainerCanBeSeenInF, ContainerCannotBeSeenInF'),
                                                 GameComputation,
@@ -69,11 +69,10 @@ manageImplicitStimulusProcess isv = do
       locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
                         (Data.Map.Strict.lookup locationActionGID locationActionMap)
       case (agentAction, locationAction) of
-        (AgentCannotSeeF actionF, _) -> actionF agentActionEffectKey
-        (_, LocationCannotBeSeenImplicitF locationActionF) -> locationActionF locationActionEffectKey
-        (AgentCanSeeF agentActionF, LocationCanBeSeenImplicitF locationActionF) ->
+        (AgentImplicitStimulusActionF actionF, LocationCannotBeSeenImplicitF locationActionF) ->
+          actionF agentActionEffectKey >> locationActionF locationActionEffectKey
+        (AgentImplicitStimulusActionF agentActionF, LocationCanBeSeenImplicitF locationActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey
-      pure ()
   where
     lookupAgentActionF = lookupAgentImplicitStimulus isv
     lookupLocationActionF = lookupLocationImplicitStimulus isv

@@ -128,8 +128,7 @@ import           ConstraintRefinement.Actions.Objects.Look               (contai
                                                                           objectCannotBeSeenF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
-import           ConstraintRefinement.Actions.Player.Look                (agentCannotLookF,
-                                                                          agentLookAtFailF,
+import           ConstraintRefinement.Actions.Player.Look                (agentLookAtFailF,
                                                                           agentLookF,
                                                                           lookAtF,
                                                                           lookInF)
@@ -164,7 +163,7 @@ sashaBedroomDemo = do
   robeGID <- declareObjectGID (SimpleNounPhrase robeDS)
   pocketGID <- declareObjectGID (SimpleNounPhrase pocketDS)
   pillGID <- declareObjectGID (SimpleNounPhrase pillDS)
-  eyesClosedFGID <- declareAction agentCannotLookF
+  eyesClosedFGID <- declareAction agentLookF
   cannotStandFGID <- declareAction standF
   canStandFGID <- declareAction standF
   locationLitFGID <- declareAction allowLookF
