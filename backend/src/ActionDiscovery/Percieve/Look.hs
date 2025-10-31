@@ -9,6 +9,7 @@ import           Control.Monad.Except          (MonadError (throwError))
 import           Control.Monad.Identity        (Identity)
 import           Control.Monad.Reader.Class    (asks)
 import qualified Data.Map.Strict
+import qualified Data.Maybe
 import qualified Data.Set
 import           GameState                     (getLocationM, getObjectM,
                                                 getPlayerLocationGID,
@@ -25,18 +26,18 @@ import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
 import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, ContainerDirectionalStimulusContainerActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
                                                 ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _containerDirectionalStimulusContainerActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
-                                                AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
+                                                AgentDirectionalStimulusActionF (_unADSA),
                                                 AgentDirectionalStimulusContainerActionF (AgentCanLookInF, AgentCannotLookInF),
-                                                AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
+                                                AgentImplicitStimulusActionF (_unAISA),
                                                 Config (_actionMaps),
                                                 ContainerDirectionalStimulusContainerActionF (ContainerCanBeSeenInF, ContainerCannotBeSeenInF'),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
-                                                LocationDirectionalStimulusActionF (LocationDirectionalStimulusActionF),
+                                                LocationDirectionalStimulusActionF (_unLDSA),
                                                 LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
-                                                LocationImplicitStimulusActionF (LocationImplicitStimulusActionF),
+                                                LocationImplicitStimulusActionF (_unLISA),
                                                 Object (_objectActionManagement),
-                                                ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
+                                                ObjectDirectionalStimulusActionF (_unODSA),
                                                 Player (_playerActions))
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
@@ -54,26 +55,24 @@ manageImplicitStimulusProcess isv = do
   availableAgentActions <- _playerActions <$> getPlayerM
   locationM <-  getLocationM <$> getPlayerLocationGID
   availableLocationActions <- _locationActionManagement <$> locationM
-  let lookupAgentAction = lookupAgentActionF availableAgentActions
-      lookupLocationAction = lookupLocationActionF availableLocationActions
-  case (lookupAgentAction, lookupLocationAction) of
-    (Nothing,_) -> error "Programmer Error: No agent implicit stimulus action found for verb: "
-    (_,Nothing) -> error "Programmer Error: No location implicit stimulus action found for verb: "
-    (Just agentActionGID, Just locationActionGID) -> do
-      let agentActionEffectKey = AgentImplicitStimulusActionKey agentActionGID
-          locationActionEffectKey = LocationImplicitStimulusActionKey locationActionGID
-      agentActionMap <- asks (_agentImplicitStimulusActionMap . _actionMaps)
-      locationActionMap <- asks (_locationImplicitStimulusActionMap . _actionMaps)
-      agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
-                     (Data.Map.Strict.lookup agentActionGID agentActionMap)
-      locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
+  agentActionMap <- asks (_agentImplicitStimulusActionMap . _actionMaps)
+  locationActionMap <- asks (_locationImplicitStimulusActionMap . _actionMaps)
+  let agentActionGID = lookupAgentActionF availableAgentActions
+      locationActionGID = lookupLocationActionF availableLocationActions
+      agentActionEffectKey = AgentImplicitStimulusActionKey agentActionGID
+      locationActionEffectKey = LocationImplicitStimulusActionKey locationActionGID
+      agentActionF = _unAISA $  Data.Maybe.fromMaybe agentActionError
+                         (Data.Map.Strict.lookup agentActionGID agentActionMap)
+      locationActionF = _unLISA $ Data.Maybe.fromMaybe locationActionError
                         (Data.Map.Strict.lookup locationActionGID locationActionMap)
-      case (agentAction, locationAction) of
-        (AgentImplicitStimulusActionF actionF, LocationImplicitStimulusActionF locationActionF) ->
-          actionF agentActionEffectKey >> locationActionF locationActionEffectKey
+  agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey
   where
-    lookupAgentActionF = lookupAgentImplicitStimulus isv
-    lookupLocationActionF = lookupLocationImplicitStimulus isv
+    lookupAgentActionF = Data.Maybe.fromMaybe agentIdError . lookupAgentImplicitStimulus isv
+    lookupLocationActionF = Data.Maybe.fromMaybe locationIdError . lookupLocationImplicitStimulus isv
+    agentIdError = error "Programmer Error: No agent implicit stimulus action found for verb: "
+    locationIdError = error "Programmer Error: No location implicit stimulus action found for verb: "
+    agentActionError = error "Programmer Error: No agent action found for GID"
+    locationActionError = error "Programmer Error: No location action found for GID"
 
 manageDirectionalStimulusProcess :: DirectionalStimulusVerb
                                       -> DirectionalStimulusNounPhrase
@@ -84,36 +83,36 @@ manageDirectionalStimulusProcess dsv dsnp = do
   availableObjectActions <- _objectActionManagement <$> objM
   locM <- getLocationM <$> getPlayerLocationGID
   availableLocationActions <- _locationActionManagement <$> locM
-  let lookupAgentAction = lookupAgentActionF availableAgentActions
-      lookupObjectAction = lookupObjectActionF availableObjectActions
-      lookupLocationAction = lookupLocationActionF availableLocationActions
-  case (lookupAgentAction, lookupLocationAction, lookupObjectAction) of
-    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus action found for verb: "
-    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus action found for verb: "
-    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus action found for verb: "
+  let agentActionGID =  lookupAgentActionF availableAgentActions
+      objectActionGID = lookupObjectActionF availableObjectActions
+      locationActionGID = lookupLocationActionF availableLocationActions
+      agentActionEffectKey = AgentDirectionalStimulusActionKey agentActionGID
+      locationActionEffectKey = LocationDirectionalStimulusActionKey locationActionGID
+      objectActionEffectKey = ObjectDirectionalStimulusActionKey objectActionGID
+  agentActionMap <- asks (_agentDirectionalStimulusActionMap . _actionMaps)
+  locationActionMap <- asks (_locationDirectionalStimulusActionMap . _actionMaps)
+  objectActionMap <- asks (_objectDirectionalStimulusActionMap . _actionMaps)
 
-    (Just agentActionGID, Just locationActionGID, Just objectActionGID) -> do
-      let agentActionEffectKey = AgentDirectionalStimulusActionKey agentActionGID
-          locationActionEffectKey = LocationDirectionalStimulusActionKey locationActionGID
-          objectActionEffectKey = ObjectDirectionalStimulusActionKey objectActionGID
-      agentActionMap <- asks (_agentDirectionalStimulusActionMap . _actionMaps)
-      locationActionMap <- asks (_locationDirectionalStimulusActionMap . _actionMaps)
-      objectActionMap <- asks (_objectDirectionalStimulusActionMap . _actionMaps)
+  agentActionF <- _unADSA <$> maybe agentActionErr
+                        pure (Data.Map.Strict.lookup agentActionGID agentActionMap)
+  locationActionF <- _unLDSA <$> maybe locationActionErr
+                           pure (Data.Map.Strict.lookup locationActionGID locationActionMap)
+  objectActionF <- _unODSA <$> maybe objectActionErr
+                         pure (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
-      agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
-                     (Data.Map.Strict.lookup agentActionGID agentActionMap)
-      locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
-                        (Data.Map.Strict.lookup locationActionGID locationActionMap)
-      objectAction <- maybe (error "Programmer Error: No object action found for GID") pure
-                      (Data.Map.Strict.lookup objectActionGID objectActionMap)
-
-      case (agentAction, locationAction, objectAction) of
-        (AgentDirectionalStimulusActionF agentActionF, LocationDirectionalStimulusActionF locationActionF, ObjectDirectionalStimulusActionF objectActionF) ->
-          agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF objectActionEffectKey
+  agentActionF agentActionEffectKey
+    >> locationActionF locationActionEffectKey
+    >> objectActionF objectActionEffectKey
   where
-    lookupAgentActionF = lookupAgentDirectionalStimulus dsv
-    lookupLocationActionF = lookupLocationDirectionalStimulus dsv
-    lookupObjectActionF = lookupObjectDirectionalStimulus dsv
+    lookupAgentActionF = Data.Maybe.fromMaybe agentIdError . lookupAgentDirectionalStimulus dsv
+    lookupLocationActionF = Data.Maybe.fromMaybe locationIdError . lookupLocationDirectionalStimulus dsv
+    lookupObjectActionF = Data.Maybe.fromMaybe objectIdError . lookupObjectDirectionalStimulus dsv
+    agentActionErr = error "Programmer Error: No agent action found for GID"
+    locationActionErr = error "Programmer Error: No location action found for GID"
+    objectActionErr = error "Programmer Error: No object action found for GID"
+    agentIdError = error "Programmer Error: No agent directional stimulus action found for verb: "
+    locationIdError = error "Programmer Error: No location directional stimulus action found for verb: "
+    objectIdError = error "Programmer Error: No object directional stimulus action found for verb: "
 
 manageContainerDirectionalStimulusProcess :: DirectionalStimulusVerb
                                                 -> DirectionalStimulusContainerPhrase

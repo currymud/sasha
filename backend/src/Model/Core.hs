@@ -222,11 +222,11 @@ instance MonadTrans GameComputation where
 -- Action function types
 type AgentImplicitStimulusActionF :: Type
 newtype AgentImplicitStimulusActionF
-  = AgentImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
+  = AgentImplicitStimulusActionF  { _unAISA :: (ActionEffectKey -> GameComputation Identity ())}
 
 type LocationImplicitStimulusActionF :: Type
 newtype LocationImplicitStimulusActionF
-  = LocationImplicitStimulusActionF (ActionEffectKey -> GameComputation Identity ())
+  = LocationImplicitStimulusActionF { _unLISA :: (ActionEffectKey -> GameComputation Identity ())}
 
 type AgentDirectionalStimulusAction :: Type
 type AgentDirectionalStimulusAction
@@ -235,15 +235,15 @@ type AgentDirectionalStimulusAction
 
 type AgentDirectionalStimulusActionF :: Type
 newtype AgentDirectionalStimulusActionF
-  = AgentDirectionalStimulusActionF AgentDirectionalStimulusAction
+  = AgentDirectionalStimulusActionF { _unADSA :: AgentDirectionalStimulusAction }
 
 type ObjectDirectionalStimulusActionF :: Type
 newtype ObjectDirectionalStimulusActionF
-  = ObjectDirectionalStimulusActionF AgentDirectionalStimulusAction
+  = ObjectDirectionalStimulusActionF { _unODSA :: AgentDirectionalStimulusAction }
 
 type LocationDirectionalStimulusActionF :: Type
 newtype LocationDirectionalStimulusActionF
-  = LocationDirectionalStimulusActionF AgentDirectionalStimulusAction
+  = LocationDirectionalStimulusActionF { _unLDSA :: AgentDirectionalStimulusAction }
 
 type ActionEffectKeyF :: Type
 type ActionEffectKeyF = ActionEffectKey -> GameComputation Identity ()
