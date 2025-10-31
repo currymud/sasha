@@ -32,7 +32,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 ContainerDirectionalStimulusContainerActionF (ContainerCanBeSeenInF, ContainerCannotBeSeenInF'),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
-                                                LocationDirectionalStimulusActionF (LocationCanBeSeenF, LocationCannotBeSeenF),
+                                                LocationDirectionalStimulusActionF (LocationDirectionalStimulusActionF),
                                                 LocationDirectionalStimulusContainerActionF (LocationCanBeSeenInF, LocationCannotBeSeenInF),
                                                 LocationImplicitStimulusActionF (LocationImplicitStimulusActionF),
                                                 Object (_objectActionManagement),
@@ -108,7 +108,7 @@ manageDirectionalStimulusProcess dsv dsnp = do
                       (Data.Map.Strict.lookup objectActionGID objectActionMap)
 
       case (agentAction, locationAction, objectAction) of
-        (AgentDirectionalStimulusActionF agentActionF, LocationCanBeSeenF locationActionF, ObjectDirectionalStimulusActionF objectActionF) ->
+        (AgentDirectionalStimulusActionF agentActionF, LocationDirectionalStimulusActionF locationActionF, ObjectDirectionalStimulusActionF objectActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF objectActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalStimulus dsv

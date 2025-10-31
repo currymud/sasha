@@ -58,7 +58,7 @@ import           Model.Core                                              (Action
                                                                           GameState,
                                                                           Location,
                                                                           LocationContainerAccessActionF,
-                                                                          LocationDirectionalStimulusActionF (LocationCannotBeSeenF),
+                                                                          LocationDirectionalStimulusActionF (LocationDirectionalStimulusActionF),
                                                                           LocationDirectionalStimulusContainerActionF,
                                                                           LocationImplicitStimulusActionF,
                                                                           NarrationComputation (..),
@@ -118,8 +118,8 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (locationAllowLookAtF,
-                                                                          locationAllowLookInF,
+import           ConstraintRefinement.Actions.Locations.Look             (locationAllowLookInF,
+                                                                          locationLookAtF,
                                                                           locationLookF)
 import           ConstraintRefinement.Actions.Locations.Open             (openLocationF)
 import           ConstraintRefinement.Actions.Objects.Look               (containerCanBeSeenInF,
@@ -166,7 +166,7 @@ sashaBedroomDemo = do
   canStandFGID <- declareAction standF
   locationLitFGID <- declareAction locationLookF
   -- Location directional stimulus actions
-  locationCanBeSeenGID <- declareAction  locationAllowLookAtF
+  locationCanBeSeenGID <- declareAction  locationLookAtF
   locationCanBeSeenInFGID <- declareAction locationAllowLookInF
   locationOpenContainerFGID <- declareAction openLocationF
   lookAtFloorFGID <- declareAction objectLookedAtF

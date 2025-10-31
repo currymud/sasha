@@ -242,9 +242,8 @@ newtype ObjectDirectionalStimulusActionF
   = ObjectDirectionalStimulusActionF AgentDirectionalStimulusAction
 
 type LocationDirectionalStimulusActionF :: Type
-data LocationDirectionalStimulusActionF
-  = LocationCanBeSeenF (ActionEffectKey -> GameComputation Identity ())
-  | LocationCannotBeSeenF (ActionEffectKey -> GameComputation Identity ())
+newtype LocationDirectionalStimulusActionF
+  = LocationDirectionalStimulusActionF AgentDirectionalStimulusAction
 
 type ActionEffectKeyF :: Type
 type ActionEffectKeyF = ActionEffectKey -> GameComputation Identity ()
