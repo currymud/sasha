@@ -70,25 +70,20 @@ data BuilderState = BuilderState
   , _declaredConsumableGIDs :: Map (NounPhrase Consumable) (GID Object)
   , _declaredContainerGIDs :: Map (NounPhrase Container) (GID Object)
   , _declaredLocationGIDs :: Map (NounPhrase DirectionalStimulus) (GID Location)
-  , _nextImplicitActionGID :: Int
   , _nextAgentImplicitStimulusActionGID :: Int
   , _nextLocationImplicitStimulusActionGID :: Int
-  , _nextDirectionalActionGID :: Int
   , _nextAgentDirectionalStimulusActionGID :: Int
   , _nextObjectDirectionalStimulusActionGID :: Int
   , _nextLocationDirectionalStimulusActionGID :: Int
-  , _nextDirectionalContainerActionGID :: Int
   , _nextAgentDirectionalContainerStimulusActionGID :: Int
   , _nextContainerDirectionalContainerStimulusActionGID :: Int
   , _nextLocationDirectionalContainerStimulusActionGID :: Int
   , _nextSomaticActionGID :: Int
-  , _nextAcquisitionActionGID :: Int
   , _nextAgentAcquisitionActionGID :: Int
   , _nextObjectAcquisitionActionGID :: Int
   , _nextContainerAcquisitionActionGID :: Int
   , _nextLocationAcquisitionActionGID :: Int
   , _nextConsumptionActionGID :: Int
-  , _nextContainerAccessActionGID :: Int
   , _nextAgentContainerAccessActionGID :: Int
   , _nextLocationContainerAccessActionGID :: Int
   , _nextObjectContainerAccessActionGID :: Int
@@ -116,25 +111,20 @@ initialBuilderState gs = BuilderState
   , _declaredConsumableGIDs = mempty
   , _declaredContainerGIDs = mempty
   , _declaredLocationGIDs = mempty
-  , _nextImplicitActionGID = 1000
   , _nextAgentImplicitStimulusActionGID = 9000
   , _nextLocationImplicitStimulusActionGID = 10000
-  , _nextDirectionalActionGID = 1000
   , _nextAgentDirectionalStimulusActionGID = 6000
   , _nextObjectDirectionalStimulusActionGID = 7000
   , _nextLocationDirectionalStimulusActionGID = 8000
-  , _nextDirectionalContainerActionGID = 1000
   , _nextAgentDirectionalContainerStimulusActionGID = 11000
   , _nextContainerDirectionalContainerStimulusActionGID = 12000
   , _nextLocationDirectionalContainerStimulusActionGID = 13000
   , _nextSomaticActionGID = 1000
-  , _nextAcquisitionActionGID = 1000
   , _nextAgentAcquisitionActionGID = 2000
   , _nextObjectAcquisitionActionGID = 3000
   , _nextContainerAcquisitionActionGID = 4000
   , _nextLocationAcquisitionActionGID = 5000
   , _nextConsumptionActionGID = 1000
-  , _nextContainerAccessActionGID = 1000
   , _nextAgentContainerAccessActionGID = 1000
   , _nextLocationContainerAccessActionGID = 1000
   , _nextObjectContainerAccessActionGID = 1000
@@ -166,10 +156,6 @@ initialBuilderState gs = BuilderState
       , _locationPosturalActionMap = Data.Map.Strict.empty
       }
   }
-
-getActionMaps :: BuilderState -> ActionMaps
-getActionMaps = _actionMaps
--- Initial builder state
 
 runWorldBuilderWithMaps :: WorldBuilder a -> BuilderState -> Either WorldBuilderError WorldBuilderResult
 runWorldBuilderWithMaps (WorldBuilder computation) initialState =
