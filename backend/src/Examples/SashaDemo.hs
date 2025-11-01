@@ -287,7 +287,7 @@ sashaBedroomDemo = do
 
   linkEffect (AgentImplicitStimulusActionKey playerLookFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
-  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketDeniedFGID) pocketGID
+  linkEffect (ObjectDirectionalStimulusContainerActionKey lookInPocketDeniedFGID) pocketGID
     (NarrationEffect (StaticNarration closedPocket))
 --lookInPocketDeniedFGID
   -- LookAt narration for objects
@@ -322,7 +322,7 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AgentAcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
-  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
+  linkEffect (ObjectDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
 
   linkEffect (ObjectDirectionalStimulusActionKey lookAtPillDeniedGID) pillGID

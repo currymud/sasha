@@ -7,13 +7,13 @@ import           Model.Core                    (AgentAcquisitionActionF,
                                                 AgentContainerAccessActionF,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 ContainerAcquisitionActionF,
-                                                ContainerDirectionalStimulusContainerActionF,
                                                 InstrumentContainerAccessActionF,
                                                 LocationAcquisitionActionF,
                                                 LocationContainerAccessActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
+                                                ObjectDirectionalStimulusContainerActionF,
                                                 SomaticAccessActionF)
 import           Model.Parser.Atomics.Verbs    (AcquisitionVerb,
                                                 DirectionalStimulusVerb,
@@ -39,5 +39,5 @@ type family ActionFunctionType (verb :: Type) :: Type where
   ActionFunctionType InstrumentContainerAccessActionF = InstrumentContainerAccessActionF
   -- Role-based directional container stimulus action type mappings
   ActionFunctionType AgentDirectionalStimulusContainerActionF = AgentDirectionalStimulusContainerActionF
-  ActionFunctionType ContainerDirectionalStimulusContainerActionF = ContainerDirectionalStimulusContainerActionF
+  ActionFunctionType ObjectDirectionalStimulusContainerActionF = ObjectDirectionalStimulusContainerActionF
   ActionFunctionType LocationDirectionalStimulusContainerActionF = LocationDirectionalStimulusContainerActionF

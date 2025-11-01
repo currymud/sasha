@@ -32,7 +32,7 @@ module Model.Core
   , ObjectDirectionalStimulusActionF(..)
   , LocationDirectionalStimulusActionF(..)
   , AgentDirectionalStimulusContainerActionF(..)
-  , ContainerDirectionalStimulusContainerActionF(..)
+  , ObjectDirectionalStimulusContainerActionF(..)
   , LocationDirectionalStimulusContainerActionF(..)
   , AgentContainerAccessActionF(..)
   , LocationContainerAccessActionF(..)
@@ -56,7 +56,7 @@ module Model.Core
   , LocationDirectionalStimulusActionMap
   , ObjectDirectionalStimulusActionMap
   , AgentDirectionalStimulusContainerActionMap
-  , ContainerDirectionalStimulusContainerActionMap
+  , ObjectDirectionalStimulusContainerActionMap
   , LocationDirectionalStimulusContainerActionMap
   , AgentContainerAccessActionMap
   , LocationContainerAccessActionMap
@@ -260,9 +260,9 @@ type LocationDirectionalStimulusContainerActionF :: Type
 newtype LocationDirectionalStimulusContainerActionF
   = LocationLookedInF { _unLDSCA :: ActionEffectKeyF}
 
-type ContainerDirectionalStimulusContainerActionF :: Type
-newtype ContainerDirectionalStimulusContainerActionF
-  = ContainerLookedInF ActionEffectKeyF
+type ObjectDirectionalStimulusContainerActionF :: Type
+newtype ObjectDirectionalStimulusContainerActionF
+  = ObjectLookedInF { _unODSCA :: ActionEffectKeyF }
 
 -- | Unified result type for actions that produce effect keys
 type ActionEffectResult :: Type
@@ -420,8 +420,8 @@ type LocationImplicitStimulusActionMap = Map (GID LocationImplicitStimulusAction
 type AgentDirectionalStimulusContainerActionMap :: Type
 type AgentDirectionalStimulusContainerActionMap = Map (GID AgentDirectionalStimulusContainerActionF) AgentDirectionalStimulusContainerActionF
 
-type ContainerDirectionalStimulusContainerActionMap :: Type
-type ContainerDirectionalStimulusContainerActionMap = Map (GID ContainerDirectionalStimulusContainerActionF) ContainerDirectionalStimulusContainerActionF
+type ObjectDirectionalStimulusContainerActionMap :: Type
+type ObjectDirectionalStimulusContainerActionMap = Map (GID ObjectDirectionalStimulusContainerActionF) ObjectDirectionalStimulusContainerActionF
 
 type LocationDirectionalStimulusContainerActionMap :: Type
 type LocationDirectionalStimulusContainerActionMap = Map (GID LocationDirectionalStimulusContainerActionF) LocationDirectionalStimulusContainerActionF
@@ -483,7 +483,7 @@ data ActionMaps = ActionMaps
   { _agentImplicitStimulusActionMap :: AgentImplicitStimulusActionMap
   , _locationImplicitStimulusActionMap :: LocationImplicitStimulusActionMap
   , _agentDirectionalStimulusContainerActionMap :: AgentDirectionalStimulusContainerActionMap
-  , _containerDirectionalStimulusContainerActionMap :: ContainerDirectionalStimulusContainerActionMap
+  , _objectDirectionalStimulusContainerActionMap :: ObjectDirectionalStimulusContainerActionMap
   , _locationDirectionalStimulusContainerActionMap :: LocationDirectionalStimulusContainerActionMap
   , _agentContainerAccessActionMap    :: AgentContainerAccessActionMap
   , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
@@ -522,7 +522,7 @@ data ActionEffectKey
   | LocationDirectionalStimulusActionKey (GID LocationDirectionalStimulusActionF)
   | ObjectDirectionalStimulusActionKey (GID ObjectDirectionalStimulusActionF)
   | AgentDirectionalStimulusContainerActionKey (GID AgentDirectionalStimulusContainerActionF)
-  | ContainerDirectionalStimulusContainerActionKey (GID ContainerDirectionalStimulusContainerActionF)
+  | ObjectDirectionalStimulusContainerActionKey (GID ObjectDirectionalStimulusContainerActionF)
   | LocationDirectionalStimulusContainerActionKey (GID LocationDirectionalStimulusContainerActionF)
   | SomaticAccessActionKey (GID SomaticAccessActionF)
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
@@ -630,7 +630,7 @@ data ActionManagementOperation
   | AddObjectDirectionalStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
 
   | AddAgentDirectionalContainerStimulus DirectionalStimulusVerb (GID AgentDirectionalStimulusContainerActionF)
-  | AddContainerDirectionalContainerStimulus DirectionalStimulusVerb (GID ContainerDirectionalStimulusContainerActionF)
+  | AddObjectDirectionalContainerStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusContainerActionF)
   | AddLocationDirectionalContainerStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
 
   | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
@@ -655,12 +655,10 @@ data ActionManagementOperation
   | AddLocationAcquisitionVerbPhrase AcquisitionVerbPhrase (GID LocationAcquisitionActionF)
 
   | AddConsumption ConsumptionVerb (GID Object) (GID ConsumptionActionF)
-  | AddPositivePostural PositivePosturalVerb (GID PosturalActionF)
   | AddAgentPositivePostural PositivePosturalVerb (GID AgentPosturalActionF)
   | AddLocationPositivePostural PositivePosturalVerb (GID LocationPosturalActionF)
   | AddAgentNegativePostural NegativePosturalVerb (GID AgentPosturalActionF)
   | AddLocationNegativePostural NegativePosturalVerb (GID LocationPosturalActionF)
-  | AddNegativePostural NegativePosturalVerb (GID PosturalActionF)
   deriving stock (Show, Eq, Ord)
 
 type ActionGID :: Type
@@ -680,7 +678,7 @@ data ActionGID
   | ObjectAcquisitionActionGID (GID ObjectAcquisitionActionF)
 
   | AgentDirectionalContainerActionGID (GID AgentDirectionalStimulusContainerActionF)
-  | ContainerDirectionalContainerActionGID (GID ContainerDirectionalStimulusContainerActionF)
+  | ObjectDirectionalContainerActionGID (GID ObjectDirectionalStimulusContainerActionF)
   | LocationDirectionalContainerActionGID (GID LocationDirectionalStimulusContainerActionF)
 
   | ConsumptionActionGID (GID ConsumptionActionF)
@@ -702,7 +700,7 @@ data ActionManagement
   | ObjectDSAManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusActionF)
 
   | AgentDSAContainerManagementKey DirectionalStimulusVerb (GID AgentDirectionalStimulusContainerActionF)
-  | ContainerDSAContainerManagementKey DirectionalStimulusVerb (GID ContainerDirectionalStimulusContainerActionF)
+  | ObjectDSAContainerManagementKey DirectionalStimulusVerb (GID ObjectDirectionalStimulusContainerActionF)
   | LocationDSAContainerManagementKey DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
 
   | AgentISAManagementKey ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)

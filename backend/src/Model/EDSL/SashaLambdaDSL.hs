@@ -14,7 +14,6 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentPosturalActionF,
                                                 ConsumptionActionF,
                                                 ContainerAcquisitionActionF,
-                                                ContainerDirectionalStimulusContainerActionF,
                                                 Effect, Evaluator,
                                                 GameComputation, GameState,
                                                 InstrumentContainerAccessActionF,
@@ -28,6 +27,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusContainerActionF,
                                                 Player, PlayerKey,
                                                 PosturalActionF,
                                                 SomaticAccessActionF,
@@ -85,7 +85,7 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareLocationDirectionalStimulusActionGID :: LocationDirectionalStimulusActionF -> SashaLambdaDSL (GID LocationDirectionalStimulusActionF)
   -- Role-based directional container stimulus action declarations
   DeclareAgentDirectionalContainerStimulusActionGID :: AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusContainerActionF)
-  DeclareContainerDirectionalContainerStimulusActionGID :: ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID ContainerDirectionalStimulusContainerActionF)
+  DeclareObjectDirectionalContainerStimulusActionGID :: ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID ObjectDirectionalStimulusContainerActionF)
   DeclareLocationDirectionalContainerStimulusActionGID :: LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID LocationDirectionalStimulusContainerActionF)
   DeclareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
   -- Role-based acquisition action declarations
@@ -111,7 +111,7 @@ data SashaLambdaDSL :: Type -> Type where
   CreateLocationISAManagement :: ImplicitStimulusVerb -> GID LocationImplicitStimulusActionF -> SashaLambdaDSL ActionManagement
   -- Role-based directional container stimulus management creation
   CreateAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
-  CreateContainerDSAContainerManagement :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
+  CreateObjectDSAContainerManagement :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateLocationDSAContainerManagement :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
   CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
@@ -157,7 +157,7 @@ data SashaLambdaDSL :: Type -> Type where
   CreateLocationDirectionalStimulusEffect :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusActionF -> SashaLambdaDSL Effect
   -- Role-based directional container stimulus effect creation constructors
   CreateAgentDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
-  CreateContainerDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
+  CreateObjectDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   CreateLocationDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
   -- Role-based acquisition effect creation constructors
   CreateAgentAcquisitionVerbEffect :: AcquisitionVerb -> GID AgentAcquisitionActionF -> SashaLambdaDSL Effect
@@ -169,8 +169,10 @@ data SashaLambdaDSL :: Type -> Type where
   CreateContainerAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID ContainerAcquisitionActionF -> SashaLambdaDSL Effect
   CreateLocationAcquisitionVerbPhraseEffect :: AcquisitionVerbPhrase -> GID LocationAcquisitionActionF -> SashaLambdaDSL Effect
   CreateConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> SashaLambdaDSL Effect
-  CreatePositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
-  CreateNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
+  CreateAgentPositivePosturalEffect :: PositivePosturalVerb -> GID AgentPosturalActionF -> SashaLambdaDSL Effect
+  CreateAgentNegativePosturalEffect :: NegativePosturalVerb -> GID AgentPosturalActionF -> SashaLambdaDSL Effect
+  CreateLocationPositivePosturalEffect :: PositivePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
+  CreateLocationNegativePosturalEffect :: NegativePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
   CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
   CreateAgentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
   CreateAgentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
@@ -243,8 +245,8 @@ declareLocationDirectionalStimulusActionGID = DeclareLocationDirectionalStimulus
 declareAgentDirectionalContainerStimulusActionGID :: AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusContainerActionF)
 declareAgentDirectionalContainerStimulusActionGID = DeclareAgentDirectionalContainerStimulusActionGID
 
-declareContainerDirectionalContainerStimulusActionGID :: ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID ContainerDirectionalStimulusContainerActionF)
-declareContainerDirectionalContainerStimulusActionGID = DeclareContainerDirectionalContainerStimulusActionGID
+declareObjectDirectionalContainerStimulusActionGID :: ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID ObjectDirectionalStimulusContainerActionF)
+declareObjectDirectionalContainerStimulusActionGID = DeclareObjectDirectionalContainerStimulusActionGID
 
 declareLocationDirectionalContainerStimulusActionGID :: LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID LocationDirectionalStimulusContainerActionF)
 declareLocationDirectionalContainerStimulusActionGID = DeclareLocationDirectionalContainerStimulusActionGID
@@ -290,8 +292,8 @@ declareLocationPosturalActionGID = DeclareLocationPosturalActionGID
 createAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
 createAgentDSAContainerManagement = CreateAgentDSAContainerManagement
 
-createContainerDSAContainerManagement :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
-createContainerDSAContainerManagement = CreateContainerDSAContainerManagement
+createObjectDSAContainerManagement :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
+createObjectDSAContainerManagement = CreateObjectDSAContainerManagement
 
 createLocationDSAContainerManagement :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
 createLocationDSAContainerManagement = CreateLocationDSAContainerManagement
@@ -362,8 +364,8 @@ createLocationDirectionalStimulusEffect = CreateLocationDirectionalStimulusEffec
 createAgentDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
 createAgentDirectionalContainerStimulusEffect = CreateAgentDirectionalContainerStimulusEffect
 
-createContainerDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
-createContainerDirectionalContainerStimulusEffect = CreateContainerDirectionalContainerStimulusEffect
+createObjectDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
+createObjectDirectionalContainerStimulusEffect = CreateObjectDirectionalContainerStimulusEffect
 
 createLocationDirectionalContainerStimulusEffect :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL Effect
 createLocationDirectionalContainerStimulusEffect = CreateLocationDirectionalContainerStimulusEffect
@@ -396,11 +398,14 @@ createLocationAcquisitionVerbPhraseEffect = CreateLocationAcquisitionVerbPhraseE
 createConsumptionEffect :: ConsumptionVerb -> GID Object -> GID ConsumptionActionF -> SashaLambdaDSL Effect
 createConsumptionEffect = CreateConsumptionEffect
 
-createPositivePosturalEffect :: PositivePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
-createPositivePosturalEffect = CreatePositivePosturalEffect
-
-createNegativePosturalEffect :: NegativePosturalVerb -> GID PosturalActionF -> SashaLambdaDSL Effect
-createNegativePosturalEffect = CreateNegativePosturalEffect
+createAgentPositivePosturalEffect :: PositivePosturalVerb -> GID AgentPosturalActionF -> SashaLambdaDSL Effect
+createAgentPositivePosturalEffect = CreateAgentPositivePosturalEffect
+createAgentNegativePosturalEffect :: NegativePosturalVerb -> GID AgentPosturalActionF -> SashaLambdaDSL Effect
+createAgentNegativePosturalEffect = CreateAgentNegativePosturalEffect
+createLocationPositivePosturalEffect :: PositivePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
+createLocationPositivePosturalEffect = CreateLocationPositivePosturalEffect
+createLocationNegativePosturalEffect :: NegativePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
+createLocationNegativePosturalEffect = CreateLocationNegativePosturalEffect
 
 createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
 createSomaticAccessEffect = CreateSomaticAccessEffect

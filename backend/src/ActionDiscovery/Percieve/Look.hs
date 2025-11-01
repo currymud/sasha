@@ -24,13 +24,12 @@ import           GameState.ActionManagement    (lookupAgentDirectionalContainerS
                                                 lookupObjectDirectionalStimulus)
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
-import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, ContainerDirectionalStimulusContainerActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey),
-                                                ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _containerDirectionalStimulusContainerActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap),
+import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey, ObjectDirectionalStimulusContainerActionKey),
+                                                ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap, _objectDirectionalStimulusContainerActionMap),
                                                 AgentDirectionalStimulusActionF (_unADSA),
                                                 AgentDirectionalStimulusContainerActionF (AgentDirectionalStimulusContainerActionF),
                                                 AgentImplicitStimulusActionF (_unAISA),
                                                 Config (_actionMaps),
-                                                ContainerDirectionalStimulusContainerActionF (ContainerLookedInF),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
                                                 LocationDirectionalStimulusActionF (_unLDSA),
@@ -38,6 +37,7 @@ import           Model.Core                    (ActionEffectKey (AgentDirectiona
                                                 LocationImplicitStimulusActionF (_unLISA),
                                                 Object (_objectActionManagement),
                                                 ObjectDirectionalStimulusActionF (_unODSA),
+                                                ObjectDirectionalStimulusContainerActionF (ObjectLookedInF),
                                                 Player (_playerActions))
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
@@ -134,10 +134,10 @@ manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhras
     (Just agentActionGID, Just locationActionGID, Just containerActionGID) -> do
       let agentActionEffectKey = AgentDirectionalStimulusContainerActionKey agentActionGID
           locationActionEffectKey = LocationDirectionalStimulusContainerActionKey locationActionGID
-          containerActionEffectKey = ContainerDirectionalStimulusContainerActionKey containerActionGID
+          containerActionEffectKey = ObjectDirectionalStimulusContainerActionKey containerActionGID
       agentActionMap <- asks (_agentDirectionalStimulusContainerActionMap . _actionMaps)
       locationActionMap <- asks (_locationDirectionalStimulusContainerActionMap . _actionMaps)
-      containerActionMap <- asks (_containerDirectionalStimulusContainerActionMap . _actionMaps)
+      containerActionMap <- asks (_objectDirectionalStimulusContainerActionMap . _actionMaps)
 
       agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
                      (Data.Map.Strict.lookup agentActionGID agentActionMap)
@@ -147,7 +147,7 @@ manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhras
                       (Data.Map.Strict.lookup containerActionGID containerActionMap)
 
       case (agentAction, locationAction, containerAction) of
-        (AgentDirectionalStimulusContainerActionF agentActionF, LocationLookedInF locationActionF, ContainerLookedInF objectActionF) ->
+        (AgentDirectionalStimulusContainerActionF agentActionF, LocationLookedInF locationActionF, ObjectLookedInF objectActionF) ->
           agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF containerActionEffectKey
   where
     lookupAgentActionF = lookupAgentDirectionalContainerStimulus dsv
