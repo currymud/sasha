@@ -27,17 +27,17 @@ import           GameState.Perception          (findAccessibleObject,
 import           Model.Core                    (ActionEffectKey (AgentDirectionalStimulusActionKey, AgentDirectionalStimulusContainerActionKey, AgentImplicitStimulusActionKey, LocationDirectionalStimulusActionKey, LocationDirectionalStimulusContainerActionKey, LocationImplicitStimulusActionKey, ObjectDirectionalStimulusActionKey, ObjectDirectionalStimulusContainerActionKey),
                                                 ActionMaps (_agentDirectionalStimulusActionMap, _agentDirectionalStimulusContainerActionMap, _agentImplicitStimulusActionMap, _locationDirectionalStimulusActionMap, _locationDirectionalStimulusContainerActionMap, _locationImplicitStimulusActionMap, _objectDirectionalStimulusActionMap, _objectDirectionalStimulusContainerActionMap),
                                                 AgentDirectionalStimulusActionF (_unADSA),
-                                                AgentDirectionalStimulusContainerActionF (AgentDirectionalStimulusContainerActionF),
+                                                AgentDirectionalStimulusContainerActionF (_unADSCA),
                                                 AgentImplicitStimulusActionF (_unAISA),
                                                 Config (_actionMaps),
                                                 GameComputation,
                                                 Location (_locationActionManagement),
                                                 LocationDirectionalStimulusActionF (_unLDSA),
-                                                LocationDirectionalStimulusContainerActionF (LocationLookedInF),
+                                                LocationDirectionalStimulusContainerActionF (_unLDSCA),
                                                 LocationImplicitStimulusActionF (_unLISA),
                                                 Object (_objectActionManagement),
                                                 ObjectDirectionalStimulusActionF (_unODSA),
-                                                ObjectDirectionalStimulusContainerActionF (ObjectLookedInF),
+                                                ObjectDirectionalStimulusContainerActionF (_unODSCA),
                                                 Player (_playerActions))
 import           Model.GID                     (GID)
 import           Model.Parser.Atomics.Nouns    (Container, DirectionalStimulus)
@@ -123,37 +123,36 @@ manageContainerDirectionalStimulusProcess dsv (DirectionalStimulusContainerPhras
   availableObjectActions <- _objectActionManagement <$> objM
   locM <- getLocationM <$> getPlayerLocationGID
   availableLocationActions <- _locationActionManagement <$> locM
-  let lookupAgentAction = lookupAgentActionF availableAgentActions
-      lookupObjectAction = lookupObjectActionF availableObjectActions
-      lookupLocationAction = lookupLocationActionF availableLocationActions
-  case (lookupAgentAction, lookupLocationAction, lookupObjectAction) of
-    (Nothing,_,_) -> error "Programmer Error: No agent directional stimulus container action found for verb: "
-    (_,Nothing,_) -> error "Programmer Error: No location directional stimulus container action found for verb: "
-    (_,_,Nothing) -> error "Programmer Error: No object directional stimulus container action found for verb: "
+  agentActionMap <- asks (_agentDirectionalStimulusContainerActionMap . _actionMaps)
+  locationActionMap <- asks (_locationDirectionalStimulusContainerActionMap . _actionMaps)
+  containerActionMap <- asks (_objectDirectionalStimulusContainerActionMap . _actionMaps)
 
-    (Just agentActionGID, Just locationActionGID, Just containerActionGID) -> do
-      let agentActionEffectKey = AgentDirectionalStimulusContainerActionKey agentActionGID
-          locationActionEffectKey = LocationDirectionalStimulusContainerActionKey locationActionGID
-          containerActionEffectKey = ObjectDirectionalStimulusContainerActionKey containerActionGID
-      agentActionMap <- asks (_agentDirectionalStimulusContainerActionMap . _actionMaps)
-      locationActionMap <- asks (_locationDirectionalStimulusContainerActionMap . _actionMaps)
-      containerActionMap <- asks (_objectDirectionalStimulusContainerActionMap . _actionMaps)
-
-      agentAction <- maybe (error "Programmer Error: No agent action found for GID") pure
-                     (Data.Map.Strict.lookup agentActionGID agentActionMap)
-      locationAction <- maybe (error "Programmer Error: No location action found for GID") pure
+  let agentActionGID = lookupAgentActionF availableAgentActions
+      containerActionGID = lookupObjectActionF availableObjectActions
+      locationActionGID = lookupLocationActionF availableLocationActions
+      agentActionEffectKey = AgentDirectionalStimulusContainerActionKey agentActionGID
+      locationActionEffectKey = LocationDirectionalStimulusContainerActionKey locationActionGID
+      containerActionEffectKey = ObjectDirectionalStimulusContainerActionKey containerActionGID
+      agentActionF = _unADSCA $ Data.Maybe.fromMaybe agentActionError
+                         (Data.Map.Strict.lookup agentActionGID agentActionMap)
+      locationActionF = _unLDSCA $ Data.Maybe.fromMaybe locationActionError
                         (Data.Map.Strict.lookup locationActionGID locationActionMap)
-      containerAction <- maybe (error "Programmer Error: No object action found for GID") pure
+      containerActionF = _unODSCA $ Data.Maybe.fromMaybe containerActionError
                       (Data.Map.Strict.lookup containerActionGID containerActionMap)
 
-      case (agentAction, locationAction, containerAction) of
-        (AgentDirectionalStimulusContainerActionF agentActionF, LocationLookedInF locationActionF, ObjectLookedInF objectActionF) ->
-          agentActionF agentActionEffectKey >> locationActionF locationActionEffectKey >> objectActionF containerActionEffectKey
+  agentActionF agentActionEffectKey
+                 >> locationActionF locationActionEffectKey
+                 >> containerActionF containerActionEffectKey
   where
-    lookupAgentActionF = lookupAgentDirectionalContainerStimulus dsv
-    lookupLocationActionF = lookupLocationDirectionalContainerStimulus dsv
-    lookupObjectActionF = lookupContainerDirectionalContainerStimulus dsv
-
+    lookupAgentActionF = Data.Maybe.fromMaybe agentIdError . lookupAgentDirectionalContainerStimulus dsv
+    lookupLocationActionF = Data.Maybe.fromMaybe locationIdError . lookupLocationDirectionalContainerStimulus dsv
+    lookupObjectActionF = Data.Maybe.fromMaybe objectIdError . lookupContainerDirectionalContainerStimulus dsv
+    agentIdError = error "Programmer Error: No agent directional stimulus container action found for verb: "
+    locationIdError = error "Programmer Error: No location directional stimulus container action found for verb: "
+    objectIdError = error "Programmer Error: No object directional stimulus container action found for verb: "
+    agentActionError = error "Programmer Error: No agent action found for GID"
+    locationActionError = error "Programmer Error: No location action found for GID"
+    containerActionError = error "Programmer Error: No object action found for GID"
 validateContainerLook :: ContainerPhrase
                       -> GameComputation Identity (GID Object)
 validateContainerLook cp = do
