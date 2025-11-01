@@ -45,11 +45,11 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (ActionEffectKey (..),
-                                                                          ActionGID (AgentContainerAccessActionGID),
+                                                                          ActionGID (AgentContainerAccessActionGID, AgentDirectionalActionGID),
                                                                           ActionManagementOperation (AddAgentContainerAccessVerbPhrase),
                                                                           AgentAcquisitionActionF,
                                                                           AgentContainerAccessActionF,
-                                                                          AgentDirectionalStimulusActionF (AgentCanLookAtF),
+                                                                          AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
                                                                           AgentImplicitStimulusActionF,
                                                                           AgentPosturalActionF,
                                                                           ContainerAcquisitionActionF,
@@ -58,14 +58,14 @@ import           Model.Core                                              (Action
                                                                           GameState,
                                                                           Location,
                                                                           LocationContainerAccessActionF,
-                                                                          LocationDirectionalStimulusActionF (LocationCannotBeSeenF),
+                                                                          LocationDirectionalStimulusActionF (LocationDirectionalStimulusActionF),
                                                                           LocationDirectionalStimulusContainerActionF,
                                                                           LocationImplicitStimulusActionF,
                                                                           NarrationComputation (..),
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
                                                                           ObjectContainerAccessActionF,
-                                                                          ObjectDirectionalStimulusActionF (ObjectCannotBeSeenF'),
+                                                                          ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                                                           Player,
                                                                           PlayerKey (..),
                                                                           SomaticAccessActionF,
@@ -118,20 +118,17 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
-import           ConstraintRefinement.Actions.Locations.Look             (locationAllowLookAtF,
-                                                                          locationAllowLookInF,
-                                                                          locationLookF)
+import           ConstraintRefinement.Actions.Locations.Look             (locationLookAtF,
+                                                                          locationLookF,
+                                                                          locationLookInF)
 import           ConstraintRefinement.Actions.Locations.Open             (openLocationF)
-import           ConstraintRefinement.Actions.Objects.Look               (containerCanBeSeenInF,
-                                                                          containerCannotBeSeenInF,
-                                                                          objectCanBeSeenF,
-                                                                          objectCannotBeSeenF)
+import           ConstraintRefinement.Actions.Objects.Look               (objectLookedAtF,
+                                                                          objectLookedInF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
 import           ConstraintRefinement.Actions.Player.Get                 (getF)
-import           ConstraintRefinement.Actions.Player.Look                (agentLookAtFailF,
+import           ConstraintRefinement.Actions.Player.Look                (agentLookAtF,
                                                                           agentLookF,
-                                                                          lookAtF,
-                                                                          lookInF)
+                                                                          agentLookInF)
 import           ConstraintRefinement.Actions.Player.Open                (openContainerDeniedF,
                                                                           openContainerF,
                                                                           openEyes)
@@ -168,39 +165,39 @@ sashaBedroomDemo = do
   canStandFGID <- declareAction standF
   locationLitFGID <- declareAction locationLookF
   -- Location directional stimulus actions
-  locationCanBeSeenGID <- declareAction  locationAllowLookAtF
-  locationCanBeSeenInFGID <- declareAction locationAllowLookInF
+  locationCanBeSeenGID <- declareAction  locationLookAtF
+  locationCanBeSeenInFGID <- declareAction locationLookInF
   locationOpenContainerFGID <- declareAction openLocationF
-  lookAtFloorFGID <- declareAction objectCanBeSeenF
-  notEvenFloorFGID <- declareAction objectCannotBeSeenF
-  lookAtChairGID <- declareAction objectCanBeSeenF
-  whatChairFGID <- declareAction objectCannotBeSeenF
+  lookAtFloorFGID <- declareAction objectLookedAtF
+  notEvenFloorFGID <- declareAction objectLookedAtF
+  lookAtChairGID <- declareAction objectLookedAtF
+  whatChairFGID <- declareAction objectLookedAtF
 
   -- Use role-based container action for chair losing object
   getFromChairGID <- declareAction (containerLosesObjectF chairGID)
-  lookAtRobeFGID <- declareAction objectCanBeSeenF
-  notEvenRobeFGID <- declareAction objectCannotBeSeenF
+  lookAtRobeFGID <- declareAction objectLookedAtF
+  notEvenRobeFGID <- declareAction objectLookedAtF
   getRobeDeniedGID <- declareAction objectNotCollectableF
 
   -- Use role-based object action for robe being collected
   getRobeFGID <- declareAction (objectCollectedF robeGID)
-  lookAtPocketGID <- declareAction objectCanBeSeenF
-  lookAtPillGID <- declareAction objectCanBeSeenF
-  lookAtPillDeniedGID <- declareAction objectCannotBeSeenF
-  lookInPocketGID <- declareAction containerCanBeSeenInF
+  lookAtPocketGID <- declareAction objectLookedAtF
+  lookAtPillGID <- declareAction objectLookedAtF
+  lookAtPillDeniedGID <- declareAction objectLookedAtF
+  lookInPocketGID <- declareAction objectLookedInF
   openPocketNoReachGID <- declareAction openObjectContainerF
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
   getDeniedFGID <- declareAction agentCannotAcquireF
-  lookAtDeniedFGID <- declareAction agentLookAtFailF
-  lookInPocketDeniedFGID <- declareAction containerCannotBeSeenInF
+  lookAtDeniedFGID <- declareAction agentLookAtF
+  lookInPocketDeniedFGID <- declareAction objectLookedInF
   -- Use role-based agent action for player get coordination
   playerGetFGID <- declareAction getF
   inventoryFGID <- declareAction agentLookF
   playerLookFGID <- declareAction agentLookF
-  playerLookAtFGID <- declareAction lookAtF
-  playerLookInFGID <- declareAction lookInF
+  playerLookAtFGID <- declareAction agentLookAtF
+  playerLookInFGID <- declareAction agentLookInF
 
   containerAccessDeniedFGID <- declareAction openContainerDeniedF
   containerAccessAllowedFGID <- declareAction openContainerF
@@ -290,7 +287,7 @@ sashaBedroomDemo = do
 
   linkEffect (AgentImplicitStimulusActionKey playerLookFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
-  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketDeniedFGID) pocketGID
+  linkEffect (ObjectDirectionalStimulusContainerActionKey lookInPocketDeniedFGID) pocketGID
     (NarrationEffect (StaticNarration closedPocket))
 --lookInPocketDeniedFGID
   -- LookAt narration for objects
@@ -325,7 +322,7 @@ sashaBedroomDemo = do
     (NarrationEffect (LookAtNarration pocketGID))
   linkEffect (AgentAcquisitionalActionKey getDeniedFGID) (PlayerKeyObject robeGID)
     (NarrationEffect (StaticNarration getDenied))
-  linkEffect (ContainerDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
+  linkEffect (ObjectDirectionalStimulusContainerActionKey lookInPocketGID) pocketGID
     (NarrationEffect (LookInNarration pocketGID))
 
   linkEffect (ObjectDirectionalStimulusActionKey lookAtPillDeniedGID) pillGID

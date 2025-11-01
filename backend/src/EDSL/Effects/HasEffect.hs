@@ -11,7 +11,6 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
                                                 ContainerAcquisitionActionF,
-                                                ContainerDirectionalStimulusContainerActionF,
                                                 Effect, Location,
                                                 LocationAcquisitionActionF,
                                                 LocationDirectionalStimulusActionF,
@@ -20,6 +19,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusContainerActionF,
                                                 PlayerKey)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createAgentAcquisitionVerbEffect,
@@ -29,7 +29,6 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createAgentImplicitStimulusEffect,
                                                 createContainerAcquisitionVerbEffect,
                                                 createContainerAcquisitionVerbPhraseEffect,
-                                                createContainerDirectionalContainerStimulusEffect,
                                                 createLocationAcquisitionVerbEffect,
                                                 createLocationAcquisitionVerbPhraseEffect,
                                                 createLocationDirectionalContainerStimulusEffect,
@@ -37,6 +36,7 @@ import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 createLocationImplicitStimulusEffect,
                                                 createObjectAcquisitionVerbEffect,
                                                 createObjectAcquisitionVerbPhraseEffect,
+                                                createObjectDirectionalContainerStimulusEffect,
                                                 createObjectDirectionalStimulusEffect,
                                                 linkEffectToLocation,
                                                 linkEffectToObject,
@@ -121,9 +121,9 @@ makeAgentCDSEffect :: DirectionalStimulusVerb
 makeAgentCDSEffect = createAgentDirectionalContainerStimulusEffect
 
 makeContainerCDSEffect :: DirectionalStimulusVerb
-                                -> GID ContainerDirectionalStimulusContainerActionF
+                                -> GID ObjectDirectionalStimulusContainerActionF
                                 -> SashaLambdaDSL Effect
-makeContainerCDSEffect = createContainerDirectionalContainerStimulusEffect
+makeContainerCDSEffect = createObjectDirectionalContainerStimulusEffect
 
 makeLocationCDSEffect :: DirectionalStimulusVerb
                                 -> GID LocationDirectionalStimulusContainerActionF

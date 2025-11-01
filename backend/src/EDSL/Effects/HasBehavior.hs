@@ -14,7 +14,6 @@ import           Model.Core                    (ActionManagement (..),
                                                 AgentImplicitStimulusActionF,
                                                 AgentPosturalActionF,
                                                 ContainerAcquisitionActionF,
-                                                ContainerDirectionalStimulusContainerActionF,
                                                 InstrumentContainerAccessActionF,
                                                 Location,
                                                 LocationAcquisitionActionF,
@@ -22,11 +21,11 @@ import           Model.Core                    (ActionManagement (..),
                                                 LocationDirectionalStimulusActionF,
                                                 LocationDirectionalStimulusContainerActionF,
                                                 LocationImplicitStimulusActionF,
-                                                LocationPosturalActionF,
-                                                Object,
+                                                LocationPosturalActionF, Object,
                                                 ObjectAcquisitionActionF,
                                                 ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
+                                                ObjectDirectionalStimulusContainerActionF,
                                                 Player)
 import           Model.EDSL.SashaLambdaDSL     (SashaLambdaDSL,
                                                 withLocationBehavior,
@@ -106,8 +105,8 @@ makeLocationDSBehavior = LocationDSAManagementKey
 makeAgentCDSBehavior :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> ActionManagement
 makeAgentCDSBehavior = AgentDSAContainerManagementKey
 
-makeContainerCDSBehavior :: DirectionalStimulusVerb -> GID ContainerDirectionalStimulusContainerActionF -> ActionManagement
-makeContainerCDSBehavior = ContainerDSAContainerManagementKey
+makeContainerCDSBehavior :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> ActionManagement
+makeContainerCDSBehavior = ObjectDSAContainerManagementKey
 
 makeLocationCDSBehavior :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> ActionManagement
 makeLocationCDSBehavior = LocationDSAContainerManagementKey

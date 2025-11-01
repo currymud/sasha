@@ -9,8 +9,8 @@ import qualified Data.Set
 import           GameState.ActionManagement    (processEffectsFromRegistry)
 import           GameState.Perception          (findAccessibleObject,
                                                 queryPerceptionMap)
-import           Model.Core                    (AgentDirectionalStimulusActionF (AgentCanLookAtF, AgentCannotLookAtF),
-                                                AgentDirectionalStimulusContainerActionF (AgentCanLookInF),
+import           Model.Core                    (AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
+                                                AgentDirectionalStimulusContainerActionF (AgentDirectionalStimulusContainerActionF),
                                                 AgentImplicitStimulusActionF (AgentImplicitStimulusActionF),
                                                 GameComputation, Object,
                                                 SpatialRelationship (ContainedIn, Contains, SupportedBy, Supports))
@@ -27,14 +27,11 @@ findContainer relationships =
       listToMaybe [cid | ContainedIn cid <- Data.Set.toList relationships] <|>
       listToMaybe [sid | SupportedBy sid <- Data.Set.toList relationships]
 
-lookInF :: AgentDirectionalStimulusContainerActionF
-lookInF = AgentCanLookInF processEffectsFromRegistry
+agentLookInF :: AgentDirectionalStimulusContainerActionF
+agentLookInF = AgentDirectionalStimulusContainerActionF processEffectsFromRegistry
 
-lookAtF :: AgentDirectionalStimulusActionF
-lookAtF = AgentCanLookAtF processEffectsFromRegistry
-
-agentLookAtFailF :: AgentDirectionalStimulusActionF
-agentLookAtFailF = AgentCannotLookAtF processEffectsFromRegistry
+agentLookAtF :: AgentDirectionalStimulusActionF
+agentLookAtF = AgentDirectionalStimulusActionF processEffectsFromRegistry
 
 -- Helper function for supported objects (similar to getContainedObjects)
 getSupportedObjects :: GID Object
