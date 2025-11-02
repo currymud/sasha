@@ -78,7 +78,7 @@ data BuilderState = BuilderState
   , _nextAgentDirectionalContainerStimulusActionGID :: Int
   , _nextContainerDirectionalContainerStimulusActionGID :: Int
   , _nextLocationDirectionalContainerStimulusActionGID :: Int
-  , _nextSomaticActionGID :: Int
+  , _nextAgentSomaticActionGID :: Int
   , _nextAgentAcquisitionActionGID :: Int
   , _nextObjectAcquisitionActionGID :: Int
   , _nextContainerAcquisitionActionGID :: Int
@@ -119,7 +119,7 @@ initialBuilderState gs = BuilderState
   , _nextAgentDirectionalContainerStimulusActionGID = 11000
   , _nextContainerDirectionalContainerStimulusActionGID = 12000
   , _nextLocationDirectionalContainerStimulusActionGID = 13000
-  , _nextSomaticActionGID = 1000
+  , _nextAgentSomaticActionGID = 1000
   , _nextAgentAcquisitionActionGID = 2000
   , _nextObjectAcquisitionActionGID = 3000
   , _nextContainerAcquisitionActionGID = 4000
@@ -473,13 +473,13 @@ interpretDSL (DeclareLocationPosturalActionGID actionF) = do
 
 interpretDSL (DeclareAgentSomaticActionGID actionF) = do
   state <- get
-  let gidValue = _nextSomaticActionGID state
+  let gidValue = _nextAgentSomaticActionGID state
       newGID = GID gidValue
       currentMaps = _actionMaps state
       updatedMap = Data.Map.Strict.insert newGID actionF
                    (_somaticStimulusActionMap currentMaps)
       updatedMaps = currentMaps { _somaticStimulusActionMap = updatedMap }
-  put state { _nextSomaticActionGID = gidValue + 1
+  put state { _nextAgentSomaticActionGID = gidValue + 1
             , _actionMaps = updatedMaps }
   pure newGID
 
