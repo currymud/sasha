@@ -7,22 +7,15 @@ import           GameState                  (getPlayerLocationM)
 import           GameState.ActionManagement (processEffectsFromRegistry)
 import           Model.Core                 (ActionEffectKey,
                                              AgentContainerAccessActionF (AgentCanAccessF, AgentCannotAccessF),
+                                             AgentSomaticAccessActionF (AgentSomaticAccessActionF),
                                              GameComputation,
                                              Location (_objectSemanticMap),
-                                             Object, SimpleAccessSearchStrategy,
-                                             SomaticAccessActionF (CannotSomaticAccessF, PlayerSomaticAccessActionF))
+                                             Object, SimpleAccessSearchStrategy)
 import           Model.GID                  (GID)
 import           Model.Parser.GCase         (NounKey)
 
-openEyesDenied :: SomaticAccessActionF
-openEyesDenied = CannotSomaticAccessF denied
- where
-   denied :: ActionEffectKey -> GameComputation Identity ()
-   denied actionEffectKey = do
-     processEffectsFromRegistry actionEffectKey
-
-openEyes :: SomaticAccessActionF
-openEyes = PlayerSomaticAccessActionF opened
+openEyes :: AgentSomaticAccessActionF
+openEyes = AgentSomaticAccessActionF opened
  where
    opened :: ActionEffectKey
              -> GameComputation Identity ()

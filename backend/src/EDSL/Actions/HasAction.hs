@@ -10,6 +10,7 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             AgentDirectionalStimulusContainerActionF,
                                             AgentImplicitStimulusActionF,
                                             AgentPosturalActionF,
+                                            AgentSomaticAccessActionF,
                                             ConsumptionActionF,
                                             ContainerAcquisitionActionF,
                                             InstrumentContainerAccessActionF,
@@ -22,9 +23,7 @@ import           Model.Core                (AgentAcquisitionActionF,
                                             ObjectAcquisitionActionF,
                                             ObjectContainerAccessActionF,
                                             ObjectDirectionalStimulusActionF,
-                                            ObjectDirectionalStimulusContainerActionF,
-                                            PosturalActionF,
-                                            SomaticAccessActionF)
+                                            ObjectDirectionalStimulusContainerActionF)
 import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareAgentAcquisitionActionGID,
                                             declareAgentContainerAccessActionGID,
@@ -32,6 +31,7 @@ import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareAgentDirectionalStimulusActionGID,
                                             declareAgentImplicitStimulusActionGID,
                                             declareAgentPosturalActionGID,
+                                            declareAgentSomaticActionGID,
                                             declareConsumptionActionGID,
                                             declareContainerAcquisitionActionGID,
                                             declareInstrumentContainerAccessActionGID,
@@ -44,9 +44,7 @@ import           Model.EDSL.SashaLambdaDSL (SashaLambdaDSL,
                                             declareObjectAcquisitionActionGID,
                                             declareObjectContainerAccessActionGID,
                                             declareObjectDirectionalContainerStimulusActionGID,
-                                            declareObjectDirectionalStimulusActionGID,
-                                            declarePosturalActionGID,
-                                            declareSomaticActionGID)
+                                            declareObjectDirectionalStimulusActionGID)
 import           Model.GID                 (GID)
 
 -- | Unified interface for declaring actions
@@ -110,9 +108,6 @@ instance HasAction AgentImplicitStimulusActionF where
 instance HasAction LocationImplicitStimulusActionF where
   declareAction = declareLocationImplicitStimulusActionGID
 
-instance HasAction PosturalActionF where
-  declareAction = declarePosturalActionGID
-
 -- Role-based postural action instances
 instance HasAction AgentPosturalActionF where
   declareAction = declareAgentPosturalActionGID
@@ -120,5 +115,5 @@ instance HasAction AgentPosturalActionF where
 instance HasAction LocationPosturalActionF where
   declareAction = declareLocationPosturalActionGID
 
-instance HasAction SomaticAccessActionF where
-  declareAction = declareSomaticActionGID
+instance HasAction AgentSomaticAccessActionF where
+  declareAction = declareAgentSomaticActionGID

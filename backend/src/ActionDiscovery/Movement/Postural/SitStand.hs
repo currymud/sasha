@@ -9,7 +9,7 @@ import           GameState                     (getLocationM,
 import           GameState.ActionManagement    (lookupAgentPostural,
                                                 lookupLocationPostural)
 import           Model.Core                    (ActionEffectKey (AgentPosturalActionKey, LocationPosturalActionKey),
-                                                ActionMaps (_agentPosturalActionMap, _locationPosturalActionMap, _posturalActionMap),
+                                                ActionMaps (_agentPosturalActionMap, _locationPosturalActionMap),
                                                 AgentPosturalActionF (AgentCanPosturalF, AgentCannotPosturalF),
                                                 Config (_actionMaps),
                                                 GameComputation,

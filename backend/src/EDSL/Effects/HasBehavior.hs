@@ -52,7 +52,7 @@ class HasBehavior a where
   withBehavior :: ActionManagement -> a -> SashaLambdaDSL a
 
 instance MakeBehavior SomaticAccessVerb where
-  makeBehavior = SSAManagementKey
+  makeBehavior = AgentSSAManagementKey
 
 -- SimpleAccessVerb and ContainerAccessVerbPhrase instances removed - use role-specific functions instead
 

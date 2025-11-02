@@ -40,8 +40,7 @@ module Model.Core
   , InstrumentContainerAccessActionF(..)
   , AgentPosturalActionF (..)
   , LocationPosturalActionF (..)
-  , SomaticAccessActionF(..)
-  , PosturalActionF(..)
+  , AgentSomaticAccessActionF(..)
   , AgentAcquisitionActionF(..)
   , ObjectAcquisitionActionF(..)
   , ContainerAcquisitionActionF(..)
@@ -62,8 +61,7 @@ module Model.Core
   , LocationContainerAccessActionMap
   , ObjectContainerAccessActionMap
   , InstrumentContainerAccessActionMap
-  , SomaticAccessActionMap
-  , PosturalActionMap
+  , AgentSomaticAccessActionMap
   , AgentAcquisitionActionMap
   , ObjectAcquisitionActionMap
   , ContainerAcquisitionActionMap
@@ -291,15 +289,9 @@ data InstrumentContainerAccessActionF
   = InstrumentCanAccessF ActionEffectKeyF
   | InstrumentCannotAccessF ActionEffectKeyF
 
-type SomaticAccessActionF :: Type
-data SomaticAccessActionF
-  = PlayerSomaticAccessActionF (ActionEffectKey -> GameComputation Identity ())
-  | CannotSomaticAccessF (ActionEffectKey -> GameComputation Identity ())
-
-type PosturalActionF :: Type
-data PosturalActionF
-  = PlayerPosturalActionF (ActionEffectKey -> GameComputation Identity ())
-  | CannotPosturalActionF (ActionEffectKey -> GameComputation Identity ())
+type AgentSomaticAccessActionF :: Type
+newtype AgentSomaticAccessActionF
+  = AgentSomaticAccessActionF { _unPSAA :: (ActionEffectKey -> GameComputation Identity ())}
 
 type AgentPosturalActionF :: Type
 data AgentPosturalActionF
@@ -438,11 +430,11 @@ type ObjectContainerAccessActionMap  = Map (GID ObjectContainerAccessActionF) Ob
 type InstrumentContainerAccessActionMap :: Type
 type InstrumentContainerAccessActionMap = Map (GID InstrumentContainerAccessActionF) InstrumentContainerAccessActionF
 
-type SomaticAccessActionMap :: Type
-type SomaticAccessActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
+type AgentSomaticAccessActionMap :: Type
+type AgentSomaticAccessActionMap = Map (GID AgentSomaticAccessActionF) AgentSomaticAccessActionF
 
-type SomaticStimulusActionMap :: Type
-type SomaticStimulusActionMap = Map (GID SomaticAccessActionF) SomaticAccessActionF
+type AgentSomaticStimulusActionMap :: Type
+type AgentSomaticStimulusActionMap = Map (GID AgentSomaticAccessActionF) AgentSomaticAccessActionF
 
 -- Role-based acquisition action maps
 type AgentAcquisitionActionMap :: Type
@@ -469,9 +461,6 @@ type ObjectDirectionalStimulusActionMap = Map (GID ObjectDirectionalStimulusActi
 type ConsumptionActionMap :: Type
 type ConsumptionActionMap = Map (GID ConsumptionActionF) ConsumptionActionF
 
-type PosturalActionMap :: Type
-type PosturalActionMap = Map (GID PosturalActionF) PosturalActionF
-
 type AgentPosturalActionMap :: Type
 type AgentPosturalActionMap = Map (GID AgentPosturalActionF) AgentPosturalActionF
 
@@ -489,7 +478,7 @@ data ActionMaps = ActionMaps
   , _locationContainerAccessActionMap :: LocationContainerAccessActionMap
   , _objectContainerAccessActionMap   :: ObjectContainerAccessActionMap
   , _instrumentContainerAccessActionMap :: InstrumentContainerAccessActionMap
-  , _somaticStimulusActionMap     :: SomaticStimulusActionMap
+  , _somaticStimulusActionMap     :: AgentSomaticStimulusActionMap
   , _agentAcquisitionActionMap    :: AgentAcquisitionActionMap
   , _objectAcquisitionActionMap   :: ObjectAcquisitionActionMap
   , _containerAcquisitionActionMap :: ContainerAcquisitionActionMap
@@ -498,7 +487,6 @@ data ActionMaps = ActionMaps
   , _locationDirectionalStimulusActionMap :: LocationDirectionalStimulusActionMap
   , _objectDirectionalStimulusActionMap :: ObjectDirectionalStimulusActionMap
   , _consumptionActionMap         :: ConsumptionActionMap
-  , _posturalActionMap            :: PosturalActionMap
   , _agentPosturalActionMap       :: AgentPosturalActionMap
   , _locationPosturalActionMap    :: LocationPosturalActionMap
   }
@@ -524,7 +512,7 @@ data ActionEffectKey
   | AgentDirectionalStimulusContainerActionKey (GID AgentDirectionalStimulusContainerActionF)
   | ObjectDirectionalStimulusContainerActionKey (GID ObjectDirectionalStimulusContainerActionF)
   | LocationDirectionalStimulusContainerActionKey (GID LocationDirectionalStimulusContainerActionF)
-  | SomaticAccessActionKey (GID SomaticAccessActionF)
+  | AgentSomaticAccessActionKey (GID AgentSomaticAccessActionF)
   | AgentContainerAccessActionKey (GID AgentContainerAccessActionF)
   | LocationContainerAccessActionKey (GID LocationContainerAccessActionF)
   | ObjectContainerAccessActionKey (GID ObjectContainerAccessActionF)
@@ -535,7 +523,6 @@ data ActionEffectKey
   | ContainerAcquisitionalActionKey (GID ContainerAcquisitionActionF)
   | LocationAcquisitionalActionKey (GID LocationAcquisitionActionF)
   | ConsumptionActionKey (GID ConsumptionActionF)
-  | PosturalActionKey (GID PosturalActionF)
   | AgentPosturalActionKey (GID AgentPosturalActionF)
   | LocationPosturalActionKey (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)
@@ -633,7 +620,7 @@ data ActionManagementOperation
   | AddObjectDirectionalContainerStimulus DirectionalStimulusVerb (GID ObjectDirectionalStimulusContainerActionF)
   | AddLocationDirectionalContainerStimulus DirectionalStimulusVerb (GID LocationDirectionalStimulusContainerActionF)
 
-  | AddSomaticAccess SomaticAccessVerb (GID SomaticAccessActionF)
+  | AddAgentSomaticAccess SomaticAccessVerb (GID AgentSomaticAccessActionF)
 
   | AddAgentContainerAccessVerbPhrase ContainerAccessVerbPhrase (GID AgentContainerAccessActionF)
   | AddAgentContainerAccessSimpleVerb SimpleAccessVerb (GID AgentContainerAccessActionF)
@@ -665,7 +652,7 @@ type ActionGID :: Type
 data ActionGID
   = AgentImplicitActionGID (GID AgentImplicitStimulusActionF)
   | LocationImplicitActionGID (GID LocationImplicitStimulusActionF)
-  | SomaticAccessActionGID (GID SomaticAccessActionF)
+  | AgentSomaticAccessActionGID (GID AgentSomaticAccessActionF)
   -- Role-based acquisition action GIDs
   | AgentDirectionalActionGID (GID AgentDirectionalStimulusActionF)
   | LocationDirectionalActionGID (GID LocationDirectionalStimulusActionF)
@@ -688,7 +675,6 @@ data ActionGID
   | ObjectContainerAccessActionGID (GID ObjectContainerAccessActionF)
   | InstrumentContainerAccessActionGID (GID InstrumentContainerAccessActionF)
 
-  | PosturalActionGID (GID PosturalActionF)
   | AgentPosturalActionGID (GID AgentPosturalActionF)
   | LocationPosturalActionGID (GID LocationPosturalActionF)
   deriving stock (Show, Eq, Ord)
@@ -706,7 +692,7 @@ data ActionManagement
   | AgentISAManagementKey ImplicitStimulusVerb (GID AgentImplicitStimulusActionF)
   | LocationISAManagementKey ImplicitStimulusVerb (GID LocationImplicitStimulusActionF)
 
-  | SSAManagementKey SomaticAccessVerb (GID SomaticAccessActionF)
+  | AgentSSAManagementKey SomaticAccessVerb (GID AgentSomaticAccessActionF)
   -- Role-based acquisition action management keys
   | AgentAVManagementKey AcquisitionVerb (GID AgentAcquisitionActionF)
   | ObjectAVManagementKey AcquisitionVerb (GID ObjectAcquisitionActionF)
@@ -858,10 +844,9 @@ instance Arbitrary PlayerKey where
 instance Arbitrary ActionEffectKey where
   arbitrary = oneof
     [
-     SomaticAccessActionKey . GID <$> choose (1, 1000)
+     AgentSomaticAccessActionKey . GID <$> choose (1, 1000)
     , AgentAcquisitionalActionKey . GID <$> choose (1, 1000)
     , ConsumptionActionKey . GID <$> choose (1, 1000)
-    , PosturalActionKey . GID <$> choose (1, 1000)
     ]
 
 -- FieldUpdateOperation instances

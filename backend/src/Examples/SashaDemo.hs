@@ -52,6 +52,7 @@ import           Model.Core                                              (Action
                                                                           AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
                                                                           AgentImplicitStimulusActionF,
                                                                           AgentPosturalActionF,
+                                                                          AgentSomaticAccessActionF,
                                                                           ContainerAcquisitionActionF,
                                                                           Effect (..),
                                                                           FieldUpdateOperation (ObjectDescription),
@@ -68,7 +69,6 @@ import           Model.Core                                              (Action
                                                                           ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
                                                                           Player,
                                                                           PlayerKey (..),
-                                                                          SomaticAccessActionF,
                                                                           SpatialRelationship (..))
 import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
                                                                           createObjectContainerAccessSimpleVerbEffect,
@@ -251,15 +251,15 @@ sashaBedroomDemo = do
   pocketClosed <- makeContainerCDSEffect dsaLook lookInPocketDeniedFGID
   -- Build composed effect computation
   buildEffects $
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
-    buildEffect (SomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) openEyesLookAtChangeEffectPlayer `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID) openEyesLookChangeEffectPlayer `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) floorGID openEyesLookChangeEffectFloor `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) chairGID openeEyesLooKChangeEffectChair `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID openEyesLookChangeEffectRobe `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyObject pocketGID) openEyesOpenPocketChangesForPlayer `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
@@ -272,9 +272,9 @@ sashaBedroomDemo = do
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID pillVisibleAfterOpenEffect `alongside`
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID pocketOpenForLookIn
   -- Register narration effects for actions
-  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
+  linkEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
-  linkEffect (SomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
+  linkEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect LookNarration)
   linkEffect (AgentImplicitStimulusActionKey eyesClosedFGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration closedEyes))
@@ -407,7 +407,7 @@ pocketObj lookGID openGID = defaultObject &
 buildBedroomPlayer :: GID Location
                    -> GID AgentImplicitStimulusActionF
                    -> GID AgentImplicitStimulusActionF
-                   -> GID SomaticAccessActionF
+                   -> GID AgentSomaticAccessActionF
                    -> GID AgentDirectionalStimulusActionF
                    -> GID AgentAcquisitionActionF
                    -> GID AgentContainerAccessActionF
