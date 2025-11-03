@@ -10,6 +10,8 @@ module Model.Core
   , Object(..)
   , World(..)
   , Narration(..)
+  , AcquiredGID
+  , SupportGID
     -- * Spatial Types
   , SpatialRelationship(..)
   , SpatialRelationshipMap(..)
@@ -74,6 +76,7 @@ module Model.Core
   , ActionManagementOperation(..)
     -- * Processing Types
   , SystemEffectMap
+  , SpatialRelationshipComputation(..)
     -- * Search and Access Types
   , SimpleAccessSearchStrategy
   , SearchStrategy
@@ -570,6 +573,18 @@ data Effect
   = ActionManagementEffect ActionManagementOperation ActionGID
   | FieldUpdateEffect FieldUpdateOperation
   | NarrationEffect NarrationComputation
+  | SpatialRelationshipEffect SpatialRelationshipComputation
+  deriving stock (Show, Eq, Ord)
+
+type AcquiredGID :: Type
+type AcquiredGID = GID Object
+
+type SupportGID :: Type
+type SupportGID = GID Object
+
+type SpatialRelationshipComputation :: Type
+data SpatialRelationshipComputation
+  = Acquisition AcquiredGID SupportGID
   deriving stock (Show, Eq, Ord)
 
 type SystemEffect :: Type

@@ -30,7 +30,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentSomaticAccessActionF,
                                                 ConsumptionActionF,
                                                 ContainerAcquisitionActionF,
-                                                Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect),
+                                                Effect (ActionManagementEffect, FieldUpdateEffect, NarrationEffect, SpatialRelationshipEffect),
                                                 FieldUpdateOperation (LocationTitle, ObjectDescription, ObjectShortName, PlayerLocation),
                                                 GameComputation,
                                                 GameState (_player, _systemEffectRegistry, _world),
@@ -51,6 +51,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 Player (_location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
+                                                SpatialRelationshipComputation (Acquisition),
                                                 SpatialRelationshipMap (SpatialRelationshipMap),
                                                 SystemEffect,
                                                 SystemEffectConfig,
@@ -989,6 +990,13 @@ processEffect (PlayerKey _) (FieldUpdateEffect (PlayerLocation newLocationGID)) 
 
 processEffect _ (NarrationEffect narrationComputation) = do
   processNarrationEffect narrationComputation
+
+processEffect _ (SpatialRelationshipEffect spatialRelationshipData) =
+  processSpatialRelationshipEffect spatialRelationshipData
+
+processSpatialRelationshipEffect :: SpatialRelationshipComputation -> GameComputation Identity ()
+processSpatialRelationshipEffect (Acquisition acquireableGID supportGID) = do
+  pure ()
 
 processNarrationEffect :: NarrationComputation -> GameComputation Identity ()
 processNarrationEffect (StaticNarration text) =
