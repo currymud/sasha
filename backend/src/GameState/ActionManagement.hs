@@ -13,6 +13,7 @@ import           GameState                     (getObjectM,
                                                 modifyLocationM,
                                                 modifyNarration, modifyObjectM,
                                                 modifyPlayerM,
+                                                modifySpatialRelationshipsForObjectM,
                                                 updateActionConsequence)
 import           GameState.EffectRegistry      (lookupActionEffectsInRegistry)
 import           GameState.Perception          (youSeeM)
@@ -48,7 +49,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 ObjectContainerAccessActionF,
                                                 ObjectDirectionalStimulusActionF,
                                                 ObjectDirectionalStimulusContainerActionF,
-                                                Player (_location, _playerActions),
+                                                Player (_inventory, _location, _playerActions),
                                                 PlayerKey (PlayerKeyLocation, PlayerKeyObject),
                                                 SpatialRelationship (ContainedIn, Contains, Inventory, SupportedBy, Supports),
                                                 SpatialRelationshipComputation (Acquisition),
@@ -996,7 +997,27 @@ processEffect _ (SpatialRelationshipEffect spatialRelationshipData) =
 
 processSpatialRelationshipEffect :: SpatialRelationshipComputation -> GameComputation Identity ()
 processSpatialRelationshipEffect (Acquisition acquireableGID supportGID) = do
-  pure ()
+  -- Remove the acquireable object from its current support relationship
+  modifySpatialRelationshipsForObjectM acquireableGID $ \relationships ->
+    Data.Set.filter (\case
+      SupportedBy gid -> gid /= supportGID
+      _ -> True
+    ) relationships
+
+  -- Remove the acquireable from the support's Supports set
+  modifySpatialRelationshipsForObjectM supportGID $ \relationships ->
+    Data.Set.map (\case
+      Supports oidSet -> Supports (Data.Set.delete acquireableGID oidSet)
+      other -> other
+    ) relationships
+
+  -- Change the acquireable's spatial relationship to inventory
+  modifySpatialRelationshipsForObjectM acquireableGID (Data.Set.insert Inventory)
+
+  -- Add the acquireable to the player's inventory
+  player <- gets _player
+  let currentInventory = _inventory player
+  modifyPlayerM $ \p -> p { _inventory = Data.Set.insert acquireableGID currentInventory }
 
 processNarrationEffect :: NarrationComputation -> GameComputation Identity ()
 processNarrationEffect (StaticNarration text) =
