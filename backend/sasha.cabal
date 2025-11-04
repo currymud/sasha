@@ -69,7 +69,6 @@ library
       ConstraintRefinement.Actions.Objects.Get.Constructors
       ConstraintRefinement.Actions.Objects.Look
       ConstraintRefinement.Actions.Objects.Open
-      ConstraintRefinement.Actions.RoleBased.Constructors
       ConstraintRefinement.Effects.Perception.Look
       EDSL.GameBuilder
       Error

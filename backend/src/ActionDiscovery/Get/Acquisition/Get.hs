@@ -1,7 +1,6 @@
 module ActionDiscovery.Get.Acquisition.Get (manageAcquisitionProcess) where
 
 import           Control.Applicative                              ((<|>))
-import           Control.Monad                                    (join)
 import           Control.Monad.Error.Class                        (throwError)
 import           Control.Monad.Identity                           (Identity)
 import           Control.Monad.Reader.Class                       (asks)
@@ -13,7 +12,6 @@ import           Data.Set                                         (Set, elemAt,
                                                                    member, null,
                                                                    toList)
 import qualified Data.Text
-import           Data.Void                                        (Void)
 import           GameState                                        (getObjectM,
                                                                    getPlayerLocationM,
                                                                    getPlayerM,
@@ -21,19 +19,16 @@ import           GameState                                        (getObjectM,
 import           GameState.ActionManagement                       (findAgentAAKey,
                                                                    findAgentAVKey,
                                                                    findContainerAVKey,
-                                                                   findObjectAVKey,
-                                                                   processEffectsFromRegistry)
+                                                                   findObjectAVKey)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionRes (Complete, Simple),
                                                                    ActionEffectKey (AgentAcquisitionalActionKey, ContainerAcquisitionalActionKey, ObjectAcquisitionalActionKey),
                                                                    ActionMaps (_agentAcquisitionActionMap, _containerAcquisitionActionMap, _objectAcquisitionActionMap),
                                                                    AgentAcquisitionActionF (_unAAA),
-                                                                   AgentAcquisitionActionMap,
                                                                    CompleteAcquisitionRes (CompleteAcquisitionRes),
                                                                    Config (_actionMaps),
                                                                    ContainerAcquisitionActionF (_unCFA),
                                                                    ContainerAcquisitionActionMap,
-                                                                   CoordinationResult (CoordinationResult),
                                                                    GameComputation,
                                                                    GameState (_world),
                                                                    Location (_locationInventory, _objectSemanticMap),
@@ -46,7 +41,10 @@ import           Model.Core                                       (AcquisitionRe
                                                                    SpatialRelationship (ContainedIn, SupportedBy),
                                                                    SpatialRelationshipMap (SpatialRelationshipMap),
                                                                    World (_globalSemanticMap, _spatialRelationshipMap),
-                                                                   _saObjectKey)
+                                                                   _caObjectKey,
+                                                                   _caSupportKey,
+                                                                   _saObjectKey,
+                                                                   _shortName)
 import           Model.GID                                        (GID)
 import           Model.Parser.Composites.Verbs                    (AcquisitionVerbPhrase)
 import           Model.Parser.GCase                               (NounKey)
@@ -86,8 +84,7 @@ manageAcquisitionProcess avp = do
               containerActionF <- _unCFA <$> lookupContainerAcquisitionAction conActionMap cid
               acquisitionF agentEffectKey >> objectActionF objEffectKey >> containerActionF containerEffectKey
         Complete (CompleteAcquisitionRes {..}) -> do
-          pure ()
-{-
+
           -- Find both objects directly
           objectResult <- findObjectByKey _caObjectKey
           supportResult <- findObjectByKey _caSupportKey
@@ -127,12 +124,13 @@ manageAcquisitionProcess avp = do
                           let objEffectKey = ObjectAcquisitionalActionKey oKey
                               containerEffectKey = ContainerAcquisitionalActionKey cKey
                           -- Lookup role-specific actions
-                          objectActionF <- _unOAA $ lookupObjectAcquisitionAction objActionMap oid
-                          containerActionF <- _unCFA $ lookupContainerAcquisitionAction conActionMap cid
-                          acquisitionF actionEffectKey >> objectActionF objEffectKey >> containerActionF containerEffectKey
-                          -}
+                          objectActionF <- _unOAA <$> lookupObjectAcquisitionAction objActionMap oid
+                          containerActionF <- _unCFA <$> lookupContainerAcquisitionAction conActionMap cid
+                          acquisitionF agentEffectKey >> objectActionF objEffectKey >> containerActionF containerEffectKey
   where
     arRes = parseAcquisitionPhrase avp
+    agentActionErr :: AgentAcquisitionActionF
+    agentActionErr = error " no action associtated with this agent."
     agentIdError :: GID AgentAcquisitionActionF
     agentIdError = error "No agent acquisition action available for this action."
     findAgentGID availableActions = Data.Maybe.fromMaybe agentIdError $ f availableActions
