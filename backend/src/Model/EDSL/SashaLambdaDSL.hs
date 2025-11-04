@@ -12,6 +12,7 @@ import           Model.Core                    (ActionEffectKey,
                                                 AgentDirectionalStimulusContainerActionF,
                                                 AgentImplicitStimulusActionF,
                                                 AgentPosturalActionF,
+                                                AgentSomaticAccessActionF,
                                                 ConsumptionActionF,
                                                 ContainerAcquisitionActionF,
                                                 Effect, Evaluator,
@@ -29,8 +30,6 @@ import           Model.Core                    (ActionEffectKey,
                                                 ObjectDirectionalStimulusActionF,
                                                 ObjectDirectionalStimulusContainerActionF,
                                                 Player, PlayerKey,
-                                                PosturalActionF,
-                                                SomaticAccessActionF,
                                                 SpatialRelationship,
                                                 SystemEffect,
                                                 SystemEffectConfig,
@@ -87,14 +86,13 @@ data SashaLambdaDSL :: Type -> Type where
   DeclareAgentDirectionalContainerStimulusActionGID :: AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID AgentDirectionalStimulusContainerActionF)
   DeclareObjectDirectionalContainerStimulusActionGID :: ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID ObjectDirectionalStimulusContainerActionF)
   DeclareLocationDirectionalContainerStimulusActionGID :: LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL (GID LocationDirectionalStimulusContainerActionF)
-  DeclareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
+  DeclareAgentSomaticActionGID :: AgentSomaticAccessActionF -> SashaLambdaDSL (GID AgentSomaticAccessActionF)
   -- Role-based acquisition action declarations
   DeclareAgentAcquisitionActionGID :: AgentAcquisitionActionF -> SashaLambdaDSL (GID AgentAcquisitionActionF)
   DeclareObjectAcquisitionActionGID :: ObjectAcquisitionActionF -> SashaLambdaDSL (GID ObjectAcquisitionActionF)
   DeclareContainerAcquisitionActionGID :: ContainerAcquisitionActionF -> SashaLambdaDSL (GID ContainerAcquisitionActionF)
   DeclareLocationAcquisitionActionGID :: LocationAcquisitionActionF -> SashaLambdaDSL (GID LocationAcquisitionActionF)
   DeclareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
-  DeclarePosturalActionGID :: PosturalActionF -> SashaLambdaDSL (GID PosturalActionF)
   DeclareAgentPosturalActionGID :: AgentPosturalActionF -> SashaLambdaDSL (GID AgentPosturalActionF)
   DeclareLocationPosturalActionGID :: LocationPosturalActionF -> SashaLambdaDSL (GID LocationPosturalActionF)
   DeclareAgentContainerAccessActionGID :: AgentContainerAccessActionF -> SashaLambdaDSL (GID AgentContainerAccessActionF)
@@ -113,7 +111,7 @@ data SashaLambdaDSL :: Type -> Type where
   CreateAgentDSAContainerManagement :: DirectionalStimulusVerb -> GID AgentDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateObjectDSAContainerManagement :: DirectionalStimulusVerb -> GID ObjectDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
   CreateLocationDSAContainerManagement :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
-  CreateSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
+  CreateAgentSAManagement :: SomaticAccessVerb -> GID AgentSomaticAccessActionF -> SashaLambdaDSL ActionManagement
   CreateCAManagement :: ConsumptionVerb -> GID ConsumptionActionF -> SashaLambdaDSL ActionManagement
   CreateAgentSAConManagement :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
   CreateLocationSAConManagement :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL ActionManagement
@@ -173,7 +171,7 @@ data SashaLambdaDSL :: Type -> Type where
   CreateAgentNegativePosturalEffect :: NegativePosturalVerb -> GID AgentPosturalActionF -> SashaLambdaDSL Effect
   CreateLocationPositivePosturalEffect :: PositivePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
   CreateLocationNegativePosturalEffect :: NegativePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
-  CreateSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
+  CreateAgentSomaticAccessEffect :: SomaticAccessVerb -> GID AgentSomaticAccessActionF -> SashaLambdaDSL Effect
   CreateAgentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
   CreateAgentContainerAccessVerbPhraseEffect :: ContainerAccessVerbPhrase -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
   CreateLocationContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID LocationContainerAccessActionF -> SashaLambdaDSL Effect
@@ -221,8 +219,8 @@ declareContainerGID = DeclareContainerGID
 declareLocationGID :: NounPhrase DirectionalStimulus -> SashaLambdaDSL (GID Location)
 declareLocationGID = DeclareLocationGID
 
-declareSomaticActionGID :: SomaticAccessActionF -> SashaLambdaDSL (GID SomaticAccessActionF)
-declareSomaticActionGID = DeclareSomaticActionGID
+declareAgentSomaticActionGID :: AgentSomaticAccessActionF -> SashaLambdaDSL (GID AgentSomaticAccessActionF)
+declareAgentSomaticActionGID = DeclareAgentSomaticActionGID
 
 -- Role-based implicit stimulus action declaration functions
 declareAgentImplicitStimulusActionGID :: AgentImplicitStimulusActionF -> SashaLambdaDSL (GID AgentImplicitStimulusActionF)
@@ -267,9 +265,6 @@ declareLocationAcquisitionActionGID = DeclareLocationAcquisitionActionGID
 declareConsumptionActionGID :: ConsumptionActionF -> SashaLambdaDSL (GID ConsumptionActionF)
 declareConsumptionActionGID = DeclareConsumptionActionGID
 
-declarePosturalActionGID :: PosturalActionF -> SashaLambdaDSL (GID PosturalActionF)
-declarePosturalActionGID = DeclarePosturalActionGID
-
 declareAgentContainerAccessActionGID :: AgentContainerAccessActionF -> SashaLambdaDSL (GID AgentContainerAccessActionF)
 declareAgentContainerAccessActionGID = DeclareAgentContainerAccessActionGID
 
@@ -298,8 +293,8 @@ createObjectDSAContainerManagement = CreateObjectDSAContainerManagement
 createLocationDSAContainerManagement :: DirectionalStimulusVerb -> GID LocationDirectionalStimulusContainerActionF -> SashaLambdaDSL ActionManagement
 createLocationDSAContainerManagement = CreateLocationDSAContainerManagement
 
-createSSAManagement :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL ActionManagement
-createSSAManagement = CreateSSAManagement
+createAgentSAManagement :: SomaticAccessVerb -> GID AgentSomaticAccessActionF -> SashaLambdaDSL ActionManagement
+createAgentSAManagement = CreateAgentSAManagement
 
 createAgentSAConManagement :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL ActionManagement
 createAgentSAConManagement = CreateAgentSAConManagement
@@ -407,8 +402,8 @@ createLocationPositivePosturalEffect = CreateLocationPositivePosturalEffect
 createLocationNegativePosturalEffect :: NegativePosturalVerb -> GID LocationPosturalActionF -> SashaLambdaDSL Effect
 createLocationNegativePosturalEffect = CreateLocationNegativePosturalEffect
 
-createSomaticAccessEffect :: SomaticAccessVerb -> GID SomaticAccessActionF -> SashaLambdaDSL Effect
-createSomaticAccessEffect = CreateSomaticAccessEffect
+createAgentSomaticAccessEffect :: SomaticAccessVerb -> GID AgentSomaticAccessActionF -> SashaLambdaDSL Effect
+createAgentSomaticAccessEffect = CreateAgentSomaticAccessEffect
 
 createAgentContainerAccessSimpleVerbEffect :: SimpleAccessVerb -> GID AgentContainerAccessActionF -> SashaLambdaDSL Effect
 createAgentContainerAccessSimpleVerbEffect = CreateAgentContainerAccessSimpleVerbEffect

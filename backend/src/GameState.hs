@@ -74,7 +74,6 @@ import           Model.Core                    (AccessRes (CompleteAR, SimpleAR)
                                                 Narration (Narration, _actionConsequence),
                                                 Object (_description, _objectActionManagement),
                                                 Player (_inventory, _location, _playerActions),
-                                                PosturalActionF,
                                                 SimpleAccessRes (SimpleAccessRes),
                                                 SimpleAcquisitionRes (SimpleAcquisitionRes),
                                                 SpatialRelationship (Contains, Inventory, Supports),
