@@ -1263,9 +1263,17 @@ findObjectAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID Ob
 findObjectAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | ObjectAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
 
+findObjectAAKey :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID ObjectAcquisitionActionF)
+findObjectAAKey phrase (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | ObjectAAManagementKey p gid <- Data.Set.toList actionSet, p == phrase]
+
 findContainerAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID ContainerAcquisitionActionF)
 findContainerAVKey verb (ActionManagementFunctions actionSet) =
   listToMaybe [gid | ContainerAVManagementKey v gid <- Data.Set.toList actionSet, v == verb]
+
+findContainerAAKey :: AcquisitionVerbPhrase -> ActionManagementFunctions -> Maybe (GID ContainerAcquisitionActionF)
+findContainerAAKey phrase (ActionManagementFunctions actionSet) =
+  listToMaybe [gid | ContainerAAManagementKey p gid <- Data.Set.toList actionSet, p == phrase]
 
 findLocationAVKey :: AcquisitionVerb -> ActionManagementFunctions -> Maybe (GID LocationAcquisitionActionF)
 findLocationAVKey verb (ActionManagementFunctions actionSet) =
