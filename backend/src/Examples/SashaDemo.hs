@@ -38,6 +38,7 @@ import           EDSL.Effects.HasEffect                                  (HasEff
                                                                           makeAgentISEffect,
                                                                           makeAgentPhraseEffect,
                                                                           makeContainerCDSEffect,
+                                                                          makeContainerPhraseEffect,
                                                                           makeObjectDSEffect,
                                                                           makeObjectEffect,
                                                                           makeObjectPhraseEffect)
@@ -102,6 +103,7 @@ import           Grammar.Parser.Partitions.Nouns.Objectives              (chairO
                                                                           pocketOB,
                                                                           robeOB)
 import           Grammar.Parser.Partitions.Nouns.Surfaces                (chairSF)
+import           Grammar.Parser.Partitions.Prepositions.SourceMarkers    (from)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs        (get)
 import           Grammar.Parser.Partitions.Verbs.DirectionalStimulusVerb (dsaLook)
 import           Grammar.Parser.Partitions.Verbs.ImplicitStimulusVerb    (inventory,
@@ -112,8 +114,10 @@ import           Grammar.Parser.Partitions.Verbs.SomaticAccessVerbs      (saOpen
 import           Model.Parser.Composites.Nouns                           (ConsumableNounPhrase (ConsumableNounPhrase),
                                                                           ContainerPhrase (ContainerPhrase),
                                                                           NounPhrase (SimpleNounPhrase),
-                                                                          ObjectPhrase (ObjectPhrase))
-import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (SimpleAcquisitionVerbPhrase),
+                                                                          ObjectPhrase (ObjectPhrase),
+                                                                          SupportPhrase (SurfaceSupport),
+                                                                          SurfacePhrase (SimpleSurfacePhrase))
+import           Model.Parser.Composites.Verbs                           (AcquisitionVerbPhrase (AcquisitionVerbPhrase, SimpleAcquisitionVerbPhrase),
                                                                           ConsumptionVerbPhrase (ConsumptionVerbPhrase),
                                                                           ContainerAccessVerbPhrase (SimpleAccessContainerVerbPhrase))
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
@@ -144,6 +148,13 @@ import           Grammar.Parser.Partitions.Verbs.ConsumptionVerbs        (takeCV
 -- Verb phrases from original
 getRobeAVP :: AcquisitionVerbPhrase
 getRobeAVP = SimpleAcquisitionVerbPhrase get (ObjectPhrase (SimpleNounPhrase robeOB))
+
+getRobeFromChairAVP :: AcquisitionVerbPhrase
+getRobeFromChairAVP = AcquisitionVerbPhrase
+  get
+  (ObjectPhrase (SimpleNounPhrase robeOB))
+  from
+  (SurfaceSupport (SimpleSurfacePhrase (SimpleNounPhrase chairSF)))
 
 openPocketCVP :: ContainerAccessVerbPhrase
 openPocketCVP = SimpleAccessContainerVerbPhrase openSA (ContainerPhrase (SimpleNounPhrase pocketCT))
@@ -244,6 +255,9 @@ sashaBedroomDemo = do
   robeOpenEyesLookChangesGetRobeForPlayer <- makeAgentPhraseEffect getRobeAVP playerGetFGID
   robeOpenEyesLookChangesGetRobePhraseForRobe <- makeObjectPhraseEffect getRobeAVP getRobeFGID
   robeOpenEyesLookChangesGetRobeForRobe <- makeObjectEffect get getRobeFGID
+  robeOpenEyesLookChangesGetRobeFromChairForPlayer <- makeAgentPhraseEffect getRobeFromChairAVP playerGetFGID
+  robeOpenEyesLookChangesGetRobeFromChairPhraseForRobe <- makeObjectPhraseEffect getRobeFromChairAVP getRobeFGID
+  chairOpenEyesLookChangesGetRobeFromChairForChair <- makeContainerPhraseEffect getRobeFromChairAVP getFromChairGID
   pocketOpenGetRobe <- createObjectContainerAccessVerbPhraseEffect openPocketCVP openContainerFGID
   pocketLookInGetRobe <- makeAgentCDSEffect dsaLook playerLookInFGID
   playerOpenPocketAfterRobe <- createObjectContainerAccessVerbPhraseEffect openPocketCVP accessContainerFGID
@@ -259,6 +273,9 @@ sashaBedroomDemo = do
     buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeForPlayer `alongside`
     buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobePhraseForRobe `alongside`
     buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeForRobe `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyObject robeGID) robeOpenEyesLookChangesGetRobeFromChairForPlayer `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) robeGID robeOpenEyesLookChangesGetRobeFromChairPhraseForRobe `alongside`
+    buildEffect (AgentSomaticAccessActionKey openEyesGID) chairGID chairOpenEyesLookChangesGetRobeFromChairForChair `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) robeGID (FieldUpdateEffect (ObjectDescription robeGID gotRobeDescription)) `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID (FieldUpdateEffect (ObjectDescription pocketGID robePocketDescription)) `alongside`
     buildEffect (ObjectAcquisitionalActionKey getRobeFGID) pocketGID pocketOpenGetRobe `alongside`
@@ -380,7 +397,8 @@ chairObj lookGID getGID = defaultObject &
   withDescriptives [SimpleNounPhrase chairDS] >=>
   withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeContainerBehavior get getGID) >=>
-  withBehavior (makeContainerPhraseBehavior getRobeAVP getGID))
+  withBehavior (makeContainerPhraseBehavior getRobeAVP getGID) >=>
+  withBehavior (makeContainerPhraseBehavior getRobeFromChairAVP getGID))
 
 robeObj :: GID ObjectDirectionalStimulusActionF -> GID ObjectAcquisitionActionF -> SashaLambdaDSL Object
 robeObj lookGID getGID = defaultObject &
@@ -389,7 +407,8 @@ robeObj lookGID getGID = defaultObject &
   withDescriptives [SimpleNounPhrase robeDS] >=>
   withBehavior (makeObjectDSBehavior dsaLook lookGID) >=>
   withBehavior (makeObjectBehavior get getGID) >=>
-  withBehavior (makeObjectPhraseBehavior getRobeAVP getGID))
+  withBehavior (makeObjectPhraseBehavior getRobeAVP getGID) >=>
+  withBehavior (makeObjectPhraseBehavior getRobeFromChairAVP getGID))
 
 pillObj :: GID ObjectDirectionalStimulusActionF -> SashaLambdaDSL Object
 pillObj lookFailGIDF = defaultObject &
@@ -423,6 +442,7 @@ buildBedroomPlayer bedroomGID implicitLookResponseGID inventoryFGID openEyesGID 
   withBehavior (makeAgentDSBehavior dsaLook directLookResponseGID) >>=
   withBehavior (makeBehavior saOpen openEyesGID) >>=
   withBehavior (makeAgentPhraseBehavior getRobeAVP getRobeFGID) >>=
+  withBehavior (makeAgentPhraseBehavior getRobeFromChairAVP getRobeFGID) >>=
   withBehavior (makeAgentBehavior get getRobeFGID) >>=
   withBehavior (makeAgentContainerAccessBehavior openSA containerAccessDeniedF) >>=
   withBehavior (makeAgentContainerAccessPhraseBehavior openPocketCVP containerAccessDeniedF) >>=

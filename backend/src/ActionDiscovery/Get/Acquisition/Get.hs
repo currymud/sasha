@@ -18,7 +18,9 @@ import           GameState                                        (getObjectM,
                                                                    parseAcquisitionPhrase)
 import           GameState.ActionManagement                       (findAgentAAKey,
                                                                    findAgentAVKey,
+                                                                   findContainerAAKey,
                                                                    findContainerAVKey,
+                                                                   findObjectAAKey,
                                                                    findObjectAVKey)
 import           Grammar.Parser.Partitions.Verbs.AcquisitionVerbs (get)
 import           Model.Core                                       (AcquisitionRes (Complete, Simple),
@@ -116,8 +118,10 @@ manageAcquisitionProcess avp = do
                       -- Get action management for lookups
                       objActionManagement <- _objectActionManagement <$> getObjectM oid
                       conActionManagement <- _objectActionManagement <$> getObjectM cid
-                      -- Find role-specific action GIDs
-                      case (findObjectAVKey get objActionManagement, findContainerAVKey get conActionManagement) of
+                      -- Find role-specific action GIDs - check phrase first, then verb
+                      let objKey = findObjectAAKey avp objActionManagement <|> findObjectAVKey get objActionManagement
+                          conKey = findContainerAAKey avp conActionManagement <|> findContainerAVKey get conActionManagement
+                      case (objKey, conKey) of
                         (Nothing, _) -> error $ "Object " <> show oid <> " does not have object acquisition action."
                         (_, Nothing) -> error $ "Container " <> show cid <> " does not have container acquisition action."
                         (Just oKey, Just cKey) -> do
