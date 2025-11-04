@@ -69,7 +69,8 @@ import           Model.Core                                              (Action
                                                                           ObjectDirectionalStimulusActionF,
                                                                           Player,
                                                                           PlayerKey (..),
-                                                                          SpatialRelationship (..))
+                                                                          SpatialRelationship (..),
+                                                                          SpatialRelationshipComputation (Acquisition))
 import           Model.EDSL.SashaLambdaDSL                               (SashaLambdaDSL,
                                                                           createObjectContainerAccessSimpleVerbEffect,
                                                                           createObjectContainerAccessVerbPhraseEffect,
@@ -269,6 +270,10 @@ sashaBedroomDemo = do
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID (FieldUpdateEffect (ObjectDescription pillGID "A small round pill, now within your reach.")) `alongside`
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pillGID pillVisibleAfterOpenEffect `alongside`
     buildEffect (ObjectContainerAccessActionKey openContainerFGID) pocketGID pocketOpenForLookIn
+
+
+  linkEffect (AgentAcquisitionalActionKey playerGetFGID) robeGID
+    (SpatialRelationshipEffect (Acquisition robeGID chairGID))
   -- Register narration effects for actions
   linkEffect (AgentSomaticAccessActionKey openEyesGID) (PlayerKeyLocation bedroomGID)
     (NarrationEffect (StaticNarration "You open your eyes, and the world comes into focus."))
