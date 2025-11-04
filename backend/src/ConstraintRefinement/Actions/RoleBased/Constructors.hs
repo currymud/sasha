@@ -66,9 +66,9 @@ locationSearchStrategy targetNounKey = do
       [containerGID | ContainedIn containerGID <- Data.Set.toList relationships] ++
       [supporterGID | SupportedBy supporterGID <- Data.Set.toList relationships]
 
--- Role-based constructors that are type-safe
+-- No other computation but processing effects from registry
 agentCannotAcquireF :: AgentAcquisitionActionF
-agentCannotAcquireF = AgentCannotAcquireF processEffectsFromRegistry
+agentCannotAcquireF = AgentAcquisitionActionF processEffectsFromRegistry
 
 objectCollectedF :: GID Object -> ObjectAcquisitionActionF
 objectCollectedF objectGID = ObjectCollectedF getit

@@ -367,29 +367,24 @@ type SearchStrategy = NounKey
 
 type AcquisitionF :: Type
 type AcquisitionF = (ActionEffectKey
-                      -> AcquisitionRes
                       -> GameComputation Identity ())
 
 -- Role-based acquisition action types
 type AgentAcquisitionActionF :: Type
-data AgentAcquisitionActionF
-  = AgentAcquiresF AcquisitionF  -- Agent coordinates acquisition between object and container
-  | AgentCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+newtype AgentAcquisitionActionF
+  = AgentAcquisitionActionF {_unAAA :: AcquisitionF}
 
 type ObjectAcquisitionActionF :: Type
-data ObjectAcquisitionActionF
-  = ObjectCollectedF (GameComputation Identity CoordinationResult)  -- Object is collected by agent
-  | ObjectNotCollectableF (ActionEffectKey -> GameComputation Identity ())
+newtype ObjectAcquisitionActionF
+  = ObjectCollectedF { _unOAA :: (ActionEffectKey -> GameComputation Identity ())}
 
 type ContainerAcquisitionActionF :: Type
-data ContainerAcquisitionActionF
-  = ContainerLosesObjectF (GID Object -> GameComputation Identity CoordinationResult)  -- Container releases object
-  | ContainerCannotReleaseF (ActionEffectKey -> GameComputation Identity ())
+newtype ContainerAcquisitionActionF
+  = ContainerCollectedFromF { _unCFA :: (ActionEffectKey -> GameComputation Identity ())}  -- Container releases object
 
 type LocationAcquisitionActionF :: Type
-data LocationAcquisitionActionF
-  = LocationAcquisitionActionF (GameComputation Identity ())  -- Placeholder for location-level acquisition
-  | LocationCannotAcquireF (ActionEffectKey -> GameComputation Identity ())
+newtype LocationAcquisitionActionF
+  = LocationAcquisitionActionF { _unLAA :: (ActionEffectKey -> GameComputation Identity ())}
 
 type ConsumptionResult :: Type
 data ConsumptionResult = ConsumedResult
