@@ -45,11 +45,11 @@ import           Examples.Defaults                                       (defaul
                                                                           defaultObject,
                                                                           defaultPlayer)
 import           Model.Core                                              (ActionEffectKey (..),
-                                                                          ActionGID (AgentContainerAccessActionGID, AgentDirectionalActionGID),
+                                                                          ActionGID (AgentContainerAccessActionGID),
                                                                           ActionManagementOperation (AddAgentContainerAccessVerbPhrase),
                                                                           AgentAcquisitionActionF,
                                                                           AgentContainerAccessActionF,
-                                                                          AgentDirectionalStimulusActionF (AgentDirectionalStimulusActionF),
+                                                                          AgentDirectionalStimulusActionF,
                                                                           AgentImplicitStimulusActionF,
                                                                           AgentPosturalActionF,
                                                                           AgentSomaticAccessActionF,
@@ -59,14 +59,14 @@ import           Model.Core                                              (Action
                                                                           GameState,
                                                                           Location,
                                                                           LocationContainerAccessActionF,
-                                                                          LocationDirectionalStimulusActionF (LocationDirectionalStimulusActionF),
+                                                                          LocationDirectionalStimulusActionF,
                                                                           LocationDirectionalStimulusContainerActionF,
                                                                           LocationImplicitStimulusActionF,
                                                                           NarrationComputation (..),
                                                                           Object,
                                                                           ObjectAcquisitionActionF,
                                                                           ObjectContainerAccessActionF,
-                                                                          ObjectDirectionalStimulusActionF (ObjectDirectionalStimulusActionF),
+                                                                          ObjectDirectionalStimulusActionF,
                                                                           Player,
                                                                           PlayerKey (..),
                                                                           SpatialRelationship (..))
@@ -118,6 +118,9 @@ import           Model.Parser.Composites.Verbs                           (Acquis
 import           Model.Parser.GCase                                      (NounKey (ContainerKey, DirectionalStimulusKey, ObjectiveKey, SurfaceKey))
 
 -- Action functions from original
+import           ConstraintRefinement.Actions.Get                        (getF,
+                                                                          getFromF,
+                                                                          gettableF)
 import           ConstraintRefinement.Actions.Locations.Look             (locationLookAtF,
                                                                           locationLookF,
                                                                           locationLookInF)
@@ -125,7 +128,6 @@ import           ConstraintRefinement.Actions.Locations.Open             (openLo
 import           ConstraintRefinement.Actions.Objects.Look               (objectLookedAtF,
                                                                           objectLookedInF)
 import           ConstraintRefinement.Actions.Objects.Open               (openObjectContainerF)
-import           ConstraintRefinement.Actions.Player.Get                 (getF)
 import           ConstraintRefinement.Actions.Player.Look                (agentLookAtF,
                                                                           agentLookF,
                                                                           agentLookInF)
@@ -133,10 +135,6 @@ import           ConstraintRefinement.Actions.Player.Open                (openCo
                                                                           openContainerF,
                                                                           openEyes)
 import           ConstraintRefinement.Actions.Player.Stand               (standF)
-import           ConstraintRefinement.Actions.RoleBased.Constructors     (agentCannotAcquireF,
-                                                                          containerLosesObjectF,
-                                                                          objectCollectedF,
-                                                                          objectNotCollectableF)
 import           Data.Function                                           ((&))
 import           Data.Text                                               (Text)
 import           Grammar.Parser.Partitions.Nouns.Consumables             (pillCS)
@@ -174,13 +172,13 @@ sashaBedroomDemo = do
   whatChairFGID <- declareAction objectLookedAtF
 
   -- Use role-based container action for chair losing object
-  getFromChairGID <- declareAction (containerLosesObjectF chairGID)
+  getFromChairGID <- declareAction getFromF
   lookAtRobeFGID <- declareAction objectLookedAtF
   notEvenRobeFGID <- declareAction objectLookedAtF
-  getRobeDeniedGID <- declareAction objectNotCollectableF
+  getRobeDeniedGID <- declareAction gettableF
 
   -- Use role-based object action for robe being collected
-  getRobeFGID <- declareAction (objectCollectedF robeGID)
+  getRobeFGID <- declareAction gettableF
   lookAtPocketGID <- declareAction objectLookedAtF
   lookAtPillGID <- declareAction objectLookedAtF
   lookAtPillDeniedGID <- declareAction objectLookedAtF
@@ -189,7 +187,7 @@ sashaBedroomDemo = do
 
   openEyesGID <- declareAction openEyes
   -- Use role-based agent action for player acquisition denial
-  getDeniedFGID <- declareAction agentCannotAcquireF
+  getDeniedFGID <- declareAction getF
   lookAtDeniedFGID <- declareAction agentLookAtF
   lookInPocketDeniedFGID <- declareAction objectLookedInF
   -- Use role-based agent action for player get coordination
